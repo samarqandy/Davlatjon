@@ -1,0 +1,240 @@
+import { GraphMap } from "@/components/answers/GraphPuzzle";
+import { PartitionGridView, SymmetryGrid } from "@/components/answers/GridPuzzles";
+import { TriangleBoard } from "@/components/answers/MagicTrianglePuzzle";
+import { RobotBoard } from "@/components/robot/RobotBoard";
+import { PolyominoVisual, ShapeIcon } from "@/components/visuals/shapes";
+import type { Option, RobotPuzzle, Task } from "@/content/types";
+import { parseMap } from "@/lib/robot";
+
+function Line({ w = 34 }: { w?: number }) {
+  return <span className="answer-line" style={{ minWidth: `${w}mm` }} />;
+}
+
+function Boxes({ count, size = 8 }: { count: number; size?: number }) {
+  return (
+    <span className="inline-flex flex-wrap gap-[1.2mm] align-middle">
+      {Array.from({ length: count }, (_, i) => (
+        <span
+          key={i}
+          className="inline-block rounded-[1mm] border border-ink/60"
+          style={{ width: `${size}mm`, height: `${size}mm` }}
+        />
+      ))}
+    </span>
+  );
+}
+
+function OptionPrint({ option }: { option: Option }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-lg border border-ink/25 px-2 py-1">
+      <span className="inline-block h-[4mm] w-[4mm] rounded-[0.8mm] border border-ink/70" />
+      <b>{option.label}</b>
+      {option.visual?.type === "shape" && <ShapeIcon shape={option.visual.shape} size={34} />}
+      {option.visual?.type === "polyomino" && <PolyominoVisual cells={option.visual.cells} size={16} />}
+    </span>
+  );
+}
+
+function RobotPrint({ puzzle }: { puzzle: RobotPuzzle }) {
+  const map = parseMap(puzzle.map);
+  if (puzzle.mode === "paths") {
+    return (
+      <div className="space-y-2">
+        <p>Нарисуй каждый путь на отдельном поле:</p>
+        <div className="flex flex-wrap gap-3">
+          {Array.from({ length: puzzle.pathsCount ?? 6 }, (_, i) => (
+            <div key={i} className="w-[26mm]">
+              <RobotBoard map={map} cell={26} />
+            </div>
+          ))}
+        </div>
+        <p>
+          Всего коротких путей: <Line w={16} />
+        </p>
+      </div>
+    );
+  }
+  const boxes = Math.min((puzzle.optimal ?? 8) + 4, 22);
+  return (
+    <div className="flex flex-wrap items-start gap-5">
+      <div className="w-[62mm] shrink-0">
+        <RobotBoard map={map} legend={puzzle.legend} cell={40} />
+      </div>
+      <div className="min-w-[70mm] flex-1 space-y-2.5">
+        {(puzzle.mode === "build" || puzzle.mode === "collect") && (
+          <>
+            <p>Моя программа:</p>
+            <Boxes count={boxes} />
+            <p>
+              Команд в программе: <Line w={14} />
+            </p>
+          </>
+        )}
+        {puzzle.mode === "trace" && (
+          <p>
+            Робот найдёт: <Line w={40} />
+          </p>
+        )}
+        {puzzle.mode === "debug" && (
+          <>
+            <p>
+              Робот врезается на шаге № <Line w={12} />
+            </p>
+            <p>
+              Исправленная программа: <Boxes count={puzzle.program?.length ?? 7} />
+            </p>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/** Место для ответа на бумаге — своё для каждого типа задачи. */
+export function PrintAnswerArea({ task }: { task: Task }) {
+  const a = task.answer;
+  switch (a.kind) {
+    case "fields":
+      return (
+        <div className="flex flex-wrap gap-x-8 gap-y-2.5">
+          {a.fields.map((f) => (
+            <span key={f.id} className="whitespace-nowrap">
+              {f.label} <Line w={f.type === "number" ? 18 : 22} /> {f.type === "number" && f.suffix}
+            </span>
+          ))}
+        </div>
+      );
+    case "choice":
+      return (
+        <div className="space-y-1.5">
+          <p>{a.prompt}</p>
+          <div className="flex flex-wrap gap-2">
+            {a.options.map((o) => (
+              <OptionPrint key={o.id} option={o} />
+            ))}
+          </div>
+        </div>
+      );
+    case "assign":
+      return (
+        <div className="grid grid-cols-2 gap-x-6 gap-y-2">
+          {a.items.map((i) => (
+            <span key={i.id} className="whitespace-nowrap">
+              {i.label} → <Line w={a.options.length > 3 ? 14 : 26} />
+            </span>
+          ))}
+        </div>
+      );
+    case "order":
+      return (
+        <div className="flex flex-wrap items-end gap-x-4 gap-y-2">
+          {a.items.map((_, i) => (
+            <span key={i}>
+              {i + 1}. <Line w={24} />
+            </span>
+          ))}
+        </div>
+      );
+    case "robot":
+      return <RobotPrint puzzle={a.puzzle} />;
+    case "symmetry":
+      return <SymmetryGrid left={a.left} cell={26} />;
+    case "graph":
+      return (
+        <div className="space-y-2">
+          <div className="max-w-[120mm]">
+            <GraphMap puzzle={a.puzzle} />
+          </div>
+          <p>
+            Самый быстрый путь: <Line w={80} />
+          </p>
+          <p>
+            Время: <Line w={16} /> {a.puzzle.unit}
+          </p>
+        </div>
+      );
+    case "magicSquare":
+      return (
+        <div className="inline-grid grid-cols-3 gap-1">
+          {a.grid.flat().map((v, i) => (
+            <span
+              key={i}
+              className="flex h-[15mm] w-[15mm] items-center justify-center rounded-md border-2 border-ink/60 text-2xl font-black"
+            >
+              {v ?? ""}
+            </span>
+          ))}
+        </div>
+      );
+    case "signs":
+      return (
+        <div className="space-y-2.5">
+          {a.rows.map((r, ri) => (
+            <p key={ri} className="flex flex-wrap items-center gap-2 text-xl font-black">
+              {r.numbers.map((n, i) => (
+                <span key={i} className="flex items-center gap-2">
+                  {n}
+                  {i < r.numbers.length - 1 && (
+                    <span className="inline-block h-[8mm] w-[8mm] rounded-md border-2 border-ink/60" />
+                  )}
+                </span>
+              ))}
+              = {r.result}
+            </p>
+          ))}
+        </div>
+      );
+    case "partition":
+      return (
+        <div className="space-y-1.5">
+          <p>Нарисуй разные разрезы:</p>
+          <div className="flex flex-wrap gap-4">
+            {Array.from({ length: 6 }, (_, i) => (
+              <PartitionGridView
+                key={i}
+                grid={Array.from({ length: a.size }, () => Array.from({ length: a.size }, () => 1))}
+                cell={18}
+              />
+            ))}
+          </div>
+        </div>
+      );
+    case "magicTriangle":
+      return (
+        <div className="flex flex-wrap gap-4">
+          {Array.from({ length: 3 }, (_, i) => (
+            <div key={i} className="w-[52mm]">
+              <TriangleBoard values={Array(6).fill(null)} />
+            </div>
+          ))}
+        </div>
+      );
+    case "expressions":
+      return (
+        <div className="grid grid-cols-2 gap-x-8 gap-y-3">
+          {Array.from({ length: 6 }, (_, i) => (
+            <span key={i}>
+              <Line w={40} /> = {a.target}
+            </span>
+          ))}
+        </div>
+      );
+    case "rules":
+      return (
+        <div className="space-y-2.5">
+          {[1, 2].map((i) => (
+            <p key={i}>
+              Правило {i}: <Line w={70} /> Следующее число: <Line w={14} />
+            </p>
+          ))}
+        </div>
+      );
+    case "open":
+      return (
+        <div className="space-y-3 pt-1">
+          <Line w={170} />
+          <Line w={170} />
+        </div>
+      );
+  }
+}
