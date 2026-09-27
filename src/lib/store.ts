@@ -64,6 +64,36 @@ export interface Settings {
   chessOpenAll?: boolean;
 }
 
+/** Сыгранная с роботом или вдвоём партия. */
+export interface ChessGameRecord {
+  id: string;
+  at: number;
+  /** robot — с роботом, two — вдвоём, pawns — пешечный бой, endgame — тренировка мата. */
+  mode: "robot" | "two" | "pawns" | "endgame";
+  /** Уровень робота (1–5) или название тренировки. */
+  level?: number;
+  variant?: string;
+  /** За кого играл ребёнок. */
+  color: "w" | "b";
+  result: "win" | "loss" | "draw";
+  moves: number;
+}
+
+export interface ChessPuzzleProgress {
+  solvedAt?: number;
+  misses: number;
+}
+
+export interface ChessDiaryEntry {
+  id: string;
+  createdAt: number;
+  date: string;
+  opponent: string;
+  color: "w" | "b";
+  result: "win" | "loss" | "draw";
+  notes: string;
+}
+
 export interface ChessExerciseProgress {
   solvedAt?: number;
   /** Сколько раз не получилось. */
@@ -84,6 +114,17 @@ export interface AppState {
   settings: Settings;
   /** Шахматная школа: упражнение → прогресс. */
   chess: Record<string, ChessExerciseProgress>;
+  /** Партии с роботом и вдвоём (последние 200). */
+  chessGames: ChessGameRecord[];
+  /** Задачи: id → прогресс. */
+  chessPuzzles: Record<string, ChessPuzzleProgress>;
+  /** Лучшая серия решённых задач подряд. */
+  chessStreak: number;
+  /** Выученные дебюты: «id:side» → когда. */
+  chessOpenings: Record<string, number>;
+  /** Просмотренные до конца знаменитые партии: id → когда. */
+  chessGamesViewed: Record<string, number>;
+  chessDiary: ChessDiaryEntry[];
   welcomed?: boolean;
 }
 
@@ -97,6 +138,12 @@ export const DEFAULT_STATE: AppState = Object.freeze({
   reviews: {},
   settings: { hintPause: true, bigText: false },
   chess: {},
+  chessGames: [],
+  chessPuzzles: {},
+  chessStreak: 0,
+  chessOpenings: {},
+  chessGamesViewed: {},
+  chessDiary: [],
 }) as AppState;
 
 export const EMPTY_CHESS: ChessExerciseProgress = Object.freeze({ misses: 0 }) as ChessExerciseProgress;
@@ -133,6 +180,12 @@ export function sanitize(raw: unknown): AppState {
       chessOpenAll: settings.chessOpenAll === true,
     },
     chess: isObject(raw.chess) ? (raw.chess as AppState["chess"]) : {},
+    chessGames: Array.isArray(raw.chessGames) ? (raw.chessGames as ChessGameRecord[]) : [],
+    chessPuzzles: isObject(raw.chessPuzzles) ? (raw.chessPuzzles as AppState["chessPuzzles"]) : {},
+    chessStreak: typeof raw.chessStreak === "number" ? raw.chessStreak : 0,
+    chessOpenings: isObject(raw.chessOpenings) ? (raw.chessOpenings as AppState["chessOpenings"]) : {},
+    chessGamesViewed: isObject(raw.chessGamesViewed) ? (raw.chessGamesViewed as AppState["chessGamesViewed"]) : {},
+    chessDiary: Array.isArray(raw.chessDiary) ? (raw.chessDiary as ChessDiaryEntry[]) : [],
     welcomed: raw.welcomed === true,
   };
 }
@@ -308,6 +361,56 @@ export function chessMiss(id: string) {
 
 export function chessFound(id: string, key: string) {
   updateChess(id, (p) => (p.found?.includes(key) ? {} : { found: [...(p.found ?? []), key] }));
+}
+
+export function recordChessGame(game: Omit<ChessGameRecord, "id" | "at">) {
+  setState((s) => ({
+    ...s,
+    chessGames: [{ ...game, id: `g${Date.now().toString(36)}`, at: Date.now() }, ...s.chessGames].slice(0, 200),
+  }));
+}
+
+export function chessPuzzleSolved(id: string) {
+  setState((s) => ({
+    ...s,
+    chessPuzzles: {
+      ...s.chessPuzzles,
+      [id]: { misses: s.chessPuzzles[id]?.misses ?? 0, solvedAt: s.chessPuzzles[id]?.solvedAt ?? Date.now() },
+    },
+  }));
+}
+
+export function chessPuzzleMiss(id: string) {
+  setState((s) => ({
+    ...s,
+    chessPuzzles: { ...s.chessPuzzles, [id]: { ...s.chessPuzzles[id], misses: (s.chessPuzzles[id]?.misses ?? 0) + 1 } },
+  }));
+}
+
+export function chessStreakReached(n: number) {
+  setState((s) => (n > s.chessStreak ? { ...s, chessStreak: n } : s));
+}
+
+export function chessOpeningLearned(id: string, side: "white" | "black") {
+  setState((s) => ({
+    ...s,
+    chessOpenings: { ...s.chessOpenings, [`${id}:${side}`]: s.chessOpenings[`${id}:${side}`] ?? Date.now() },
+  }));
+}
+
+export function chessGameViewed(id: string) {
+  setState((s) => ({ ...s, chessGamesViewed: { ...s.chessGamesViewed, [id]: s.chessGamesViewed[id] ?? Date.now() } }));
+}
+
+export function addChessDiary(entry: Omit<ChessDiaryEntry, "id" | "createdAt">) {
+  setState((s) => ({
+    ...s,
+    chessDiary: [{ ...entry, id: `d${Date.now().toString(36)}`, createdAt: Date.now() }, ...s.chessDiary],
+  }));
+}
+
+export function removeChessDiary(id: string) {
+  setState((s) => ({ ...s, chessDiary: s.chessDiary.filter((e) => e.id !== id) }));
 }
 
 export function updateSettings(patch: Partial<Settings>) {

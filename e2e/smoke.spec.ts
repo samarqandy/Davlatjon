@@ -297,3 +297,66 @@ test("шахматы: мат в один ход", async ({ page }) => {
   await square(page, "mo-king-mate-rank", "a8");
   await expect(page.getByText(/мат!/)).toBeVisible();
 });
+
+test("шахматы: партия с роботом — робот отвечает, ходы записываются", async ({ page }) => {
+  await page.goto("/chess/play#robot-1-w");
+  await expect(page.getByRole("heading", { name: /Робот «Пешка»/ })).toBeVisible();
+  await square(page, "play", "e2");
+  await square(page, "play", "e4");
+  await expect(page.getByText("🙂 Твой ход")).toBeVisible({ timeout: 10_000 });
+  const moves = page.getByRole("list", { name: "Список ходов" });
+  await expect(moves.getByText("e4", { exact: true })).toBeVisible();
+  await expect(moves.locator("span.font-bold").nth(1)).not.toBeEmpty();
+});
+
+test("шахматы: задача по теме решается, серия считает", async ({ page }) => {
+  await page.goto("/chess/puzzles#theme-mate1");
+  await expect(page.getByRole("heading", { name: /Мат в 1 ход/ })).toBeVisible();
+  await square(page, "puzzle-m1-backrank", "d1");
+  await square(page, "puzzle-m1-backrank", "d8");
+  await expect(page.getByText(/Лxd8# — мат!/)).toBeVisible();
+  await page.getByRole("button", { name: "Следующая задача →" }).click();
+  await expect(page.getByText("Детский мат", { exact: true })).toBeVisible();
+});
+
+test("шахматы: разбор знаменитой партии и главные моменты", async ({ page }) => {
+  await page.goto("/chess/games/opera");
+  await expect(page.getByRole("heading", { name: "Партия в опере" })).toBeVisible();
+  const next = page.getByRole("button", { name: "Ход вперёд" });
+  for (let i = 0; i < 13; i++) await next.click();
+  await expect(page.getByText(/Ферзь нападает сразу на две пешки/)).toBeVisible();
+  await page.getByRole("button", { name: /Мат ладьёй на d8/ }).click();
+  await expect(page.getByText("33 / 33")).toBeVisible();
+});
+
+test("шахматы: тренажёр дебюта принимает верные ходы", async ({ page }) => {
+  await page.goto("/chess/openings#train-italian-white");
+  await expect(page.getByRole("heading", { name: /Повтори дебют за белых/ })).toBeVisible();
+  const play = async (from: string, to: string) => {
+    await expect(page.getByText("🙂 Твой ход")).toBeVisible({ timeout: 5000 });
+    await square(page, "train-italian", from);
+    await square(page, "train-italian", to);
+  };
+  await play("e2", "e4");
+  await play("g1", "f3");
+  await play("d2", "d4");
+  await expect(page.getByText(/В этом дебюте ходят по-другому/)).toBeVisible();
+  await page.waitForTimeout(1000);
+  await play("f1", "c4");
+  await play("c2", "c3");
+  await play("d2", "d3");
+  await play("e1", "g1");
+  await expect(page.getByText(/Дебют сыгран до конца/)).toBeVisible({ timeout: 5000 });
+});
+
+test("шахматы: энциклопедия и дневник", async ({ page }) => {
+  await page.goto("/chess/history");
+  await expect(page.getByRole("heading", { name: "Всё о шахматах" })).toBeVisible();
+  await expect(page.getByText("Фигурки с Афрасиаба", { exact: true })).toBeVisible();
+  await expect(page.getByText("Гукеш Доммараджу").first()).toBeVisible();
+  await page.goto("/chess/diary");
+  await page.getByPlaceholder(/папа, Али/).fill("папа");
+  await page.getByRole("button", { name: /🤝 ничья/ }).click();
+  await page.getByRole("button", { name: "Записать в дневник" }).click();
+  await expect(page.getByText(/ничья · с папа/)).toBeVisible();
+});

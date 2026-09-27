@@ -70,6 +70,7 @@ export function ChessBoard({
   arrows = [],
   label,
   maxWidth = 440,
+  orientation = "white",
   className,
 }: {
   id: string;
@@ -84,6 +85,8 @@ export function ChessBoard({
   label?: string;
   /** Наибольшая ширина доски, px. */
   maxWidth?: number;
+  /** Кто внизу: белые или чёрные. */
+  orientation?: "white" | "black";
   className?: string;
 }) {
   const squareStyles: Record<string, CSSProperties> = {};
@@ -105,6 +108,7 @@ export function ChessBoard({
           position: typeof position === "string" ? position : toPosition(position),
           chessboardColumns: cols,
           chessboardRows: rows,
+          boardOrientation: orientation,
           pieces: PIECES,
           squareStyles,
           allowDragging: draggable,

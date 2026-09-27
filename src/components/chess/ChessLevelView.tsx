@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { RichText } from "@/components/RichText";
 import { Button, ButtonLink, cn, ProgressBar } from "@/components/ui";
-import { CHESS_LEVELS, chessLevelHref } from "@/content/chess";
+import { CHESS_LEVELS, LEVEL_EXTRAS, chessLevelHref } from "@/content/chess";
+import { FAMOUS_GAMES } from "@/content/chess/games";
+import { OPENINGS } from "@/content/chess/openings";
 import type { ChessLevel } from "@/content/chess/types";
 import { levelStatuses } from "@/lib/chessProgress";
 import { useStore } from "@/lib/store";
@@ -141,6 +143,8 @@ export function ChessLevelView({ levelId }: { levelId: string }) {
           )}
 
           {tab === "dictionary" && <Dictionary level={level} />}
+
+          <Extras levelId={level.id} />
         </>
       )}
     </div>
@@ -235,5 +239,63 @@ function Dictionary({ level }: { level: ChessLevel }) {
         </ul>
       </section>
     </div>
+  );
+}
+
+/** Что ещё открывает уровень: игра, задачи, дебюты и партии из других разделов школы. */
+function Extras({ levelId }: { levelId: ChessLevel["id"] }) {
+  const x = LEVEL_EXTRAS[levelId];
+  const openings = (x.openings ?? []).map((id) => OPENINGS.find((o) => o.id === id)).filter((o) => o !== undefined);
+  const games = (x.games ?? []).map((id) => FAMOUS_GAMES.find((g) => g.id === id)).filter((g) => g !== undefined);
+  const card = "flex flex-col gap-1 rounded-2xl bg-white p-4 shadow-card";
+  const link = "text-sm font-extrabold text-brand hover:underline";
+  return (
+    <section className="space-y-3" aria-labelledby="extras">
+      <h2 id="extras" className="text-xl font-black">
+        🎮 Что ещё есть на этом уровне
+      </h2>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {x.play && (
+          <div className={card}>
+            <p className="text-xs font-extrabold tracking-wide text-muted uppercase">Играть</p>
+            <p className="font-black">{x.play.label}</p>
+            <p className="flex-1 text-sm text-muted">{x.play.about}</p>
+            <Link href={x.play.href} className={link}>
+              Открыть доску →
+            </Link>
+          </div>
+        )}
+        {x.puzzles && x.puzzles.length > 0 && (
+          <div className={card}>
+            <p className="text-xs font-extrabold tracking-wide text-muted uppercase">Задачи</p>
+            {x.puzzles.map((p) => (
+              <Link key={p.theme} href={`/chess/puzzles#theme-${p.theme}`} className={link}>
+                {p.label} →
+              </Link>
+            ))}
+          </div>
+        )}
+        {openings.length > 0 && (
+          <div className={card}>
+            <p className="text-xs font-extrabold tracking-wide text-muted uppercase">Дебюты</p>
+            {openings.map((o) => (
+              <Link key={o.id} href={`/chess/openings#open-${o.id}`} className={link}>
+                {o.name} →
+              </Link>
+            ))}
+          </div>
+        )}
+        {games.length > 0 && (
+          <div className={card}>
+            <p className="text-xs font-extrabold tracking-wide text-muted uppercase">Знаменитые партии</p>
+            {games.map((g) => (
+              <Link key={g.id} href={`/chess/games/${g.id}`} className={link}>
+                {g.title} →
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
   );
 }

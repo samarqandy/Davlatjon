@@ -94,6 +94,11 @@ export function playMove(fen: string, from: string, to: string, promotion: Piece
   };
 }
 
+/** Стоит ли король стороны, чей ход, под шахом. */
+export function isInCheck(fen: string): boolean {
+  return loadPosition(fen).inCheck();
+}
+
 /** Все возможные ходы стороны, чей ход, в записи «откуда-куда» (e2e4, e7e8q). */
 export function allMoves(fen: string): string[] {
   return loadPosition(fen)
