@@ -9,6 +9,8 @@ import { RECORDS, TIMELINE, UZBEK_CHESS, WOMEN_CHAMPIONS, WORLD_CHAMPIONS } from
 import { FAMOUS_GAMES } from "@/content/chess/games";
 import { CHESS_IMAGES, chessImage, imageCredit } from "@/content/chess/images";
 import { OPENINGS } from "@/content/chess/openings";
+import { SAGES, SECRETS } from "@/content/chess/secrets";
+import { CHESS_LEVELS } from "@/content/chess";
 
 const PUBLIC = path.join(process.cwd(), "public");
 /** Общественное достояние, CC0, CC BY, CC BY-SA — и ничего другого. */
@@ -65,6 +67,9 @@ describe("картинки энциклопедии", () => {
     for (const p of UZBEK_CHESS.people) refs.push([`Узбекистан ${p.name}`, p.image]);
     for (const r of RECORDS) refs.push([`рекорд ${r.title}`, r.image]);
     for (const o of OPENINGS) refs.push([`дебют ${o.id}`, o.image]);
+    for (const s of SECRETS) refs.push([`тайна ${s.id}`, s.image]);
+    for (const s of SAGES) refs.push([`мудрец ${s.name}`, s.image]);
+    for (const l of CHESS_LEVELS) refs.push([`легенда ${l.id}`, l.legend.image]);
     for (const [where, id] of refs) if (id) expect(chessImage(id), `${where} → ${id}`).toBeDefined();
 
     for (const g of FAMOUS_GAMES.filter((g) => g.year)) expect(g.pictures?.length, g.id).toBeGreaterThan(0);

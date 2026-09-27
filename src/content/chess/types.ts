@@ -76,6 +76,15 @@ export type ChessExercise =
   /** Расставить size ферзей на доске size × size, чтобы они не били друг друга. */
   | (ExerciseBase & { kind: "queens"; size: number });
 
+export interface ChessLegend {
+  hook: string;
+  title: string;
+  story: string[];
+  /** id картинки из images.ts. */
+  image?: string;
+  secret: string;
+}
+
 export interface ChessLevel {
   id: ChessLevelId;
   /** 1…6 */
@@ -90,6 +99,8 @@ export interface ChessLevel {
   title: string;
   /** Чему научимся. */
   goal: string;
+  /** Легенда уровня: вопрос-крючок, история с картинкой и «тайна», которая открывается в конце. */
+  legend: ChessLegend;
   lesson: ChessLessonCard[];
   rules: string[];
   terms: ChessTerm[];

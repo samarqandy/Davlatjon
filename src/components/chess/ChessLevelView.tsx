@@ -1,18 +1,19 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { RichText } from "@/components/RichText";
 import { Button, ButtonLink, cn, ProgressBar } from "@/components/ui";
 import { CHESS_LEVELS, LEVEL_EXTRAS, chessLevelHref } from "@/content/chess";
 import { FAMOUS_GAMES } from "@/content/chess/games";
-import { chessImages } from "@/content/chess/images";
+import { chessImage, chessImages } from "@/content/chess/images";
 import { OPENINGS } from "@/content/chess/openings";
 import type { ChessLevel } from "@/content/chess/types";
 import { levelStatuses } from "@/lib/chessProgress";
-import { useStore } from "@/lib/store";
+import { useHydrated, useStore } from "@/lib/store";
 import { setHash, useHash } from "@/lib/useHash";
 import { PieceIcon } from "./ChessBoard";
-import { Portrait } from "./Figure";
+import { Figure, Portrait } from "./Figure";
 import { ChessExerciseView } from "./ChessExercises";
 import { ChessLesson } from "./ChessLesson";
 
@@ -75,7 +76,7 @@ export function ChessLevelView({ levelId }: { levelId: string }) {
       </header>
 
       {!status.unlocked ? (
-        <LockedLevel prev={prev} />
+        <LockedLevel prev={prev} level={level} />
       ) : (
         <>
           {status.passed && <RankEarned level={level} next={next} />}
@@ -103,7 +104,12 @@ export function ChessLevelView({ levelId }: { levelId: string }) {
             ))}
           </nav>
 
-          {tab === "lesson" && <ChessLesson levelId={level.id} cards={level.lesson} onDone={() => goExercise(0)} />}
+          {tab === "lesson" && (
+            <>
+              <LevelLegend level={level} />
+              <ChessLesson levelId={level.id} cards={level.lesson} onDone={() => goExercise(0)} />
+            </>
+          )}
 
           {tab === "exercises" && (
             <section className="space-y-4" aria-label="Упражнения">
@@ -153,13 +159,49 @@ export function ChessLevelView({ levelId }: { levelId: string }) {
   );
 }
 
-function LockedLevel({ prev }: { prev: ChessLevel | undefined }) {
+/** Легенда уровня: вопрос-крючок, история с картинкой и «тайна», которую открывают нажатием. */
+function LevelLegend({ level }: { level: ChessLevel }) {
+  const [revealed, setRevealed] = useState(false);
+  const hydrated = useHydrated();
+  const img = level.legend.image ? chessImage(level.legend.image) : undefined;
+  return (
+    <section className="rounded-3xl bg-white p-5 shadow-card" aria-labelledby="legend-h">
+      <p className="text-xs font-extrabold tracking-wide text-brand uppercase">🔮 Легенда уровня</p>
+      <h2 id="legend-h" className="mt-1 text-2xl leading-snug font-black">
+        {level.legend.hook}
+      </h2>
+      <div className="mt-3 gap-5 sm:flex sm:items-start">
+        <div className="min-w-0 flex-1 space-y-2 text-lg leading-relaxed">
+          <p className="font-black text-brand-dark">{level.legend.title}</p>
+          {level.legend.story.map((t) => (
+            <p key={t}>{t}</p>
+          ))}
+          {hydrated && revealed ? (
+            <p className="rounded-2xl bg-sun-soft px-4 py-3 font-semibold" aria-live="polite">
+              🗝️ <b>Тайна уровня.</b> {level.legend.secret}
+            </p>
+          ) : (
+            <Button variant="sun" size="sm" onClick={() => setRevealed(true)}>
+              🗝️ Открыть тайну уровня
+            </Button>
+          )}
+        </div>
+        {img && (
+          <Figure image={img} className="mt-4 sm:mt-0 sm:w-64 sm:shrink-0" sizes="(max-width: 640px) 100vw, 256px" />
+        )}
+      </div>
+    </section>
+  );
+}
+
+function LockedLevel({ prev, level }: { prev: ChessLevel | undefined; level: ChessLevel }) {
   return (
     <section className="rounded-3xl border-2 border-dashed border-line bg-white p-6 text-center shadow-card">
       <p className="text-5xl" aria-hidden>
         🔒
       </p>
       <h2 className="mt-2 text-2xl font-black">Этот уровень пока закрыт</h2>
+      <p className="mt-2 text-lg font-bold text-brand-dark">Здесь ты узнаешь: {level.legend.hook}</p>
       {prev && (
         <p className="mt-2 text-lg text-muted">
           Он откроется, когда ты получишь звание «{prev.name}»: реши все упражнения предыдущего уровня.

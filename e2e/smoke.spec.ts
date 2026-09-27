@@ -352,6 +352,28 @@ test("шахматы: тренажёр дебюта принимает верн�
   await expect(page.getByText(/Дебют сыгран до конца/)).toBeVisible({ timeout: 5000 });
 });
 
+test("шахматы: тайны — загадка, зёрна, легенда уровня и вопрос дня", async ({ page }) => {
+  await page.goto("/chess/secrets");
+  await expect(page.getByRole("heading", { name: "Тайны шахмат" })).toBeVisible();
+  await page.getByRole("button", { name: /Мудрец попросил у царя/ }).click();
+  await page.getByRole("button", { name: "Клетка 21", exact: true }).click();
+  await expect(page.getByText("На ней зёрен: 1 048 576")).toBeVisible();
+  await page.getByRole("button", { name: /машина обыгрывала лучших игроков/ }).click();
+  await page.getByRole("button", { name: "Внутри шкафа прятался шахматист" }).click();
+  await expect(page.getByText(/Точно! Внутри шкафа сидел сильный шахматист/)).toBeVisible();
+  const riddle = page.getByRole("listitem").filter({ hasText: "1. Хожу буквой Г" });
+  await riddle.getByRole("button", { name: "Конь" }).click();
+  await expect(riddle.getByText(/✅ Верно!/)).toBeVisible();
+  await page.goto("/chess/pawn");
+  await expect(page.getByRole("heading", { name: /Почему из всех фигур только пешка/ })).toBeVisible();
+  await page.getByRole("button", { name: "🗝️ Открыть тайну уровня" }).click();
+  await expect(page.getByText(/до девяти ферзей/)).toBeVisible();
+  await page.goto("/chess");
+  await expect(page.getByText("🤔 Знаешь ли ты?")).toBeVisible();
+  await page.getByRole("button", { name: "Показать ответ" }).click();
+  await expect(page.getByRole("link", { name: "Подробнее →" })).toBeVisible();
+});
+
 test("шахматы: энциклопедия и дневник", async ({ page }) => {
   await page.goto("/chess/history");
   await expect(page.getByRole("heading", { name: "Всё о шахматах" })).toBeVisible();

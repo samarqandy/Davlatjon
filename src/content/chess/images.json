@@ -52,6 +52,22 @@
       "attributionRequired": false
     },
     {
+      "id": "alfonso",
+      "file": "/images/chess/alfonso.webp",
+      "thumb": "/images/chess/alfonso-thumb.webp",
+      "width": 852,
+      "height": 960,
+      "title": "Alfonso LJ 97V",
+      "wiki": "https://en.wikipedia.org/wiki/Libro_de_los_juegos",
+      "commons": "File:Alfonso LJ 97V.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File%3AAlfonso_LJ_97V.jpg",
+      "author": "Alfonso X of Castile and Leon",
+      "credit": "Sonja Musser Golladay",
+      "license": "Public domain",
+      "licenseCode": "pd",
+      "attributionRequired": false
+    },
+    {
       "id": "anand",
       "file": "/images/chess/anand.webp",
       "thumb": "/images/chess/anand-thumb.webp",
@@ -82,6 +98,23 @@
       "credit": "This file was contributed to Wikimedia Commons by Cleveland Public Library as part of a cooperation project. The donation was facilitated by the Digital Public Library of America. Record in source catalog DPLA identifier: 9ca464339f18b3d8be87fccc68c3ee73 Cleveland Public Library identifier: ocn166328430",
       "license": "Public domain",
       "licenseCode": "pd",
+      "attributionRequired": false
+    },
+    {
+      "id": "averbakh",
+      "file": "/images/chess/averbakh.webp",
+      "thumb": "/images/chess/averbakh-thumb.webp",
+      "width": 701,
+      "height": 960,
+      "title": "Yuriy Averbakh 1963",
+      "wiki": "https://en.wikipedia.org/wiki/Yuri_Averbakh",
+      "commons": "File:Yuriy Averbakh 1963.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File%3AYuriy_Averbakh_1963.jpg",
+      "author": "Eric Koch for Anefo",
+      "credit": "cropped from File:Hoogovenschaaktoernooi, Averbach (zit) Bronstein (staat), Bestanddeelnr 914-6981.jpg",
+      "license": "CC0",
+      "licenseCode": "cc0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
       "attributionRequired": false
     },
     {
@@ -133,6 +166,23 @@
       "licenseCode": "cc-by-sa-4.0",
       "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
       "attributionRequired": true
+    },
+    {
+      "id": "buzurgmihr",
+      "file": "/images/chess/buzurgmihr.webp",
+      "thumb": "/images/chess/buzurgmihr-thumb.webp",
+      "width": 594,
+      "height": 960,
+      "title": "\"Buzurjmihr Masters the Game of Chess\", Folio from a Shahnama (Book of Kings)",
+      "wiki": "https://en.wikipedia.org/wiki/Bozorgmehr",
+      "commons": "File:\"Buzurjmihr Masters the Game of Chess\", Folio from a Shahnama (Book of Kings) MET DP108586.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File%3A%22Buzurjmihr_Masters_the_Game_of_Chess%22%2C_Folio_from_a_Shahnama_(Book_of_Kings)_MET_DP108586.jpg",
+      "author": "Ferdowsi",
+      "credit": "This file was donated to Wikimedia Commons as part of a project by the Metropolitan Museum of Art. See the Image and Data Resources Open Access Policy",
+      "license": "CC0",
+      "licenseCode": "cc0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "attributionRequired": false
     },
     {
       "id": "cafe-regence",
@@ -300,6 +350,22 @@
       "attributionRequired": true
     },
     {
+      "id": "firdawsi",
+      "file": "/images/chess/firdawsi.webp",
+      "thumb": "/images/chess/firdawsi-thumb.webp",
+      "width": 448,
+      "height": 532,
+      "title": "Imaginary depiction of the poet Firdausi. Folio from a Khavarannama (The Book of the East) of ibn Husam al-Din, 1476-1486 (cropped)",
+      "wiki": "https://en.wikipedia.org/wiki/Ferdowsi",
+      "commons": "File:Imaginary depiction of the poet Firdausi. Folio from a Khavarannama (The Book of the East) of ibn Husam al-Din, 1476-1486 (cropped).jpg",
+      "source": "https://commons.wikimedia.org/wiki/File%3AImaginary_depiction_of_the_poet_Firdausi._Folio_from_a_Khavarannama_(The_Book_of_the_East)_of_ibn_Husam_al-Din%2C_1476-1486_(cropped).jpg",
+      "author": "ca. 1476–86 artist",
+      "credit": "Metropolitan Museum of Art",
+      "license": "Public domain",
+      "licenseCode": "pd",
+      "attributionRequired": false
+    },
+    {
       "id": "fischer",
       "file": "/images/chess/fischer.webp",
       "thumb": "/images/chess/fischer-thumb.webp",
@@ -331,6 +397,22 @@
       "license": "CC0",
       "licenseCode": "cc0",
       "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "attributionRequired": false
+    },
+    {
+      "id": "gav-talhand",
+      "file": "/images/chess/gav-talhand.webp",
+      "thumb": "/images/chess/gav-talhand-thumb.webp",
+      "width": 921,
+      "height": 960,
+      "title": "\"Gav and Talhand in Battle\", Folio from a Shahnama (Book of Kings)",
+      "wiki": "https://en.wikipedia.org/wiki/Shahnameh",
+      "commons": "File:\"Gav and Talhand in Battle\", Folio from a Shahnama (Book of Kings) (IA mma gav and talhand in battle folio from a shahnama book of kings 447301).jpg",
+      "source": "https://commons.wikimedia.org/wiki/File%3A%22Gav_and_Talhand_in_Battle%22%2C_Folio_from_a_Shahnama_(Book_of_Kings)_(IA_mma_gav_and_talhand_in_battle_folio_from_a_shahnama_book_of_kings_447301).jpg",
+      "author": "Abu'l Qasim Firdausi",
+      "credit": "Internet Archive identifier: mma_gav_and_talhand_in_battle_folio_from_a_shahnama_book_of_kings_447301 https://archive.org/download/mma_gav_and_talhand_in_battle_folio_from_a_shahnama_book_of_kings_447301/447301.jpg",
+      "license": "Public domain",
+      "licenseCode": "pd",
       "attributionRequired": false
     },
     {
@@ -398,6 +480,39 @@
       "licenseCode": "cc-by-sa-2.0",
       "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
       "attributionRequired": true
+    },
+    {
+      "id": "ibn-sina",
+      "file": "/images/chess/ibn-sina.webp",
+      "thumb": "/images/chess/ibn-sina-thumb.webp",
+      "width": 527,
+      "height": 526,
+      "title": "Avicenna-miniatur",
+      "wiki": "https://en.wikipedia.org/wiki/Avicenna",
+      "commons": "File:Avicenna-miniatur.png",
+      "source": "https://commons.wikimedia.org/wiki/File%3AAvicenna-miniatur.png",
+      "author": "Unknown author",
+      "credit": "File:Avicenna-miniatur.jpg",
+      "license": "CC0",
+      "licenseCode": "cc0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "attributionRequired": false
+    },
+    {
+      "id": "isabella",
+      "file": "/images/chess/isabella.webp",
+      "thumb": "/images/chess/isabella-thumb.webp",
+      "width": 776,
+      "height": 960,
+      "title": "Isabel la Católica",
+      "wiki": "https://en.wikipedia.org/wiki/Isabella_I_of_Castile",
+      "commons": "File:IsabellaofCastile03.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File%3AIsabellaofCastile03.jpg",
+      "author": "anonymous",
+      "credit": "1. www.secc.es2. Unknown source3. Museo del Prado",
+      "license": "Public domain",
+      "licenseCode": "pd",
+      "attributionRequired": false
     },
     {
       "id": "ju-wenjun",
@@ -468,6 +583,40 @@
       "attributionRequired": true
     },
     {
+      "id": "khayyam",
+      "file": "/images/chess/khayyam.webp",
+      "thumb": "/images/chess/khayyam-thumb.webp",
+      "width": 811,
+      "height": 960,
+      "title": "Hakim Omar Khayam - panoramio",
+      "wiki": "https://en.wikipedia.org/wiki/Omar_Khayyam",
+      "commons": "File:Hakim Omar Khayam - panoramio.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File%3AHakim_Omar_Khayam_-_panoramio.jpg",
+      "author": "Alireza Javaheri",
+      "credit": "https://web.archive.org/web/20161024154356/http://www.panoramio.com/photo/85093358",
+      "license": "CC BY 3.0",
+      "licenseCode": "cc-by-3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/3.0",
+      "attributionRequired": true
+    },
+    {
+      "id": "khwarizmi",
+      "file": "/images/chess/khwarizmi.webp",
+      "thumb": "/images/chess/khwarizmi-thumb.webp",
+      "width": 596,
+      "height": 794,
+      "title": "Madrid - Ciudad Universitaria, Monumento a Muhammad al-Juarismi (cropped)",
+      "wiki": "https://en.wikipedia.org/wiki/Muhammad_ibn_Musa_al-Khwarizmi",
+      "commons": "File:Madrid - Ciudad Universitaria, Monumento a Muhammad al-Juarismi (cropped).jpg",
+      "source": "https://commons.wikimedia.org/wiki/File%3AMadrid_-_Ciudad_Universitaria%2C_Monumento_a_Muhammad_al-Juarismi_(cropped).jpg",
+      "author": "Zarateman",
+      "credit": "Own work",
+      "license": "CC0",
+      "licenseCode": "cc0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "attributionRequired": false
+    },
+    {
       "id": "kieseritzky",
       "file": "/images/chess/kieseritzky.webp",
       "thumb": "/images/chess/kieseritzky-thumb.webp",
@@ -532,6 +681,23 @@
       "license": "CC BY-SA 4.0",
       "licenseCode": "cc-by-sa-4.0",
       "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "attributionRequired": true
+    },
+    {
+      "id": "mamun",
+      "file": "/images/chess/mamun.webp",
+      "thumb": "/images/chess/mamun-thumb.webp",
+      "width": 800,
+      "height": 387,
+      "title": "Coin of the Abbasid Caliph al-Ma'mun",
+      "wiki": "https://en.wikipedia.org/wiki/Al-Ma'mun",
+      "commons": "File:Coin of the Abbasid Caliph al-Ma'mun.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File%3ACoin_of_the_Abbasid_Caliph_al-Ma'mun.jpg",
+      "author": "Classical Numismatic Group; [1]",
+      "credit": "https://www.cngcoins.com/Coin.aspx?CoinID=201200",
+      "license": "CC BY-SA 3.0",
+      "licenseCode": "cc-by-sa-3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/",
       "attributionRequired": true
     },
     {
@@ -844,6 +1010,39 @@
       "license": "CC BY 4.0",
       "licenseCode": "cc-by-4.0",
       "licenseUrl": "https://creativecommons.org/licenses/by/4.0",
+      "attributionRequired": true
+    },
+    {
+      "id": "turk",
+      "file": "/images/chess/turk.webp",
+      "thumb": "/images/chess/turk-thumb.webp",
+      "width": 600,
+      "height": 523,
+      "title": "Türkischen Schachspielers",
+      "wiki": "https://en.wikipedia.org/wiki/Mechanical_Turk",
+      "commons": "File:Tuerkischer schachspieler windisch4.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File%3ATuerkischer_schachspieler_windisch4.jpg",
+      "author": "Wolfgang von Kempelen",
+      "credit": "Copper engraving from book Original Uploader was Schaelss (talk) at 11:12, 7. Apr 2004.",
+      "license": "Public domain",
+      "licenseCode": "pd",
+      "attributionRequired": false
+    },
+    {
+      "id": "wheat",
+      "file": "/images/chess/wheat.webp",
+      "thumb": "/images/chess/wheat-thumb.webp",
+      "width": 960,
+      "height": 713,
+      "title": "Wheat and chessboard problem",
+      "wiki": "https://en.wikipedia.org/wiki/Wheat_and_chessboard_problem",
+      "commons": "File:Wheat and chessboard problem.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File%3AWheat_and_chessboard_problem.jpg",
+      "author": "McGeddon",
+      "credit": "Own work - This file was derived from: Empty wooden chessboard.jpg: (public domain)",
+      "license": "CC BY-SA 4.0",
+      "licenseCode": "cc-by-sa-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
       "attributionRequired": true
     }
   ]

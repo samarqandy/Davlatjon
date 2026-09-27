@@ -6,9 +6,11 @@ import { CHESS_LEVELS, CHESS_SCHOOL, chessGlossary, chessLevelHref } from "@/con
 import { FAMOUS_GAMES } from "@/content/chess/games";
 import { OPENINGS } from "@/content/chess/openings";
 import { PUZZLES, dailyPuzzle } from "@/content/chess/puzzles";
+import { RIDDLES, SECRETS } from "@/content/chess/secrets";
 import { currentRank, levelStatuses } from "@/lib/chessProgress";
 import { useHydrated, useStore } from "@/lib/store";
 import { ChessBoard, PieceIcon } from "./ChessBoard";
+import { DidYouKnow } from "./DidYouKnow";
 
 export function ChessSchool() {
   const hydrated = useHydrated();
@@ -53,6 +55,13 @@ export function ChessSchool() {
       title: "Знаменитые партии",
       text: `${FAMOUS_GAMES.length} легендарных партий с объяснениями и картинками главных моментов.`,
       stat: `${gamesViewed} из ${FAMOUS_GAMES.length} разобрано`,
+    },
+    {
+      href: "/chess/secrets",
+      emoji: "🔮",
+      title: "Тайны и легенды",
+      text: "Учёные Хорезма и Бухары, сказания «Шахнаме», машина «Турок», путешествие коня и загадки про фигуры.",
+      stat: `${SECRETS.length} историй · ${RIDDLES.length} загадок`,
     },
     {
       href: "/chess/history",
@@ -199,6 +208,7 @@ export function ChessSchool() {
           </ol>
         </div>
         <aside className="space-y-4">
+          <DidYouKnow />
           <Link
             href="/chess/puzzles#daily"
             className="block rounded-3xl bg-white p-4 shadow-card transition hover:-translate-y-0.5"

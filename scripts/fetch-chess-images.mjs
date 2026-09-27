@@ -48,6 +48,27 @@ const ENTRIES = [
   { id: "ruy-lopez", wiki: "Ruy López de Segura" },
   { id: "greco", wiki: "Gioachino Greco" },
   { id: "deep-blue", wiki: "Deep Blue (chess computer)" },
+  // Тайны и легенды: учёные Востока, «Шахнаме», «Турок»
+  { id: "turk", wiki: "Mechanical Turk", file: "File:Tuerkischer schachspieler windisch4.jpg" },
+  { id: "khwarizmi", wiki: "Muhammad ibn Musa al-Khwarizmi" },
+  { id: "ibn-sina", wiki: "Avicenna", file: "File:Avicenna-miniatur.png" },
+  { id: "khayyam", wiki: "Omar Khayyam" },
+  { id: "firdawsi", wiki: "Ferdowsi" },
+  {
+    id: "buzurgmihr",
+    wiki: "Bozorgmehr",
+    file: 'File:"Buzurjmihr Masters the Game of Chess", Folio from a Shahnama (Book of Kings) MET DP108586.jpg',
+  },
+  {
+    id: "gav-talhand",
+    wiki: "Shahnameh",
+    file: 'File:"Gav and Talhand in Battle", Folio from a Shahnama (Book of Kings) (IA mma gav and talhand in battle folio from a shahnama book of kings 447301).jpg',
+  },
+  { id: "alfonso", wiki: "Libro de los juegos" },
+  { id: "mamun", wiki: "Al-Ma'mun" },
+  { id: "averbakh", wiki: "Yuri Averbakh" },
+  { id: "isabella", wiki: "Isabella I of Castile" },
+  { id: "wheat", wiki: "Wheat and chessboard problem", file: "File:Wheat and chessboard problem.jpg" },
   // Чемпионы мира
   { id: "steinitz", wiki: "Wilhelm Steinitz" },
   { id: "lasker", wiki: "Emanuel Lasker" },
