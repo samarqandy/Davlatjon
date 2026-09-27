@@ -40,6 +40,8 @@ function answerTexts(a: AnswerSpec): string[] {
       return [a.puzzle.driver.name, ...a.puzzle.items.map((i) => i.name), ...a.puzzle.conflicts.map((c) => c.text)];
     case "performer":
       return [a.puzzle.name];
+    case "venn":
+      return [...a.sets, ...a.items.map((i) => i.label), ...(a.given ?? []).map((g) => g.label)];
     default:
       return [];
   }

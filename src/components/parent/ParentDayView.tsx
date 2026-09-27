@@ -156,6 +156,19 @@ function results(task: Task, found: string[] | undefined): string[] {
       const tops = (found ?? []).filter((f) => f.startsWith("top:")).map((f) => Number(f.slice(4)));
       return tops.length ? [`🔬 числа наверху: ${[...tops].sort((x, y) => x - y).join(", ")}`] : [];
     }
+    case "scales":
+      return len ? [`⚖️ нашёл фальшивую монету за ${pluralize(len, "взвешивание", "взвешивания", "взвешиваний")}`] : [];
+    case "swapSort":
+      return len ? [`🔀 меньше всего обменов: ${len}`] : [];
+    case "nim":
+      return (found ?? []).includes("win") ? ["🏆 обыграл робота"] : [];
+    case "weightsLab":
+      return a.sets
+        .map((set, i) => {
+          const loads = (found ?? []).filter((f) => f.startsWith(`set${i}:`)).length;
+          return loads ? `⚖️ гири ${set.weights.join(", ")}: уравновешено ${loads} из ${set.max}` : null;
+        })
+        .filter((x): x is string => x !== null);
     default:
       return others ? [`🔁 найдено вариантов: ${others}`] : [];
   }

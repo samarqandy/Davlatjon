@@ -40,6 +40,14 @@ export function normalizeCoord(input: string): string {
   return [...input.trim().toUpperCase().replace(/\s+/g, "")].map((ch) => LATIN_TO_CYRILLIC[ch] ?? ch).join("");
 }
 
+/** Слово для сравнения: заглавные буквы, «ё» = «е», латинские буквы-двойники — кириллицей, без лишних пробелов. */
+export function normalizeText(input: string): string {
+  return [...input.trim().toUpperCase().replace(/\s+/g, " ")]
+    .map((ch) => LATIN_TO_CYRILLIC[ch] ?? ch)
+    .join("")
+    .replace(/Ё/g, "Е");
+}
+
 export function parseNumber(input: string): number | null {
   const cleaned = input.trim().replace(/\s+/g, "").replace(",", ".");
   if (!/^-?\d+(\.\d+)?$/.test(cleaned)) return null;
@@ -54,6 +62,8 @@ export function fieldMatches(field: Field, value: string): boolean {
       return timeMatches(value, field.answer);
     case "coord":
       return normalizeCoord(value) === normalizeCoord(field.answer);
+    case "text":
+      return normalizeText(value) === normalizeText(field.answer);
   }
 }
 

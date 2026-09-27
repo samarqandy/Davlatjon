@@ -44,8 +44,8 @@ export type Visual =
   | { type: "gridFigure"; cols: number; rows: number }
   /** Фигура из кубиков в изометрии; heights[ряд][столбец], ряд 0 — дальний. */
   | { type: "isoCubes"; heights: number[][] }
-  /** Весы в равновесии. */
-  | { type: "balance"; scales: { left: string[]; right: string[] }[] }
+  /** Весы: в равновесии или с перевесом (tilt — какая чаша тяжелее и опустилась). */
+  | { type: "balance"; scales: { left: string[]; right: string[]; tilt?: "left" | "right" }[] }
   /** Треугольник с линиями из верхней вершины. */
   | { type: "triangleFan"; lines: number }
   /** Чек из магазина. */
@@ -68,9 +68,11 @@ export type Visual =
       cols: string[];
       rows: number;
       items: { cell: string; emoji: string; label: string }[];
+      /** Показывать ли список «значок — название» рядом с картой (по умолчанию да). */
+      legend?: boolean;
     }
-  /** Часы со стрелками. */
-  | { type: "clock"; time: string; caption?: string }
+  /** Часы со стрелками; mirror — как они выглядят в зеркале. */
+  | { type: "clock"; time: string; caption?: string; mirror?: boolean }
   /** Шоколадка из долек. */
   | { type: "chocolate"; cols: number; rows: number }
   /** Столб с делениями для задачи про улитку. */
@@ -94,7 +96,27 @@ export type Visual =
    */
   | { type: "logicGrid"; rows: string[]; cols: string[]; corner?: string }
   /** Пустая таблица для записей (например, дневник исследования). printOnly — только на бумаге. */
-  | { type: "table"; head: string[]; rows: string[][]; printOnly?: boolean };
+  | { type: "table"; head: string[]; rows: string[][]; printOnly?: boolean }
+  /** Реплики персонажей: кто что сказал. */
+  | { type: "speech"; items: { emoji: string; name: string; text: string }[] }
+  /** Таблица кода: пары «знак — код» (например, буква — номер). */
+  | { type: "codeTable"; pairs: [string, string][] }
+  /** Фигуры из отрезков (рисовать одним росчерком): точки в квадрате 0…100 и линии между ними. */
+  | { type: "strokes"; figures: { label: string; points: [number, number][]; lines: [number, number][] }[] }
+  /** Шахматная доска с фигурами-значками. */
+  | { type: "chessboard"; cols: number; rows: number; pieces: { cell: Cell; emoji: string }[] }
+  /** Клетчатое поле с цветными прямоугольниками (могут перекрываться). */
+  | {
+      type: "cellGrid";
+      cols: number;
+      rows: number;
+      rects: { col: number; row: number; w: number; h: number; color: ColorName }[];
+    }
+  /** Круги Эйлера: два круга и надписи в каждой из четырёх областей. */
+  | { type: "venn"; sets: [string, string]; regions: Partial<Record<VennRegion, string[]>> };
+
+/** Области кругов Эйлера: только в первом, только во втором, в обоих, вне кругов. */
+export type VennRegion = "a" | "b" | "ab" | "none";
 
 // ---------------------------------------------------------------------------
 // Текст условия
@@ -125,7 +147,9 @@ export interface Option {
 export type Field =
   | { type: "number"; id: string; label: string; answer: number; suffix?: string }
   | { type: "time"; id: string; label: string; answer: string }
-  | { type: "coord"; id: string; label: string; answer: string; cols: string[]; rows: number };
+  | { type: "coord"; id: string; label: string; answer: string; cols: string[]; rows: number }
+  /** Слово или короткая фраза: сравнивается без учёта регистра, пробелов по краям и «ё»/«е». */
+  | { type: "text"; id: string; label: string; answer: string };
 
 export interface RobotPuzzle {
   /** Карта: `.` пусто, `#` стена, `R` робот, `F` флажок, `*` звезда, буквы — предметы. */
@@ -222,6 +246,24 @@ export type AnswerSpec =
   | { kind: "sudoku"; grid: (number | null)[][]; answer: number[][]; box: [number, number] }
   /** Числовая стенка-лаборатория: расставить numbers в нижнем ряду; tops — все возможные числа наверху. */
   | { kind: "wallLab"; numbers: number[]; tops: number[] }
+  /** Круги Эйлера: разложить предметы по областям; given — уже разложенные подсказки. */
+  | {
+      kind: "venn";
+      sets: [string, string];
+      items: { id: string; label: string }[];
+      correct: Record<string, VennRegion>;
+      given?: { label: string; region: VennRegion }[];
+    }
+  /** Весы-детектив: среди coins монет одна фальшивая (легче); найти её не больше чем за weighings взвешиваний. */
+  | { kind: "scales"; coins: number; weighings: number }
+  /** Сортировка обменами соседей; optimal — наименьшее число обменов. */
+  | { kind: "swapSort"; cards: number[]; optimal: number }
+  /** Игра с камешками: игроки по очереди берут take камешков; кто взял последний — выиграл. Ребёнок ходит первым. */
+  | { kind: "nim"; stones: number; take: number[] }
+  /** Шифр Цезаря: расшифровать encoded (сдвиг shift по алфавиту alphabet). */
+  | { kind: "cipher"; alphabet: string; encoded: string; shift: number; answer: string }
+  /** Лаборатория гирь: какие грузы можно уравновесить наборами гирь (bothPans — гири можно класть на обе чаши). */
+  | { kind: "weightsLab"; sets: { weights: number[]; bothPans: boolean; max: number }[] }
   /** Открытая задача: ребёнок отмечает, что решил, и объясняет взрослому. */
   | { kind: "open"; prompt: string };
 

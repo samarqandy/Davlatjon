@@ -3,6 +3,7 @@
 import { RobotPuzzle } from "@/components/robot/RobotPuzzle";
 import type { Task } from "@/content/types";
 import { AssignAnswer, ChoiceAnswer, OrderAnswer } from "./ChoiceAnswers";
+import { CipherPuzzle } from "./CipherPuzzle";
 import { CrossingPuzzle } from "./CrossingPuzzle";
 import { FieldsAnswer } from "./FieldsAnswer";
 import { GraphPuzzle } from "./GraphPuzzle";
@@ -10,10 +11,15 @@ import { MagicSquarePuzzle, PartitionPuzzle, SymmetryPuzzle } from "./GridPuzzle
 import { HanoiPuzzle } from "./HanoiPuzzle";
 import { JugsPuzzle } from "./JugsPuzzle";
 import { MagicTrianglePuzzle } from "./MagicTrianglePuzzle";
+import { NimGame } from "./NimGame";
 import { ExpressionsPuzzle, OpenAnswer, RulesAnswer, SignsPuzzle } from "./NumberPuzzles";
 import { PerformerPuzzle } from "./PerformerPuzzle";
+import { ScalesPuzzle } from "./ScalesPuzzle";
 import { SudokuPuzzle } from "./SudokuPuzzle";
+import { SwapSortPuzzle } from "./SwapSortPuzzle";
+import { VennPuzzle } from "./VennPuzzle";
 import { WallLab } from "./WallLab";
+import { WeightsLab } from "./WeightsLab";
 
 /** Как ребёнок отвечает на задачу — у каждого типа свой инструмент. */
 export function AnswerPanel({ task, hintsLeft }: { task: Task; hintsLeft: boolean }) {
@@ -60,6 +66,29 @@ export function AnswerPanel({ task, hintsLeft }: { task: Task; hintsLeft: boolea
       return <SudokuPuzzle taskId={id} grid={a.grid} box={a.box} hintsLeft={hintsLeft} />;
     case "wallLab":
       return <WallLab taskId={id} numbers={a.numbers} tops={a.tops} />;
+    case "venn":
+      return (
+        <VennPuzzle
+          taskId={id}
+          sets={a.sets}
+          items={a.items}
+          correct={a.correct}
+          given={a.given}
+          hintsLeft={hintsLeft}
+        />
+      );
+    case "scales":
+      return <ScalesPuzzle taskId={id} coins={a.coins} weighings={a.weighings} />;
+    case "swapSort":
+      return <SwapSortPuzzle taskId={id} cards={a.cards} optimal={a.optimal} />;
+    case "nim":
+      return <NimGame taskId={id} stones={a.stones} take={a.take} />;
+    case "cipher":
+      return (
+        <CipherPuzzle taskId={id} alphabet={a.alphabet} encoded={a.encoded} answer={a.answer} hintsLeft={hintsLeft} />
+      );
+    case "weightsLab":
+      return <WeightsLab taskId={id} sets={a.sets} />;
   }
 }
 
@@ -80,5 +109,11 @@ export function isWorkbench(task: Task): boolean {
     "jugs",
     "sudoku",
     "wallLab",
+    "venn",
+    "scales",
+    "swapSort",
+    "nim",
+    "cipher",
+    "weightsLab",
   ].includes(task.answer.kind);
 }

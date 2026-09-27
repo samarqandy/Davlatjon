@@ -79,6 +79,19 @@ export function FieldsAnswer({ taskId, fields, hintsLeft }: { taskId: string; fi
             {f.type === "coord" && (
               <CoordInput cols={f.cols} rows={f.rows} value={values[f.id] ?? ""} onChange={(v) => set(f.id, v)} />
             )}
+            {f.type === "text" && (
+              <input
+                id={`${taskId}-${f.id}`}
+                autoComplete="off"
+                autoCapitalize="characters"
+                spellCheck={false}
+                value={values[f.id] ?? ""}
+                onChange={(e) => set(f.id, e.target.value.toUpperCase().slice(0, 24))}
+                onKeyDown={(e) => e.key === "Enter" && allFilled && check()}
+                className="h-12 w-full max-w-64 rounded-xl border-2 border-line bg-paper px-3 text-2xl font-extrabold tracking-widest uppercase outline-none focus:border-brand"
+                placeholder="слово"
+              />
+            )}
           </div>
         ))}
       </div>
@@ -98,6 +111,8 @@ function isFilled(f: Field, v: string): boolean {
       return /^\d{1,2}:\d{2}$/.test(v);
     case "coord":
       return f.cols.some((c) => v.startsWith(c)) && /\d$/.test(v);
+    case "text":
+      return v.trim().length > 0;
   }
 }
 

@@ -37,10 +37,15 @@ export function CardsVisual({ items }: { items: { emoji: string; label: string; 
   );
 }
 
-function Scale({ left, right }: { left: string[]; right: string[] }) {
+/** Наклон коромысла: тяжёлая чаша опускается. */
+const TILT_DEG = 9;
+const TILT_DY = 11;
+
+function Scale({ left, right, tilt }: { left: string[]; right: string[]; tilt?: "left" | "right" }) {
   const w = 280;
-  const pan = (cx: number, items: string[]) => (
-    <g>
+  const dy = tilt === "left" ? TILT_DY : tilt === "right" ? -TILT_DY : 0;
+  const pan = (cx: number, items: string[], shift: number) => (
+    <g transform={`translate(0 ${shift})`}>
       <line x1={cx} y1={40} x2={cx - 38} y2={96} stroke="#6b7280" strokeWidth="1.5" />
       <line x1={cx} y1={40} x2={cx + 38} y2={96} stroke="#6b7280" strokeWidth="1.5" />
       <path d={`M ${cx - 50} 96 Q ${cx} 124 ${cx + 50} 96 Z`} fill="#e5e7eb" stroke="#374151" strokeWidth="2" />
@@ -49,25 +54,27 @@ function Scale({ left, right }: { left: string[]; right: string[] }) {
       </text>
     </g>
   );
+  const label =
+    tilt === "left"
+      ? `Весы: ${left.join(" ")} тяжелее, чем ${right.join(" ")}`
+      : tilt === "right"
+        ? `Весы: ${right.join(" ")} тяжелее, чем ${left.join(" ")}`
+        : `Весы: ${left.join(" ")} = ${right.join(" ")}`;
   return (
-    <svg
-      width={w}
-      height={160}
-      viewBox={`0 0 ${w} 160`}
-      role="img"
-      aria-label={`Весы: ${left.join(" ")} = ${right.join(" ")}`}
-    >
+    <svg width={w} height={172} viewBox={`0 -8 ${w} 172`} role="img" aria-label={label}>
       <polygon points={`${w / 2 - 34},156 ${w / 2 + 34},156 ${w / 2},130`} fill="#9ca3af" />
       <rect x={w / 2 - 4} y={34} width={8} height={100} rx={3} fill="#6b7280" />
-      <rect x={30} y={34} width={w - 60} height={8} rx={4} fill="#374151" />
+      <g transform={`rotate(${tilt === "left" ? -TILT_DEG : tilt === "right" ? TILT_DEG : 0} ${w / 2} 38)`}>
+        <rect x={30} y={34} width={w - 60} height={8} rx={4} fill="#374151" />
+      </g>
       <circle cx={w / 2} cy={38} r={7} fill="#f59e0b" stroke="#374151" strokeWidth="2" />
-      {pan(48 + 22, left)}
-      {pan(w - 48 - 22, right)}
+      {pan(48 + 22, left, dy)}
+      {pan(w - 48 - 22, right, -dy)}
     </svg>
   );
 }
 
-export function BalanceVisual({ scales }: { scales: { left: string[]; right: string[] }[] }) {
+export function BalanceVisual({ scales }: { scales: { left: string[]; right: string[]; tilt?: "left" | "right" }[] }) {
   return (
     <div className="flex flex-wrap gap-4">
       {scales.map((s, i) => (
@@ -220,10 +227,12 @@ export function CoordGridVisual({
   cols,
   rows,
   items,
+  legend = true,
 }: {
   cols: string[];
   rows: number;
   items: { cell: string; emoji: string; label: string }[];
+  legend?: boolean;
 }) {
   const s = 50;
   const offX = 30;
@@ -287,16 +296,18 @@ export function CoordGridVisual({
           );
         })}
       </svg>
-      <ul className="grid gap-1 text-sm">
-        {items.map((it) => (
-          <li key={it.cell} className="flex items-center gap-2">
-            <span className="text-xl" aria-hidden>
-              {it.emoji}
-            </span>
-            <span className="font-semibold">— {it.label}</span>
-          </li>
-        ))}
-      </ul>
+      {legend && (
+        <ul className="grid gap-1 text-sm">
+          {items.map((it) => (
+            <li key={it.cell} className="flex items-center gap-2">
+              <span className="text-xl" aria-hidden>
+                {it.emoji}
+              </span>
+              <span className="font-semibold">— {it.label}</span>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
@@ -304,7 +315,7 @@ export function CoordGridVisual({
 /** Округляем координаты: Math.cos/sin на сервере и в браузере могут отличаться в последних знаках. */
 const r2 = (n: number) => Math.round(n * 100) / 100;
 
-export function ClockVisual({ time, caption }: { time: string; caption?: string }) {
+export function ClockVisual({ time, caption, mirror = false }: { time: string; caption?: string; mirror?: boolean }) {
   const [h, m] = time.split(":").map(Number);
   const r = 64;
   const c = 72;
@@ -316,42 +327,50 @@ export function ClockVisual({ time, caption }: { time: string; caption?: string 
   };
   return (
     <figure className="inline-flex flex-col items-center gap-1">
-      <svg width={144} height={144} viewBox="0 0 144 144" role="img" aria-label={`Часы показывают ${time}`}>
-        <circle cx={c} cy={c} r={r + 4} fill="#fff" stroke="#1d2140" strokeWidth="4" />
-        {Array.from({ length: 12 }, (_, i) => {
-          const a = ((i + 1) * 30 - 90) * (Math.PI / 180);
-          return (
-            <text
-              key={i}
-              x={r2(c + Math.cos(a) * (r - 12))}
-              y={r2(c + Math.sin(a) * (r - 12) + 5)}
-              textAnchor="middle"
-              fontSize="14"
-              fontWeight="800"
-              fill="#1d2140"
-            >
-              {i + 1}
-            </text>
-          );
-        })}
-        {Array.from({ length: 60 }, (_, i) => {
-          const a = (i * 6 - 90) * (Math.PI / 180);
-          const long = i % 5 === 0;
-          return (
-            <line
-              key={i}
-              x1={r2(c + Math.cos(a) * (r + 1))}
-              y1={r2(c + Math.sin(a) * (r + 1))}
-              x2={r2(c + Math.cos(a) * (r - (long ? 4 : 2)))}
-              y2={r2(c + Math.sin(a) * (r - (long ? 4 : 2)))}
-              stroke="#1d2140"
-              strokeWidth={long ? 2 : 1}
-            />
-          );
-        })}
-        <line x1={c} y1={c} {...hand(hourAngle, 34)} stroke="#1d2140" strokeWidth="6" strokeLinecap="round" />
-        <line x1={c} y1={c} {...hand(minuteAngle, 52)} stroke="#4f46e5" strokeWidth="4" strokeLinecap="round" />
-        <circle cx={c} cy={c} r={5} fill="#1d2140" />
+      <svg
+        width={144}
+        height={144}
+        viewBox="0 0 144 144"
+        role="img"
+        aria-label={mirror ? "Часы, отражённые в зеркале" : `Часы показывают ${time}`}
+      >
+        <g transform={mirror ? "translate(144 0) scale(-1 1)" : undefined}>
+          <circle cx={c} cy={c} r={r + 4} fill="#fff" stroke="#1d2140" strokeWidth="4" />
+          {Array.from({ length: 12 }, (_, i) => {
+            const a = ((i + 1) * 30 - 90) * (Math.PI / 180);
+            return (
+              <text
+                key={i}
+                x={r2(c + Math.cos(a) * (r - 12))}
+                y={r2(c + Math.sin(a) * (r - 12) + 5)}
+                textAnchor="middle"
+                fontSize="14"
+                fontWeight="800"
+                fill="#1d2140"
+              >
+                {i + 1}
+              </text>
+            );
+          })}
+          {Array.from({ length: 60 }, (_, i) => {
+            const a = (i * 6 - 90) * (Math.PI / 180);
+            const long = i % 5 === 0;
+            return (
+              <line
+                key={i}
+                x1={r2(c + Math.cos(a) * (r + 1))}
+                y1={r2(c + Math.sin(a) * (r + 1))}
+                x2={r2(c + Math.cos(a) * (r - (long ? 4 : 2)))}
+                y2={r2(c + Math.sin(a) * (r - (long ? 4 : 2)))}
+                stroke="#1d2140"
+                strokeWidth={long ? 2 : 1}
+              />
+            );
+          })}
+          <line x1={c} y1={c} {...hand(hourAngle, 34)} stroke="#1d2140" strokeWidth="6" strokeLinecap="round" />
+          <line x1={c} y1={c} {...hand(minuteAngle, 52)} stroke="#4f46e5" strokeWidth="4" strokeLinecap="round" />
+          <circle cx={c} cy={c} r={5} fill="#1d2140" />
+        </g>
       </svg>
       {caption && <figcaption className="text-sm font-bold text-muted">{caption}</figcaption>}
     </figure>

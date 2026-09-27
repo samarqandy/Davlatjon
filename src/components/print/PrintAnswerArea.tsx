@@ -1,16 +1,22 @@
+import { CipherBoxes, ShiftTable } from "@/components/answers/CipherPuzzle";
 import { RiverScene } from "@/components/answers/CrossingPuzzle";
 import { GraphMap } from "@/components/answers/GraphPuzzle";
 import { PartitionGridView, SymmetryGrid } from "@/components/answers/GridPuzzles";
 import { HanoiBoard } from "@/components/answers/HanoiPuzzle";
 import { Bucket } from "@/components/answers/JugsPuzzle";
 import { TriangleBoard } from "@/components/answers/MagicTrianglePuzzle";
+import { Stones } from "@/components/answers/NimGame";
 import { NumberLine } from "@/components/answers/PerformerPuzzle";
+import { Coin, CoinScale } from "@/components/answers/ScalesPuzzle";
 import { SudokuPrint } from "@/components/answers/SudokuPuzzle";
+import { CardRow } from "@/components/answers/SwapSortPuzzle";
+import { VennDiagram, type VennChip } from "@/components/answers/VennPuzzle";
 import { WallBoard } from "@/components/answers/WallLab";
+import { setLabel } from "@/components/answers/WeightsLab";
 import { RobotBoard } from "@/components/robot/RobotBoard";
 import { TableVisual } from "@/components/visuals/numbers";
 import { PolyominoVisual, ShapeIcon } from "@/components/visuals/shapes";
-import type { Option, RobotPuzzle, Task } from "@/content/types";
+import type { Option, RobotPuzzle, Task, VennRegion } from "@/content/types";
 import { hanoiStart } from "@/lib/hanoi";
 import { commandLabel, commandName } from "@/lib/performer";
 import { parseMap } from "@/lib/robot";
@@ -110,7 +116,8 @@ export function PrintAnswerArea({ task }: { task: Task }) {
         <div className="flex flex-wrap gap-x-8 gap-y-2.5">
           {a.fields.map((f) => (
             <span key={f.id} className="whitespace-nowrap">
-              {f.label} <Line w={f.type === "number" ? 18 : 22} /> {f.type === "number" && f.suffix}
+              {f.label} <Line w={f.type === "number" ? 18 : f.type === "text" ? 45 : 22} />{" "}
+              {f.type === "number" && f.suffix}
             </span>
           ))}
         </div>
@@ -320,6 +327,105 @@ export function PrintAnswerArea({ task }: { task: Task }) {
           {Array.from({ length: 3 }, (_, i) => (
             <WallBoard key={i} bottom={Array(a.numbers.length).fill(null)} print />
           ))}
+        </div>
+      );
+    case "venn": {
+      const regions: Partial<Record<VennRegion, VennChip[]>> = {};
+      (a.given ?? []).forEach((g, i) =>
+        (regions[g.region] ??= []).push({ id: `given-${i}`, label: g.label, tone: "given" }),
+      );
+      return (
+        <div className="space-y-1.5">
+          <p>
+            Впиши в круги: <b>{a.items.map((i) => i.label).join(", ")}</b>
+          </p>
+          <div className="w-[120mm]">
+            <VennDiagram sets={a.sets} regions={regions} />
+          </div>
+        </div>
+      );
+    }
+    case "scales":
+      return (
+        <div className="space-y-2">
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="w-[62mm]">
+              <CoinScale left={[]} right={[]} />
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {Array.from({ length: a.coins }, (_, i) => (
+                <Coin key={i} n={i + 1} size={30} />
+              ))}
+            </div>
+          </div>
+          <TableVisual
+            head={["№", "Монеты слева", "Монеты справа", "Что показали весы"]}
+            rows={Array.from({ length: a.weighings + 1 }, (_, i) => [String(i + 1), "", "", ""])}
+          />
+          <p>
+            Фальшивая монета: № <Line w={14} />
+          </p>
+        </div>
+      );
+    case "swapSort":
+      return (
+        <div className="space-y-2">
+          <CardRow cards={a.cards} print />
+          <p>Записывай ряд после каждого обмена:</p>
+          <div className="grid grid-cols-2 gap-x-8 gap-y-2">
+            {Array.from({ length: a.optimal + 1 }, (_, i) => (
+              <span key={i} className="flex items-center gap-2">
+                {i + 1}. <Boxes count={a.cards.length} size={7} />
+              </span>
+            ))}
+          </div>
+          <p>
+            Обменов: <Line w={14} />
+          </p>
+        </div>
+      );
+    case "nim":
+      return (
+        <div className="space-y-2">
+          <Stones total={a.stones} left={a.stones} print />
+          <p>Сыграй со взрослым: зачёркивайте камешки по очереди и записывайте ходы.</p>
+          <TableVisual
+            head={["Ход", "Кто ходил", "Сколько взял", "Сколько осталось"]}
+            rows={Array.from({ length: 8 }, (_, i) => [String(i + 1), "", "", ""])}
+          />
+        </div>
+      );
+    case "cipher":
+      return (
+        <div className="space-y-2.5">
+          <CipherBoxes text={a.encoded} print />
+          <ShiftTable alphabet={a.alphabet} shift={a.shift} print />
+          <p className="flex flex-wrap items-center gap-2">
+            Расшифровка: <Boxes count={[...a.answer].length} size={9} />
+          </p>
+        </div>
+      );
+    case "weightsLab":
+      return (
+        <div className="space-y-3">
+          {a.sets.map((set, i) => (
+            <div key={i} className="space-y-1">
+              <p className="font-bold">{setLabel(set)}. Обведи грузы, которые получилось уравновесить:</p>
+              <div className="flex flex-wrap gap-[1.2mm]">
+                {Array.from({ length: set.max }, (_, l) => (
+                  <span
+                    key={l}
+                    className="inline-flex h-[8mm] w-[8mm] items-center justify-center rounded-[1mm] border border-ink/60 font-bold"
+                  >
+                    {l + 1}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ))}
+          <p>
+            Что я заметил: <Line w={130} />
+          </p>
         </div>
       );
   }

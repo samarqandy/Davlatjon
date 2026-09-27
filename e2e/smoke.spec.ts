@@ -138,3 +138,83 @@ test("переправа: волк, коза и капуста за 7 поезд
   }
   await expect(page.getByText(/Быстрее не бывает/)).toBeVisible();
 });
+
+test("главная: третья неделя «Неделя логики»", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.getByRole("heading", { name: /Неделя логики/ })).toBeVisible();
+  for (let d = 1; d <= 7; d++) await expect(page.locator(`a[href="/week/3/day/${d}"]`).first()).toBeVisible();
+});
+
+test("круги Эйлера: числа разложены по местам", async ({ page }) => {
+  await page.goto("/week/3/day/3#task-3");
+  const place = async (label: string, region: string) => {
+    await page.getByRole("button", { name: label, exact: true }).first().click();
+    await page.getByRole("button", { name: region }).click();
+  };
+  const plan: [string, string][] = [
+    ["4", "только «Чётные»"],
+    ["8", "только «Чётные»"],
+    ["13", "только «Больше 10»"],
+    ["17", "только «Больше 10»"],
+    ["12", "в обоих кругах"],
+    ["16", "в обоих кругах"],
+    ["5", "вне кругов"],
+    ["9", "вне кругов"],
+  ];
+  for (const [label, region] of plan) await place(label, region);
+  await page.getByRole("button", { name: "Проверить" }).click();
+  await expect(page.getByText(/Ответ совпадает/)).toBeVisible();
+});
+
+test("весы-детектив: фальшивая монета из девяти за два взвешивания", async ({ page }) => {
+  await page.goto("/week/3/day/4#task-8");
+  const coin = (n: number) => page.getByRole("button", { name: new RegExp(`^Монета ${n}:`) });
+  const weigh = async (left: number[], right: number[]) => {
+    for (const c of left) await coin(c).click();
+    for (const c of right) for (let k = 0; k < 2; k++) await coin(c).click();
+    await page.getByRole("button", { name: /Взвесить/ }).click();
+    return (await page.getByText(/^Весы: /).textContent()) ?? "";
+  };
+  // Где лёгкая монета: на поднявшейся чаше, а при равновесии — на столе.
+  const pick = (result: string, left: number[], right: number[], rest: number[]) =>
+    result.includes("левая") ? right : result.includes("правая") ? left : rest;
+  const first = await weigh([1, 2, 3], [4, 5, 6]);
+  const group = pick(first, [1, 2, 3], [4, 5, 6], [7, 8, 9]);
+  await page.getByRole("button", { name: "Снять монеты" }).click();
+  const second = await weigh([group[0]], [group[1]]);
+  const [fake] = pick(second, [group[0]], [group[1]], [group[2]]);
+  await page.getByRole("button", { name: /Это фальшивая/ }).click();
+  await coin(fake).click();
+  await expect(page.getByText(`Фальшивая — монета № ${fake}.`, { exact: false })).toBeVisible();
+});
+
+test("обмен соседей: 5 обменов", async ({ page }) => {
+  await page.goto("/week/3/day/5#task-5");
+  for (const i of [0, 1, 3, 2, 1])
+    await page
+      .getByRole("button", { name: /^Поменять/ })
+      .nth(i)
+      .click();
+  await expect(page.getByText(/Быстрее не бывает/)).toBeVisible();
+});
+
+test("шифр Цезаря: расшифровка", async ({ page }) => {
+  await page.goto("/week/3/day/6#task-5");
+  await page.getByLabel("Расшифрованное слово").fill("молодец");
+  await page.getByRole("button", { name: "Проверить" }).click();
+  await expect(page.getByText(/Расшифровано: МОЛОДЕЦ/)).toBeVisible();
+});
+
+test("последний камешек: секрет побеждает робота", async ({ page }) => {
+  await page.goto("/week/3/day/7#task-4");
+  for (let turn = 0; turn < 10; turn++) {
+    const text = (await page.getByText(/^Осталось:/).textContent()) ?? "";
+    const left = Number(text.match(/\d+/)?.[0]);
+    const take = left % 3 === 0 ? 1 : left % 3;
+    await page.getByRole("button", { name: `Взять ${take}` }).click();
+    if (left === take) break;
+    await expect(page.getByText(`Осталось: ${left - take}`, { exact: false })).not.toBeVisible({ timeout: 5000 });
+    await expect(page.getByText("🙂 Твой ход")).toBeVisible();
+  }
+  await expect(page.getByText(/Ты победил робота/)).toBeVisible();
+});
