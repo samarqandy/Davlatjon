@@ -352,6 +352,25 @@ test("шахматы: тренажёр дебюта принимает верн�
   await expect(page.getByText(/Дебют сыгран до конца/)).toBeVisible({ timeout: 5000 });
 });
 
+test("первый запуск: ребёнок выбирает возраст, от него зависят открытые уровни шахмат", async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem("davlatjon-lab:v1", JSON.stringify({ version: 1 })));
+  await page.goto("/");
+  const dialog = page.getByRole("dialog");
+  await expect(dialog.getByRole("heading", { name: /Добро пожаловать/ })).toBeVisible();
+  await expect(dialog.getByRole("button", { name: "Поехали! 🚀" })).toBeDisabled();
+  await dialog.getByRole("button", { name: "10", exact: true }).click();
+  await expect(dialog.getByText(/Средний профиль/)).toBeVisible();
+  await dialog.getByRole("button", { name: "Поехали! 🚀" }).click();
+  await expect(dialog).toBeHidden();
+  await expect(page.getByText(/Режим занятий: 9–10 лет/)).toBeVisible();
+  // Переходим по ссылке, а не через goto: при новой загрузке init-скрипты заново запишут localStorage.
+  await page.getByRole("navigation", { name: "Разделы" }).getByRole("link", { name: "Шахматы" }).click();
+  await expect(page).toHaveURL(/\/chess$/);
+  await expect(page.getByText(/Сыграй с роботом «Конь»/)).toBeVisible();
+  await expect(page.getByRole("listitem").filter({ hasText: "Слон" }).first().getByText("открыт")).toBeVisible();
+  await expect(page.getByRole("listitem").filter({ hasText: "Ладья" }).first().getByText("🔒 закрыт")).toBeVisible();
+});
+
 test("шахматы: тайны — загадка, зёрна, легенда уровня и вопрос дня", async ({ page }) => {
   await page.goto("/chess/secrets");
   await expect(page.getByRole("heading", { name: "Тайны шахмат" })).toBeVisible();

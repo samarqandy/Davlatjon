@@ -5,9 +5,11 @@ import { SECTIONS } from "@/content/meta";
 import { printHref } from "@/content/program";
 import type { Day } from "@/content/types";
 import { useHydrated, useStore } from "@/lib/store";
+import { useAgeProfile } from "@/lib/age";
 
 export function DayIntro({ day, onStart }: { day: Day; onStart: () => void }) {
   const hydrated = useHydrated();
+  const profile = useAgeProfile();
   const tasks = useStore((s) => s.tasks);
   const solvedCount = hydrated ? day.tasks.filter((t) => tasks[t.id]?.status === "solved").length : 0;
   const started = solvedCount > 0 || (hydrated && day.tasks.some((t) => tasks[t.id]?.status));
@@ -62,6 +64,11 @@ export function DayIntro({ day, onStart }: { day: Day; onStart: () => void }) {
             </span>
           )}
         </h2>
+        {hydrated && profile.warmupBelow > 0 && (
+          <p className="mb-3 text-sm text-muted">
+            Задания с пометкой «разминка» можно решить быстро или пропустить — главное для тебя дальше.
+          </p>
+        )}
         <ol className="space-y-2">
           {day.tasks.map((t, i) => (
             <li key={t.id} className="flex items-center gap-3 rounded-2xl bg-paper px-3 py-2">
@@ -70,6 +77,9 @@ export function DayIntro({ day, onStart }: { day: Day; onStart: () => void }) {
                 {SECTIONS[t.section].emoji}
               </span>
               <span className="min-w-0 flex-1 truncate font-bold">{t.title}</span>
+              {hydrated && t.level <= profile.warmupBelow && (
+                <span className="rounded-full bg-black/5 px-2 py-0.5 text-xs font-bold text-muted">разминка</span>
+              )}
               <LevelBadge level={t.level} compact />
               {hydrated && tasks[t.id]?.status === "solved" && <span className="font-black text-mint">✓</span>}
             </li>

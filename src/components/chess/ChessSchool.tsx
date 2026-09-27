@@ -5,8 +5,9 @@ import { cn, ProgressBar } from "@/components/ui";
 import { CHESS_LEVELS, CHESS_SCHOOL, chessGlossary, chessLevelHref } from "@/content/chess";
 import { FAMOUS_GAMES } from "@/content/chess/games";
 import { OPENINGS } from "@/content/chess/openings";
-import { PUZZLES, dailyPuzzle } from "@/content/chess/puzzles";
+import { PUZZLES, dailyPuzzleFor } from "@/content/chess/puzzles";
 import { RIDDLES, SECRETS } from "@/content/chess/secrets";
+import { useAgeProfile } from "@/lib/age";
 import { currentRank, levelStatuses } from "@/lib/chessProgress";
 import { useHydrated, useStore } from "@/lib/store";
 import { ChessBoard, PieceIcon } from "./ChessBoard";
@@ -20,7 +21,8 @@ export function ChessSchool() {
   const solved = statuses.reduce((s, x) => s + x.solved, 0);
   const total = statuses.reduce((s, x) => s + x.total, 0);
   const glossary = chessGlossary();
-  const daily = dailyPuzzle();
+  const profile = useAgeProfile();
+  const daily = dailyPuzzleFor(profile.minStars);
   const puzzlesSolved = hydrated ? PUZZLES.filter((p) => state.chessPuzzles[p.id]?.solvedAt).length : 0;
   const openingsLearned = hydrated ? new Set(Object.keys(state.chessOpenings).map((k) => k.split(":")[0])).size : 0;
   const gamesViewed = hydrated ? Object.keys(state.chessGamesViewed).length : 0;
@@ -239,7 +241,7 @@ export function ChessSchool() {
                 — решай на бумаге.
               </li>
               <li>🎯 Реши упражнения — получишь звание и следующий уровень.</li>
-              <li>🤖 Сыграй с роботом: начни с «Пешки».</li>
+              <li>🤖 Сыграй с роботом «{profile.robotName}» — он тебе по силам.</li>
               <li>🏛️ Разбери знаменитую партию — там самые красивые идеи.</li>
               <li>♟ И играй с папой или мамой — записывай партии в дневник.</li>
             </ul>

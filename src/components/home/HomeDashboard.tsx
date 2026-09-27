@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { ChessHomeCard } from "@/components/chess/ChessHomeCard";
 import { Button, ButtonLink, Card, cn, ProgressBar } from "@/components/ui";
 import { SECTIONS } from "@/content/meta";
 import type { DaySummary, WeekSummary } from "@/content/summary";
-import { setWelcomed, useHydrated, useStore, type AppState } from "@/lib/store";
+import { AGE_MAX, AGE_MIN, PROFILES, ageProfile, profileMeta } from "@/lib/age";
+import { setWelcomed, updateSettings, useHydrated, useStore, type AppState } from "@/lib/store";
 
 type Status = "done" | "active" | "next" | "later";
 
@@ -78,6 +80,14 @@ export function HomeDashboard({ weeks }: { weeks: WeekSummary[] }) {
                 Можно вернуться к любимым задачам, придумать свои или попросить родителей открыть недельный обзор.
               </p>
             </div>
+          )}
+          {hydrated && state.settings.age && (
+            <p className="mt-3 text-xs font-bold text-white/70">
+              Режим занятий: {profileMeta(state.settings.age).ages} ·{" "}
+              <Link href="/parent/settings" className="underline hover:text-white">
+                изменить
+              </Link>
+            </p>
           )}
         </div>
 
@@ -267,19 +277,22 @@ function StatCard({ emoji, value, label, href }: { emoji: string; value: number;
 }
 
 function Welcome() {
+  const [age, setAge] = useState<number | null>(null);
+  const profile = age ? PROFILES[ageProfile(age)] : null;
+  const ages = Array.from({ length: AGE_MAX - AGE_MIN + 1 }, (_, i) => AGE_MIN + i);
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-ink/40 p-4 backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
       aria-labelledby="welcome-title"
     >
-      <div className="w-full max-w-lg animate-pop rounded-[2rem] bg-white p-6 shadow-lift sm:p-8">
+      <div className="my-auto w-full max-w-lg animate-pop rounded-[2rem] bg-white p-6 shadow-lift sm:p-8">
         <div className="mb-3 text-5xl" aria-hidden>
           🤖🧠✨
         </div>
         <h2 id="welcome-title" className="text-2xl font-black">
-          Привет, Давлатжон! Добро пожаловать в Лабораторию!
+          Привет! Добро пожаловать в Лабораторию Давлатжона!
         </h2>
         <p className="mt-2 text-lg text-muted">
           Здесь живут задачи, над которыми интересно подумать. Три правила Лаборатории:
@@ -289,7 +302,42 @@ function Welcome() {
           <li>💡 Застрял? Открой подсказку — они приходят по одной.</li>
           <li>💬 Нашёл ответ? Объясни, почему это так — и поищи другой способ.</li>
         </ol>
-        <Button size="lg" className="mt-6 w-full" onClick={setWelcomed}>
+        <fieldset className="mt-5">
+          <legend className="text-lg font-black">Сколько тебе лет?</legend>
+          <p className="text-sm text-muted">
+            От этого зависит, с каких заданий начать. Изменить можно в разделе для родителей.
+          </p>
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {ages.map((a) => (
+              <button
+                key={a}
+                type="button"
+                onClick={() => setAge(a)}
+                aria-pressed={age === a}
+                className={cn(
+                  "min-h-11 min-w-11 rounded-xl border-2 px-3 text-lg font-black transition",
+                  age === a ? "border-brand bg-brand text-white" : "border-line bg-white hover:border-brand/40",
+                )}
+              >
+                {a === AGE_MAX ? `${a}+` : a}
+              </button>
+            ))}
+          </div>
+          {profile && (
+            <p className="mt-2 rounded-2xl bg-brand-soft/60 px-3 py-2 text-sm font-semibold" aria-live="polite">
+              {profile.name} профиль · {profile.ages}. {profile.about}
+            </p>
+          )}
+        </fieldset>
+        <Button
+          size="lg"
+          className="mt-5 w-full"
+          disabled={!age}
+          onClick={() => {
+            if (age) updateSettings({ age });
+            setWelcomed();
+          }}
+        >
           Поехали! 🚀
         </Button>
       </div>

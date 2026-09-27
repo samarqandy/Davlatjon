@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { Button, Card, cn } from "@/components/ui";
+import { AGE_MAX, AGE_MIN, profileMeta } from "@/lib/age";
 import { forgetPin } from "@/lib/parentGate";
 import { getState, replaceState, resetProgress, sanitize, updateSettings, useStore } from "@/lib/store";
 
@@ -38,6 +39,7 @@ export function SettingsPanel() {
       <h1 className="text-3xl font-black">Настройки</h1>
 
       <Card className="divide-y divide-line">
+        <AgeRow value={settings.age} onChange={(age) => updateSettings({ age })} />
         <Toggle
           title="Пауза перед следующей подсказкой"
           text="После каждой подсказки следующая откроется через 15 секунд — чтобы ребёнок успел подумать."
@@ -125,6 +127,35 @@ export function SettingsPanel() {
           </div>
         )}
       </Card>
+    </div>
+  );
+}
+
+/** Возраст ребёнка: от него зависят советы, сложность задачи дня и открытые уровни шахмат. */
+function AgeRow({ value, onChange }: { value?: number; onChange: (age: number | undefined) => void }) {
+  const meta = profileMeta(value);
+  const ages = Array.from({ length: AGE_MAX - AGE_MIN + 1 }, (_, i) => AGE_MIN + i);
+  return (
+    <div className="flex items-start gap-4 p-5">
+      <span className="flex-1">
+        <span className="block font-extrabold">Возраст ребёнка</span>
+        <span className="block text-[0.95rem] text-muted">
+          {meta.name} профиль ({meta.ages}). {meta.about}
+        </span>
+      </span>
+      <select
+        value={value ?? ""}
+        onChange={(e) => onChange(e.target.value ? Number(e.target.value) : undefined)}
+        aria-label="Возраст ребёнка"
+        className="mt-1 min-h-11 shrink-0 rounded-xl border-2 border-line bg-white px-3 font-bold"
+      >
+        <option value="">не указан</option>
+        {ages.map((a) => (
+          <option key={a} value={a}>
+            {a === AGE_MAX ? `${a}+` : a} лет
+          </option>
+        ))}
+      </select>
     </div>
   );
 }

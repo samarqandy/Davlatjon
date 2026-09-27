@@ -6,7 +6,7 @@ import { Button, cn, ProgressBar } from "@/components/ui";
 import {
   PUZZLES,
   PUZZLE_THEMES,
-  dailyPuzzle,
+  dailyPuzzleFor,
   getPuzzle,
   puzzlesByTheme,
   type ChessPuzzle,
@@ -15,6 +15,7 @@ import {
 import { pluralize } from "@/lib/plural";
 import { random } from "@/lib/random";
 import { chessStreakReached, useHydrated, useStore } from "@/lib/store";
+import { useAgeProfile } from "@/lib/age";
 import { setHash, useHash } from "@/lib/useHash";
 import { ChessBoard } from "./ChessBoard";
 import { PuzzlePlayer } from "./PuzzleTrainer";
@@ -28,6 +29,7 @@ export function puzzlePoints(solved: Record<string, { solvedAt?: number }>): num
 
 export function PuzzleHub() {
   const hash = useHash();
+  const profile = useAgeProfile();
   const hydrated = useHydrated();
   const progress = useStore((s) => s.chessPuzzles);
   const streakBest = useStore((s) => s.chessStreak);
@@ -47,7 +49,7 @@ export function PuzzleHub() {
     if (puzzle) return <SingleView puzzle={puzzle} />;
   }
 
-  const daily = dailyPuzzle();
+  const daily = dailyPuzzleFor(profile.minStars);
 
   return (
     <div className="space-y-6">
@@ -171,7 +173,8 @@ function Back({ label = "← Все задачи" }: { label?: string }) {
 }
 
 function DailyView() {
-  const puzzle = dailyPuzzle();
+  const profile = useAgeProfile();
+  const puzzle = dailyPuzzleFor(profile.minStars);
   return (
     <div className="space-y-4">
       <Back />
@@ -248,12 +251,18 @@ function ThemeView({ theme, index }: { theme: PuzzleTheme; index: number }) {
 
 /** Серия: задачи от простых к трудным, три жизни. */
 function StreakView() {
+  const profile = useAgeProfile();
   const [order] = useState(() =>
     PUZZLES.map((p) => ({ p, r: random() }))
       .sort((a, b) => a.p.stars - b.p.stars || a.r - b.r)
       .map((x) => x.p.id),
   );
-  const [index, setIndex] = useState(0);
+  // Старшие начинают серию сразу с задач своей сложности.
+  const start = Math.max(
+    0,
+    order.findIndex((id) => (getPuzzle(id)?.stars ?? 1) >= profile.minStars),
+  );
+  const [index, setIndex] = useState(start);
   const [lives, setLives] = useState(3);
   const [streak, setStreak] = useState(0);
   const [over, setOver] = useState(false);
@@ -277,7 +286,7 @@ function StreakView() {
           <div className="mt-4 flex flex-wrap justify-center gap-2">
             <Button
               onClick={() => {
-                setIndex(0);
+                setIndex(start);
                 setLives(3);
                 setStreak(0);
                 setOver(false);

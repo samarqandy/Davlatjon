@@ -62,6 +62,8 @@ export interface Settings {
   bigText: boolean;
   /** Родитель открыл все уровни шахматной школы. */
   chessOpenAll?: boolean;
+  /** Возраст ребёнка (6–15): от него зависят советы и сложность. Спрашивается при первом запуске. */
+  age?: number;
 }
 
 /** Сыгранная с роботом или вдвоём партия. */
@@ -178,6 +180,10 @@ export function sanitize(raw: unknown): AppState {
       hintPause: typeof settings.hintPause === "boolean" ? settings.hintPause : true,
       bigText: typeof settings.bigText === "boolean" ? settings.bigText : false,
       chessOpenAll: settings.chessOpenAll === true,
+      age:
+        Number.isInteger(settings.age) && (settings.age as number) >= 6 && (settings.age as number) <= 15
+          ? (settings.age as number)
+          : undefined,
     },
     chess: isObject(raw.chess) ? (raw.chess as AppState["chess"]) : {},
     chessGames: Array.isArray(raw.chessGames) ? (raw.chessGames as ChessGameRecord[]) : [],

@@ -421,8 +421,14 @@ export function getPuzzle(id: string): ChessPuzzle | undefined {
   return PUZZLES.find((p) => p.id === id);
 }
 
-/** Задача дня: одна и та же для всех в один день. */
-export function dailyPuzzle(date = new Date()): ChessPuzzle {
+/** Задача дня: одна и та же в один день; minStars — сложность по возрасту (у старших — от трёх звёзд). */
+export function dailyPuzzleFor(minStars: number): ChessPuzzle {
+  return dailyPuzzle(new Date(), minStars);
+}
+
+export function dailyPuzzle(date = new Date(), minStars = 1): ChessPuzzle {
+  const pool = PUZZLES.filter((p) => p.stars >= minStars);
+  const list = pool.length ? pool : PUZZLES;
   const day = Math.floor(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / 86_400_000);
-  return PUZZLES[((day % PUZZLES.length) + PUZZLES.length) % PUZZLES.length];
+  return list[((day % list.length) + list.length) % list.length];
 }

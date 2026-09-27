@@ -22,6 +22,7 @@ import {
   type Secret,
   type SecretWidget,
 } from "@/content/chess/secrets";
+import { useAgeProfile } from "@/lib/age";
 import { useHash } from "@/lib/useHash";
 import { ChessBoard, PieceIcon, type SquareMark } from "./ChessBoard";
 import { Figure, Portrait } from "./Figure";
@@ -29,6 +30,7 @@ import { Figure, Portrait } from "./Figure";
 /** Страница «Тайны шахмат»: карточки-истории с крючком, картинкой и встроенной игрой; загадки про фигуры. */
 export function Secrets() {
   const hash = useHash().replace(/^#/, "");
+  const profile = useAgeProfile();
   const [opened, setOpened] = useState<Set<string>>(() => new Set());
   const [closed, setClosed] = useState<Set<string>>(() => new Set());
   const isOpen = (id: string) => (opened.has(id) || hash === id) && !closed.has(id);
@@ -80,7 +82,13 @@ export function Secrets() {
 
       <section id="stories" className="scroll-mt-24 space-y-3" aria-label="Истории">
         {SECRETS.map((s) => (
-          <SecretCard key={s.id} secret={s} open={isOpen(s.id)} onToggle={() => toggle(s.id)} />
+          <SecretCard
+            key={s.id}
+            secret={s}
+            open={isOpen(s.id)}
+            onToggle={() => toggle(s.id)}
+            deeperOpen={profile.id !== "junior"}
+          />
         ))}
       </section>
 
@@ -95,7 +103,17 @@ export function Secrets() {
   );
 }
 
-function SecretCard({ secret: s, open, onToggle }: { secret: Secret; open: boolean; onToggle: () => void }) {
+function SecretCard({
+  secret: s,
+  open,
+  onToggle,
+  deeperOpen,
+}: {
+  secret: Secret;
+  open: boolean;
+  onToggle: () => void;
+  deeperOpen: boolean;
+}) {
   const img = s.image ? chessImage(s.image) : undefined;
   return (
     <article
@@ -139,7 +157,7 @@ function SecretCard({ secret: s, open, onToggle }: { secret: Secret; open: boole
           </div>
           {s.widget && <Widget kind={s.widget} />}
           {s.deeper && (
-            <details className="rounded-2xl bg-brand-soft/50 px-4 py-3">
+            <details className="rounded-2xl bg-brand-soft/50 px-4 py-3" open={deeperOpen || undefined}>
               <summary className="cursor-pointer font-extrabold text-brand-dark">🔎 Для тех, кто постарше</summary>
               <p className="mt-2">{s.deeper}</p>
             </details>

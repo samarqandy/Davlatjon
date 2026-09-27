@@ -1,4 +1,5 @@
 import type { ChessLevel } from "@/content/chess/types";
+import { profileMeta } from "./age";
 import type { AppState } from "./store";
 
 export interface LevelStatus {
@@ -6,12 +7,13 @@ export interface LevelStatus {
   total: number;
   /** Все упражнения уровня решены — звание получено. */
   passed: boolean;
-  /** Уровень открыт: первый, или предыдущий пройден, или родитель открыл все. */
+  /** Уровень открыт: входит в открытые по возрасту, или предыдущий пройден, или родитель открыл все. */
   unlocked: boolean;
 }
 
 export function levelStatuses(levels: readonly ChessLevel[], state: AppState): LevelStatus[] {
   const out: LevelStatus[] = [];
+  const open = state.settings.chessOpenAll === true ? levels.length : profileMeta(state.settings.age).openLevels;
   levels.forEach((level, i) => {
     const solved = level.exercises.filter((e) => state.chess[e.id]?.solvedAt).length;
     const total = level.exercises.length;
@@ -19,7 +21,7 @@ export function levelStatuses(levels: readonly ChessLevel[], state: AppState): L
       solved,
       total,
       passed: solved === total,
-      unlocked: i === 0 || out[i - 1].passed || state.settings.chessOpenAll === true,
+      unlocked: i < open || out[i - 1].passed,
     });
   });
   return out;

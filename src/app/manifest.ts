@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "Лаборатория Давлатжона",
     short_name: "Лаборатория",
-    description: "Математика, логика и алгоритмы для второклассника: ежедневные занятия, подсказки и печать листов.",
+    description: "Математика, логика и алгоритмы для детей от 7 лет: ежедневные занятия, подсказки и печать листов.",
     lang: "ru",
     start_url: "/",
     display: "standalone",

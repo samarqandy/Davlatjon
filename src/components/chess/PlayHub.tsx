@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Button, cn } from "@/components/ui";
 import { ROBOT_LEVELS } from "@/lib/engine/search";
+import { useAgeProfile } from "@/lib/age";
 import { ENDGAMES } from "@/lib/play";
 import { useHydrated, useStore } from "@/lib/store";
 import { setHash, useHash } from "@/lib/useHash";
@@ -33,6 +34,7 @@ export function PlayHub() {
 
 function ModeChooser() {
   const hydrated = useHydrated();
+  const profile = useAgeProfile();
   const games = useStore((s) => s.chessGames);
   const robotGames = hydrated ? games.filter((g) => g.mode === "robot") : [];
   const wins = (level: number) => robotGames.filter((g) => g.level === level && g.result === "win").length;
@@ -56,16 +58,26 @@ function ModeChooser() {
           🤖 С роботом
         </h2>
         <p className="mt-1 text-sm text-muted">
-          Выбери силу робота. Начни с «Пешки» — и поднимайся выше, когда начнёшь побеждать.
+          Выбери силу робота. Тебе советуем начать с «{profile.robotName}» — и подниматься выше, когда начнёшь
+          побеждать.
         </p>
         <div className="mt-3 grid gap-2 sm:grid-cols-5">
           {ROBOT_LEVELS.map((l) => (
-            <div key={l.id} className="flex flex-col rounded-2xl border-2 border-line p-3">
+            <div
+              key={l.id}
+              className={cn(
+                "flex flex-col rounded-2xl border-2 p-3",
+                hydrated && l.id === profile.robotLevel ? "border-brand/60 bg-brand-soft/30" : "border-line",
+              )}
+            >
               <div className="flex items-center gap-2">
                 <PieceIcon piece={l.piece} className="h-10 w-10 rounded-xl bg-[#f0d9b5] p-0.5" />
                 <div>
                   <p className="font-black">{l.name}</p>
                   <p className="text-xs font-bold text-muted">уровень {l.id}</p>
+                  {hydrated && l.id === profile.robotLevel && (
+                    <p className="text-xs font-extrabold text-brand">★ советуем тебе</p>
+                  )}
                 </div>
               </div>
               <p className="mt-2 flex-1 text-xs text-muted">{l.about}</p>
