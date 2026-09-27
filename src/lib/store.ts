@@ -60,6 +60,18 @@ export interface Settings {
   hintPause: boolean;
   /** Крупный текст. */
   bigText: boolean;
+  /** Родитель открыл все уровни шахматной школы. */
+  chessOpenAll?: boolean;
+}
+
+export interface ChessExerciseProgress {
+  solvedAt?: number;
+  /** Сколько раз не получилось. */
+  misses: number;
+  /** Лучший результат: меньше всего ходов (звёздочки). */
+  best?: number;
+  /** Найденные решения (ферзи). */
+  found?: string[];
 }
 
 export interface AppState {
@@ -70,6 +82,8 @@ export interface AppState {
   /** Недельный обзор: неделя → вопрос → заметка. */
   reviews: Record<string, Record<string, string>>;
   settings: Settings;
+  /** Шахматная школа: упражнение → прогресс. */
+  chess: Record<string, ChessExerciseProgress>;
   welcomed?: boolean;
 }
 
@@ -82,7 +96,10 @@ export const DEFAULT_STATE: AppState = Object.freeze({
   myProblems: [],
   reviews: {},
   settings: { hintPause: true, bigText: false },
+  chess: {},
 }) as AppState;
+
+export const EMPTY_CHESS: ChessExerciseProgress = Object.freeze({ misses: 0 }) as ChessExerciseProgress;
 
 export const EMPTY_TASK: TaskProgress = Object.freeze({
   hints: 0,
@@ -113,7 +130,9 @@ export function sanitize(raw: unknown): AppState {
     settings: {
       hintPause: typeof settings.hintPause === "boolean" ? settings.hintPause : true,
       bigText: typeof settings.bigText === "boolean" ? settings.bigText : false,
+      chessOpenAll: settings.chessOpenAll === true,
     },
+    chess: isObject(raw.chess) ? (raw.chess as AppState["chess"]) : {},
     welcomed: raw.welcomed === true,
   };
 }
@@ -186,6 +205,10 @@ export function useHydrated(): boolean {
 
 export function useTask(taskId: string): TaskProgress {
   return useStore((s) => s.tasks[taskId] ?? EMPTY_TASK);
+}
+
+export function useChessExercise(id: string): ChessExerciseProgress {
+  return useStore((s) => s.chess[id] ?? EMPTY_CHESS);
 }
 
 // ---------------------------------------------------------------------------
@@ -262,6 +285,29 @@ export function addProblem(p: Omit<MyProblem, "id" | "createdAt">) {
 
 export function removeProblem(id: string) {
   setState((s) => ({ ...s, myProblems: s.myProblems.filter((p) => p.id !== id) }));
+}
+
+function updateChess(id: string, update: (p: ChessExerciseProgress) => Partial<ChessExerciseProgress>) {
+  setState((s) => {
+    const prev = s.chess[id] ?? EMPTY_CHESS;
+    return { ...s, chess: { ...s.chess, [id]: { ...prev, ...update(prev) } } };
+  });
+}
+
+/** Упражнение шахматной школы решено; best — сколько ходов понадобилось. */
+export function chessSolved(id: string, best?: number) {
+  updateChess(id, (p) => ({
+    solvedAt: p.solvedAt ?? Date.now(),
+    ...(best !== undefined ? { best: Math.min(best, p.best ?? Infinity) } : {}),
+  }));
+}
+
+export function chessMiss(id: string) {
+  updateChess(id, (p) => ({ misses: p.misses + 1 }));
+}
+
+export function chessFound(id: string, key: string) {
+  updateChess(id, (p) => (p.found?.includes(key) ? {} : { found: [...(p.found ?? []), key] }));
 }
 
 export function updateSettings(patch: Partial<Settings>) {

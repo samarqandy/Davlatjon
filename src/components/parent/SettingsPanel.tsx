@@ -50,6 +50,12 @@ export function SettingsPanel() {
           value={settings.bigText}
           onChange={(v) => updateSettings({ bigText: v })}
         />
+        <Toggle
+          title="Открыть все уровни шахматной школы"
+          text="Обычно следующий шахматный уровень открывается, когда решены все упражнения предыдущего. Включите, если ребёнок уже знает шахматы."
+          value={settings.chessOpenAll === true}
+          onChange={(v) => updateSettings({ chessOpenAll: v })}
+        />
       </Card>
 
       <Card className="space-y-3 p-5">

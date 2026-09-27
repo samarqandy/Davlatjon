@@ -1,15 +1,20 @@
 import Link from "next/link";
 import { LogoMark } from "./Logo";
 
-export function SiteHeader({ active }: { active?: "home" | "problems" | "parent" }) {
-  const link = (href: string, label: string, key: typeof active) => (
+export function SiteHeader({ active }: { active?: "home" | "chess" | "problems" | "parent" }) {
+  const link = (href: string, emoji: string, label: string, key: typeof active) => (
     <Link
       href={href}
-      className={`rounded-xl px-3 py-2 text-sm font-extrabold transition sm:text-base ${
+      aria-label={label}
+      title={label}
+      className={`flex items-center gap-1.5 rounded-xl px-2.5 py-2 text-sm font-extrabold transition sm:px-3 sm:text-base ${
         active === key ? "bg-brand-soft text-brand-dark" : "text-muted hover:bg-black/5 hover:text-ink"
       }`}
     >
-      {label}
+      <span aria-hidden className="text-lg leading-none sm:text-base">
+        {emoji}
+      </span>
+      <span className="hidden sm:inline">{label}</span>
     </Link>
   );
   return (
@@ -27,8 +32,9 @@ export function SiteHeader({ active }: { active?: "home" | "problems" | "parent"
           </span>
         </Link>
         <nav className="flex items-center gap-1" aria-label="Разделы">
-          {link("/my-problems", "✍️ Мои задачи", "problems")}
-          {link("/parent", "🔒 Родителям", "parent")}
+          {link("/chess", "♞", "Шахматы", "chess")}
+          {link("/my-problems", "✍️", "Мои задачи", "problems")}
+          {link("/parent", "🔒", "Родителям", "parent")}
         </nav>
       </div>
     </header>

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { ChessHomeCard } from "@/components/chess/ChessHomeCard";
 import { Button, ButtonLink, Card, cn, ProgressBar } from "@/components/ui";
 import { SECTIONS } from "@/content/meta";
 import type { DaySummary, WeekSummary } from "@/content/summary";
@@ -137,6 +138,8 @@ export function HomeDashboard({ weeks }: { weeks: WeekSummary[] }) {
           </div>
         </Card>
       </section>
+
+      <ChessHomeCard />
 
       {weeks.map((w) => (
         <section key={w.number} aria-labelledby={`week-${w.number}`}>

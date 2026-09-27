@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { ButtonLink, Card, cn, ProgressBar } from "@/components/ui";
+import { CHESS_LEVELS } from "@/content/chess";
 import type { Week } from "@/content/types";
+import { currentRank, levelStatuses } from "@/lib/chessProgress";
 import { weekTotals } from "@/lib/insights";
 import { formatMinutes } from "@/lib/plural";
 import { useHydrated, useStore } from "@/lib/store";
@@ -82,6 +84,8 @@ export function ParentDashboard({ weeks }: { weeks: Week[] }) {
         </Card>
       </div>
 
+      <ChessSummary />
+
       {weeks.map((w) => (
         <section key={w.number}>
           <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
@@ -158,5 +162,37 @@ function Metric({ value, label }: { value: string; label: string }) {
       <div className="tabular text-2xl font-black">{value}</div>
       <div className="text-xs font-bold text-muted">{label}</div>
     </div>
+  );
+}
+
+function ChessSummary() {
+  const hydrated = useHydrated();
+  const state = useStore((s) => s);
+  const statuses = levelStatuses(CHESS_LEVELS, state);
+  const rank = hydrated ? currentRank(CHESS_LEVELS, state) : null;
+  const solved = hydrated ? statuses.reduce((s, x) => s + x.solved, 0) : 0;
+  const total = statuses.reduce((s, x) => s + x.total, 0);
+  return (
+    <Card className="flex flex-wrap items-center gap-4 p-5">
+      <span className="text-4xl" aria-hidden>
+        ♞
+      </span>
+      <div className="min-w-0 flex-1">
+        <h2 className="text-lg font-extrabold">Шахматная школа</h2>
+        <p className="text-muted">
+          Звание: <b className="text-ink">{rank ? rank.name : "пока нет"}</b> · уровней пройдено:{" "}
+          {hydrated ? statuses.filter((s) => s.passed).length : 0} из {CHESS_LEVELS.length}
+        </p>
+        <div className="mt-2 flex max-w-md items-center gap-2">
+          <ProgressBar value={solved} max={total} className="flex-1" />
+          <span className="text-sm font-extrabold whitespace-nowrap">
+            {solved} из {total}
+          </span>
+        </div>
+      </div>
+      <ButtonLink href="/parent/chess" variant="soft" size="sm">
+        Ответы и прогресс →
+      </ButtonLink>
+    </Card>
   );
 }

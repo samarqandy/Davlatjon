@@ -30,6 +30,7 @@ export function ParentNav({ weeks }: { weeks: NavWeek[] }) {
       label: "📝 Недельный обзор",
       active: /^\/parent\/week\/\d+\/review$/.test(path),
     },
+    { href: "/parent/chess", label: "♞ Шахматы", active: path === "/parent/chess" },
     { href: "/parent/guide", label: "📘 Методичка", active: path === "/parent/guide" },
     { href: "/parent/settings", label: "⚙️ Настройки", active: path === "/parent/settings" },
   ];

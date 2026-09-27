@@ -218,3 +218,82 @@ test("последний камешек: секрет побеждает роб�
   }
   await expect(page.getByText(/Ты победил робота/)).toBeVisible();
 });
+
+/** Состояние с открытыми шахматными уровнями и решёнными упражнениями. */
+async function chessState(page: Page, solved: string[] = [], openAll = false) {
+  await page.addInitScript(
+    ([ids, open]) => {
+      localStorage.setItem(
+        "davlatjon-lab:v1",
+        JSON.stringify({
+          version: 1,
+          welcomed: true,
+          tasks: {},
+          days: {},
+          myProblems: [],
+          reviews: {},
+          chess: Object.fromEntries((ids as string[]).map((id) => [id, { solvedAt: 1, misses: 0 }])),
+          settings: { hintPause: false, bigText: false, chessOpenAll: open },
+        }),
+      );
+    },
+    [solved, openAll] as const,
+  );
+}
+
+const square = (page: Page, board: string, sq: string) =>
+  page.locator(`[data-board="${board}"] [data-square="${sq}"]`).click();
+
+test("шахматная школа: шесть уровней, открыт только первый", async ({ page }) => {
+  await page.goto("/chess");
+  await expect(page.getByRole("heading", { name: "Шахматная школа" })).toBeVisible();
+  for (const name of ["Пешка", "Конь", "Слон", "Ладья", "Ферзь", "Король"])
+    await expect(page.getByText(name, { exact: true }).first()).toBeVisible();
+  await expect(page.locator('a[href="/chess/pawn"]')).toBeVisible();
+  await expect(page.locator('a[href="/chess/knight"]')).toHaveCount(0);
+});
+
+test("шахматы: найди клетки и ходы пешки", async ({ page }) => {
+  await page.goto("/chess/pawn#exercise-1");
+  for (const sq of ["e4", "a1", "h8", "d5", "c2"]) await square(page, "sq-pawn-squares", sq);
+  await expect(page.getByText(/Все клетки найдены/)).toBeVisible();
+  await page.goto("/chess/pawn#exercise-3");
+  for (const sq of ["e3", "e4", "d3"]) await square(page, "mv-pawn-moves", sq);
+  await page.getByRole("button", { name: "Проверить" }).click();
+  await expect(page.getByText(/Найдено 3 из 4/)).toBeVisible();
+  await square(page, "mv-pawn-moves", "f3");
+  await page.getByRole("button", { name: "Проверить" }).click();
+  await expect(page.getByText(/Все 4 клетки найдены/)).toBeVisible();
+});
+
+test("шахматы: звание «Пешка» открывает уровень «Конь», конь доходит до звезды за 6 ходов", async ({ page }) => {
+  const pawnIds = [
+    "pawn-squares",
+    "pawn-board-quiz",
+    "pawn-moves",
+    "pawn-blocked",
+    "pawn-capture",
+    "pawn-promotion",
+    "pawn-rules-quiz",
+  ];
+  await chessState(page, pawnIds);
+  await page.goto("/chess");
+  await expect(page.locator('a[href="/chess/knight"]')).toBeVisible();
+  await expect(page.getByText(/Твоё звание/)).toBeVisible();
+  await page.goto("/chess/knight#exercise-5");
+  for (const sq of ["b3", "c5", "d7", "f8", "g6", "h8"]) await square(page, "st-knight-journey", sq);
+  await expect(page.getByText(/Все звёзды собраны за 6 ходов/)).toBeVisible();
+});
+
+test("шахматы: мат в один ход", async ({ page }) => {
+  await chessState(page, [], true);
+  await page.goto("/chess/king#exercise-4");
+  // Сначала ход без мата — позиция вернётся.
+  await square(page, "mo-king-mate-rank", "a1");
+  await square(page, "mo-king-mate-rank", "a7");
+  await expect(page.getByText(/Это не шах/)).toBeVisible();
+  await page.waitForTimeout(1800);
+  await square(page, "mo-king-mate-rank", "a1");
+  await square(page, "mo-king-mate-rank", "a8");
+  await expect(page.getByText(/мат!/)).toBeVisible();
+});
