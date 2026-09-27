@@ -87,7 +87,7 @@ export function weekEvidence(week: Week, state: AppState): Record<string, string
   const another = all.filter((r) => r.p?.marks.anotherWay || hasChip(r, "another"));
   const collectors = all.filter(
     (r) =>
-      ["expressions", "partition", "rules", "magicTriangle"].includes(r.task.answer.kind) &&
+      ["expressions", "partition", "rules", "magicTriangle", "wallLab"].includes(r.task.answer.kind) &&
       (r.p?.found?.length ?? 0) > 0,
   );
   out.alternatives = [

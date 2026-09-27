@@ -113,13 +113,55 @@ function NoteList({ title, items }: { title: string; items: string[] }) {
   );
 }
 
-const bestProgram = (found?: string[]) => {
-  const lens = (found ?? []).filter((f) => f.startsWith("len:")).map((f) => Number(f.slice(4)));
-  return lens.length ? Math.min(...lens) : null;
+const best = (found: string[] | undefined, prefix: string) => {
+  const values = (found ?? []).filter((f) => f.startsWith(prefix)).map((f) => Number(f.slice(prefix.length)));
+  return values.length ? Math.min(...values) : null;
 };
-const variants = (found?: string[]) => (found ?? []).filter((f) => !f.startsWith("len:")).length;
 
-function Activity({ p }: { p: TaskProgress | undefined }) {
+/** Лучший результат и найденные варианты — по-своему для каждого инструмента. */
+function results(task: Task, found: string[] | undefined): string[] {
+  const a = task.answer;
+  const len = best(found, "len:");
+  const others = (found ?? []).filter((f) => !f.startsWith("len:")).length;
+  switch (a.kind) {
+    case "robot":
+    case "performer":
+      return [
+        len ? `🤖 самая короткая программа: ${pluralize(len, "команда", "команды", "команд")}` : null,
+        others ? `🔁 найдено вариантов: ${others}` : null,
+      ].filter((x): x is string => x !== null);
+    case "crossing":
+      return len ? [`⛵ меньше всего переправ: ${len}`] : [];
+    case "jugs":
+      return len ? [`🪣 меньше всего действий: ${len}`] : [];
+    case "hanoi": {
+      const bySize = new Map<number, number>();
+      for (const f of found ?? []) {
+        const m = f.match(/^(\d+):(\d+)$/);
+        if (m) bySize.set(Number(m[1]), Math.min(bySize.get(Number(m[1])) ?? Infinity, Number(m[2])));
+      }
+      return bySize.size
+        ? [
+            `🗼 ${[...bySize.entries()]
+              .sort((x, y) => x[0] - y[0])
+              .map(
+                ([size, moves]) =>
+                  `${pluralize(size, "кольцо", "кольца", "колец")} — ${pluralize(moves, "ход", "хода", "ходов")}`,
+              )
+              .join(", ")}`,
+          ]
+        : [];
+    }
+    case "wallLab": {
+      const tops = (found ?? []).filter((f) => f.startsWith("top:")).map((f) => Number(f.slice(4)));
+      return tops.length ? [`🔬 числа наверху: ${[...tops].sort((x, y) => x - y).join(", ")}`] : [];
+    }
+    default:
+      return others ? [`🔁 найдено вариантов: ${others}`] : [];
+  }
+}
+
+function Activity({ task, p }: { task: Task; p: TaskProgress | undefined }) {
   if (!p || (!p.status && p.hints === 0 && p.checks === 0))
     return <p className="text-sm text-muted">Ребёнок ещё не открывал эту задачу.</p>;
   const facts = [
@@ -131,10 +173,7 @@ function Activity({ p }: { p: TaskProgress | undefined }) {
     `💡 подсказок: ${p.hints} из 5`,
     p.checks > 0 ? `🔎 проверок: ${p.checks}${p.missed ? `, не сошлось: ${p.missed}` : ""}` : null,
     p.timeMs > 0 ? `⏱ ${formatMinutes(p.timeMs)}` : null,
-    bestProgram(p.found)
-      ? `🤖 самая короткая программа: ${pluralize(bestProgram(p.found)!, "команда", "команды", "команд")}`
-      : null,
-    variants(p.found) ? `🔁 найдено вариантов: ${variants(p.found)}` : null,
+    ...results(task, p.found),
   ].filter(Boolean);
   const marks = [
     p.marks.explained && "💬 объяснил",
@@ -224,7 +263,7 @@ function TaskAnswerCard({ task, number, p }: { task: Task; number: number; p: Ta
         <div className="space-y-3">
           <div className="rounded-2xl bg-paper p-4">
             <h3 className="mb-1.5 text-sm font-extrabold text-muted uppercase">Как решал Давлатжон</h3>
-            <Activity p={p} />
+            <Activity task={task} p={p} />
           </div>
           <div>
             <h3 className="mb-1.5 text-sm font-extrabold text-muted uppercase">Мои наблюдения</h3>

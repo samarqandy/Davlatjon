@@ -5,7 +5,7 @@
 import { describe, expect, it } from "vitest";
 import { SECTIONS } from "@/content/meta";
 import { WEEKS, allDays, allTasks } from "@/content/program";
-import type { Block, Task } from "@/content/types";
+import type { AnswerSpec, Block, Task } from "@/content/types";
 
 function blockTexts(b: Block): string[] {
   switch (b.type) {
@@ -21,10 +21,35 @@ function blockTexts(b: Block): string[] {
   }
 }
 
+/** Надписи в способе ответа: подсказка к выбору, варианты, подписи полей. */
+function answerTexts(a: AnswerSpec): string[] {
+  switch (a.kind) {
+    case "fields":
+      return a.fields.map((f) => f.label);
+    case "choice":
+      return [a.prompt, ...a.options.map((o) => o.label)];
+    case "assign":
+      return [a.prompt, ...a.items.map((i) => i.label), ...a.options.map((o) => o.label)];
+    case "order":
+      return [a.prompt, ...a.items.map((i) => i.label)];
+    case "rules":
+      return [a.label, ...a.known.map((k) => k.rule)];
+    case "open":
+      return [a.prompt];
+    case "crossing":
+      return [a.puzzle.driver.name, ...a.puzzle.items.map((i) => i.name), ...a.puzzle.conflicts.map((c) => c.text)];
+    case "performer":
+      return [a.puzzle.name];
+    default:
+      return [];
+  }
+}
+
 function taskTexts(t: Task): string[] {
   return [
     t.title,
     ...t.body.flatMap(blockTexts),
+    ...answerTexts(t.answer),
     ...t.followUps,
     ...t.hints,
     t.solution.answer,
@@ -34,11 +59,18 @@ function taskTexts(t: Task): string[] {
 }
 
 describe("структура программы", () => {
-  it("первая неделя состоит из 7 дней по порядку", () => {
-    const week = WEEKS[0];
-    expect(week.number).toBe(1);
-    expect(week.days.map((d) => d.day)).toEqual([1, 2, 3, 4, 5, 6, 7]);
-    week.days.forEach((d) => expect(d.id).toBe(`w${d.week}d${d.day}`));
+  it("недели идут по порядку, и в каждой 7 дней", () => {
+    expect(WEEKS.map((w) => w.number)).toEqual(WEEKS.map((_, i) => i + 1));
+    for (const week of WEEKS) {
+      expect(
+        week.days.map((d) => d.day),
+        `неделя ${week.number}`,
+      ).toEqual([1, 2, 3, 4, 5, 6, 7]);
+      week.days.forEach((d) => {
+        expect(d.week, d.id).toBe(week.number);
+        expect(d.id).toBe(`w${d.week}d${d.day}`);
+      });
+    }
   });
 
   it("в каждом дне 6–10 задач", () => {
@@ -98,27 +130,79 @@ describe("структура программы", () => {
     }
   });
 
-  it("за неделю соблюдён баланс типов задач", () => {
-    const count = (s: string) => allTasks().filter((t) => t.section === s).length;
-    expect(count("warmup")).toBeGreaterThanOrEqual(13);
-    expect(count("logic")).toBeGreaterThanOrEqual(7);
-    expect(count("pattern")).toBeGreaterThanOrEqual(7);
-    expect(count("algorithm")).toBeGreaterThanOrEqual(7);
-    expect(count("spatial")).toBeGreaterThanOrEqual(7);
-    expect(count("real")).toBeGreaterThanOrEqual(6);
-    expect(count("challenge")).toBeGreaterThanOrEqual(6);
+  it("в каждой неделе соблюдён баланс типов задач", () => {
+    for (const week of WEEKS) {
+      const tasks = week.days.flatMap((d) => d.tasks);
+      const count = (s: string) => tasks.filter((t) => t.section === s).length;
+      const w = `неделя ${week.number}`;
+      expect(count("warmup"), w).toBeGreaterThanOrEqual(13);
+      expect(count("logic"), w).toBeGreaterThanOrEqual(7);
+      expect(count("pattern"), w).toBeGreaterThanOrEqual(7);
+      expect(count("algorithm"), w).toBeGreaterThanOrEqual(7);
+      expect(count("spatial"), w).toBeGreaterThanOrEqual(7);
+      expect(count("real"), w).toBeGreaterThanOrEqual(6);
+      expect(count("challenge"), w).toBeGreaterThanOrEqual(6);
+    }
   });
 
   it("задач уровня 🔴 и ⭐ немного, а сложность растёт к концу недели", () => {
-    const hard = allTasks().filter((t) => t.level >= 4);
-    expect(hard.length).toBeLessThanOrEqual(4);
-    const avg = (d: number) => {
-      const tasks = WEEKS[0].days[d - 1].tasks;
+    for (const week of WEEKS) {
+      const w = `неделя ${week.number}`;
+      const hard = week.days.flatMap((d) => d.tasks).filter((t) => t.level >= 4);
+      expect(hard.length, w).toBeLessThanOrEqual(4);
+      const avg = (d: number) => {
+        const tasks = week.days[d - 1].tasks;
+        return tasks.reduce((s, t) => s + t.level, 0) / tasks.length;
+      };
+      expect(avg(1), w).toBeLessThan(avg(4));
+      expect(avg(1), w).toBeLessThan(avg(6));
+      expect(avg(1), w).toBeLessThan(avg(7));
+    }
+  });
+
+  it("каждая следующая неделя в среднем не легче предыдущей", () => {
+    const avg = (i: number) => {
+      const tasks = WEEKS[i].days.flatMap((d) => d.tasks);
       return tasks.reduce((s, t) => s + t.level, 0) / tasks.length;
     };
-    expect(avg(1)).toBeLessThan(avg(4));
-    expect(avg(1)).toBeLessThan(avg(6));
-    expect(avg(1)).toBeLessThan(avg(7));
+    for (let i = 1; i < WEEKS.length; i++) expect(avg(i), `неделя ${i + 1}`).toBeGreaterThanOrEqual(avg(i - 1));
+  });
+
+  it("у каждого дня своя привычка, а названия задач в неделе не повторяются", () => {
+    const habits = allDays().map((d) => d.habit.name);
+    expect(new Set(habits).size).toBe(habits.length);
+    for (const week of WEEKS) {
+      const titles = week.days.flatMap((d) => d.tasks.map((t) => t.title));
+      expect(new Set(titles).size, `неделя ${week.number}`).toBe(titles.length);
+    }
+  });
+
+  it("ключ ответа согласован с вариантами ответа", () => {
+    for (const t of allTasks()) {
+      const a = t.answer;
+      if (a.kind === "fields") {
+        expect(new Set(a.fields.map((f) => f.id)).size, t.id).toBe(a.fields.length);
+      }
+      if (a.kind === "choice") {
+        const ids = a.options.map((o) => o.id);
+        expect(new Set(ids).size, t.id).toBe(ids.length);
+        expect(a.correct.length, t.id).toBeGreaterThan(0);
+        a.correct.forEach((c) => expect(ids, t.id).toContain(c));
+        if (!a.multiple) expect(a.correct, t.id).toHaveLength(1);
+      }
+      if (a.kind === "assign") {
+        expect(Object.keys(a.correct).sort(), t.id).toEqual(a.items.map((i) => i.id).sort());
+        Object.values(a.correct).forEach((v) =>
+          expect(
+            a.options.map((o) => o.id),
+            t.id,
+          ).toContain(v),
+        );
+      }
+      if (a.kind === "order") {
+        expect([...a.correct].sort(), t.id).toEqual(a.items.map((i) => i.id).sort());
+      }
+    }
   });
 
   it("у каждого дня заполнен раздел для родителя", () => {
@@ -131,7 +215,7 @@ describe("структура программы", () => {
   });
 
   it("в недельном обзоре 10 вопросов наблюдения", () => {
-    expect(WEEKS[0].review).toHaveLength(10);
+    for (const week of WEEKS) expect(week.review, `неделя ${week.number}`).toHaveLength(10);
   });
 });
 

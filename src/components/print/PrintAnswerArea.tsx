@@ -1,9 +1,18 @@
+import { RiverScene } from "@/components/answers/CrossingPuzzle";
 import { GraphMap } from "@/components/answers/GraphPuzzle";
 import { PartitionGridView, SymmetryGrid } from "@/components/answers/GridPuzzles";
+import { HanoiBoard } from "@/components/answers/HanoiPuzzle";
+import { Bucket } from "@/components/answers/JugsPuzzle";
 import { TriangleBoard } from "@/components/answers/MagicTrianglePuzzle";
+import { NumberLine } from "@/components/answers/PerformerPuzzle";
+import { SudokuPrint } from "@/components/answers/SudokuPuzzle";
+import { WallBoard } from "@/components/answers/WallLab";
 import { RobotBoard } from "@/components/robot/RobotBoard";
+import { TableVisual } from "@/components/visuals/numbers";
 import { PolyominoVisual, ShapeIcon } from "@/components/visuals/shapes";
 import type { Option, RobotPuzzle, Task } from "@/content/types";
+import { hanoiStart } from "@/lib/hanoi";
+import { commandLabel, commandName } from "@/lib/performer";
 import { parseMap } from "@/lib/robot";
 
 function Line({ w = 34 }: { w?: number }) {
@@ -30,7 +39,9 @@ function OptionPrint({ option }: { option: Option }) {
       <span className="inline-block h-[4mm] w-[4mm] rounded-[0.8mm] border border-ink/70" />
       <b>{option.label}</b>
       {option.visual?.type === "shape" && <ShapeIcon shape={option.visual.shape} size={34} />}
-      {option.visual?.type === "polyomino" && <PolyominoVisual cells={option.visual.cells} size={16} />}
+      {option.visual?.type === "polyomino" && (
+        <PolyominoVisual cells={option.visual.cells} labels={option.visual.labels} size={16} />
+      )}
     </span>
   );
 }
@@ -234,6 +245,81 @@ export function PrintAnswerArea({ task }: { task: Task }) {
         <div className="space-y-3 pt-1">
           <Line w={170} />
           <Line w={170} />
+        </div>
+      );
+    case "performer": {
+      const p = a.puzzle;
+      return (
+        <div className="space-y-2">
+          <p>
+            {p.emoji} {p.name} умеет:{" "}
+            {p.commands.map((c, i) => (
+              <b key={i} className="mr-2">
+                {commandLabel(c)} ({commandName(c)})
+              </b>
+            ))}
+            · начало — <b>{p.start}</b>, цель — <b>{p.target}</b>.
+          </p>
+          {p.line && (
+            <div className="max-w-[170mm]">
+              <NumberLine puzzle={p} values={[p.start]} />
+            </div>
+          )}
+          <p>
+            Моя программа: <Boxes count={Math.min(p.optimal + 4, 16)} size={9} />
+          </p>
+          <p>
+            Числа по дороге: <Line w={110} />
+          </p>
+        </div>
+      );
+    }
+    case "hanoi":
+      return (
+        <div className="flex flex-wrap items-start gap-6">
+          <div className="w-[70mm] shrink-0">
+            <HanoiBoard state={hanoiStart(a.disks)} disks={a.disks} compact />
+          </div>
+          <TableVisual head={["Колец", "1", "2", "3", "4"]} rows={[["Ходов", "", "", "", ""]]} />
+        </div>
+      );
+    case "crossing":
+      return (
+        <div className="space-y-2">
+          <div className="max-w-[120mm]">
+            <RiverScene puzzle={a.puzzle} />
+          </div>
+          <TableVisual
+            head={["№", "Кто в лодке", "Куда: → или ←"]}
+            rows={Array.from({ length: a.puzzle.optimal + 2 }, (_, i) => [String(i + 1), "", ""])}
+          />
+        </div>
+      );
+    case "jugs":
+      return (
+        <div className="flex flex-wrap items-start gap-6">
+          <div className="flex items-end gap-2">
+            {a.capacities.map((c, i) => (
+              <div key={i} className="flex flex-col items-center">
+                <Bucket capacity={c} amount={0} maxCapacity={Math.max(...a.capacities)} showAmount={false} />
+                <span className="text-[9pt] font-bold">{c} л</span>
+              </div>
+            ))}
+          </div>
+          <TableVisual
+            head={["№", "Что делаю", `Ведро на ${a.capacities[0]} л`, `Ведро на ${a.capacities[1]} л`]}
+            rows={Array.from({ length: a.optimal + 2 }, (_, i) => [String(i + 1), "", "", ""])}
+          />
+        </div>
+      );
+    case "sudoku":
+      return <SudokuPrint grid={a.grid} box={a.box} />;
+    case "wallLab":
+      return (
+        <div className="flex flex-wrap gap-6">
+          {Array.from({ length: 3 }, (_, i) => (
+            <WallBoard key={i} bottom={Array(a.numbers.length).fill(null)} print />
+          ))}
         </div>
       );
   }

@@ -1,5 +1,6 @@
 import { COLOR_HEX, COLOR_NAME_RU } from "@/content/meta";
 import type { Cell, ShapeSpec } from "@/content/types";
+import { pluralize } from "@/lib/plural";
 import { bounds } from "@/lib/polyomino";
 
 const SHAPE_NAME_RU: Record<ShapeSpec["shape"], string> = {
@@ -64,13 +65,15 @@ export function ShapesVisual({ items, print }: { items: (ShapeSpec | null)[]; pr
   );
 }
 
-/** Фигура из клеточек. */
+/** Фигура из клеточек; labels — надписи в клетках (в том же порядке, что cells). */
 export function PolyominoVisual({
   cells,
+  labels,
   size = 26,
   color = "#c7d2fe",
 }: {
   cells: readonly Cell[];
+  labels?: readonly string[];
   size?: number;
   color?: string;
 }) {
@@ -82,21 +85,168 @@ export function PolyominoVisual({
       height={rows * size + pad * 2}
       viewBox={`${-pad} ${-pad} ${cols * size + pad * 2} ${rows * size + pad * 2}`}
       role="img"
-      aria-label={`Фигура из ${cells.length} клеточек`}
+      aria-label={
+        labels
+          ? `Фигура из ${cells.length} клеточек с числами ${labels.join(", ")}`
+          : `Фигура из ${cells.length} клеточек`
+      }
     >
-      {cells.map(([c, r]) => (
-        <rect
-          key={`${c},${r}`}
-          x={c * size}
-          y={r * size}
-          width={size}
-          height={size}
-          fill={color}
-          stroke="#1d2140"
-          strokeWidth="2"
-        />
+      {cells.map(([c, r], i) => (
+        <g key={`${c},${r}`}>
+          <rect x={c * size} y={r * size} width={size} height={size} fill={color} stroke="#1d2140" strokeWidth="2" />
+          {labels?.[i] && (
+            <text
+              x={c * size + size / 2}
+              y={r * size + size / 2 + size * 0.19}
+              textAnchor="middle"
+              fontSize={size * 0.55}
+              fontWeight="900"
+              fill="#1d2140"
+            >
+              {labels[i]}
+            </text>
+          )}
+        </g>
       ))}
     </svg>
+  );
+}
+
+/** Прямоугольники из точек — «точечные» числа. */
+export function DotsVisual({ figures }: { figures: { cols: number; rows: number }[] }) {
+  const gap = 18;
+  const pad = 6;
+  return (
+    <div className="flex flex-wrap items-end gap-x-6 gap-y-3">
+      {figures.map((f, i) => {
+        const w = (f.cols - 1) * gap + pad * 2 + 12;
+        const h = (f.rows - 1) * gap + pad * 2 + 12;
+        return (
+          <figure key={i} className="flex flex-col items-center gap-1">
+            <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} role="img" aria-label={`Фигура ${i + 1} из точек`}>
+              {Array.from({ length: f.rows }, (_, r) =>
+                Array.from({ length: f.cols }, (_, c) => (
+                  <circle
+                    key={`${c}-${r}`}
+                    cx={pad + 6 + c * gap}
+                    cy={pad + 6 + r * gap}
+                    r={6}
+                    fill="#6366f1"
+                    stroke="#312e81"
+                    strokeWidth="1.5"
+                  />
+                )),
+              )}
+            </svg>
+            <figcaption className="text-sm font-extrabold text-muted">{i + 1}</figcaption>
+          </figure>
+        );
+      })}
+    </div>
+  );
+}
+
+type Point = readonly [number, number];
+
+const r2 = (n: number) => Math.round(n * 100) / 100;
+
+/** Спичка: палочка с красной головкой, чуть короче отрезка — чтобы спички не сливались. */
+function Match({ a, b }: { a: Point; b: Point }) {
+  const dx = b[0] - a[0];
+  const dy = b[1] - a[1];
+  const len = Math.hypot(dx, dy);
+  const cut = 3.5 / len;
+  const x1 = r2(a[0] + dx * cut);
+  const y1 = r2(a[1] + dy * cut);
+  const x2 = r2(b[0] - dx * cut);
+  const y2 = r2(b[1] - dy * cut);
+  return (
+    <g>
+      <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="#d4a15a" strokeWidth="5" strokeLinecap="round" />
+      <circle cx={x2} cy={y2} r={4.2} fill="#dc2626" />
+    </g>
+  );
+}
+
+/** Отрезки дорожки из n квадратов или n треугольников. */
+function matchSegments(shape: "squares" | "triangles", n: number, unit: number): [Point, Point][] {
+  if (shape === "squares") {
+    const segs: [Point, Point][] = [];
+    for (let i = 0; i < n; i++) {
+      segs.push([
+        [i * unit, 0],
+        [(i + 1) * unit, 0],
+      ]);
+      segs.push([
+        [i * unit, unit],
+        [(i + 1) * unit, unit],
+      ]);
+    }
+    for (let i = 0; i <= n; i++)
+      segs.push([
+        [i * unit, 0],
+        [i * unit, unit],
+      ]);
+    return segs;
+  }
+  // Треугольники: вершины внизу — (k·unit, h), вверху — (k·unit + unit/2, 0).
+  const h = r2(unit * 0.866);
+  const bottom = (k: number): Point => [k * unit, h];
+  const top = (k: number): Point => [k * unit + unit / 2, 0];
+  const seen = new Map<string, [Point, Point]>();
+  const add = (a: Point, b: Point) => {
+    const key = [a.join(","), b.join(",")].sort().join("|");
+    if (!seen.has(key)) seen.set(key, [a, b]);
+  };
+  for (let j = 0; j < n; j++) {
+    const k = Math.floor(j / 2);
+    if (j % 2 === 0) {
+      add(bottom(k), bottom(k + 1));
+      add(bottom(k), top(k));
+      add(top(k), bottom(k + 1));
+    } else {
+      add(top(k), top(k + 1));
+      add(top(k), bottom(k + 1));
+      add(bottom(k + 1), top(k + 1));
+    }
+  }
+  return [...seen.values()];
+}
+
+/** Дорожки из спичек: квадраты или треугольники в ряд. */
+export function MatchesVisual({ shape, figures }: { shape: "squares" | "triangles"; figures: number[] }) {
+  const unit = shape === "squares" ? 42 : 46;
+  const pad = 8;
+  return (
+    <div className="flex flex-wrap items-end gap-x-7 gap-y-3">
+      {figures.map((n) => {
+        const segs = matchSegments(shape, n, unit);
+        const xs = segs.flatMap(([a, b]) => [a[0], b[0]]);
+        const ys = segs.flatMap(([a, b]) => [a[1], b[1]]);
+        const w = Math.max(...xs) + pad * 2;
+        const h = Math.max(...ys) + pad * 2;
+        return (
+          <figure key={n} className="flex flex-col items-center gap-1">
+            <svg
+              width={w}
+              height={h}
+              viewBox={`${-pad} ${-pad} ${w} ${h}`}
+              role="img"
+              aria-label={`Дорожка из спичек: ${
+                shape === "squares"
+                  ? pluralize(n, "квадрат", "квадрата", "квадратов")
+                  : pluralize(n, "треугольник", "треугольника", "треугольников")
+              }`}
+            >
+              {segs.map(([a, b], i) => (
+                <Match key={i} a={a} b={b} />
+              ))}
+            </svg>
+            <figcaption className="text-sm font-extrabold text-muted">{n}</figcaption>
+          </figure>
+        );
+      })}
+    </div>
   );
 }
 

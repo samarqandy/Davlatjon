@@ -4,27 +4,45 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/components/ui";
 import { lockParent, useParentGate } from "@/lib/parentGate";
+import { useHydrated, useStore } from "@/lib/store";
 
-const LINKS = [
-  { href: "/parent", label: "📊 Обзор" },
-  { href: "/parent/week/1/review", label: "📝 Недельный обзор" },
-  { href: "/parent/guide", label: "📘 Методичка" },
-  { href: "/parent/settings", label: "⚙️ Настройки" },
-];
+export interface NavWeek {
+  number: number;
+  dayIds: string[];
+}
 
-export function ParentNav() {
+/** Неделя для обзора: последняя, в которой ребёнок уже занимался (или первая). */
+function reviewWeek(weeks: NavWeek[], days: Record<string, { startedAt?: number }>): number {
+  const active = weeks.filter((w) => w.dayIds.some((id) => days[id]?.startedAt));
+  return (active[active.length - 1] ?? weeks[0])?.number ?? 1;
+}
+
+export function ParentNav({ weeks }: { weeks: NavWeek[] }) {
   const path = usePathname();
   const gate = useParentGate();
+  const hydrated = useHydrated();
+  const days = useStore((s) => s.days);
+  const week = hydrated ? reviewWeek(weeks, days) : (weeks[0]?.number ?? 1);
+  const links = [
+    { href: "/parent", label: "📊 Обзор", active: path === "/parent" },
+    {
+      href: `/parent/week/${week}/review`,
+      label: "📝 Недельный обзор",
+      active: /^\/parent\/week\/\d+\/review$/.test(path),
+    },
+    { href: "/parent/guide", label: "📘 Методичка", active: path === "/parent/guide" },
+    { href: "/parent/settings", label: "⚙️ Настройки", active: path === "/parent/settings" },
+  ];
   return (
     <div className="no-print mb-6 flex flex-wrap items-center gap-2">
       <nav className="flex flex-wrap gap-1.5" aria-label="Раздел для родителей">
-        {LINKS.map((l) => (
+        {links.map((l) => (
           <Link
-            key={l.href}
+            key={l.label}
             href={l.href}
             className={cn(
               "rounded-xl px-3 py-2 text-sm font-extrabold transition",
-              path === l.href ? "bg-ink text-white" : "bg-white text-muted shadow-sm hover:text-ink",
+              l.active ? "bg-ink text-white" : "bg-white text-muted shadow-sm hover:text-ink",
             )}
           >
             {l.label}

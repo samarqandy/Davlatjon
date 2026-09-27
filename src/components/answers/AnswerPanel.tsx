@@ -3,11 +3,17 @@
 import { RobotPuzzle } from "@/components/robot/RobotPuzzle";
 import type { Task } from "@/content/types";
 import { AssignAnswer, ChoiceAnswer, OrderAnswer } from "./ChoiceAnswers";
+import { CrossingPuzzle } from "./CrossingPuzzle";
 import { FieldsAnswer } from "./FieldsAnswer";
 import { GraphPuzzle } from "./GraphPuzzle";
 import { MagicSquarePuzzle, PartitionPuzzle, SymmetryPuzzle } from "./GridPuzzles";
+import { HanoiPuzzle } from "./HanoiPuzzle";
+import { JugsPuzzle } from "./JugsPuzzle";
 import { MagicTrianglePuzzle } from "./MagicTrianglePuzzle";
 import { ExpressionsPuzzle, OpenAnswer, RulesAnswer, SignsPuzzle } from "./NumberPuzzles";
+import { PerformerPuzzle } from "./PerformerPuzzle";
+import { SudokuPuzzle } from "./SudokuPuzzle";
+import { WallLab } from "./WallLab";
 
 /** Как ребёнок отвечает на задачу — у каждого типа свой инструмент. */
 export function AnswerPanel({ task, hintsLeft }: { task: Task; hintsLeft: boolean }) {
@@ -42,12 +48,37 @@ export function AnswerPanel({ task, hintsLeft }: { task: Task; hintsLeft: boolea
       return <RulesAnswer taskId={id} spec={a} />;
     case "open":
       return <OpenAnswer taskId={id} prompt={a.prompt} />;
+    case "performer":
+      return <PerformerPuzzle taskId={id} puzzle={a.puzzle} hintsLeft={hintsLeft} />;
+    case "hanoi":
+      return <HanoiPuzzle taskId={id} disks={a.disks} optimal={a.optimal} />;
+    case "crossing":
+      return <CrossingPuzzle taskId={id} puzzle={a.puzzle} hintsLeft={hintsLeft} />;
+    case "jugs":
+      return <JugsPuzzle taskId={id} capacities={a.capacities} target={a.target} optimal={a.optimal} />;
+    case "sudoku":
+      return <SudokuPuzzle taskId={id} grid={a.grid} box={a.box} hintsLeft={hintsLeft} />;
+    case "wallLab":
+      return <WallLab taskId={id} numbers={a.numbers} tops={a.tops} />;
   }
 }
 
 /** Интерактивные задачи, где поле для ответа — это и есть рисунок (робот, симметрия…). */
 export function isWorkbench(task: Task): boolean {
-  return ["robot", "symmetry", "graph", "magicSquare", "signs", "partition", "magicTriangle", "expressions"].includes(
-    task.answer.kind,
-  );
+  return [
+    "robot",
+    "symmetry",
+    "graph",
+    "magicSquare",
+    "signs",
+    "partition",
+    "magicTriangle",
+    "expressions",
+    "performer",
+    "hanoi",
+    "crossing",
+    "jugs",
+    "sudoku",
+    "wallLab",
+  ].includes(task.answer.kind);
 }

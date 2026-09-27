@@ -180,7 +180,9 @@ export function GraphPuzzle({ taskId, puzzle }: { taskId: string; puzzle: GraphS
 
   return (
     <div className="space-y-3">
-      <p className="text-sm font-bold text-muted">Нажимай на места по порядку, чтобы проложить путь от дома.</p>
+      <p className="text-sm font-bold text-muted">
+        Нажимай на места по порядку, чтобы проложить путь от «{label(puzzle.start)}» до «{label(puzzle.finish)}».
+      </p>
       <div className="rounded-3xl bg-white p-2 shadow-card">
         <GraphMap puzzle={puzzle} path={path} onNode={onNode} />
       </div>

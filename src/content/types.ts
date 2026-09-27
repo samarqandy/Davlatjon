@@ -75,10 +75,19 @@ export type Visual =
   | { type: "chocolate"; cols: number; rows: number }
   /** Столб с делениями для задачи про улитку. */
   | { type: "pole"; height: number; emoji: string }
-  /** Калькулятор со сломанными кнопками. */
-  | { type: "calculator"; broken: string[] }
-  /** Фигура из клеточек (полимино). */
-  | { type: "polyomino"; cells: Cell[] }
+  /** Калькулятор со сломанными кнопками; target — какое число нужно получить. */
+  | { type: "calculator"; broken: string[]; target?: number }
+  /**
+   * Фигура из клеточек (полимино). labels — надписи в клетках (в том же порядке, что cells),
+   * size — размер клетки в пикселях.
+   */
+  | { type: "polyomino"; cells: Cell[]; labels?: string[]; size?: number }
+  /** Прямоугольники из точек: cols × rows в каждой фигуре. */
+  | { type: "dots"; figures: { cols: number; rows: number }[] }
+  /** Дорожки из спичек: квадраты или треугольники в ряд; figures — сколько фигур в каждой дорожке. */
+  | { type: "matches"; shape: "squares" | "triangles"; figures: number[] }
+  /** Числовая стенка: ряды сверху вниз, каждое число — сумма двух чисел под ним. `null` — пустой кирпич. */
+  | { type: "pyramid"; rows: (number | null)[][] }
   /**
    * Рабочая таблица для логических задач: ребёнок ставит ✗ и ✓.
    * На экране — интерактивная, на бумаге — пустая таблица.
@@ -133,6 +142,40 @@ export interface RobotPuzzle {
   pathsCount?: number;
 }
 
+/** Команда исполнителя: прибавить, отнять или умножить (×2 — «удвой»). */
+export interface PerformerCommand {
+  op: "add" | "sub" | "mul";
+  value: number;
+}
+
+export interface PerformerPuzzle {
+  /** Кто выполняет команды, например «Удвоитель» 🤖 или «Кузнечик» 🦗. */
+  name: string;
+  emoji: string;
+  start: number;
+  target: number;
+  commands: PerformerCommand[];
+  /** Числа не могут выходить за эти границы (например, левее нуля). */
+  min?: number;
+  max?: number;
+  /** Показать числовой луч от min до max. */
+  line?: boolean;
+  /** Длина самой короткой программы (проверяется тестами). */
+  optimal: number;
+}
+
+export interface CrossingPuzzle {
+  /** Тот, кто управляет лодкой, — без него лодка не плывёт. */
+  driver: { emoji: string; name: string };
+  items: { id: string; emoji: string; name: string }[];
+  /** Кого нельзя оставлять вместе без driver; text — что случится («Волк съел козу!»). */
+  conflicts: { eater: string; eaten: string; text: string }[];
+  /** Сколько пассажиров помещается в лодку, кроме driver. */
+  capacity: number;
+  /** Наименьшее число переправ (проверяется тестами). */
+  optimal: number;
+}
+
 export interface GraphPuzzle {
   nodes: { id: string; label: string; emoji: string; x: number; y: number }[];
   edges: { a: string; b: string; w: number }[];
@@ -167,6 +210,18 @@ export type AnswerSpec =
   | { kind: "expressions"; target: number; forbidden: string[] }
   /** Несколько правильных ответов (разные правила продолжения ряда). */
   | { kind: "rules"; label: string; known: { value: number; rule: string }[] }
+  /** Исполнитель (Удвоитель, Кузнечик…): командами получить из start число target. */
+  | { kind: "performer"; puzzle: PerformerPuzzle }
+  /** Ханойская башня: перенести башню из disks колец на правый стержень. */
+  | { kind: "hanoi"; disks: number; optimal: number }
+  /** Переправа через реку. */
+  | { kind: "crossing"; puzzle: CrossingPuzzle }
+  /** Переливания: в одном из двух сосудов нужно получить target литров. */
+  | { kind: "jugs"; capacities: [number, number]; target: number; optimal: number }
+  /** Судоку: в каждой строке, столбце и прямоугольнике box (столбцов × строк) все числа по одному разу. */
+  | { kind: "sudoku"; grid: (number | null)[][]; answer: number[][]; box: [number, number] }
+  /** Числовая стенка-лаборатория: расставить numbers в нижнем ряду; tops — все возможные числа наверху. */
+  | { kind: "wallLab"; numbers: number[]; tops: number[] }
   /** Открытая задача: ребёнок отмечает, что решил, и объясняет взрослому. */
   | { kind: "open"; prompt: string };
 

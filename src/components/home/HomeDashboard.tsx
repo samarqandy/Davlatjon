@@ -20,6 +20,7 @@ export function HomeDashboard({ weeks }: { weeks: WeekSummary[] }) {
   const state = useStore((s) => s);
   const allDays = weeks.flatMap((w) => w.days);
   const next = hydrated ? (allDays.find((d) => !state.days[d.id]?.completedAt) ?? null) : allDays[0];
+  const currentWeek = next?.week ?? weeks[weeks.length - 1]?.number;
   const solvedIn = (d: DaySummary) => d.tasks.filter((t) => state.tasks[t.id]?.status === "solved").length;
 
   const tasks = Object.values(state.tasks);
@@ -49,7 +50,8 @@ export function HomeDashboard({ weeks }: { weeks: WeekSummary[] }) {
                 {hydrated && state.days[next.id]?.startedAt ? "Продолжим" : "Сегодняшнее занятие"}
               </p>
               <p className="mt-1 text-2xl font-black">
-                <span aria-hidden>{next.emoji}</span> День {next.day}. {next.title}
+                <span aria-hidden>{next.emoji}</span> {weeks.length > 1 && `Неделя ${next.week} · `}День {next.day}.{" "}
+                {next.title}
               </p>
               <p className="mt-1 text-sm text-white/80">
                 {next.tasks.length} задач · около 25 минут · привычка «{next.habit.name}»
@@ -81,26 +83,58 @@ export function HomeDashboard({ weeks }: { weeks: WeekSummary[] }) {
         <Card className="p-5 sm:p-6">
           <h2 className="mb-1 text-lg font-extrabold">Мои привычки мыслителя</h2>
           <p className="mb-4 text-sm text-muted">Каждый пройденный день добавляет новую привычку.</p>
-          <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
-            {allDays.map((d) => {
-              const got = hydrated && Boolean(state.days[d.id]?.completedAt);
+          <div className="space-y-4">
+            {weeks.map((w) => {
+              const full = weeks.length === 1 || w.number === currentWeek;
+              const got = (d: DaySummary) => hydrated && Boolean(state.days[d.id]?.completedAt);
               return (
-                <li
-                  key={d.id}
-                  className={cn(
-                    "flex items-center gap-2.5 rounded-2xl border-2 px-3 py-2 text-sm font-extrabold transition",
-                    got ? "border-sun/60 bg-sun-soft text-[#7a4b00]" : "border-dashed border-line text-muted",
+                <div key={w.number}>
+                  {weeks.length > 1 && (
+                    <p className="mb-1.5 text-xs font-extrabold tracking-wide text-muted uppercase">
+                      Неделя {w.number} · {w.title}
+                    </p>
                   )}
-                >
-                  <span className={cn("text-xl", !got && "opacity-35 grayscale")} aria-hidden>
-                    {d.habit.emoji}
-                  </span>
-                  {d.habit.name}
-                  {got && <span className="ml-auto">✓</span>}
-                </li>
+                  {full ? (
+                    <ul className="grid grid-cols-1 gap-1.5 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+                      {w.days.map((d) => (
+                        <li
+                          key={d.id}
+                          className={cn(
+                            "flex items-center gap-2.5 rounded-2xl border-2 px-3 py-1.5 text-sm font-extrabold transition",
+                            got(d)
+                              ? "border-sun/60 bg-sun-soft text-[#7a4b00]"
+                              : "border-dashed border-line text-muted",
+                          )}
+                        >
+                          <span className={cn("text-xl", !got(d) && "opacity-35 grayscale")} aria-hidden>
+                            {d.habit.emoji}
+                          </span>
+                          {d.habit.name}
+                          {got(d) && <span className="ml-auto">✓</span>}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <ul className="flex flex-wrap gap-1.5">
+                      {w.days.map((d) => (
+                        <li
+                          key={d.id}
+                          title={d.habit.name}
+                          aria-label={`${d.habit.name}${got(d) ? " — есть" : ""}`}
+                          className={cn(
+                            "flex h-10 w-10 items-center justify-center rounded-xl border-2 text-xl",
+                            got(d) ? "border-sun/60 bg-sun-soft" : "border-dashed border-line opacity-50 grayscale",
+                          )}
+                        >
+                          {d.habit.emoji}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
               );
             })}
-          </ul>
+          </div>
         </Card>
       </section>
 
@@ -170,15 +204,19 @@ export function HomeDashboard({ weeks }: { weeks: WeekSummary[] }) {
                 </li>
               );
             })}
-            <li>
-              <div className="flex h-full flex-col justify-center rounded-3xl border-2 border-dashed border-line p-4 text-center">
-                <p className="text-3xl" aria-hidden>
-                  🧭
-                </p>
-                <p className="mt-1 font-extrabold">Дальше — новые недели</p>
-                <p className="mt-1 text-sm text-muted">Логика, геометрия, комбинаторика и алгоритмы — шаг за шагом.</p>
-              </div>
-            </li>
+            {w.number === weeks[weeks.length - 1].number && (
+              <li>
+                <div className="flex h-full flex-col justify-center rounded-3xl border-2 border-dashed border-line p-4 text-center">
+                  <p className="text-3xl" aria-hidden>
+                    🧭
+                  </p>
+                  <p className="mt-1 font-extrabold">Дальше — новые недели</p>
+                  <p className="mt-1 text-sm text-muted">
+                    Логика, геометрия, комбинаторика и алгоритмы — шаг за шагом.
+                  </p>
+                </div>
+              </li>
+            )}
           </ol>
         </section>
       ))}

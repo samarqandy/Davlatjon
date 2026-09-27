@@ -89,3 +89,52 @@ test("мои задачи: можно записать свою задачу", a
   await page.getByRole("button", { name: "Сохранить задачу" }).click();
   await expect(page.getByText("Сколько лап у трёх котов?")).toBeVisible();
 });
+
+test("главная: вторая неделя «Неделя инструментов»", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.getByRole("heading", { name: /Неделя инструментов/ })).toBeVisible();
+  for (let d = 1; d <= 7; d++) await expect(page.locator(`a[href="/week/2/day/${d}"]`).first()).toBeVisible();
+});
+
+test("Удвоитель: из 1 в 25 за 6 команд", async ({ page }) => {
+  await page.goto("/week/2/day/2#task-5");
+  await expect(page.getByRole("heading", { name: /Удвоитель/ })).toBeVisible();
+  const double = page.getByRole("button", { name: "Команда: удвой" });
+  const plusOne = page.getByRole("button", { name: "Команда: прибавь 1" });
+  for (const b of [double, plusOne, double, double, double, plusOne]) await b.click();
+  await expect(page.getByText(/короче не бывает/)).toBeVisible();
+});
+
+test("ханойская башня: 3 кольца за 7 ходов", async ({ page }) => {
+  await page.goto("/week/2/day/3#task-5");
+  const peg = (name: string) => page.getByRole("button", { name: new RegExp(`^${name} стержень`) });
+  const moves: [string, string][] = [
+    ["левый", "правый"],
+    ["левый", "средний"],
+    ["правый", "средний"],
+    ["левый", "правый"],
+    ["средний", "левый"],
+    ["средний", "правый"],
+    ["левый", "правый"],
+  ];
+  for (const [from, to] of moves) {
+    await peg(from).click();
+    await peg(to).click();
+  }
+  await expect(page.getByText(/Быстрее не бывает/)).toBeVisible();
+});
+
+test("переправа: волк, коза и капуста за 7 поездок", async ({ page }) => {
+  await page.goto("/week/2/day/4#task-5");
+  const board = (name: string) => page.getByRole("button", { name: `${name}: посадить в лодку` });
+  const sail = page.getByRole("button", { name: /Плыть/ });
+  // Сначала ошибка: без козы волк её съест.
+  await board("капуста").click();
+  await sail.click();
+  await expect(page.getByText(/Стоп! Если крестьянин уплывёт, волк съест козу/)).toBeVisible();
+  for (const who of ["коза", null, "волк", "коза", "капуста", null, "коза"]) {
+    if (who) await board(who).click();
+    await sail.click();
+  }
+  await expect(page.getByText(/Быстрее не бывает/)).toBeVisible();
+});

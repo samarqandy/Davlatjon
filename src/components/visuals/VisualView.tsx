@@ -1,6 +1,6 @@
 import type { Visual } from "@/content/types";
 import { LogicGrid } from "./LogicGrid";
-import { ChainVisual, MachineVisual, ReceiptVisual, SequenceVisual, TableVisual } from "./numbers";
+import { ChainVisual, MachineVisual, PyramidVisual, ReceiptVisual, SequenceVisual, TableVisual } from "./numbers";
 import {
   BalanceVisual,
   CalculatorVisual,
@@ -13,8 +13,10 @@ import {
 } from "./scenes";
 import {
   ChocolateVisual,
+  DotsVisual,
   GridFigureVisual,
   IsoCubesVisual,
+  MatchesVisual,
   PolyominoVisual,
   ShapesVisual,
   StaircasesVisual,
@@ -58,9 +60,15 @@ export function VisualView({ visual, print = false }: { visual: Visual; print?: 
     case "pole":
       return <PoleVisual height={visual.height} emoji={visual.emoji} />;
     case "calculator":
-      return <CalculatorVisual broken={visual.broken} />;
+      return <CalculatorVisual broken={visual.broken} target={visual.target} />;
     case "polyomino":
-      return <PolyominoVisual cells={visual.cells} />;
+      return <PolyominoVisual cells={visual.cells} labels={visual.labels} size={visual.size} />;
+    case "dots":
+      return <DotsVisual figures={visual.figures} />;
+    case "matches":
+      return <MatchesVisual shape={visual.shape} figures={visual.figures} />;
+    case "pyramid":
+      return <PyramidVisual rows={visual.rows} print={print} />;
     case "logicGrid":
       return <LogicGrid rows={visual.rows} cols={visual.cols} corner={visual.corner} print={print} />;
     case "table":

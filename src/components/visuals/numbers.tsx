@@ -110,6 +110,37 @@ function Blank({ print }: { print?: boolean }) {
   );
 }
 
+/** Числовая стенка: ряды сверху вниз, каждое число — сумма двух чисел под ним. */
+export function PyramidVisual({ rows, print }: { rows: (number | null)[][]; print?: boolean }) {
+  return (
+    <div
+      className="inline-flex flex-col items-center gap-1"
+      role="img"
+      aria-label={`Числовая стенка: ${rows.map((r) => r.map((v) => v ?? "пусто").join(", ")).join("; ")}`}
+    >
+      {rows.map((row, i) => (
+        <div key={i} className="flex gap-1">
+          {row.map((v, j) => (
+            <span
+              key={j}
+              className={cn(
+                "tabular flex h-11 w-16 items-center justify-center rounded-lg border-2 text-2xl font-extrabold",
+                v === null
+                  ? print
+                    ? "border-ink/60 bg-white"
+                    : "border-dashed border-[#d97706]/60 bg-[#fff7ed] text-[#d97706]"
+                  : "border-[#d97706] bg-[#ffedd5] text-ink",
+              )}
+            >
+              {v ?? (print ? "" : "?")}
+            </span>
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function ReceiptVisual({ lines, total }: { lines: { label: string; price: string }[]; total: string }) {
   return (
     <div className="w-full max-w-xs rounded-md border border-dashed border-ink/30 bg-[#fffdf7] px-5 py-4 font-mono text-[15px] shadow-sm">

@@ -388,10 +388,12 @@ export function PoleVisual({ height, emoji }: { height: number; emoji: string })
 
 const CALC_KEYS = ["7", "8", "9", "×", "4", "5", "6", "−", "1", "2", "3", "+", "0", "(", ")", "="];
 
-export function CalculatorVisual({ broken }: { broken: string[] }) {
+export function CalculatorVisual({ broken, target }: { broken: string[]; target?: number }) {
   return (
     <div className="inline-block rounded-3xl bg-[#1f2937] p-3 shadow-card">
-      <p className="mb-2 text-center text-sm font-extrabold text-[#fde68a]">Нужно получить: 50</p>
+      {target !== undefined && (
+        <p className="mb-2 text-center text-sm font-extrabold text-[#fde68a]">Нужно получить: {target}</p>
+      )}
       <div className="mb-2 rounded-xl bg-[#d9f99d] px-3 py-2 text-right font-mono text-2xl font-bold text-[#1a2e05]">
         0
       </div>

@@ -32,11 +32,18 @@ export function ParentDashboard({ weeks }: { weeks: Week[] }) {
           {weeks.map((w) => {
             const t = hydrated ? weekTotals(w, state) : { tasks: 0, solved: 0, daysDone: 0, timeMs: 0, hints: 0 };
             return (
-              <div key={w.number} className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                <Metric value={`${t.daysDone} / ${w.days.length}`} label="дней пройдено" />
-                <Metric value={`${t.solved} / ${t.tasks}`} label="задач решено" />
-                <Metric value={formatMinutes(t.timeMs)} label="время на задачах" />
-                <Metric value={String(t.hints)} label="подсказок открыто" />
+              <div key={w.number} className="mt-5">
+                {weeks.length > 1 && (
+                  <p className="mb-1.5 text-xs font-extrabold tracking-wide text-muted uppercase">
+                    Неделя {w.number}. {w.title}
+                  </p>
+                )}
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  <Metric value={`${t.daysDone} / ${w.days.length}`} label="дней пройдено" />
+                  <Metric value={`${t.solved} / ${t.tasks}`} label="задач решено" />
+                  <Metric value={formatMinutes(t.timeMs)} label="время на задачах" />
+                  <Metric value={String(t.hints)} label="подсказок открыто" />
+                </div>
               </div>
             );
           })}
@@ -48,7 +55,7 @@ export function ParentDashboard({ weeks }: { weeks: Week[] }) {
               <div className="mr-auto">
                 <p className="text-xs font-extrabold tracking-wide text-muted uppercase">Следующее занятие</p>
                 <p className="font-black">
-                  День {next.day}. {next.title}
+                  {weeks.length > 1 && `Неделя ${next.week} · `}День {next.day}. {next.title}
                 </p>
               </div>
               <ButtonLink href={`/parent/week/${next.week}/day/${next.day}`} size="sm" variant="soft">
