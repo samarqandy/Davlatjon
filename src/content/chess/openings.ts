@@ -21,6 +21,8 @@ export interface Opening {
   facts: string[];
   /** Кто из великих играл этот дебют. */
   playedBy?: string;
+  /** Картинка к истории дебюта (id из images.ts). */
+  image?: string;
 }
 
 export const OPENING_CATEGORIES: Record<OpeningCategory, { name: string; about: string }> = {
@@ -67,6 +69,7 @@ export const OPENING_PRINCIPLES = [
 export const OPENINGS: Opening[] = [
   {
     id: "italian",
+    image: "greco",
     name: "Итальянская партия",
     eco: "C50",
     category: "open",
@@ -84,6 +87,7 @@ export const OPENINGS: Opening[] = [
   },
   {
     id: "spanish",
+    image: "ruy-lopez",
     name: "Испанская партия",
     eco: "C60",
     category: "open",
@@ -298,6 +302,7 @@ export const OPENINGS: Opening[] = [
   },
   {
     id: "kings-gambit",
+    image: "anderssen",
     name: "Королевский гамбит",
     eco: "C30",
     category: "gambit",
@@ -349,6 +354,7 @@ export const OPENINGS: Opening[] = [
   },
   {
     id: "legal-trap",
+    image: "cafe-regence",
     name: "Ловушка Легаля",
     eco: "C41",
     category: "trap",

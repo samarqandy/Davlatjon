@@ -322,6 +322,9 @@ test("шахматы: задача по теме решается, серия с
 test("шахматы: разбор знаменитой партии и главные моменты", async ({ page }) => {
   await page.goto("/chess/games/opera");
   await expect(page.getByRole("heading", { name: "Партия в опере" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "📷 Кто играл и где" })).toBeVisible();
+  await expect(page.getByRole("img", { name: "Молодой Пол Морфи сидит у шахматного столика" }).first()).toBeVisible();
+  await expect(page.getByText("Wikimedia Commons").first()).toBeVisible();
   const next = page.getByRole("button", { name: "Ход вперёд" });
   for (let i = 0; i < 13; i++) await next.click();
   await expect(page.getByText(/Ферзь нападает сразу на две пешки/)).toBeVisible();
@@ -353,7 +356,11 @@ test("шахматы: энциклопедия и дневник", async ({ page
   await page.goto("/chess/history");
   await expect(page.getByRole("heading", { name: "Всё о шахматах" })).toBeVisible();
   await expect(page.getByText("Фигурки с Афрасиаба", { exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("img", { name: "Семь маленьких резных фигурок из слоновой кости" }).first(),
+  ).toBeVisible();
   await expect(page.getByText("Гукеш Доммараджу").first()).toBeVisible();
+  await expect(page.getByRole("heading", { name: "📷 Откуда картинки" })).toBeVisible();
   await page.goto("/chess/diary");
   await page.getByPlaceholder(/папа, Али/).fill("папа");
   await page.getByRole("button", { name: /🤝 ничья/ }).click();

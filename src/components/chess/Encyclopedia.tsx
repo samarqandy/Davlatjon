@@ -15,7 +15,9 @@ import {
   WOMEN_CHAMPIONS,
   WORLD_CHAMPIONS,
 } from "@/content/chess/encyclopedia";
+import { CHESS_IMAGES, chessImage } from "@/content/chess/images";
 import { PieceIcon } from "./ChessBoard";
+import { Figure, ImageCredits, Portrait } from "./Figure";
 
 const SECTIONS = [
   ["history", "🗺️ Путь шахмат"],
@@ -24,7 +26,20 @@ const SECTIONS = [
   ["names", "🔤 Имена фигур"],
   ["records", "📚 Рекорды и факты"],
   ["math", "🧮 Шахматы и математика"],
+  ["credits", "📷 Откуда картинки"],
 ] as const;
+
+/** Аватарка по id картинки — если картинка есть. */
+function Face({ id, size, className }: { id?: string; size: number; className?: string }) {
+  const img = id ? chessImage(id) : undefined;
+  return img ? <Portrait image={img} size={size} className={className} /> : null;
+}
+
+/** Картинка с подписью по id — если картинка есть. */
+function Pic({ id, className, sizes }: { id?: string; className?: string; sizes?: string }) {
+  const img = id ? chessImage(id) : undefined;
+  return img ? <Figure image={img} className={className} sizes={sizes} /> : null;
+}
 
 /** Карта-схема: откуда и куда шли шахматы. */
 function JourneyMap() {
@@ -119,12 +134,21 @@ export function Encyclopedia() {
               >
                 {t.emoji}
               </span>
-              <p className="text-xs font-extrabold tracking-wide text-muted uppercase">
-                {t.when} · {t.place}
-                {t.local ? " · 🇺🇿" : ""}
-              </p>
-              <p className="text-lg font-black">{t.title}</p>
-              <p className="mt-1">{t.text}</p>
+              <div className="sm:flex sm:items-start sm:gap-4">
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-extrabold tracking-wide text-muted uppercase">
+                    {t.when} · {t.place}
+                    {t.local ? " · 🇺🇿" : ""}
+                  </p>
+                  <p className="text-lg font-black">{t.title}</p>
+                  <p className="mt-1">{t.text}</p>
+                </div>
+                <Pic
+                  id={t.image}
+                  className="mt-3 sm:mt-0 sm:w-52 sm:shrink-0"
+                  sizes="(max-width: 640px) 100vw, 208px"
+                />
+              </div>
             </li>
           ))}
         </ol>
@@ -142,10 +166,13 @@ export function Encyclopedia() {
           ))}
           <ul className="mt-4 grid gap-3 md:grid-cols-3">
             {UZBEK_CHESS.people.map((p) => (
-              <li key={p.name} className="rounded-2xl bg-brand-soft/60 p-3">
-                <p className="font-black">{p.name}</p>
-                <p className="text-xs font-bold text-muted">{p.years}</p>
-                <p className="mt-1 text-sm">{p.text}</p>
+              <li key={p.name} className="flex gap-3 rounded-2xl bg-brand-soft/60 p-3">
+                <Face id={p.image} size={64} />
+                <div className="min-w-0">
+                  <p className="font-black">{p.name}</p>
+                  <p className="text-xs font-bold text-muted">{p.years}</p>
+                  <p className="mt-1 text-sm">{p.text}</p>
+                </div>
               </li>
             ))}
           </ul>
@@ -171,7 +198,12 @@ export function Encyclopedia() {
               {WORLD_CHAMPIONS.map((c) => (
                 <tr key={c.n} className="border-t border-line">
                   <td className="tabular px-3 py-2 font-black">{c.n}</td>
-                  <td className="px-3 py-2 font-black whitespace-nowrap">{c.name}</td>
+                  <td className="px-3 py-2 font-black whitespace-nowrap">
+                    <span className="flex items-center gap-2">
+                      <Face id={c.image} size={40} />
+                      {c.name}
+                    </span>
+                  </td>
                   <td className="px-3 py-2 text-muted">{c.country}</td>
                   <td className="tabular px-3 py-2 whitespace-nowrap">{c.years}</td>
                   <td className="px-3 py-2">{c.note}</td>
@@ -185,6 +217,7 @@ export function Encyclopedia() {
         <ul className="grid gap-3 md:grid-cols-5">
           {WOMEN_CHAMPIONS.map((c) => (
             <li key={c.n} className="rounded-2xl bg-white p-3 shadow-card">
+              <Face id={c.image} size={72} className="mb-2" />
               <p className="font-black">{c.name}</p>
               <p className="text-xs font-bold text-muted">
                 {c.country} · {c.years}
@@ -193,7 +226,10 @@ export function Encyclopedia() {
             </li>
           ))}
         </ul>
-        <p className="rounded-2xl bg-brand-soft/60 px-4 py-3 text-sm">{POLGAR_NOTE}</p>
+        <div className="flex items-center gap-3 rounded-2xl bg-brand-soft/60 px-4 py-3 text-sm">
+          <Face id="polgar" size={56} />
+          <p>{POLGAR_NOTE}</p>
+        </div>
       </section>
 
       <section id="names" className="scroll-mt-24 space-y-3" aria-labelledby="names-h">
@@ -230,12 +266,18 @@ export function Encyclopedia() {
         </h2>
         <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {RECORDS.map((r) => (
-            <li key={r.title} className="rounded-3xl bg-white p-4 shadow-card">
-              <p className="text-3xl" aria-hidden>
-                {r.emoji}
-              </p>
-              <p className="mt-1 font-black">{r.title}</p>
-              <p className="mt-1 text-sm">{r.text}</p>
+            <li
+              key={r.title}
+              className={cn("rounded-3xl bg-white p-4 shadow-card", r.image && "sm:col-span-2 sm:flex sm:gap-4")}
+            >
+              <Pic id={r.image} className="mb-3 sm:mb-0 sm:w-64 sm:shrink-0" sizes="(max-width: 640px) 100vw, 256px" />
+              <div>
+                <p className="text-3xl" aria-hidden>
+                  {r.emoji}
+                </p>
+                <p className="mt-1 font-black">{r.title}</p>
+                <p className="mt-1 text-sm">{r.text}</p>
+              </div>
             </li>
           ))}
         </ul>
@@ -274,6 +316,20 @@ export function Encyclopedia() {
             </li>
           ))}
         </ul>
+      </section>
+
+      <section id="credits" className="scroll-mt-24 space-y-3" aria-labelledby="credits-h">
+        <h2 id="credits-h" className="text-2xl font-black">
+          📷 Откуда картинки
+        </h2>
+        <p className="text-sm text-muted">
+          Все фотографии и картины в энциклопедии взяты из Wikimedia Commons. Они в общественном достоянии или под
+          свободными лицензиями Creative Commons, которые разрешают использовать картинку, если назвать автора. Для
+          сайта картинки уменьшены.
+        </p>
+        <div className="rounded-3xl bg-white p-4 shadow-card">
+          <ImageCredits images={CHESS_IMAGES} />
+        </div>
       </section>
     </div>
   );

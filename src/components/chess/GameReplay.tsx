@@ -6,10 +6,12 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { RichText } from "@/components/RichText";
 import { Button, cn } from "@/components/ui";
 import { FAMOUS_GAMES, type FamousGame } from "@/content/chess/games";
+import { type ChessImage, chessImages } from "@/content/chess/images";
 import { CHESS_LEVELS } from "@/content/chess";
 import { ruSan } from "@/lib/chess";
 import { chessGameViewed, useHydrated, useStore } from "@/lib/store";
 import { ChessBoard, type SquareMark } from "./ChessBoard";
+import { PhotoStrip, Portrait } from "./Figure";
 
 /** Позиции после каждого полухода (индекс 0 — начальная). */
 export function replayPositions(moves: string[]): { fen: string; from: string; to: string; san: string }[] {
@@ -20,6 +22,19 @@ export function replayPositions(moves: string[]): { fen: string; from: string; t
     out.push({ fen: chess.fen(), from: mv.from, to: mv.to, san: mv.san });
   }
   return out;
+}
+
+/** Портреты игроков в ряд, чуть внахлёст. */
+function Faces({ images, size }: { images: ChessImage[]; size: number }) {
+  const people = images.filter((i) => i.kind === "person");
+  if (!people.length) return null;
+  return (
+    <span className="flex -space-x-2">
+      {people.map((i) => (
+        <Portrait key={i.id} image={i} size={size} />
+      ))}
+    </span>
+  );
 }
 
 export function FamousGamesList() {
@@ -60,8 +75,11 @@ export function FamousGamesList() {
                     {g.place}
                   </p>
                   <p className="text-xl font-black">{g.title}</p>
-                  <p className="text-sm font-bold">
-                    {g.white} — {g.black} · {g.result}
+                  <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-bold">
+                    <Faces images={chessImages(g.pictures)} size={28} />
+                    <span>
+                      {g.white} — {g.black} · {g.result}
+                    </span>
                   </p>
                   <p className="mt-1 line-clamp-3 text-sm text-muted">{g.story[0]}</p>
                   <p className="mt-2 text-xs font-extrabold text-brand-dark">
@@ -85,6 +103,7 @@ export function GameReplay({ game }: { game: FamousGame }) {
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const total = game.moves.length;
   const level = CHESS_LEVELS.find((l) => l.id === game.level);
+  const pictures = chessImages(game.pictures);
 
   const isPlaying = playing && ply < total;
 
@@ -129,8 +148,11 @@ export function GameReplay({ game }: { game: FamousGame }) {
           {game.event ? ` · ${game.event}` : ""}
         </p>
         <h1 className="text-3xl font-black">{game.title}</h1>
-        <p className="text-lg font-bold">
-          {game.white} — {game.black} · {game.result} · {game.era}
+        <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-lg font-bold">
+          <Faces images={pictures} size={44} />
+          <span>
+            {game.white} — {game.black} · {game.result} · {game.era}
+          </span>
         </p>
       </header>
 
@@ -141,6 +163,15 @@ export function GameReplay({ game }: { game: FamousGame }) {
           </p>
         ))}
       </section>
+
+      {pictures.length > 0 && (
+        <section aria-labelledby="pictures">
+          <h2 id="pictures" className="mb-3 text-2xl font-black">
+            📷 Кто играл и где
+          </h2>
+          <PhotoStrip images={pictures} />
+        </section>
+      )}
 
       <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]" aria-label="Разбор партии">
         <div className="space-y-3">

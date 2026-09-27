@@ -5,12 +5,14 @@ import { RichText } from "@/components/RichText";
 import { Button, ButtonLink, cn, ProgressBar } from "@/components/ui";
 import { CHESS_LEVELS, LEVEL_EXTRAS, chessLevelHref } from "@/content/chess";
 import { FAMOUS_GAMES } from "@/content/chess/games";
+import { chessImages } from "@/content/chess/images";
 import { OPENINGS } from "@/content/chess/openings";
 import type { ChessLevel } from "@/content/chess/types";
 import { levelStatuses } from "@/lib/chessProgress";
 import { useStore } from "@/lib/store";
 import { setHash, useHash } from "@/lib/useHash";
 import { PieceIcon } from "./ChessBoard";
+import { Portrait } from "./Figure";
 import { ChessExerciseView } from "./ChessExercises";
 import { ChessLesson } from "./ChessLesson";
 
@@ -288,11 +290,15 @@ function Extras({ levelId }: { levelId: ChessLevel["id"] }) {
         {games.length > 0 && (
           <div className={card}>
             <p className="text-xs font-extrabold tracking-wide text-muted uppercase">Знаменитые партии</p>
-            {games.map((g) => (
-              <Link key={g.id} href={`/chess/games/${g.id}`} className={link}>
-                {g.title} →
-              </Link>
-            ))}
+            {games.map((g) => {
+              const face = chessImages(g.pictures).find((i) => i.kind === "person");
+              return (
+                <Link key={g.id} href={`/chess/games/${g.id}`} className={`${link} flex items-center gap-2`}>
+                  {face && <Portrait image={face} size={32} />}
+                  <span>{g.title} →</span>
+                </Link>
+              );
+            })}
           </div>
         )}
       </div>

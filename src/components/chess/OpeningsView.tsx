@@ -12,10 +12,12 @@ import {
   type Opening,
   type OpeningCategory,
 } from "@/content/chess/openings";
+import { chessImage } from "@/content/chess/images";
 import { legalTargets, pieceAt, playMove, ruSan, type Color } from "@/lib/chess";
 import { chessOpeningLearned, useHydrated, useStore } from "@/lib/store";
 import { setHash, useHash } from "@/lib/useHash";
 import { ChessBoard, type SquareMark } from "./ChessBoard";
+import { Figure } from "./Figure";
 import { replayPositions } from "./GameReplay";
 
 const STARS = (n: number) => "⭐".repeat(n);
@@ -120,6 +122,7 @@ function OpeningDetail({ opening }: { opening: Opening }) {
   const hydrated = useHydrated();
   const cur = positions[ply];
   const marks: Record<string, SquareMark> = ply > 0 ? { [cur.from]: "last", [cur.to]: "last" } : {};
+  const picture = opening.image ? chessImage(opening.image) : undefined;
   return (
     <div className="space-y-5">
       <button
@@ -183,6 +186,7 @@ function OpeningDetail({ opening }: { opening: Opening }) {
           </p>
         </div>
         <aside className="space-y-3">
+          {picture && <Figure image={picture} sizes="(max-width: 1024px) 100vw, 340px" />}
           <div className="rounded-2xl bg-white p-4 shadow-card">
             <p className="text-sm font-extrabold text-muted">Как играть</p>
             <ul className="mt-2 space-y-2">

@@ -26,6 +26,8 @@ export interface FamousGame {
   keyMoments: { ply: number; caption: string }[];
   lesson: string;
   facts: string[];
+  /** Картинки: портреты игроков, места, где играли (id из images.ts). */
+  pictures?: string[];
 }
 
 export const FAMOUS_GAMES: FamousGame[] = [
@@ -89,6 +91,7 @@ export const FAMOUS_GAMES: FamousGame[] = [
   },
   {
     id: "legal",
+    pictures: ["philidor", "cafe-regence"],
     title: "Мат Легаля",
     white: "Кермюр де Легаль",
     black: "Сен-Бри",
@@ -122,6 +125,7 @@ export const FAMOUS_GAMES: FamousGame[] = [
   },
   {
     id: "opera",
+    pictures: ["morphy", "brunswick", "salle-ventadour"],
     title: "Партия в опере",
     white: "Пол Морфи",
     black: "Герцог Брауншвейгский и граф Изуар",
@@ -195,6 +199,7 @@ export const FAMOUS_GAMES: FamousGame[] = [
   },
   {
     id: "immortal",
+    pictures: ["anderssen", "kieseritzky", "crystal-palace"],
     title: "Бессмертная партия",
     white: "Адольф Андерсен",
     black: "Лионель Кизерицкий",
@@ -281,6 +286,7 @@ export const FAMOUS_GAMES: FamousGame[] = [
   },
   {
     id: "evergreen",
+    pictures: ["anderssen", "dufresne"],
     title: "Вечнозелёная партия",
     white: "Адольф Андерсен",
     black: "Жан Дюфрень",
@@ -366,6 +372,7 @@ export const FAMOUS_GAMES: FamousGame[] = [
   },
   {
     id: "reti-tartakower",
+    pictures: ["reti", "tartakower"],
     title: "Двойной шах",
     white: "Рихард Рети",
     black: "Савелий Тартаковер",
@@ -424,6 +431,7 @@ export const FAMOUS_GAMES: FamousGame[] = [
   },
   {
     id: "game-of-the-century",
+    pictures: ["fischer", "marshall-club"],
     title: "Партия века",
     white: "Дональд Бирн",
     black: "Роберт Фишер",
