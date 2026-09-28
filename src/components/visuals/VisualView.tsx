@@ -1,6 +1,8 @@
-import type { Visual } from "@/content/types";
+import { VennDiagram, type VennChip } from "@/components/answers/VennPuzzle";
+import type { Visual, VennRegion } from "@/content/types";
 import { LogicGrid } from "./LogicGrid";
-import { ChainVisual, MachineVisual, ReceiptVisual, SequenceVisual, TableVisual } from "./numbers";
+import { CellGridVisual, ChessboardVisual, CodeTableVisual, SpeechVisual, StrokesVisual } from "./logic";
+import { ChainVisual, MachineVisual, PyramidVisual, ReceiptVisual, SequenceVisual, TableVisual } from "./numbers";
 import {
   BalanceVisual,
   CalculatorVisual,
@@ -13,8 +15,10 @@ import {
 } from "./scenes";
 import {
   ChocolateVisual,
+  DotsVisual,
   GridFigureVisual,
   IsoCubesVisual,
+  MatchesVisual,
   PolyominoVisual,
   ShapesVisual,
   StaircasesVisual,
@@ -50,20 +54,47 @@ export function VisualView({ visual, print = false }: { visual: Visual; print?: 
     case "decisionTree":
       return <DecisionTreeVisual first={visual.first} second={visual.second} boxes={visual.boxes} />;
     case "coordGrid":
-      return <CoordGridVisual cols={visual.cols} rows={visual.rows} items={visual.items} />;
+      return <CoordGridVisual cols={visual.cols} rows={visual.rows} items={visual.items} legend={visual.legend} />;
     case "clock":
-      return <ClockVisual time={visual.time} caption={visual.caption} />;
+      return <ClockVisual time={visual.time} caption={visual.caption} mirror={visual.mirror} />;
     case "chocolate":
       return <ChocolateVisual cols={visual.cols} rows={visual.rows} />;
     case "pole":
       return <PoleVisual height={visual.height} emoji={visual.emoji} />;
     case "calculator":
-      return <CalculatorVisual broken={visual.broken} />;
+      return <CalculatorVisual broken={visual.broken} target={visual.target} />;
     case "polyomino":
-      return <PolyominoVisual cells={visual.cells} />;
+      return <PolyominoVisual cells={visual.cells} labels={visual.labels} size={visual.size} />;
+    case "dots":
+      return <DotsVisual figures={visual.figures} />;
+    case "matches":
+      return <MatchesVisual shape={visual.shape} figures={visual.figures} />;
+    case "pyramid":
+      return <PyramidVisual rows={visual.rows} print={print} />;
     case "logicGrid":
       return <LogicGrid rows={visual.rows} cols={visual.cols} corner={visual.corner} print={print} />;
     case "table":
       return visual.printOnly && !print ? null : <TableVisual head={visual.head} rows={visual.rows} />;
+    case "speech":
+      return <SpeechVisual items={visual.items} />;
+    case "codeTable":
+      return <CodeTableVisual pairs={visual.pairs} />;
+    case "strokes":
+      return <StrokesVisual figures={visual.figures} />;
+    case "chessboard":
+      return <ChessboardVisual cols={visual.cols} rows={visual.rows} pieces={visual.pieces} />;
+    case "cellGrid":
+      return <CellGridVisual cols={visual.cols} rows={visual.rows} rects={visual.rects} />;
+    case "venn": {
+      const regions: Partial<Record<VennRegion, VennChip[]>> = {};
+      for (const [region, labels] of Object.entries(visual.regions) as [VennRegion, string[]][]) {
+        regions[region] = labels.map((label, i) => ({ id: `${region}-${i}`, label }));
+      }
+      return (
+        <div className={print ? "max-w-[110mm]" : "rounded-2xl border border-line bg-white p-1.5"}>
+          <VennDiagram sets={visual.sets} regions={regions} />
+        </div>
+      );
+    }
   }
 }

@@ -2,7 +2,16 @@
 
 import { useState, type FormEvent, type ReactNode } from "react";
 import { Button } from "@/components/ui";
+import { useT } from "@/lib/i18n";
 import { createPin, forgetPin, unlockWithPin, useParentGate } from "@/lib/parentGate";
+
+/** Слова для сброса PIN-кода: подходит любое из них, в узбекском — с любым вариантом апострофа (oʻ, o', o‘). */
+const RESET_WORDS = ["сбросить", "oʻchirish"];
+const normalizeWord = (s: string) =>
+  s
+    .trim()
+    .toLowerCase()
+    .replace(/[ʻʼ'‘’`]/g, "ʻ");
 
 /** Показывает содержимое только взрослому (после ввода PIN-кода). */
 export function ParentGate({ children, compact = false }: { children: ReactNode; compact?: boolean }) {
@@ -13,6 +22,7 @@ export function ParentGate({ children, compact = false }: { children: ReactNode;
 }
 
 function PinForm({ mode, compact }: { mode: "create" | "enter"; compact: boolean }) {
+  const t = useT();
   const [pin, setPin] = useState("");
   const [pin2, setPin2] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -22,13 +32,16 @@ function PinForm({ mode, compact }: { mode: "create" | "enter"; compact: boolean
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
-    if (!/^\d{4}$/.test(pin)) return setError("PIN-код — это 4 цифры.");
+    if (!/^\d{4}$/.test(pin)) return setError(t("PIN-код — это 4 цифры.", "PIN-kod — 4 ta raqam."));
     if (mode === "create") {
-      if (pin !== pin2) return setError("PIN-коды не совпадают. Попробуйте ещё раз.");
+      if (pin !== pin2)
+        return setError(
+          t("PIN-коды не совпадают. Попробуйте ещё раз.", "PIN-kodlar bir xil emas. Qaytadan urinib koʻring."),
+        );
       await createPin(pin);
     } else if (!(await unlockWithPin(pin))) {
       setPin("");
-      setError("PIN-код не подошёл.");
+      setError(t("PIN-код не подошёл.", "PIN-kod mos kelmadi."));
     }
   };
 
@@ -41,15 +54,23 @@ function PinForm({ mode, compact }: { mode: "create" | "enter"; compact: boolean
         <div className="text-5xl" aria-hidden>
           🔒
         </div>
-        <h2 className="mt-2 text-2xl font-black">Раздел для взрослых</h2>
+        <h2 className="mt-2 text-2xl font-black">{t("Раздел для взрослых", "Kattalar uchun boʻlim")}</h2>
         <p className="mt-1 text-muted">
           {mode === "create"
-            ? "Здесь ответы и наблюдения. Придумайте PIN-код из 4 цифр, чтобы ребёнок случайно не увидел ответы."
-            : "Здесь ответы и наблюдения. Введите PIN-код."}
+            ? t(
+                "Здесь ответы и наблюдения. Придумайте PIN-код из 4 цифр, чтобы ребёнок случайно не увидел ответы.",
+                "Bu yerda javoblar va kuzatuvlar turadi. Farzandingiz javoblarni tasodifan koʻrib qolmasligi uchun 4 xonali PIN-kod oʻylab toping.",
+              )
+            : t(
+                "Здесь ответы и наблюдения. Введите PIN-код.",
+                "Bu yerda javoblar va kuzatuvlar turadi. PIN-kodni kiriting.",
+              )}
         </p>
         <form onSubmit={submit} className="mt-5 flex flex-col items-center gap-3">
           <label className="flex flex-col items-center gap-1">
-            <span className="text-sm font-bold text-muted">{mode === "create" ? "Новый PIN-код" : "PIN-код"}</span>
+            <span className="text-sm font-bold text-muted">
+              {mode === "create" ? t("Новый PIN-код", "Yangi PIN-kod") : t("PIN-код", "PIN-kod")}
+            </span>
             <input
               className={input}
               type="password"
@@ -63,7 +84,7 @@ function PinForm({ mode, compact }: { mode: "create" | "enter"; compact: boolean
           </label>
           {mode === "create" && (
             <label className="flex flex-col items-center gap-1">
-              <span className="text-sm font-bold text-muted">Повторите PIN-код</span>
+              <span className="text-sm font-bold text-muted">{t("Повторите PIN-код", "PIN-kodni takrorlang")}</span>
               <input
                 className={input}
                 type="password"
@@ -77,7 +98,7 @@ function PinForm({ mode, compact }: { mode: "create" | "enter"; compact: boolean
           )}
           {error && <p className="font-bold text-rose">{error}</p>}
           <Button type="submit" size="lg" className="mt-1 w-44">
-            {mode === "create" ? "Сохранить" : "Открыть"}
+            {mode === "create" ? t("Сохранить", "Saqlash") : t("Открыть", "Ochish")}
           </Button>
         </form>
         {mode === "enter" && (
@@ -88,28 +109,32 @@ function PinForm({ mode, compact }: { mode: "create" | "enter"; compact: boolean
                 onClick={() => setForgot(true)}
                 className="font-bold text-muted underline underline-offset-4"
               >
-                Забыли PIN-код?
+                {t("Забыли PIN-код?", "PIN-kodni unutdingizmi?")}
               </button>
             ) : (
               <div className="space-y-2 rounded-2xl bg-paper p-3 text-left">
                 <p className="text-muted">
-                  PIN-код хранится только на этом устройстве. Его можно сбросить — прогресс ребёнка не пропадёт. Для
-                  подтверждения напишите слово <b>сбросить</b>.
+                  {t(
+                    "PIN-код хранится только на этом устройстве. Его можно сбросить — прогресс ребёнка не пропадёт. Для подтверждения напишите слово ",
+                    "PIN-kod faqat shu qurilmada saqlanadi. Uni oʻchirib tashlash mumkin — farzandingizning natijalari yoʻqolmaydi. Tasdiqlash uchun ",
+                  )}
+                  <b>{t("сбросить", "oʻchirish")}</b>
+                  {t(".", " soʻzini yozing.")}
                 </p>
                 <div className="flex gap-2">
                   <input
                     value={resetWord}
                     onChange={(e) => setResetWord(e.target.value)}
                     className="h-10 flex-1 rounded-xl border-2 border-line px-3 outline-none focus:border-brand"
-                    aria-label="Слово для подтверждения"
+                    aria-label={t("Слово для подтверждения", "Tasdiqlash soʻzi")}
                   />
                   <Button
                     size="sm"
                     variant="secondary"
-                    disabled={resetWord.trim().toLowerCase() !== "сбросить"}
+                    disabled={!RESET_WORDS.includes(normalizeWord(resetWord))}
                     onClick={forgetPin}
                   >
-                    Сбросить
+                    {t("Сбросить", "Oʻchirish")}
                   </Button>
                 </div>
               </div>

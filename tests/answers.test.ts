@@ -3,8 +3,7 @@
  * Если кто-то поменяет условие задачи и забудет поменять ответ — тест упадёт.
  */
 import { describe, expect, it } from "vitest";
-import { findTask } from "@/content/program";
-import type { AnswerSpec, Cell, Dir, Task } from "@/content/types";
+import type { Cell, Dir } from "@/content/types";
 import { signsValue, timeMatches } from "@/lib/checks";
 import { foldsIntoCube } from "@/lib/cube";
 import { evaluate, usesForbidden } from "@/lib/expression";
@@ -22,40 +21,7 @@ import {
   sameCell,
   shortestLength,
 } from "@/lib/robot";
-
-function task(id: string): Task {
-  const found = findTask(id);
-  if (!found) throw new Error(`Нет задачи ${id}`);
-  return found.task;
-}
-
-function answer<K extends AnswerSpec["kind"]>(id: string, kind: K): Extract<AnswerSpec, { kind: K }> {
-  const a = task(id).answer;
-  if (a.kind !== kind) throw new Error(`${id}: ожидался ответ ${kind}, а в задаче ${a.kind}`);
-  return a as Extract<AnswerSpec, { kind: K }>;
-}
-
-/** Ответы числовых полей задачи: id поля → число. */
-function numbers(id: string): Record<string, number> {
-  const a = answer(id, "fields");
-  return Object.fromEntries(a.fields.map((f) => [f.id, f.type === "number" ? f.answer : NaN]));
-}
-
-function times(id: string): Record<string, string> {
-  const a = answer(id, "fields");
-  return Object.fromEntries(a.fields.map((f) => [f.id, f.type === "time" || f.type === "coord" ? f.answer : ""]));
-}
-
-function permutations<T>(items: T[]): T[][] {
-  if (items.length <= 1) return [items];
-  return items.flatMap((x, i) => permutations([...items.slice(0, i), ...items.slice(i + 1)]).map((p) => [x, ...p]));
-}
-
-const addMinutes = (hhmm: string, minutes: number) => {
-  const [h, m] = hhmm.split(":").map(Number);
-  const total = (h * 60 + m + minutes + 24 * 60) % (24 * 60);
-  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")}`;
-};
+import { addMinutes, answer, numbers, permutations, task, times } from "./helpers";
 
 describe("День 1", () => {
   it("19 + 19 + 19 и удобные пары", () => {

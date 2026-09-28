@@ -1,11 +1,13 @@
 import type { Day, Task, Week } from "./types";
 import { week1 } from "./week1";
+import { week2 } from "./week2";
+import { week3 } from "./week3";
 
 /**
  * Все недели программы. Чтобы добавить новую неделю, создайте папку
- * `src/content/week2` по образцу `week1` и добавьте её в этот массив.
+ * `src/content/week4` по образцу `week1`–`week3` и добавьте её в этот массив.
  */
-export const WEEKS: Week[] = [week1];
+export const WEEKS: Week[] = [week1, week2, week3];
 
 export const PROGRAM = {
   title: "Лаборатория Давлатжона",

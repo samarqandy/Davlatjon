@@ -1,4 +1,7 @@
+"use client";
+
 import type { Cell } from "@/content/types";
+import { useT } from "@/lib/i18n";
 import { cellKey, type RobotMap } from "@/lib/robot";
 
 export interface RobotBoardProps {
@@ -23,6 +26,7 @@ export function RobotBoard({
   cell = 56,
   className,
 }: RobotBoardProps) {
+  const t = useT();
   const W = map.cols * cell;
   const H = map.rows * cell;
   const center = (c: Cell) => ({ x: c[0] * cell + cell / 2, y: c[1] * cell + cell / 2 });
@@ -37,7 +41,7 @@ export function RobotBoard({
       className={className}
       style={{ maxWidth: W + 6 }}
       role="img"
-      aria-label={`Поле ${map.cols} на ${map.rows} клеток`}
+      aria-label={t(`Поле ${map.cols} на ${map.rows} клеток`, `${map.cols}×${map.rows} katakli maydon`)}
     >
       <rect x={-3} y={-3} width={W + 6} height={H + 6} rx={12} fill="#eef2ff" />
       {Array.from({ length: map.rows }, (_, r) =>

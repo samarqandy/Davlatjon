@@ -7,6 +7,7 @@ import type { AnswerSpec } from "@/content/types";
 import { signsValue } from "@/lib/checks";
 import { evaluate, prettyExpression, usesForbidden } from "@/lib/expression";
 import { askExplain, praise, retrySub } from "@/lib/feedback";
+import { useLang, useT } from "@/lib/i18n";
 import { addFound, markSolved, recordCheck, saveTaskInput, useTask } from "@/lib/store";
 import { Feedback, type FeedbackState } from "./Feedback";
 
@@ -18,6 +19,8 @@ type RulesSpec = Extract<AnswerSpec, { kind: "rules" }>;
 // ---------------------------------------------------------------------------
 
 export function SignsPuzzle({ taskId, spec, hintsLeft }: { taskId: string; spec: SignsSpec; hintsLeft: boolean }) {
+  const t = useT();
+  const lang = useLang();
   const progress = useTask(taskId);
   const [signs, setSigns] = useState<("+" | "−" | "")[][]>(
     () => (progress.input?.signs as ("+" | "−" | "")[][]) ?? spec.rows.map((r) => r.answer.map(() => "")),
@@ -45,14 +48,18 @@ export function SignsPuzzle({ taskId, spec, hintsLeft }: { taskId: string; spec:
     recordCheck(taskId, ok);
     setFeedback(
       ok
-        ? { tone: "success", text: praise(n), sub: askExplain(n) }
-        : { tone: "retry", text: "Посмотри, что получается в каждой строчке.", sub: retrySub(n, hintsLeft) },
+        ? { tone: "success", text: praise(n, lang), sub: askExplain(n, lang) }
+        : {
+            tone: "retry",
+            text: t("Посмотри, что получается в каждой строчке.", "Har bir qatorda nima chiqayotganiga qara."),
+            sub: retrySub(n, hintsLeft, lang),
+          },
     );
   };
 
   return (
     <div className="space-y-4">
-      <p className="text-sm font-bold text-muted">Нажимай на окошки: + или −.</p>
+      <p className="text-sm font-bold text-muted">{t("Нажимай на окошки: + или −.", "Katakchalarni bos: + yoki −.")}</p>
       <div className="space-y-3">
         {spec.rows.map((row, ri) => (
           <div key={ri} className="flex flex-wrap items-center gap-1.5 rounded-2xl bg-white px-3 py-2.5 shadow-card">
@@ -69,7 +76,10 @@ export function SignsPuzzle({ taskId, spec, hintsLeft }: { taskId: string; spec:
                         ? "border-brand bg-brand-soft text-brand-dark"
                         : "border-dashed border-brand/60 bg-white text-brand/40",
                     )}
-                    aria-label={`Знак ${i + 1}: ${signs[ri][i] || "пусто"}`}
+                    aria-label={t(
+                      `Знак ${i + 1}: ${signs[ri][i] || "пусто"}`,
+                      `${i + 1}-belgi: ${signs[ri][i] || "boʻsh"}`,
+                    )}
                   >
                     {signs[ri][i] || "?"}
                   </button>
@@ -84,14 +94,16 @@ export function SignsPuzzle({ taskId, spec, hintsLeft }: { taskId: string; spec:
                   results[ri] === row.result ? "bg-mint-soft text-[#047857]" : "bg-sun-soft text-[#7a4b00]",
                 )}
               >
-                {results[ri] === row.result ? "✓ верно" : `получается ${results[ri]}`}
+                {results[ri] === row.result
+                  ? t("✓ верно", "✓ toʻgʻri")
+                  : t(`получается ${results[ri]}`, `${results[ri]} chiqyapti`)}
               </span>
             )}
           </div>
         ))}
       </div>
       <Button onClick={check} size="lg" disabled={!filled}>
-        Проверить
+        {t("Проверить", "Tekshirish")}
       </Button>
       <Feedback state={feedback} />
     </div>
@@ -113,6 +125,7 @@ export function ExpressionsPuzzle({
   target: number;
   forbidden: string[];
 }) {
+  const t = useT();
   const progress = useTask(taskId);
   const [expr, setExpr] = useState("");
   const [result, setResult] = useState<string | null>(null);
@@ -132,8 +145,8 @@ export function ExpressionsPuzzle({
       setResult("…");
       setFeedback({
         tone: "info",
-        text: "Пример записан не до конца.",
-        sub: "Проверь, чтобы после каждого знака стояло число.",
+        text: t("Пример записан не до конца.", "Misol oxirigacha yozilmagan."),
+        sub: t("Проверь, чтобы после каждого знака стояло число.", "Har bir belgidan keyin son turganini tekshir."),
       });
       return;
     }
@@ -143,13 +156,20 @@ export function ExpressionsPuzzle({
     if (r.value !== target) {
       setFeedback({
         tone: "retry",
-        text: `Получилось ${r.value}, а нужно ${target}.`,
-        sub: "Что нужно изменить, чтобы получилось ровно столько?",
+        text: t(`Получилось ${r.value}, а нужно ${target}.`, `${r.value} chiqdi, lekin ${target} kerak.`),
+        sub: t(
+          "Что нужно изменить, чтобы получилось ровно столько?",
+          "Aynan shuncha chiqishi uchun nimani oʻzgartirish kerak?",
+        ),
       });
       return;
     }
     if (found.includes(pretty)) {
-      setFeedback({ tone: "info", text: "Этот способ у тебя уже есть!", sub: "Найди другой." });
+      setFeedback({
+        tone: "info",
+        text: t("Этот способ у тебя уже есть!", "Bu usulni allaqachon topgansan!"),
+        sub: t("Найди другой.", "Boshqasini top."),
+      });
       return;
     }
     addFound(taskId, pretty);
@@ -157,8 +177,11 @@ export function ExpressionsPuzzle({
     if (total >= 2) markSolved(taskId);
     setFeedback({
       tone: "success",
-      text: `Получилось ${target}! Найдено способов: ${total}.`,
-      sub: total === 1 ? "Отлично! А теперь найди другой способ." : "А есть способ ещё короче или необычнее?",
+      text: t(`Получилось ${target}! Найдено способов: ${total}.`, `${target} chiqdi! Topilgan usullar: ${total} ta.`),
+      sub:
+        total === 1
+          ? t("Отлично! А теперь найди другой способ.", "Zoʻr! Endi boshqa usulini top.")
+          : t("А есть способ ещё короче или необычнее?", "Bundan ham qisqaroq yoki gʻaroyibroq usul bormi?"),
     });
   };
 
@@ -183,7 +206,13 @@ export function ExpressionsPuzzle({
                     "relative h-11 rounded-lg text-xl font-bold transition active:scale-95",
                     broken ? "bg-[#4b5563] text-[#9ca3af]" : "bg-[#f3f4f6] text-[#111827] hover:bg-white",
                   )}
-                  aria-label={broken ? `кнопка ${k} сломана` : k === "⌫" ? "стереть" : k}
+                  aria-label={
+                    broken
+                      ? t(`кнопка ${k} сломана`, `${k} tugmasi buzilgan`)
+                      : k === "⌫"
+                        ? t("стереть", "oʻchirish")
+                        : k
+                  }
                 >
                   {k}
                   {broken && (
@@ -215,7 +244,9 @@ export function ExpressionsPuzzle({
         </div>
         {found.length > 0 && (
           <div className="min-w-48 flex-1 rounded-2xl bg-white p-3 shadow-card">
-            <p className="mb-2 text-sm font-extrabold text-muted">Мои способы: {found.length}</p>
+            <p className="mb-2 text-sm font-extrabold text-muted">
+              {t(`Мои способы: ${found.length}`, `Usullarim: ${found.length}`)}
+            </p>
             <ul className="flex flex-wrap gap-2">
               {found.map((f) => (
                 <li key={f} className="tabular rounded-xl bg-mint-soft px-3 py-1 font-extrabold text-[#065f46]">
@@ -236,6 +267,7 @@ export function ExpressionsPuzzle({
 // ---------------------------------------------------------------------------
 
 export function RulesAnswer({ taskId, spec }: { taskId: string; spec: RulesSpec }) {
+  const t = useT();
   const progress = useTask(taskId);
   const [value, setValue] = useState("");
   const [feedback, setFeedback] = useState<FeedbackState | null>(null);
@@ -250,27 +282,39 @@ export function RulesAnswer({ taskId, spec }: { taskId: string; spec: RulesSpec 
       if (knownFound.includes(String(v))) {
         setFeedback({
           tone: "info",
-          text: `Число ${v} у тебя уже есть.`,
-          sub: "Придумай другое правило — и другое число!",
+          text: t(`Число ${v} у тебя уже есть.`, `${v} soni senda allaqachon bor.`),
+          sub: t("Придумай другое правило — и другое число!", "Boshqa qoida oʻylab top — shunda boshqa son chiqadi!"),
         });
       } else {
         addFound(taskId, String(v));
         recordCheck(taskId, knownFound.length + 1 >= 2);
         setFeedback({
           tone: "success",
-          text: `Да, следующим может быть ${v}! Расскажи взрослому своё правило.`,
+          text: t(
+            `Да, следующим может быть ${v}! Расскажи взрослому своё правило.`,
+            `Ha, keyingi son ${v} boʻlishi mumkin! Qoidangni kattalarga aytib ber.`,
+          ),
           sub:
             knownFound.length + 1 >= 2
-              ? "Ты нашёл разные правила — значит, по трём числам нельзя точно узнать правило!"
-              : "А теперь придумай ДРУГОЕ правило.",
+              ? t(
+                  "Ты нашёл разные правила — значит, по трём числам нельзя точно узнать правило!",
+                  "Sen har xil qoidalar topding — demak, uchta songa qarab qoidani aniq bilib boʻlmaydi!",
+                )
+              : t("А теперь придумай ДРУГОЕ правило.", "Endi BOSHQA qoida oʻylab top."),
         });
       }
     } else {
       addFound(taskId, `?${v}`);
       setFeedback({
         tone: "info",
-        text: `Интересно! Объясни взрослому, по какому правилу получается ${v}.`,
-        sub: "Если правило подходит к числам 1, 2, 4 — это тоже верный ответ.",
+        text: t(
+          `Интересно! Объясни взрослому, по какому правилу получается ${v}.`,
+          `Qiziq! Qaysi qoida boʻyicha ${v} chiqishini kattalarga tushuntirib ber.`,
+        ),
+        sub: t(
+          "Если правило подходит к числам 1, 2, 4 — это тоже верный ответ.",
+          "Agar qoida 1, 2, 4 sonlariga mos kelsa — bu ham toʻgʻri javob.",
+        ),
       });
     }
     setValue("");
@@ -291,13 +335,13 @@ export function RulesAnswer({ taskId, spec }: { taskId: string; spec: RulesSpec 
           />
         </label>
         <Button onClick={check} size="lg" disabled={!value}>
-          Проверить
+          {t("Проверить", "Tekshirish")}
         </Button>
       </div>
       <Feedback state={feedback} />
       {found.length > 0 && (
         <p className="text-sm font-bold text-muted">
-          Мои ответы:{" "}
+          {t("Мои ответы:", "Javoblarim:")}{" "}
           {found.map((f) => (
             <span
               key={f}
@@ -317,6 +361,7 @@ export function RulesAnswer({ taskId, spec }: { taskId: string; spec: RulesSpec 
 // ---------------------------------------------------------------------------
 
 export function OpenAnswer({ taskId, prompt }: { taskId: string; prompt: string }) {
+  const t = useT();
   const progress = useTask(taskId);
   const [notes, setNotes] = useState<string>(() => (progress.input?.notes as string) ?? "");
   const solved = progress.status === "solved";
@@ -327,7 +372,10 @@ export function OpenAnswer({ taskId, prompt }: { taskId: string; prompt: string 
       </p>
       <label className="block">
         <span className="mb-1 block text-sm font-bold text-muted">
-          Можешь записать здесь свои мысли (необязательно):
+          {t(
+            "Можешь записать здесь свои мысли (необязательно):",
+            "Fikrlaringni shu yerga yozib qoʻyishing mumkin (shart emas):",
+          )}
         </span>
         <textarea
           value={notes}
@@ -340,7 +388,9 @@ export function OpenAnswer({ taskId, prompt }: { taskId: string; prompt: string 
         />
       </label>
       <Button variant={solved ? "success" : "primary"} size="lg" onClick={() => markSolved(taskId)} disabled={solved}>
-        {solved ? "✓ Готово" : "✅ Я решил и рассказал взрослому"}
+        {solved
+          ? t("✓ Готово", "✓ Tayyor")
+          : t("✅ Я решил и рассказал взрослому", "✅ Yechdim va kattalarga aytib berdim")}
       </Button>
     </div>
   );

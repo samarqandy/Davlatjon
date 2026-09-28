@@ -8,115 +8,31 @@ import { useSyncExternalStore } from "react";
  * и без ошибок гидратации (на сервере и при гидратации — состояние по умолчанию).
  */
 
-export interface TaskMarks {
-  explained?: boolean;
-  anotherWay?: boolean;
-  liked?: boolean;
-  hard?: boolean;
-}
+import {
+  DEFAULT_STATE,
+  EMPTY_CHESS,
+  EMPTY_TASK,
+  REVIEW_DAYS,
+  STORAGE_KEY,
+  isoDay,
+  sanitize,
+  type AppState,
+  type ChessDiaryEntry,
+  type ChessExerciseProgress,
+  type ChessGameRecord,
+  type ChessPuzzleProgress,
+  type DayProgress,
+  type MyProblem,
+  type Settings,
+  type TaskMarks,
+  type TaskProgress,
+} from "./state";
 
-export interface TaskProgress {
-  status?: "started" | "solved";
-  /** Сколько подсказок открыто (0–5). */
-  hints: number;
-  /** Сколько раз нажата «Проверить». */
-  checks: number;
-  /** Сколько проверок не сошлось. */
-  missed: number;
-  solvedAt?: number;
-  /** Решена с первой проверки. */
-  firstTry?: boolean;
-  /** Время на задаче, мс. */
-  timeMs: number;
-  marks: TaskMarks;
-  /** Найденные варианты в задачах с несколькими ответами. */
-  found?: string[];
-  /** Сохранённый ввод ребёнка. */
-  input?: Record<string, unknown>;
-  /** Наблюдения родителя. */
-  parentChips?: string[];
-  parentNote?: string;
-}
-
-export interface DayProgress {
-  startedAt?: number;
-  completedAt?: number;
-  favorite?: string;
-  hardest?: string;
-  mood?: string;
-  parentNote?: string;
-}
-
-export interface MyProblem {
-  id: string;
-  createdAt: number;
-  title: string;
-  text: string;
-  answer?: string;
-}
-
-export interface Settings {
-  /** Пауза перед следующей подсказкой. */
-  hintPause: boolean;
-  /** Крупный текст. */
-  bigText: boolean;
-}
-
-export interface AppState {
-  version: 1;
-  tasks: Record<string, TaskProgress>;
-  days: Record<string, DayProgress>;
-  myProblems: MyProblem[];
-  /** Недельный обзор: неделя → вопрос → заметка. */
-  reviews: Record<string, Record<string, string>>;
-  settings: Settings;
-  welcomed?: boolean;
-}
-
-export const STORAGE_KEY = "davlatjon-lab:v1";
-
-export const DEFAULT_STATE: AppState = Object.freeze({
-  version: 1,
-  tasks: {},
-  days: {},
-  myProblems: [],
-  reviews: {},
-  settings: { hintPause: true, bigText: false },
-}) as AppState;
-
-export const EMPTY_TASK: TaskProgress = Object.freeze({
-  hints: 0,
-  checks: 0,
-  missed: 0,
-  timeMs: 0,
-  marks: {},
-}) as TaskProgress;
+export * from "./state";
 
 let state: AppState = DEFAULT_STATE;
 let loaded = false;
 const listeners = new Set<() => void>();
-
-function isObject(v: unknown): v is Record<string, unknown> {
-  return typeof v === "object" && v !== null && !Array.isArray(v);
-}
-
-/** Приводит данные из файла или старой версии к текущему формату. */
-export function sanitize(raw: unknown): AppState {
-  if (!isObject(raw)) return DEFAULT_STATE;
-  const settings = isObject(raw.settings) ? raw.settings : {};
-  return {
-    version: 1,
-    tasks: isObject(raw.tasks) ? (raw.tasks as AppState["tasks"]) : {},
-    days: isObject(raw.days) ? (raw.days as AppState["days"]) : {},
-    myProblems: Array.isArray(raw.myProblems) ? (raw.myProblems as MyProblem[]) : [],
-    reviews: isObject(raw.reviews) ? (raw.reviews as AppState["reviews"]) : {},
-    settings: {
-      hintPause: typeof settings.hintPause === "boolean" ? settings.hintPause : true,
-      bigText: typeof settings.bigText === "boolean" ? settings.bigText : false,
-    },
-    welcomed: raw.welcomed === true,
-  };
-}
 
 function ensureLoaded() {
   if (loaded || typeof window === "undefined") return;
@@ -164,6 +80,11 @@ function subscribe(listener: () => void) {
   return () => listeners.delete(listener);
 }
 
+/** Подписка на любые изменения прогресса (для синхронизации с аккаунтом). */
+export function onStateChange(listener: () => void): () => void {
+  return subscribe(listener);
+}
+
 /** Селектор должен возвращать часть состояния или примитив (не новый объект). */
 export function useStore<T>(selector: (s: AppState) => T): T {
   return useSyncExternalStore(
@@ -186,6 +107,10 @@ export function useHydrated(): boolean {
 
 export function useTask(taskId: string): TaskProgress {
   return useStore((s) => s.tasks[taskId] ?? EMPTY_TASK);
+}
+
+export function useChessExercise(id: string): ChessExerciseProgress {
+  return useStore((s) => s.chess[id] ?? EMPTY_CHESS);
 }
 
 // ---------------------------------------------------------------------------
@@ -262,6 +187,137 @@ export function addProblem(p: Omit<MyProblem, "id" | "createdAt">) {
 
 export function removeProblem(id: string) {
   setState((s) => ({ ...s, myProblems: s.myProblems.filter((p) => p.id !== id) }));
+}
+
+function updateChess(id: string, update: (p: ChessExerciseProgress) => Partial<ChessExerciseProgress>) {
+  setState((s) => {
+    const prev = s.chess[id] ?? EMPTY_CHESS;
+    return { ...s, chess: { ...s.chess, [id]: { ...prev, ...update(prev) } } };
+  });
+}
+
+/** Упражнение шахматной школы решено; best — сколько ходов понадобилось. */
+export function chessSolved(id: string, best?: number) {
+  updateChess(id, (p) => ({
+    solvedAt: p.solvedAt ?? Date.now(),
+    ...(best !== undefined ? { best: Math.min(best, p.best ?? Infinity) } : {}),
+  }));
+}
+
+export function chessMiss(id: string) {
+  updateChess(id, (p) => ({ misses: p.misses + 1 }));
+}
+
+export function chessFound(id: string, key: string) {
+  updateChess(id, (p) => (p.found?.includes(key) ? {} : { found: [...(p.found ?? []), key] }));
+}
+
+export function recordChessGame(game: Omit<ChessGameRecord, "id" | "at"> & { id?: string }): string {
+  const id = game.id ?? `g${Date.now().toString(36)}`;
+  setState((s) => ({
+    ...s,
+    chessGames: [{ ...game, id, at: Date.now() }, ...s.chessGames.filter((g) => g.id !== id)].slice(0, 200),
+  }));
+  return id;
+}
+
+export function saveChessAnalysis(id: string, analysis: NonNullable<ChessGameRecord["analysis"]>) {
+  setState((s) => ({ ...s, chessGames: s.chessGames.map((g) => (g.id === id ? { ...g, analysis } : g)) }));
+}
+
+export function chessOwnPuzzleSolved(key: string) {
+  setState((s) => ({ ...s, chessOwnPuzzles: { ...s.chessOwnPuzzles, [key]: s.chessOwnPuzzles[key] ?? Date.now() } }));
+}
+
+export function chessGuessScored(id: string, score: number, max: number) {
+  setState((s) =>
+    (s.chessGuess[id]?.score ?? -1) >= score ? s : { ...s, chessGuess: { ...s.chessGuess, [id]: { score, max } } },
+  );
+}
+
+export function chessDrillRecord(mode: string, score: number) {
+  setState((s) =>
+    (s.chessDrills[mode] ?? 0) >= score ? s : { ...s, chessDrills: { ...s.chessDrills, [mode]: score } },
+  );
+}
+
+/**
+ * Задача решена. clean — без ошибок в этой попытке: тогда задача из очереди повторения переходит
+ * в следующую коробку (повторить позже), а после четвёртой — считается выученной.
+ */
+export function chessPuzzleSolved(id: string, clean = true, now = Date.now()) {
+  setState((s) => {
+    const p = s.chessPuzzles[id];
+    let box = p?.box;
+    let due = p?.due;
+    if (box && clean && due && due <= isoDay(now)) {
+      box += 1;
+      due = box > REVIEW_DAYS.length ? undefined : isoDay(now + REVIEW_DAYS[box - 1] * 86_400_000);
+      if (!due) box = undefined;
+    }
+    return {
+      ...s,
+      chessPuzzles: {
+        ...s.chessPuzzles,
+        [id]: { misses: p?.misses ?? 0, solvedAt: p?.solvedAt ?? now, box, due },
+      },
+    };
+  });
+}
+
+/** Ошибка в задаче: она попадает в первую коробку — повторить завтра. */
+export function chessPuzzleMiss(id: string, now = Date.now()) {
+  setState((s) => ({
+    ...s,
+    chessPuzzles: {
+      ...s.chessPuzzles,
+      [id]: {
+        ...s.chessPuzzles[id],
+        misses: (s.chessPuzzles[id]?.misses ?? 0) + 1,
+        box: 1,
+        due: isoDay(now + 86_400_000),
+      },
+    },
+  }));
+}
+
+/** Задачи, которые пора повторить сегодня. */
+export function duePuzzles(progress: Record<string, ChessPuzzleProgress>, today: string): string[] {
+  return Object.entries(progress)
+    .filter(([, p]) => p.due && p.due <= today)
+    .sort((a, b) => (a[1].due! < b[1].due! ? -1 : 1))
+    .map(([id]) => id);
+}
+
+export function chessStreakReached(n: number) {
+  setState((s) => (n > s.chessStreak ? { ...s, chessStreak: n } : s));
+}
+
+export function chessOpeningLearned(id: string, side: "white" | "black") {
+  setState((s) => ({
+    ...s,
+    chessOpenings: { ...s.chessOpenings, [`${id}:${side}`]: s.chessOpenings[`${id}:${side}`] ?? Date.now() },
+  }));
+}
+
+export function chessGameViewed(id: string) {
+  setState((s) => ({ ...s, chessGamesViewed: { ...s.chessGamesViewed, [id]: s.chessGamesViewed[id] ?? Date.now() } }));
+}
+
+export function addChessDiary(entry: Omit<ChessDiaryEntry, "id" | "createdAt">) {
+  setState((s) => ({
+    ...s,
+    chessDiary: [{ ...entry, id: `d${Date.now().toString(36)}`, createdAt: Date.now() }, ...s.chessDiary],
+  }));
+}
+
+export function removeChessDiary(id: string) {
+  setState((s) => ({ ...s, chessDiary: s.chessDiary.filter((e) => e.id !== id) }));
+}
+
+/** Задание школы эндшпиля решено (время первого решения не меняется). */
+export function chessEndgameSolved(id: string, now = Date.now()) {
+  setState((s) => (s.chessEndgames[id] ? s : { ...s, chessEndgames: { ...s.chessEndgames, [id]: now } }));
 }
 
 export function updateSettings(patch: Partial<Settings>) {

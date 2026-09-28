@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button, cn } from "@/components/ui";
+import { useT } from "@/lib/i18n";
 import { magicSum, SIDES, sideSums, type TriangleValues } from "@/lib/magicTriangle";
 import { addFound, markSolved, saveTaskInput, useTask } from "@/lib/store";
 import { Feedback, type FeedbackState } from "./Feedback";
@@ -34,6 +35,7 @@ export function TriangleBoard({
   onSelect?: (i: number) => void;
   showSums?: boolean;
 }) {
+  const t = useT();
   const sums = sideSums(values);
   return (
     <svg
@@ -41,7 +43,7 @@ export function TriangleBoard({
       width="100%"
       className="max-w-[340px]"
       role="img"
-      aria-label="Треугольник с шестью кружками"
+      aria-label={t("Треугольник с шестью кружками", "Olti doirachali uchburchak")}
     >
       <polygon
         points={`${SPOTS[0].x},${SPOTS[0].y} ${SPOTS[1].x},${SPOTS[1].y} ${SPOTS[2].x},${SPOTS[2].y}`}
@@ -73,7 +75,7 @@ export function TriangleBoard({
             role="button"
             tabIndex={0}
             className="cursor-pointer"
-            aria-label={`Кружок ${i + 1}${v ? `: ${v}` : ""}`}
+            aria-label={t(`Кружок ${i + 1}${v ? `: ${v}` : ""}`, `${i + 1}-doiracha${v ? `: ${v}` : ""}`)}
             onClick={() => onSelect(i)}
             onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onSelect(i)}
           >
@@ -106,6 +108,7 @@ export function TriangleBoard({
 }
 
 export function MagicTrianglePuzzle({ taskId, numbers, sums }: { taskId: string; numbers: number[]; sums: number[] }) {
+  const t = useT();
   const progress = useTask(taskId);
   const [values, setValues] = useState<TriangleValues>(
     () => (progress.input?.triangle as TriangleValues) ?? Array(6).fill(null),
@@ -129,16 +132,28 @@ export function MagicTrianglePuzzle({ taskId, numbers, sums }: { taskId: string;
       if (s === 9 || found.length + (isNew ? 1 : 0) >= 2) markSolved(taskId);
       setFeedback({
         tone: "success",
-        text: `На каждой стороне сумма ${s}! ${isNew ? "Новое открытие 🔬" : "Эта сумма уже есть в дневнике."}`,
+        text: t(
+          `На каждой стороне сумма ${s}! ${isNew ? "Новое открытие 🔬" : "Эта сумма уже есть в дневнике."}`,
+          `Har bir tomonda yigʻindi ${s}! ${isNew ? "Yangi kashfiyot 🔬" : "Bu yigʻindi kundalikda allaqachon bor."}`,
+        ),
         sub: isNew
-          ? "Запиши, какие числа стоят в углах. А какая сумма получится, если поменять числа в углах?"
-          : "Попробуй получить другую сумму.",
+          ? t(
+              "Запиши, какие числа стоят в углах. А какая сумма получится, если поменять числа в углах?",
+              "Burchaklarda qaysi sonlar turganini yozib qoʻy. Burchakdagi sonlarni almashtirsang, yigʻindi qancha chiqadi?",
+            )
+          : t("Попробуй получить другую сумму.", "Boshqa yigʻindi hosil qilib koʻr."),
       });
     } else if (next.every((v) => v !== null)) {
       setFeedback({
         tone: "info",
-        text: "Все числа расставлены, но суммы на сторонах разные.",
-        sub: "Посмотри на суммы у сторон: какую сторону нужно «подправить»?",
+        text: t(
+          "Все числа расставлены, но суммы на сторонах разные.",
+          "Hamma sonlar joyida, lekin tomonlardagi yigʻindilar har xil.",
+        ),
+        sub: t(
+          "Посмотри на суммы у сторон: какую сторону нужно «подправить»?",
+          "Tomonlardagi yigʻindilarga qara: qaysi tomonni «tuzatish» kerak?",
+        ),
       });
     } else {
       setFeedback(null);
@@ -156,7 +171,10 @@ export function MagicTrianglePuzzle({ taskId, numbers, sums }: { taskId: string;
   return (
     <div className="space-y-4">
       <p className="text-sm font-bold text-muted">
-        Нажми на кружок, а потом на число. Суммы сторон видны сразу — это лаборатория для опытов!
+        {t(
+          "Нажми на кружок, а потом на число. Суммы сторон видны сразу — это лаборатория для опытов!",
+          "Avval doirachani, keyin sonni bos. Tomonlar yigʻindisi darrov koʻrinadi — bu tajribalar laboratoriyasi!",
+        )}
       </p>
       <div className="flex flex-wrap items-start gap-5">
         <div className="w-full max-w-[340px] rounded-3xl bg-white p-2 shadow-card">
@@ -168,7 +186,7 @@ export function MagicTrianglePuzzle({ taskId, numbers, sums }: { taskId: string;
           />
         </div>
         <div className="space-y-4">
-          <div className="flex flex-wrap gap-2" role="group" aria-label="Числа">
+          <div className="flex flex-wrap gap-2" role="group" aria-label={t("Числа", "Sonlar")}>
             {numbers.map((n) => {
               const used = values.includes(n);
               return (
@@ -190,10 +208,12 @@ export function MagicTrianglePuzzle({ taskId, numbers, sums }: { taskId: string;
             })}
           </div>
           <Button variant="ghost" onClick={clear}>
-            Очистить треугольник
+            {t("Очистить треугольник", "Uchburchakni tozalash")}
           </Button>
           <div className="rounded-2xl bg-white p-3 shadow-card">
-            <p className="mb-2 text-sm font-extrabold text-muted">Дневник исследователя: какие суммы получились?</p>
+            <p className="mb-2 text-sm font-extrabold text-muted">
+              {t("Дневник исследователя: какие суммы получились?", "Tadqiqotchi kundaligi: qanday yigʻindilar chiqdi?")}
+            </p>
             <div className="flex flex-wrap gap-1.5">
               {[8, 9, 10, 11, 12, 13].map((s) => (
                 <span
@@ -204,7 +224,7 @@ export function MagicTrianglePuzzle({ taskId, numbers, sums }: { taskId: string;
                       ? "bg-[#a21caf] text-white"
                       : "border-2 border-dashed border-[#e9d5ff] text-[#c4b5fd]",
                   )}
-                  title={found.includes(s) ? "получилось" : "ещё не получалось"}
+                  title={found.includes(s) ? t("получилось", "chiqdi") : t("ещё не получалось", "hali chiqmagan")}
                 >
                   {s}
                 </span>
@@ -212,7 +232,10 @@ export function MagicTrianglePuzzle({ taskId, numbers, sums }: { taskId: string;
             </div>
             {found.length === sums.length && (
               <p className="mt-2 text-sm font-bold text-[#86198f]">
-                Ты нашёл все возможные суммы! А почему не получаются 8 и 13?
+                {t(
+                  "Ты нашёл все возможные суммы! А почему не получаются 8 и 13?",
+                  "Mumkin boʻlgan hamma yigʻindilarni topding! Nega 8 va 13 chiqmaydi?",
+                )}
               </p>
             )}
           </div>

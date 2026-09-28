@@ -55,7 +55,7 @@ export const day6: Day = {
           type: "p",
           text: "На калькуляторе 🧮 сломалась кнопка «5». Как получить на экране число 50, ни разу не нажимая эту кнопку?",
         },
-        { type: "visual", visual: { type: "calculator", broken: ["5"] } },
+        { type: "visual", visual: { type: "calculator", broken: ["5"], target: 50 } },
         { type: "p", text: "Найди как можно больше разных способов!" },
       ],
       answer: { kind: "expressions", target: 50, forbidden: ["5"] },

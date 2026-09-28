@@ -6,6 +6,7 @@ import { PolyominoVisual, ShapeIcon } from "@/components/visuals/shapes";
 import type { AnswerSpec, Option } from "@/content/types";
 import { checkAssign, checkChoice, checkOrder, orderMatches } from "@/lib/checks";
 import { askExplain, praise, retrySub, retryTitle } from "@/lib/feedback";
+import { useLang, useT } from "@/lib/i18n";
 import { recordCheck, saveTaskInput, useTask } from "@/lib/store";
 import { Feedback, type FeedbackState } from "./Feedback";
 
@@ -34,6 +35,8 @@ function OptionContent({ option }: { option: Option }) {
 }
 
 export function ChoiceAnswer({ taskId, spec, hintsLeft }: { taskId: string; spec: ChoiceSpec; hintsLeft: boolean }) {
+  const t = useT();
+  const lang = useLang();
   const progress = useTask(taskId);
   const [selected, setSelected] = useState<string[]>(() => (progress.input?.choice as string[]) ?? []);
   const [feedback, setFeedback] = useState<FeedbackState | null>(null);
@@ -50,20 +53,26 @@ export function ChoiceAnswer({ taskId, spec, hintsLeft }: { taskId: string; spec
     const res = checkChoice(spec, selected);
     const n = attempts.current++;
     recordCheck(taskId, res.correct);
-    if (res.correct) setFeedback({ tone: "success", text: praise(n), sub: askExplain(n) });
+    if (res.correct) setFeedback({ tone: "success", text: praise(n, lang), sub: askExplain(n, lang) });
     else if (spec.multiple && res.extra === 0)
       setFeedback({
         tone: "retry",
-        text: "Всё, что ты отметил, подходит! Но это ещё не всё.",
-        sub: "Найди остальные варианты.",
+        text: t(
+          "Всё, что ты отметил, подходит! Но это ещё не всё.",
+          "Belgilaganlaringning hammasi toʻgʻri! Lekin bu hali hammasi emas.",
+        ),
+        sub: t("Найди остальные варианты.", "Qolgan variantlarni ham top."),
       });
     else if (spec.multiple && res.missing === 0)
       setFeedback({
         tone: "retry",
-        text: "Проверь каждый отмеченный вариант ещё раз.",
-        sub: "Один из них, похоже, лишний.",
+        text: t(
+          "Проверь каждый отмеченный вариант ещё раз.",
+          "Belgilagan har bir variantingni yana bir bor tekshirib koʻr.",
+        ),
+        sub: t("Один из них, похоже, лишний.", "Ulardan biri ortiqchaga oʻxshaydi."),
       });
-    else setFeedback({ tone: "retry", text: retryTitle(n), sub: retrySub(n, hintsLeft) });
+    else setFeedback({ tone: "retry", text: retryTitle(n, lang), sub: retrySub(n, hintsLeft, lang) });
   };
 
   const hasVisuals = spec.options.some((o) => o.visual);
@@ -104,7 +113,7 @@ export function ChoiceAnswer({ taskId, spec, hintsLeft }: { taskId: string; spec
         })}
       </div>
       <Button onClick={check} disabled={selected.length === 0} size="lg">
-        Проверить
+        {t("Проверить", "Tekshirish")}
       </Button>
       <Feedback state={feedback} />
     </div>
@@ -112,6 +121,8 @@ export function ChoiceAnswer({ taskId, spec, hintsLeft }: { taskId: string; spec
 }
 
 export function AssignAnswer({ taskId, spec, hintsLeft }: { taskId: string; spec: AssignSpec; hintsLeft: boolean }) {
+  const t = useT();
+  const lang = useLang();
   const progress = useTask(taskId);
   const [values, setValues] = useState<Record<string, string>>(
     () => (progress.input?.assign as Record<string, string>) ?? {},
@@ -130,12 +141,15 @@ export function AssignAnswer({ taskId, spec, hintsLeft }: { taskId: string; spec
     const res = checkAssign(spec, values);
     const n = attempts.current++;
     recordCheck(taskId, res.allCorrect);
-    if (res.allCorrect) setFeedback({ tone: "success", text: praise(n), sub: askExplain(n) });
+    if (res.allCorrect) setFeedback({ tone: "success", text: praise(n, lang), sub: askExplain(n, lang) });
     else
       setFeedback({
         tone: "retry",
-        text: `Сходится: ${res.correctCount} из ${res.total}.`,
-        sub: retrySub(n, hintsLeft),
+        text: t(
+          `Сходится: ${res.correctCount} из ${res.total}.`,
+          `${res.total} tadan ${res.correctCount} tasi toʻgʻri.`,
+        ),
+        sub: retrySub(n, hintsLeft, lang),
       });
   };
 
@@ -173,7 +187,7 @@ export function AssignAnswer({ taskId, spec, hintsLeft }: { taskId: string; spec
         ))}
       </div>
       <Button onClick={check} disabled={!filled} size="lg">
-        Проверить
+        {t("Проверить", "Tekshirish")}
       </Button>
       <Feedback state={feedback} />
     </div>
@@ -181,6 +195,8 @@ export function AssignAnswer({ taskId, spec, hintsLeft }: { taskId: string; spec
 }
 
 export function OrderAnswer({ taskId, spec, hintsLeft }: { taskId: string; spec: OrderSpec; hintsLeft: boolean }) {
+  const t = useT();
+  const lang = useLang();
   const progress = useTask(taskId);
   const [order, setOrder] = useState<string[]>(() => (progress.input?.order as string[]) ?? []);
   const [feedback, setFeedback] = useState<FeedbackState | null>(null);
@@ -197,12 +213,15 @@ export function OrderAnswer({ taskId, spec, hintsLeft }: { taskId: string; spec:
     const ok = checkOrder(spec, order);
     const n = attempts.current++;
     recordCheck(taskId, ok);
-    if (ok) setFeedback({ tone: "success", text: praise(n), sub: askExplain(n) });
+    if (ok) setFeedback({ tone: "success", text: praise(n, lang), sub: askExplain(n, lang) });
     else
       setFeedback({
         tone: "retry",
-        text: `На своих местах: ${orderMatches(spec, order)} из ${spec.items.length}.`,
-        sub: retrySub(n, hintsLeft),
+        text: t(
+          `На своих местах: ${orderMatches(spec, order)} из ${spec.items.length}.`,
+          `${spec.items.length} tadan ${orderMatches(spec, order)} tasi oʻz joyida.`,
+        ),
+        sub: retrySub(n, hintsLeft, lang),
       });
   };
 
@@ -231,7 +250,10 @@ export function OrderAnswer({ taskId, spec, hintsLeft }: { taskId: string; spec:
                 type="button"
                 onClick={() => update(order.filter((_, j) => j !== idx))}
                 className="h-12 rounded-2xl border-2 border-brand bg-brand-soft px-4 text-lg font-extrabold text-brand-dark"
-                aria-label={`${idx + 1}: ${label(order[idx])}. Нажми, чтобы убрать`}
+                aria-label={t(
+                  `${idx + 1}: ${label(order[idx])}. Нажми, чтобы убрать`,
+                  `${idx + 1}: ${label(order[idx])}. Olib tashlash uchun bos`,
+                )}
               >
                 <span className="mr-1.5 text-sm opacity-60">{idx + 1}.</span>
                 {label(order[idx])}
@@ -247,10 +269,10 @@ export function OrderAnswer({ taskId, spec, hintsLeft }: { taskId: string; spec:
       </ol>
       <div className="flex gap-2">
         <Button onClick={check} disabled={order.length !== spec.items.length} size="lg">
-          Проверить
+          {t("Проверить", "Tekshirish")}
         </Button>
         <Button variant="ghost" size="lg" onClick={() => update([])} disabled={order.length === 0}>
-          Сначала
+          {t("Сначала", "Qaytadan boshlash")}
         </Button>
       </div>
       <Feedback state={feedback} />

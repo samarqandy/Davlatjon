@@ -17,13 +17,14 @@ function roll(o: Orientation, dc: number, dr: number): Orientation {
   return { ...o, bottom: o.south, north: o.bottom, top: o.north, south: o.top };
 }
 
+/** Грани кубика: B — низ, T — верх, N/S/E/W — стороны света. */
+export const OPPOSITE_FACE: Record<string, string> = { B: "T", T: "B", N: "S", S: "N", E: "W", W: "E" };
+
 /**
- * Складывается ли фигура из 6 квадратов в куб.
- * Кубик «катится» по развёртке: каждая клетка получает грань, которая её касается.
- * Развёртка правильная, если все 6 граней разные.
+ * Кубик «катится» по фигуре: каждая клетка получает грань, которая её касается.
+ * Возвращает грань для каждой клетки («c,r» → грань) или null, если грани противоречат друг другу.
  */
-export function foldsIntoCube(cells: readonly Cell[]): boolean {
-  if (cells.length !== 6) return false;
+export function cubeFaces(cells: readonly Cell[]): Map<string, string> | null {
   const set = new Set(cells.map(([c, r]) => `${c},${r}`));
   const face = new Map<string, string>();
   const start = cells[0];
@@ -46,9 +47,19 @@ export function foldsIntoCube(cells: readonly Cell[]): boolean {
         face.set(k, next.bottom);
         stack.push([[c + dc, r + dr], next]);
       } else if (known !== next.bottom) {
-        return false;
+        return null;
       }
     }
   }
-  return face.size === 6 && new Set(face.values()).size === 6;
+  return face;
+}
+
+/**
+ * Складывается ли фигура из 6 квадратов в куб.
+ * Развёртка правильная, если все 6 граней разные.
+ */
+export function foldsIntoCube(cells: readonly Cell[]): boolean {
+  if (cells.length !== 6) return false;
+  const face = cubeFaces(cells);
+  return face !== null && face.size === 6 && new Set(face.values()).size === 6;
 }

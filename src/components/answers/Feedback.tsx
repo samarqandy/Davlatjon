@@ -1,4 +1,8 @@
+"use client";
+
+import { useEffect } from "react";
 import { cn } from "@/components/ui";
+import { cheer } from "@/lib/voice";
 
 export type FeedbackTone = "success" | "retry" | "info";
 
@@ -17,6 +21,14 @@ const STYLES: Record<FeedbackTone, string> = {
 const ICONS: Record<FeedbackTone, string> = { success: "🎉", retry: "🤔", info: "💬" };
 
 export function Feedback({ state, className }: { state: FeedbackState | null; className?: string }) {
+  const tone = state?.tone;
+  const text = state?.text;
+  useEffect(() => {
+    if (!text) return;
+    // «мат» — по-русски, «mot» — по-узбекски.
+    if (tone === "success") cheer(/мат|\bmot\b/i.test(text) ? "mate" : "praise");
+    else if (tone === "retry") cheer("retry");
+  }, [tone, text]);
   return (
     <div aria-live="polite" className={className}>
       {state && (

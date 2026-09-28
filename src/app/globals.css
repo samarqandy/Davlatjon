@@ -239,3 +239,8 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Пока загружается узбекская версия, страницу не показываем (см. layout.tsx). */
+html.i18n-wait body {
+  opacity: 0;
+}

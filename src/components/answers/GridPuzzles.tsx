@@ -3,6 +3,7 @@
 import { useMemo, useRef, useState } from "react";
 import { Button, cn } from "@/components/ui";
 import { askExplain, praise, retrySub } from "@/lib/feedback";
+import { useLang, useT } from "@/lib/i18n";
 import { checkPartition, type PartitionGrid } from "@/lib/partition";
 import { pluralize } from "@/lib/plural";
 import { addFound, markSolved, recordCheck, saveTaskInput, useTask } from "@/lib/store";
@@ -23,6 +24,7 @@ export function SymmetryGrid({
   onToggle?: (key: string) => void;
   cell?: number;
 }) {
+  const t = useT();
   const half = left[0].length;
   return (
     <div className="inline-block rounded-2xl bg-white p-2 shadow-card">
@@ -49,7 +51,10 @@ export function SymmetryGrid({
                 type="button"
                 style={style}
                 onClick={() => onToggle(key)}
-                aria-label={`Строка ${r + 1}, клетка ${c - half + 1} справа: ${filled ? "закрашена" : "пустая"}`}
+                aria-label={t(
+                  `Строка ${r + 1}, клетка ${c - half + 1} справа: ${filled ? "закрашена" : "пустая"}`,
+                  `${r + 1}-qator, oʻngdagi ${c - half + 1}-katak: ${filled ? "boʻyalgan" : "boʻsh"}`,
+                )}
                 aria-pressed={filled}
                 className={cn(border, filled ? "bg-sun" : "bg-white hover:bg-sun-soft")}
               />
@@ -67,6 +72,8 @@ export function SymmetryGrid({
 }
 
 export function SymmetryPuzzle({ taskId, left, hintsLeft }: { taskId: string; left: string[]; hintsLeft: boolean }) {
+  const t = useT();
+  const lang = useLang();
   const progress = useTask(taskId);
   const [right, setRight] = useState<Set<string>>(() => new Set((progress.input?.right as string[]) ?? []));
   const [feedback, setFeedback] = useState<FeedbackState | null>(null);
@@ -97,14 +104,20 @@ export function SymmetryPuzzle({ taskId, left, hintsLeft }: { taskId: string; le
     if (diff === 0)
       setFeedback({
         tone: "success",
-        text: `${praise(n)} Получилась симметричная картинка!`,
-        sub: "Как ты проверял, что отразил правильно?",
+        text: t(`${praise(n, lang)} Получилась симметричная картинка!`, `${praise(n, lang)} Rasm simmetrik chiqdi!`),
+        sub: t("Как ты проверял, что отразил правильно?", "Toʻgʻri aks ettirganingni qanday tekshirding?"),
       });
     else
       setFeedback({
         tone: "retry",
-        text: `Почти! Отличаются ${pluralize(diff, "клетка", "клетки", "клеток")}.`,
-        sub: `Проверь по строчкам: закрашенная клетка должна быть на таком же расстоянии от зеркала. ${n >= 2 && hintsLeft ? "Можно открыть подсказку 💡" : ""}`.trim(),
+        text: t(
+          `Почти! Отличаются ${pluralize(diff, "клетка", "клетки", "клеток")}.`,
+          `Oz qoldi! ${diff} ta katak farq qilyapti.`,
+        ),
+        sub: t(
+          `Проверь по строчкам: закрашенная клетка должна быть на таком же расстоянии от зеркала. ${n >= 2 && hintsLeft ? "Можно открыть подсказку 💡" : ""}`,
+          `Har bir qatorni tekshirib chiq: boʻyalgan katak koʻzgudan xuddi shunday uzoqlikda turishi kerak. ${n >= 2 && hintsLeft ? "Maslahatni ochsang ham boʻladi 💡" : ""}`,
+        ).trim(),
       });
   };
 
@@ -115,7 +128,7 @@ export function SymmetryPuzzle({ taskId, left, hintsLeft }: { taskId: string; le
       </div>
       <div className="flex flex-wrap gap-2">
         <Button onClick={check} size="lg" disabled={right.size === 0}>
-          Проверить
+          {t("Проверить", "Tekshirish")}
         </Button>
         <Button
           variant="ghost"
@@ -127,7 +140,7 @@ export function SymmetryPuzzle({ taskId, left, hintsLeft }: { taskId: string; le
           }}
           disabled={right.size === 0}
         >
-          Очистить
+          {t("Очистить", "Tozalash")}
         </Button>
       </div>
       <Feedback state={feedback} />
@@ -148,6 +161,7 @@ export function PartitionGridView({
   onToggle?: (r: number, c: number) => void;
   cell?: number;
 }) {
+  const t = useT();
   const n = grid.length;
   const border = (r: number, c: number) => {
     const v = grid[r][c];
@@ -173,7 +187,10 @@ export function PartitionGridView({
               style={style}
               className={cn(color, "transition hover:brightness-95")}
               onClick={() => onToggle(r, c)}
-              aria-label={`Клетка ${r + 1}-${c + 1}: часть ${v === 0 ? "синяя" : "жёлтая"}`}
+              aria-label={t(
+                `Клетка ${r + 1}-${c + 1}: часть ${v === 0 ? "синяя" : "жёлтая"}`,
+                `${r + 1}-${c + 1} katak: ${v === 0 ? "koʻk" : "sariq"} qism`,
+              )}
             />
           ) : (
             <span key={`${r}-${c}`} style={style} className={color} />
@@ -198,6 +215,8 @@ export function PartitionPuzzle({
   distinct: number;
   hintsLeft: boolean;
 }) {
+  const t = useT();
+  const lang = useLang();
   const progress = useTask(taskId);
   const empty = () => Array.from({ length: size }, () => Array.from({ length: size }, () => 1));
   const [grid, setGrid] = useState<PartitionGrid>(() => (progress.input?.grid as PartitionGrid) ?? empty());
@@ -219,18 +238,34 @@ export function PartitionPuzzle({
     if (!res.ok) {
       recordCheck(taskId, false);
       const msg = {
-        sizes: `В частях должно быть поровну клеток: по ${(size * size) / 2}.`,
-        connected: "Каждая часть должна быть одним целым куском.",
-        shape: "Части пока разные по форме. Представь, что одну часть повернули — совпадает с другой?",
+        sizes: t(
+          `В частях должно быть поровну клеток: по ${(size * size) / 2}.`,
+          `Ikkala qismda kataklar teng boʻlishi kerak: ${(size * size) / 2} tadan.`,
+        ),
+        connected: t(
+          "Каждая часть должна быть одним целым куском.",
+          "Har bir qism bitta yaxlit boʻlak boʻlishi kerak.",
+        ),
+        shape: t(
+          "Части пока разные по форме. Представь, что одну часть повернули — совпадает с другой?",
+          "Qismlarning shakli hozircha har xil. Tasavvur qil: bir qismni aylantirsak, ikkinchisiga mos keladimi?",
+        ),
       }[res.reason];
-      setFeedback({ tone: "retry", text: msg, sub: n >= 2 && hintsLeft ? "Можно открыть подсказку 💡" : undefined });
+      setFeedback({
+        tone: "retry",
+        text: msg,
+        sub: n >= 2 && hintsLeft ? t("Можно открыть подсказку 💡", "Maslahatni ochsang ham boʻladi 💡") : undefined,
+      });
       return;
     }
     if (found.includes(res.key)) {
       setFeedback({
         tone: "info",
-        text: "Этот способ у тебя уже есть (может быть, повёрнутый или отражённый).",
-        sub: "Попробуй сделать разрез по-новому!",
+        text: t(
+          "Этот способ у тебя уже есть (может быть, повёрнутый или отражённый).",
+          "Bu usulni allaqachon topgansan (balki aylantirilgan yoki aks ettirilgan holda).",
+        ),
+        sub: t("Попробуй сделать разрез по-новому!", "Boshqacha qilib kesib koʻr!"),
       });
       return;
     }
@@ -239,11 +274,24 @@ export function PartitionPuzzle({
     if (total >= 2) markSolved(taskId);
     setFeedback(
       total >= distinct
-        ? { tone: "success", text: `Ты нашёл все ${distinct} способов! 🏆`, sub: "Что общего у всех разрезов?" }
+        ? {
+            tone: "success",
+            text: t(`Ты нашёл все ${distinct} способов! 🏆`, `${distinct} ta usulning hammasini topding! 🏆`),
+            sub: t("Что общего у всех разрезов?", "Bu kesishlarning hammasida qanday oʻxshashlik bor?"),
+          }
         : {
             tone: "success",
-            text: `${praise(n)} Новый способ! Найдено: ${total}.`,
-            sub: total === 1 ? "А теперь найди другой — например, со «ступенькой»." : "Есть ли ещё?",
+            text: t(
+              `${praise(n, lang)} Новый способ! Найдено: ${total}.`,
+              `${praise(n, lang)} Yangi usul! Jami topilgani: ${total} ta.`,
+            ),
+            sub:
+              total === 1
+                ? t(
+                    "А теперь найди другой — например, со «ступенькой».",
+                    "Endi boshqasini top — masalan, «zinapoya» shaklidagisini.",
+                  )
+                : t("Есть ли ещё?", "Yana bormikan?"),
           },
     );
   };
@@ -251,12 +299,15 @@ export function PartitionPuzzle({
   return (
     <div className="space-y-4">
       <p className="text-sm font-bold text-muted">
-        Нажимай на клетки, чтобы раскрасить одну часть в синий цвет. Вторая часть — жёлтая.
+        {t(
+          "Нажимай на клетки, чтобы раскрасить одну часть в синий цвет. Вторая часть — жёлтая.",
+          "Bir qismni koʻk rangga boʻyash uchun kataklarni bos. Ikkinchi qism — sariq.",
+        )}
       </p>
       <PartitionGridView grid={grid} onToggle={toggle} />
       <div className="flex flex-wrap gap-2">
         <Button onClick={check} size="lg">
-          Проверить разрез
+          {t("Проверить разрез", "Kesishni tekshirish")}
         </Button>
         <Button
           variant="ghost"
@@ -268,13 +319,15 @@ export function PartitionPuzzle({
             setFeedback(null);
           }}
         >
-          Очистить
+          {t("Очистить", "Tozalash")}
         </Button>
       </div>
       <Feedback state={feedback} />
       {found.length > 0 && (
         <div className="rounded-2xl bg-white p-3 shadow-card">
-          <p className="mb-2 text-sm font-extrabold text-muted">Найденные способы: {found.length}</p>
+          <p className="mb-2 text-sm font-extrabold text-muted">
+            {t(`Найденные способы: ${found.length}`, `Topilgan usullar: ${found.length}`)}
+          </p>
           <div className="flex flex-wrap gap-3">
             {found.map((k) => (
               <PartitionGridView key={k} grid={keyToGrid(k, size)} cell={14} />
@@ -301,6 +354,8 @@ export function MagicSquarePuzzle({
   answer: number[][];
   hintsLeft: boolean;
 }) {
+  const t = useT();
+  const lang = useLang();
   const progress = useTask(taskId);
   const [values, setValues] = useState<Record<string, string>>(
     () => (progress.input?.square as Record<string, string>) ?? {},
@@ -331,8 +386,15 @@ export function MagicSquarePuzzle({
     recordCheck(taskId, ok);
     setFeedback(
       ok
-        ? { tone: "success", text: praise(i), sub: askExplain(i) }
-        : { tone: "retry", text: "Посмотри на суммы по краям: где они не одинаковые?", sub: retrySub(i, hintsLeft) },
+        ? { tone: "success", text: praise(i, lang), sub: askExplain(i, lang) }
+        : {
+            tone: "retry",
+            text: t(
+              "Посмотри на суммы по краям: где они не одинаковые?",
+              "Chetlardagi yigʻindilarga qara: qayerda ular bir xil emas?",
+            ),
+            sub: retrySub(i, hintsLeft, lang),
+          },
     );
   };
 
@@ -355,7 +417,7 @@ export function MagicSquarePuzzle({
                 ) : (
                   <input
                     inputMode="numeric"
-                    aria-label={`Клетка: строка ${r + 1}, столбец ${c + 1}`}
+                    aria-label={t(`Клетка: строка ${r + 1}, столбец ${c + 1}`, `Katak: ${r + 1}-qator, ${c + 1}-ustun`)}
                     value={values[`${r}-${c}`] ?? ""}
                     onChange={(e) => {
                       const next = { ...values, [`${r}-${c}`]: e.target.value.replace(/\D/g, "").slice(0, 2) };
@@ -382,7 +444,7 @@ export function MagicSquarePuzzle({
         ))}
       </div>
       <Button onClick={check} size="lg" disabled={!filled}>
-        Проверить
+        {t("Проверить", "Tekshirish")}
       </Button>
       <Feedback state={feedback} />
     </div>

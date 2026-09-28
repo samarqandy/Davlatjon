@@ -1,23 +1,27 @@
-import { COLOR_HEX, COLOR_NAME_RU } from "@/content/meta";
+"use client";
+
+import { COLOR_HEX, colorName } from "@/content/meta";
 import type { Cell, ShapeSpec } from "@/content/types";
+import { useLang, useT, type Lang } from "@/lib/i18n";
+import { pluralize } from "@/lib/plural";
 import { bounds } from "@/lib/polyomino";
 
-const SHAPE_NAME_RU: Record<ShapeSpec["shape"], string> = {
-  circle: "круг",
-  square: "квадрат",
-  triangle: "треугольник",
-  star: "звезда",
+const SHAPE_NAME: Record<Lang, Record<ShapeSpec["shape"], string>> = {
+  ru: { circle: "круг", square: "квадрат", triangle: "треугольник", star: "звезда" },
+  uz: { circle: "doira", square: "kvadrat", triangle: "uchburchak", star: "yulduz" },
 };
 
-export function shapeLabel(s: ShapeSpec): string {
-  return `${COLOR_NAME_RU[s.color]} ${SHAPE_NAME_RU[s.shape]}`;
+/** «красный круг» / «qizil doira». */
+export function shapeLabel(s: ShapeSpec, lang: Lang = "ru"): string {
+  return `${colorName(s.color, lang)} ${SHAPE_NAME[lang][s.shape]}`;
 }
 
 export function ShapeIcon({ shape, size = 48 }: { shape: ShapeSpec; size?: number }) {
+  const lang = useLang();
   const fill = COLOR_HEX[shape.color];
   const stroke = "#1d2140";
   return (
-    <svg width={size} height={size} viewBox="0 0 48 48" role="img" aria-label={shapeLabel(shape)}>
+    <svg width={size} height={size} viewBox="0 0 48 48" role="img" aria-label={shapeLabel(shape, lang)}>
       {shape.shape === "circle" && <circle cx="24" cy="24" r="18" fill={fill} stroke={stroke} strokeWidth="2" />}
       {shape.shape === "square" && (
         <rect x="7" y="7" width="34" height="34" rx="3" fill={fill} stroke={stroke} strokeWidth="2" />
@@ -39,6 +43,7 @@ export function ShapeIcon({ shape, size = 48 }: { shape: ShapeSpec; size?: numbe
 }
 
 export function ShapesVisual({ items, print }: { items: (ShapeSpec | null)[]; print?: boolean }) {
+  const lang = useLang();
   return (
     <div className="flex flex-wrap items-end gap-2">
       {items.map((s, i) => (
@@ -57,23 +62,26 @@ export function ShapesVisual({ items, print }: { items: (ShapeSpec | null)[]; pr
               {print ? "" : "?"}
             </span>
           )}
-          <span className="h-4 text-[11px] leading-4 text-muted">{s ? COLOR_NAME_RU[s.color] : ""}</span>
+          <span className="h-4 text-[11px] leading-4 text-muted">{s ? colorName(s.color, lang) : ""}</span>
         </div>
       ))}
     </div>
   );
 }
 
-/** Фигура из клеточек. */
+/** Фигура из клеточек; labels — надписи в клетках (в том же порядке, что cells). */
 export function PolyominoVisual({
   cells,
+  labels,
   size = 26,
   color = "#c7d2fe",
 }: {
   cells: readonly Cell[];
+  labels?: readonly string[];
   size?: number;
   color?: string;
 }) {
+  const t = useT();
   const { cols, rows } = bounds(cells);
   const pad = 2;
   return (
@@ -82,25 +90,187 @@ export function PolyominoVisual({
       height={rows * size + pad * 2}
       viewBox={`${-pad} ${-pad} ${cols * size + pad * 2} ${rows * size + pad * 2}`}
       role="img"
-      aria-label={`Фигура из ${cells.length} клеточек`}
+      aria-label={
+        labels
+          ? t(
+              `Фигура из ${cells.length} клеточек с числами ${labels.join(", ")}`,
+              `${cells.length} ta katakdan iborat shakl, ichidagi sonlar: ${labels.join(", ")}`,
+            )
+          : t(`Фигура из ${cells.length} клеточек`, `${cells.length} ta katakdan iborat shakl`)
+      }
     >
-      {cells.map(([c, r]) => (
-        <rect
-          key={`${c},${r}`}
-          x={c * size}
-          y={r * size}
-          width={size}
-          height={size}
-          fill={color}
-          stroke="#1d2140"
-          strokeWidth="2"
-        />
+      {cells.map(([c, r], i) => (
+        <g key={`${c},${r}`}>
+          <rect x={c * size} y={r * size} width={size} height={size} fill={color} stroke="#1d2140" strokeWidth="2" />
+          {labels?.[i] && (
+            <text
+              x={c * size + size / 2}
+              y={r * size + size / 2 + size * 0.19}
+              textAnchor="middle"
+              fontSize={size * 0.55}
+              fontWeight="900"
+              fill="#1d2140"
+            >
+              {labels[i]}
+            </text>
+          )}
+        </g>
       ))}
     </svg>
   );
 }
 
+/** Прямоугольники из точек — «точечные» числа. */
+export function DotsVisual({ figures }: { figures: { cols: number; rows: number }[] }) {
+  const t = useT();
+  const gap = 18;
+  const pad = 6;
+  return (
+    <div className="flex flex-wrap items-end gap-x-6 gap-y-3">
+      {figures.map((f, i) => {
+        const w = (f.cols - 1) * gap + pad * 2 + 12;
+        const h = (f.rows - 1) * gap + pad * 2 + 12;
+        return (
+          <figure key={i} className="flex flex-col items-center gap-1">
+            <svg
+              width={w}
+              height={h}
+              viewBox={`0 0 ${w} ${h}`}
+              role="img"
+              aria-label={t(`Фигура ${i + 1} из точек`, `Nuqtalardan tuzilgan ${i + 1}-shakl`)}
+            >
+              {Array.from({ length: f.rows }, (_, r) =>
+                Array.from({ length: f.cols }, (_, c) => (
+                  <circle
+                    key={`${c}-${r}`}
+                    cx={pad + 6 + c * gap}
+                    cy={pad + 6 + r * gap}
+                    r={6}
+                    fill="#6366f1"
+                    stroke="#312e81"
+                    strokeWidth="1.5"
+                  />
+                )),
+              )}
+            </svg>
+            <figcaption className="text-sm font-extrabold text-muted">{i + 1}</figcaption>
+          </figure>
+        );
+      })}
+    </div>
+  );
+}
+
+type Point = readonly [number, number];
+
+const r2 = (n: number) => Math.round(n * 100) / 100;
+
+/** Спичка: палочка с красной головкой, чуть короче отрезка — чтобы спички не сливались. */
+function Match({ a, b }: { a: Point; b: Point }) {
+  const dx = b[0] - a[0];
+  const dy = b[1] - a[1];
+  const len = Math.hypot(dx, dy);
+  const cut = 3.5 / len;
+  const x1 = r2(a[0] + dx * cut);
+  const y1 = r2(a[1] + dy * cut);
+  const x2 = r2(b[0] - dx * cut);
+  const y2 = r2(b[1] - dy * cut);
+  return (
+    <g>
+      <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="#d4a15a" strokeWidth="5" strokeLinecap="round" />
+      <circle cx={x2} cy={y2} r={4.2} fill="#dc2626" />
+    </g>
+  );
+}
+
+/** Отрезки дорожки из n квадратов или n треугольников. */
+function matchSegments(shape: "squares" | "triangles", n: number, unit: number): [Point, Point][] {
+  if (shape === "squares") {
+    const segs: [Point, Point][] = [];
+    for (let i = 0; i < n; i++) {
+      segs.push([
+        [i * unit, 0],
+        [(i + 1) * unit, 0],
+      ]);
+      segs.push([
+        [i * unit, unit],
+        [(i + 1) * unit, unit],
+      ]);
+    }
+    for (let i = 0; i <= n; i++)
+      segs.push([
+        [i * unit, 0],
+        [i * unit, unit],
+      ]);
+    return segs;
+  }
+  // Треугольники: вершины внизу — (k·unit, h), вверху — (k·unit + unit/2, 0).
+  const h = r2(unit * 0.866);
+  const bottom = (k: number): Point => [k * unit, h];
+  const top = (k: number): Point => [k * unit + unit / 2, 0];
+  const seen = new Map<string, [Point, Point]>();
+  const add = (a: Point, b: Point) => {
+    const key = [a.join(","), b.join(",")].sort().join("|");
+    if (!seen.has(key)) seen.set(key, [a, b]);
+  };
+  for (let j = 0; j < n; j++) {
+    const k = Math.floor(j / 2);
+    if (j % 2 === 0) {
+      add(bottom(k), bottom(k + 1));
+      add(bottom(k), top(k));
+      add(top(k), bottom(k + 1));
+    } else {
+      add(top(k), top(k + 1));
+      add(top(k), bottom(k + 1));
+      add(bottom(k + 1), top(k + 1));
+    }
+  }
+  return [...seen.values()];
+}
+
+/** Дорожки из спичек: квадраты или треугольники в ряд. */
+export function MatchesVisual({ shape, figures }: { shape: "squares" | "triangles"; figures: number[] }) {
+  const t = useT();
+  const unit = shape === "squares" ? 42 : 46;
+  const pad = 8;
+  return (
+    <div className="flex flex-wrap items-end gap-x-7 gap-y-3">
+      {figures.map((n) => {
+        const segs = matchSegments(shape, n, unit);
+        const xs = segs.flatMap(([a, b]) => [a[0], b[0]]);
+        const ys = segs.flatMap(([a, b]) => [a[1], b[1]]);
+        const w = Math.max(...xs) + pad * 2;
+        const h = Math.max(...ys) + pad * 2;
+        return (
+          <figure key={n} className="flex flex-col items-center gap-1">
+            <svg
+              width={w}
+              height={h}
+              viewBox={`${-pad} ${-pad} ${w} ${h}`}
+              role="img"
+              aria-label={t(
+                `Дорожка из спичек: ${
+                  shape === "squares"
+                    ? pluralize(n, "квадрат", "квадрата", "квадратов")
+                    : pluralize(n, "треугольник", "треугольника", "треугольников")
+                }`,
+                `Gugurt choʻplaridan yoʻlak: ${n} ta ${shape === "squares" ? "kvadrat" : "uchburchak"}`,
+              )}
+            >
+              {segs.map(([a, b], i) => (
+                <Match key={i} a={a} b={b} />
+              ))}
+            </svg>
+            <figcaption className="text-sm font-extrabold text-muted">{n}</figcaption>
+          </figure>
+        );
+      })}
+    </div>
+  );
+}
+
 export function GridFigureVisual({ cols, rows }: { cols: number; rows: number }) {
+  const t = useT();
   const s = 56;
   return (
     <svg
@@ -108,7 +278,7 @@ export function GridFigureVisual({ cols, rows }: { cols: number; rows: number })
       height={rows * s + 8}
       viewBox={`-4 -4 ${cols * s + 8} ${rows * s + 8}`}
       role="img"
-      aria-label={`Прямоугольник ${cols} на ${rows} клеточки`}
+      aria-label={t(`Прямоугольник ${cols} на ${rows} клеточки`, `${cols}×${rows} katakli toʻgʻri toʻrtburchak`)}
     >
       {Array.from({ length: rows }, (_, r) =>
         Array.from({ length: cols }, (_, c) => (
@@ -129,6 +299,7 @@ export function GridFigureVisual({ cols, rows }: { cols: number; rows: number })
 }
 
 export function TriangleFanVisual({ lines }: { lines: number }) {
+  const t = useT();
   const w = 260;
   const h = 200;
   const apex = { x: w / 2, y: 12 };
@@ -142,7 +313,10 @@ export function TriangleFanVisual({ lines }: { lines: number }) {
       height={h}
       viewBox={`0 0 ${w} ${h}`}
       role="img"
-      aria-label={`Треугольник, из вершины проведено линий: ${lines}`}
+      aria-label={t(
+        `Треугольник, из вершины проведено линий: ${lines}`,
+        `Uchburchak, uchidan ${lines} ta chiziq oʻtkazilgan`,
+      )}
     >
       <polygon
         points={`${apex.x},${apex.y} ${left.x},${left.y} ${right.x},${right.y}`}
@@ -159,6 +333,7 @@ export function TriangleFanVisual({ lines }: { lines: number }) {
 }
 
 export function StaircasesVisual({ count }: { count: number }) {
+  const t = useT();
   const s = 16;
   const gap = 26;
   const widths = Array.from({ length: count }, (_, i) => (i + 1) * s);
@@ -171,7 +346,10 @@ export function StaircasesVisual({ count }: { count: number }) {
       height={maxH + 30}
       viewBox={`0 0 ${totalW} ${maxH + 30}`}
       role="img"
-      aria-label={`Лесенки из кубиков: от 1 до ${count} ступенек`}
+      aria-label={t(
+        `Лесенки из кубиков: от 1 до ${count} ступенек`,
+        `Kubiklardan yasalgan zinalar: 1 dan ${count} gacha pogʻona`,
+      )}
     >
       {widths.map((wdt, i) => {
         const n = i + 1;
@@ -204,6 +382,7 @@ export function StaircasesVisual({ count }: { count: number }) {
 }
 
 export function ChocolateVisual({ cols, rows }: { cols: number; rows: number }) {
+  const t = useT();
   const s = 44;
   const pad = 8;
   return (
@@ -212,7 +391,7 @@ export function ChocolateVisual({ cols, rows }: { cols: number; rows: number }) 
       height={rows * s + pad * 2}
       viewBox={`0 0 ${cols * s + pad * 2} ${rows * s + pad * 2}`}
       role="img"
-      aria-label={`Шоколадка ${rows} на ${cols} долек`}
+      aria-label={t(`Шоколадка ${rows} на ${cols} долек`, `${rows}×${cols} boʻlakli shokolad`)}
     >
       <rect x="0" y="0" width={cols * s + pad * 2} height={rows * s + pad * 2} rx="10" fill="#5b3a29" />
       {Array.from({ length: rows }, (_, r) =>
@@ -238,6 +417,7 @@ export function ChocolateVisual({ cols, rows }: { cols: number; rows: number }) 
 
 /** Фигура из кубиков в изометрии. heights[ряд][столбец], ряд 0 — дальний. */
 export function IsoCubesVisual({ heights }: { heights: number[][] }) {
+  const t = useT();
   const s = 46;
   // √3/2 и 1/2 записаны явно: Math.cos/sin могут давать разные последние знаки на сервере и в браузере.
   const cx = 0.8660254 * s;
@@ -261,7 +441,7 @@ export function IsoCubesVisual({ heights }: { heights: number[][] }) {
       height={maxY - minY}
       viewBox={`${minX} ${minY} ${maxX - minX} ${maxY - minY}`}
       role="img"
-      aria-label="Фигура из кубиков"
+      aria-label={t("Фигура из кубиков", "Kubiklardan yasalgan shakl")}
     >
       {cubes.map(({ x, y, z }) => (
         <g key={`${x}-${y}-${z}`} stroke="#312e81" strokeWidth="2" strokeLinejoin="round">

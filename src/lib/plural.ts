@@ -12,8 +12,8 @@ export function pluralize(n: number, one: string, few: string, many: string): st
 }
 
 /** «7 мин» из миллисекунд, для родителя. */
-export function formatMinutes(ms: number): string {
+export function formatMinutes(ms: number, lang: "ru" | "uz" = "ru"): string {
   const min = Math.round(ms / 60000);
-  if (min < 1) return "меньше минуты";
-  return `${min} мин`;
+  if (min < 1) return lang === "uz" ? "bir daqiqadan kam" : "меньше минуты";
+  return lang === "uz" ? `${min} daqiqa` : `${min} мин`;
 }

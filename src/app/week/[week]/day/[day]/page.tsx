@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { DaySession } from "@/components/session/DaySession";
 import { allDays, dayHref, getDay } from "@/content/program";
 import type { Day } from "@/content/types";
+import { localizeDay } from "@/content/uz";
 
 type Props = { params: Promise<{ week: string; day: string }> };
 
@@ -30,5 +31,11 @@ export default async function DayPage({ params }: Props) {
   const days = allDays();
   const idx = days.findIndex((x) => x.id === d.id);
   const next = days[idx + 1];
-  return <DaySession day={forChild(d)} nextDayHref={next ? dayHref(next) : null} />;
+  // Сначала перевод, потом forChild — иначе узбекское решение попало бы в браузер ребёнка.
+  return (
+    <DaySession
+      day={{ ru: forChild(d), uz: forChild(localizeDay(d, "uz")) }}
+      nextDayHref={next ? dayHref(next) : null}
+    />
+  );
 }

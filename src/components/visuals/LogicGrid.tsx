@@ -1,6 +1,7 @@
 "use client";
 
 import { useTaskId } from "@/components/task/TaskContext";
+import { useT } from "@/lib/i18n";
 import { saveTaskInput, useStore } from "@/lib/store";
 
 const NEXT: Record<string, string> = { "": "✗", "✗": "✓", "✓": "" };
@@ -19,6 +20,7 @@ export function LogicGrid({
   print?: boolean;
 }) {
   const taskId = useTaskId();
+  const t = useT();
   const saved = useStore((s) =>
     taskId ? (s.tasks[taskId]?.input?.logicGrid as Record<string, string> | undefined) : undefined,
   );
@@ -63,7 +65,7 @@ export function LogicGrid({
                         type="button"
                         onClick={() => toggle(key)}
                         className={`h-11 w-full text-2xl font-black ${v === "✓" ? "text-mint" : "text-rose"} hover:bg-brand-soft/50`}
-                        aria-label={`${r} — ${c}: ${v === "✓" ? "да" : v === "✗" ? "нет" : "пусто"}`}
+                        aria-label={`${r} — ${c}: ${v === "✓" ? t("да", "ha") : v === "✗" ? t("нет", "yoʻq") : t("пусто", "boʻsh")}`}
                       >
                         {v}
                       </button>

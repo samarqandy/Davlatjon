@@ -5,23 +5,25 @@ import { useRouter } from "next/navigation";
 import { Button, ButtonLink, cn } from "@/components/ui";
 import { SECTIONS } from "@/content/meta";
 import type { Day } from "@/content/types";
-import { pluralize } from "@/lib/plural";
+import { countText, useLang, useT } from "@/lib/i18n";
 import { updateDay, useHydrated, useStore } from "@/lib/store";
 
 const MOODS = [
-  { emoji: "😀", label: "Было здорово" },
-  { emoji: "🙂", label: "Хорошо" },
-  { emoji: "😐", label: "Так себе" },
-  { emoji: "😕", label: "Было трудно" },
+  { emoji: "😀", ru: "Было здорово", uz: "Zoʻr boʻldi" },
+  { emoji: "🙂", ru: "Хорошо", uz: "Yaxshi" },
+  { emoji: "😐", ru: "Так себе", uz: "Oʻrtacha" },
+  { emoji: "😕", ru: "Было трудно", uz: "Qiyin boʻldi" },
 ];
 
 export function DayFinish({ day, nextDayHref }: { day: Day; nextDayHref: string | null }) {
   const router = useRouter();
+  const t = useT();
+  const lang = useLang();
   const hydrated = useHydrated();
   const tasks = useStore((s) => s.tasks);
   const progress = useStore((s) => s.days[day.id]);
 
-  const list = day.tasks.map((t) => ({ task: t, p: hydrated ? tasks[t.id] : undefined }));
+  const list = day.tasks.map((task) => ({ task, p: hydrated ? tasks[task.id] : undefined }));
   const solved = list.filter((x) => x.p?.status === "solved").length;
   const explained = list.filter((x) => x.p?.marks.explained).length;
   const anotherWay = list.filter((x) => x.p?.marks.anotherWay).length;
@@ -29,6 +31,7 @@ export function DayFinish({ day, nextDayHref }: { day: Day; nextDayHref: string 
     (x) => x.p?.status === "solved" && (x.p.hints >= 2 || x.p.missed >= 2 || x.p.marks.hard),
   );
   const done = Boolean(progress?.completedAt);
+  const left = countText(lang, day.tasks.length - solved, ["задача", "задачи", "задач"], "ta masala");
 
   const finish = () => {
     updateDay(day.id, { completedAt: progress?.completedAt ?? Date.now() });
@@ -41,25 +44,45 @@ export function DayFinish({ day, nextDayHref }: { day: Day; nextDayHref: string 
         <div className="mb-2 text-6xl" aria-hidden>
           🏁
         </div>
-        <h1 className="text-3xl font-black">Итоги дня</h1>
-        <p className="mt-2 text-lg text-muted">Ты хорошо поработал! Посмотри, что сегодня получилось.</p>
+        <h1 className="text-3xl font-black">{t("Итоги дня", "Kun yakuni")}</h1>
+        <p className="mt-2 text-lg text-muted">
+          {t(
+            "Ты хорошо поработал! Посмотри, что сегодня получилось.",
+            "Yaxshi ishlading! Qani, bugun nimalarni uddalaganingni koʻramiz.",
+          )}
+        </p>
         <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <Stat value={solved} label={`из ${day.tasks.length} задач решено`} emoji="✅" />
-          <Stat value={explained} label="объяснил решение" emoji="💬" />
-          <Stat value={anotherWay} label="нашёл другой способ" emoji="🔁" />
-          <Stat value={persisted.length} label="не сдался в трудной" emoji="🧗" />
+          <Stat
+            value={solved}
+            label={t(`из ${day.tasks.length} задач решено`, `${day.tasks.length} ta masaladan yechildi`)}
+            emoji="✅"
+          />
+          <Stat value={explained} label={t("объяснил решение", "ta yechimni tushuntirding")} emoji="💬" />
+          <Stat value={anotherWay} label={t("нашёл другой способ", "ta boshqa yoʻl topding")} emoji="🔁" />
+          <Stat
+            value={persisted.length}
+            label={t("не сдался в трудной", "ta qiyin masalada taslim boʻlmading")}
+            emoji="🧗"
+          />
         </div>
         <div className="mt-5 inline-flex items-center gap-2 rounded-2xl bg-sun-soft px-4 py-2 font-extrabold text-[#7a4b00]">
-          <span aria-hidden>{day.habit.emoji}</span> Новая привычка мыслителя: «{day.habit.name}»
+          <span aria-hidden>{day.habit.emoji}</span>{" "}
+          {t(`Новая привычка мыслителя: «${day.habit.name}»`, `Yangi fikrlash odati: «${day.habit.name}»`)}
         </div>
       </section>
 
       <section className="rounded-[2rem] border border-line bg-white p-5 shadow-card sm:p-6">
-        <h2 className="mb-3 text-xl font-extrabold">Какая задача была самой интересной?</h2>
+        <h2 className="mb-3 text-xl font-extrabold">
+          {t("Какая задача была самой интересной?", "Qaysi masala eng qiziq boʻldi?")}
+        </h2>
         <TaskPicker day={day} value={progress?.favorite} onPick={(id) => updateDay(day.id, { favorite: id })} />
-        <h2 className="mt-5 mb-3 text-xl font-extrabold">А над какой пришлось подумать дольше всего?</h2>
+        <h2 className="mt-5 mb-3 text-xl font-extrabold">
+          {t("А над какой пришлось подумать дольше всего?", "Qaysi birining ustida eng uzoq bosh qotirding?")}
+        </h2>
         <TaskPicker day={day} value={progress?.hardest} onPick={(id) => updateDay(day.id, { hardest: id })} />
-        <h2 className="mt-5 mb-3 text-xl font-extrabold">Как тебе сегодняшнее занятие?</h2>
+        <h2 className="mt-5 mb-3 text-xl font-extrabold">
+          {t("Как тебе сегодняшнее занятие?", "Bugungi mashgʻulot qanday oʻtdi?")}
+        </h2>
         <div className="flex flex-wrap gap-2">
           {MOODS.map((m) => (
             <button
@@ -75,35 +98,41 @@ export function DayFinish({ day, nextDayHref }: { day: Day; nextDayHref: string 
               )}
             >
               <span className="text-3xl">{m.emoji}</span>
-              <span className="text-xs font-bold text-muted">{m.label}</span>
+              <span className="text-xs font-bold text-muted">{t(m.ru, m.uz)}</span>
             </button>
           ))}
         </div>
         <p className="mt-5 rounded-2xl bg-brand-soft px-4 py-3 font-bold text-brand-dark">
-          🗣 Расскажи маме или папе: что нового ты сегодня понял?
+          🗣{" "}
+          {t(
+            "Расскажи маме или папе: что нового ты сегодня понял?",
+            "Oyingga yoki dadangga aytib ber: bugun nimani yangi tushunding?",
+          )}
         </p>
         <p className="mt-3 text-[0.95rem] text-muted">
-          Придумал свою задачу?{" "}
+          {t("Придумал свою задачу?", "Oʻzing masala oʻylab topdingmi?")}{" "}
           <Link href="/my-problems" className="font-extrabold text-brand hover:underline">
-            ✍️ Запиши её в «Мои задачи»
+            ✍️ {t("Запиши её в «Мои задачи»", "Uni «Masalalarim» boʻlimiga yozib qoʻy")}
           </Link>
         </p>
       </section>
 
       <div className="flex flex-wrap justify-center gap-3">
         <Button size="lg" variant="success" onClick={finish}>
-          {done ? "На главную" : "Завершить день ✓"}
+          {done ? t("На главную", "Bosh sahifaga") : t("Завершить день ✓", "Kunni yakunlash ✓")}
         </Button>
         {nextDayHref && done && (
           <ButtonLink href={nextDayHref} size="lg" variant="secondary">
-            Следующий день →
+            {t("Следующий день →", "Keyingi kun →")}
           </ButtonLink>
         )}
       </div>
       {solved < day.tasks.length && (
         <p className="text-center text-sm text-muted">
-          Осталось {pluralize(day.tasks.length - solved, "задача", "задачи", "задач")} — к ним можно вернуться в любой
-          день.
+          {t(
+            `Осталось ${left} — к ним можно вернуться в любой день.`,
+            `Yana ${left} qoldi — ularga istalgan kuni qaytishing mumkin.`,
+          )}
         </p>
       )}
     </div>
@@ -125,21 +154,22 @@ function Stat({ value, label, emoji }: { value: number; label: string; emoji: st
 function TaskPicker({ day, value, onPick }: { day: Day; value?: string; onPick: (id: string) => void }) {
   return (
     <div className="flex flex-wrap gap-2">
-      {day.tasks.map((t, i) => (
+      {day.tasks.map((task, i) => (
         <button
-          key={t.id}
+          key={task.id}
           type="button"
-          onClick={() => onPick(t.id)}
-          aria-pressed={value === t.id}
+          onClick={() => onPick(task.id)}
+          aria-pressed={value === task.id}
           className={cn(
             "flex items-center gap-1.5 rounded-2xl border-2 px-3 py-2 text-sm font-bold transition",
-            value === t.id
+            value === task.id
               ? "border-brand bg-brand-soft text-brand-dark"
               : "border-line bg-white hover:border-brand/40",
           )}
         >
-          <span aria-hidden>{SECTIONS[t.section].emoji}</span>
-          {i + 1}. {t.title}
+          {/* Значок раздела одинаковый на обоих языках. */}
+          <span aria-hidden>{SECTIONS[task.section].emoji}</span>
+          {i + 1}. {task.title}
         </button>
       ))}
     </div>

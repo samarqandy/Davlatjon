@@ -5,6 +5,7 @@ import { Button } from "@/components/ui";
 import type { GraphPuzzle as GraphSpec } from "@/content/types";
 import { askExplain, praise } from "@/lib/feedback";
 import { edgeBetween, pathTime } from "@/lib/graph";
+import { useLang, useT } from "@/lib/i18n";
 import { addFound, recordCheck, saveTaskInput, useTask } from "@/lib/store";
 import { Feedback, type FeedbackState } from "./Feedback";
 
@@ -18,6 +19,7 @@ export function GraphMap({
   path?: string[];
   onNode?: (id: string) => void;
 }) {
+  const t = useT();
   const W = 420;
   const H = 250;
   const pos = (id: string) => puzzle.nodes.find((n) => n.id === id)!;
@@ -30,7 +32,7 @@ export function GraphMap({
       width="100%"
       className="max-w-[520px]"
       role="img"
-      aria-label="Карта дорог с минутами"
+      aria-label={t("Карта дорог с минутами", "Daqiqalari yozilgan yoʻllar xaritasi")}
     >
       <rect x="0" y="0" width={W} height={H} rx="18" fill="#f0fdf4" />
       {puzzle.edges.map((e) => {
@@ -121,6 +123,8 @@ export function GraphMap({
 }
 
 export function GraphPuzzle({ taskId, puzzle }: { taskId: string; puzzle: GraphSpec }) {
+  const t = useT();
+  const lang = useLang();
   const progress = useTask(taskId);
   const [path, setPath] = useState<string[]>(() => (progress.input?.path as string[]) ?? [puzzle.start]);
   const [feedback, setFeedback] = useState<FeedbackState | null>(null);
@@ -144,16 +148,22 @@ export function GraphPuzzle({ taskId, puzzle }: { taskId: string; puzzle: GraphS
     if (path.includes(id)) {
       setFeedback({
         tone: "info",
-        text: `В «${label(id)}» ты уже был.`,
-        sub: "Нажми на последнее место в пути, чтобы вернуться на шаг назад.",
+        text: t(`В «${label(id)}» ты уже был.`, `«${label(id)}» allaqachon yoʻlingda bor.`),
+        sub: t(
+          "Нажми на последнее место в пути, чтобы вернуться на шаг назад.",
+          "Bir qadam orqaga qaytish uchun yoʻldagi oxirgi joyni bos.",
+        ),
       });
       return;
     }
     if (!edgeBetween(puzzle.edges, last, id)) {
       setFeedback({
         tone: "info",
-        text: `От «${label(last)}» до «${label(id)}» нет прямой дороги.`,
-        sub: "Выбери место, куда ведёт дорога.",
+        text: t(
+          `От «${label(last)}» до «${label(id)}» нет прямой дороги.`,
+          `«${label(last)}» bilan «${label(id)}» oʻrtasida toʻgʻridan-toʻgʻri yoʻl yoʻq.`,
+        ),
+        sub: t("Выбери место, куда ведёт дорога.", "Yoʻl olib boradigan joyni tanla."),
       });
       return;
     }
@@ -168,11 +178,21 @@ export function GraphPuzzle({ taskId, puzzle }: { taskId: string; puzzle: GraphS
       addFound(taskId, `${total}:${next.join(">")}`);
       setFeedback(
         ok
-          ? { tone: "success", text: `${praise(n)} ${total} ${puzzle.unit} — самый быстрый путь!`, sub: askExplain(n) }
+          ? {
+              tone: "success",
+              text: t(
+                `${praise(n, lang)} ${total} ${puzzle.unit} — самый быстрый путь!`,
+                `${praise(n, lang)} ${total} ${puzzle.unit} — eng tez yoʻl!`,
+              ),
+              sub: askExplain(n, lang),
+            }
           : {
               tone: "retry",
-              text: `Ты доехал за ${total} ${puzzle.unit}.`,
-              sub: "А можно быстрее? Нажми «Заново» и попробуй другой путь.",
+              text: t(`Ты доехал за ${total} ${puzzle.unit}.`, `Yoʻlga ${total} ${puzzle.unit} ketdi.`),
+              sub: t(
+                "А можно быстрее? Нажми «Заново» и попробуй другой путь.",
+                "Tezroq yetib borsa boʻlmaydimi? «Qaytadan boshlash» tugmasini bos va boshqa yoʻlni sinab koʻr.",
+              ),
             },
       );
     }
@@ -180,7 +200,12 @@ export function GraphPuzzle({ taskId, puzzle }: { taskId: string; puzzle: GraphS
 
   return (
     <div className="space-y-3">
-      <p className="text-sm font-bold text-muted">Нажимай на места по порядку, чтобы проложить путь от дома.</p>
+      <p className="text-sm font-bold text-muted">
+        {t(
+          `Нажимай на места по порядку, чтобы проложить путь от «${label(puzzle.start)}» до «${label(puzzle.finish)}».`,
+          `Joylarni birin-ketin bosib, yoʻl sol. Boshlanishi — «${label(puzzle.start)}», oxiri — «${label(puzzle.finish)}».`,
+        )}
+      </p>
       <div className="rounded-3xl bg-white p-2 shadow-card">
         <GraphMap puzzle={puzzle} path={path} onNode={onNode} />
       </div>
@@ -200,7 +225,7 @@ export function GraphPuzzle({ taskId, puzzle }: { taskId: string; puzzle: GraphS
         }}
         disabled={path.length === 1}
       >
-        ↺ Заново
+        ↺ {t("Заново", "Qaytadan boshlash")}
       </Button>
       <Feedback state={feedback} />
     </div>
