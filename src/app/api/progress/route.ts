@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 import { authConfig } from "@/lib/server/config";
-import { supabaseStore } from "@/lib/server/progressStore";
+import { neonStore } from "@/lib/server/progressStore";
 import { sameOrigin, sessionFrom } from "@/lib/server/request";
 import { mergeStates } from "@/lib/sync";
 
@@ -8,10 +8,15 @@ import { mergeStates } from "@/lib/sync";
 const MAX_BYTES = 3_000_000;
 const noStore = { "Cache-Control": "no-store" };
 
+/** Ошибка базы — в журнал сервера, но без строки подключения: в ней пароль. */
+function logStorageError(error: unknown) {
+  console.error("progress storage:", String(error).replace(/postgres(ql)?:\/\/\S+/g, "postgresql://***"));
+}
+
 function setup(request: NextRequest) {
   const cfg = authConfig();
   const user = sessionFrom(request, cfg);
-  const store = cfg.storage ? supabaseStore(cfg.storage.url, cfg.storage.serviceKey) : null;
+  const store = cfg.storage ? neonStore(cfg.storage.databaseUrl) : null;
   return { cfg, user, store };
 }
 
@@ -22,7 +27,8 @@ export async function GET(request: NextRequest) {
   try {
     const saved = await store.get(user.id);
     return Response.json({ state: saved?.state ?? null, updatedAt: saved?.updatedAt ?? null }, { headers: noStore });
-  } catch {
+  } catch (error) {
+    logStorageError(error);
     return Response.json({ error: "storage" }, { status: 502, headers: noStore });
   }
 }
@@ -48,7 +54,8 @@ export async function PUT(request: NextRequest) {
     const merged = mergeStates(body.state, saved?.state ?? {});
     await store.put(user.id, merged);
     return Response.json({ state: merged }, { headers: noStore });
-  } catch {
+  } catch (error) {
+    logStorageError(error);
     return Response.json({ error: "storage" }, { status: 502, headers: noStore });
   }
 }

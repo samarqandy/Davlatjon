@@ -9,18 +9,40 @@ Environment Variables). Birortasi boʻlmasa, sayt avvalgidek hisobsiz ishlayvera
 | Oʻzgaruvchi                                | Nima uchun                                                                                        |
 | ------------------------------------------ | ------------------------------------------------------------------------------------------------- |
 | `AUTH_SECRET`                              | Sessiya cookie imzosi uchun tasodifiy satr, kamida 32 belgi (`openssl rand -base64 48`).          |
-| `SUPABASE_URL`                             | Supabase loyiha manzili, masalan `https://abcd.supabase.co`.                                      |
-| `SUPABASE_SERVICE_ROLE_KEY`                | Supabase → Project Settings → API → `service_role` kaliti. Faqat serverda ishlatiladi.            |
+| `DATABASE_URL`                             | Neon bazasiga ulanish satri (`postgresql://…`). Vercel orqali ulansa, oʻzi qoʻshiladi (pastda).   |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Google orqali kirish uchun (pastda).                                                              |
 | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_NAME`  | Telegram orqali kirish uchun (pastda).                                                            |
 | `APP_URL`                                  | Ixtiyoriy: sayt manzili, masalan `https://davlatjon.vercel.app` (proksi xost nomini almashtirsa). |
 
-## 1. Supabase: natijalar jadvali
+Kamida bitta kirish usuli kerak: Google yoki Telegram. Oʻzgaruvchilarni qoʻshgandan keyin saytni qayta
+joylang (**Deployments → Redeploy**) — Vercel ularni faqat yangi joylashda oladi.
 
-1. Supabase’da loyiha oching (yoki mavjudini tanlang).
-2. SQL Editor’da `supabase/migrations/20260928000000_lab_progress.sql` faylini ishga tushiring —
-   `lab_progress` jadvali yaratiladi. RLS yoqilgan, siyosatlar yoʻq: jadvalga faqat sayt serveri
-   `service_role` kaliti bilan kira oladi, brauzer esa yoʻq.
+## 1. Neon: natijalar bazasi
+
+Eng oson yoʻli — Vercel’ning oʻzida:
+
+1. Vercel → `davlatjon` loyihasi → **Storage** → **Create Database** → **Neon**, tarif **Free**.
+   Hududni Vercel funksiyalari turgan joyga yaqin tanlang (**Settings → Functions → Region**;
+   odatda bu Washington — `iad1`, Neon’da unga **US East (N. Virginia)** mos keladi).
+2. Baza tayyor boʻlgach, **Connect Project** → `davlatjon` (Production va Preview).
+   Vercel `DATABASE_URL` ni oʻzi qoʻshadi. Agar ulashda prefiks yozilgan boʻlsa
+   (masalan, `STORAGE_DATABASE_URL`), shu qiymatni `DATABASE_URL` nomi bilan qoʻlda ham qoʻshing.
+
+Boshqa yoʻl: [console.neon.tech](https://console.neon.tech) → yangi loyiha → **Connect** →
+ulanish satrini (`postgresql://…`) nusxalab, Vercel’da `DATABASE_URL` ga yozing.
+
+Jadvalni qoʻlda yaratish shart emas: birinchi kirishdayoq sayt `lab_progress` jadvalini oʻzi yaratadi.
+Ulanish satri ichida bazaning paroli bor: u faqat serverda ishlatiladi, nomiga `NEXT_PUBLIC_` qoʻshmang.
+
+Jadval tuzilishi (bilib qoʻyish uchun):
+
+```sql
+create table if not exists lab_progress (
+  user_id text primary key,                  -- google:… yoki tg:…
+  state jsonb not null default '{}'::jsonb,  -- bolaning butun natijasi
+  updated_at timestamptz not null default now()
+);
+```
 
 ## 2. Google orqali kirish
 
@@ -37,11 +59,19 @@ Environment Variables). Birortasi boʻlmasa, sayt avvalgidek hisobsiz ishlayvera
 3. BotFather’da `/setdomain` → botni tanlang → sayt domeni (masalan `davlatjon.vercel.app`).
    Domen koʻrsatilmasa, Telegram tugmasi «Bot domain invalid» deydi.
 
+## 4. Tekshirish
+
+Qayta joylangandan keyin `https://davlatjon.vercel.app/api/auth/me` ni oching. `"google": true` yoki
+`"telegram": true` koʻrinsa, hammasi ulangan. `false` boʻlsa: `AUTH_SECRET` 32 belgidan qisqa emasmi,
+`DATABASE_URL` bormi, kirish usulining ikkala oʻzgaruvchisi ham yozilganmi — va sayt qayta joylanganmi.
+
 ## Qanday ishlaydi
 
 - Kirish tugmalari: **Ota-onalar uchun → Sozlamalar → Hisob**.
 - Google: OAuth 2.0 (kod + PKCE), Telegram: Login Widget imzosi (HMAC-SHA256) serverda tekshiriladi.
 - Kirgandan keyin brauzerga imzolangan `httpOnly` cookie beriladi (180 kun).
+- Natijalar Neon’dagi `lab_progress` jadvalida saqlanadi. Brauzer bazaga toʻgʻridan-toʻgʻri ulanmaydi —
+  faqat sayt serveri orqali.
 - Natijalar bir necha soniyada bir marta va sahifa yopilayotganda yuboriladi. Server kelgan natijani
   hisobdagisi bilan **birlashtiradi**: yechilgan masala yechilgan boʻlib qoladi, rekordlar eng kattasi olinadi,
   partiyalar va kundalik yozuvlari qoʻshiladi — ikki qurilma bir-birining natijasini oʻchirib yubormaydi.

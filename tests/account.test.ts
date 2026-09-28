@@ -2,7 +2,7 @@
 import { describe, expect, it } from "vitest";
 import { authConfig, availableProviders } from "@/lib/server/config";
 import { googleAuthUrl, parseGoogleIdToken, pkceChallenge } from "@/lib/server/google";
-import { supabaseStore } from "@/lib/server/progressStore";
+import { SCHEMA, neonStore, sqlStore, type SqlQuery } from "@/lib/server/progressStore";
 import { safeBack } from "@/lib/server/request";
 import { createSession, readSession } from "@/lib/server/session";
 import { telegramHash, verifyTelegram } from "@/lib/server/telegram";
@@ -72,28 +72,52 @@ describe("настройки входа", () => {
       GOOGLE_CLIENT_SECRET: "s",
       TELEGRAM_BOT_TOKEN: "1:t",
       TELEGRAM_BOT_NAME: "@lab_bot",
-      SUPABASE_URL: "https://p.supabase.co/",
-      SUPABASE_SERVICE_ROLE_KEY: "k",
+      DATABASE_URL: "postgresql://u:p@ep-x.neon.tech/neondb?sslmode=require",
     });
     expect(availableProviders(full)).toEqual({ google: true, telegram: true, botName: "lab_bot" });
-    expect(full.storage?.url).toBe("https://p.supabase.co");
+    expect(full.storage?.databaseUrl).toBe("postgresql://u:p@ep-x.neon.tech/neondb?sslmode=require");
     expect(availableProviders({ ...full, secret: "short" }).google).toBe(false);
+    // Без базы входить некуда; вместо DATABASE_URL подходит POSTGRES_URL, мусор — нет.
+    expect(availableProviders({ ...full, storage: undefined }).google).toBe(false);
+    expect(authConfig({ POSTGRES_URL: "postgres://u:p@h/db" }).storage?.databaseUrl).toBe("postgres://u:p@h/db");
+    expect(authConfig({ DATABASE_URL: "file:./dev.db" }).storage).toBeUndefined();
   });
 
-  it("хранилище говорит с Supabase REST по service_role-ключу", async () => {
-    const calls: { url: string; init?: RequestInit }[] = [];
-    const fake = (async (url: string, init?: RequestInit) => {
-      calls.push({ url, init });
-      return new Response(init?.method === "POST" ? null : JSON.stringify([{ state: { a: 1 }, updated_at: "t" }]), {
-        status: init?.method === "POST" ? 201 : 200,
-      });
-    }) as unknown as typeof fetch;
-    const store = supabaseStore("https://p.supabase.co", "key", fake);
-    expect(await store.get("tg:1")).toEqual({ state: { a: 1 }, updatedAt: "t" });
-    await store.put("tg:1", { b: 2 });
-    expect(calls[0].url).toContain("lab_progress?user_id=eq.tg%3A1");
-    expect((calls[1].init?.headers as Record<string, string>).Prefer).toContain("merge-duplicates");
-    expect((calls[1].init?.headers as Record<string, string>).apikey).toBe("key");
+  it("хранилище: таблица создаётся один раз, запись — upsert, прогресс уходит как JSON", async () => {
+    const calls: { text: string; params?: unknown[] }[] = [];
+    let failSchema = 1;
+    const query: SqlQuery = async (text, params) => {
+      calls.push({ text, params });
+      if (text === SCHEMA && failSchema-- > 0) throw new Error("гонка двух create table");
+      if (text.startsWith("select"))
+        return params?.[0] === "tg:1" ? [{ state: { a: 1 }, updated_at: new Date("2026-09-28T10:00:00Z") }] : [];
+      return [];
+    };
+    const store = sqlStore(query);
+    expect(await store.get("tg:1")).toEqual({ state: { a: 1 }, updatedAt: "2026-09-28T10:00:00.000Z" });
+    expect(await store.get("tg:2")).toBeNull();
+    await store.put("tg:1", { b: [2], note: "a\u0000b \\u0000" });
+    expect(calls.filter((c) => c.text === SCHEMA)).toHaveLength(2);
+    const upsert = calls.at(-1)!;
+    expect(upsert.text).toMatch(/on conflict \(user_id\) do update/);
+    expect(upsert.params).toEqual(["tg:1", '{"b":[2],"note":"ab \\\\u0000"}']);
+  });
+
+  it("хранилище: если база недоступна, следующий запрос пробует снова", async () => {
+    let up = false;
+    const store = sqlStore(async () => {
+      if (!up) throw new Error("нет связи");
+      return [];
+    });
+    await expect(store.get("tg:1")).rejects.toThrow("нет связи");
+    up = true;
+    expect(await store.get("tg:1")).toBeNull();
+  });
+
+  it("хранилище Neon: кривая строка подключения — ошибка запроса, а не падение при создании", async () => {
+    const store = neonStore("postgresql://oops");
+    expect(neonStore("postgresql://oops")).toBe(store);
+    await expect(store.get("tg:1")).rejects.toThrow(/connection string/i);
   });
 });
 

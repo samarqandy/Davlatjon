@@ -7,7 +7,8 @@ export interface AuthConfig {
   secret: string;
   google?: { clientId: string; clientSecret: string };
   telegram?: { botToken: string; botName: string };
-  storage?: { url: string; serviceKey: string };
+  /** Строка подключения к Postgres на Neon. */
+  storage?: { databaseUrl: string };
   /** Адрес сайта для ссылок возврата (если прокси подменяет хост). */
   appUrl?: string;
 }
@@ -19,10 +20,9 @@ export function authConfig(env: Record<string, string | undefined> = process.env
       : undefined;
   const botName = (env.TELEGRAM_BOT_NAME ?? env.NEXT_PUBLIC_TELEGRAM_BOT_NAME ?? "").replace(/^@/, "");
   const telegram = env.TELEGRAM_BOT_TOKEN && botName ? { botToken: env.TELEGRAM_BOT_TOKEN, botName } : undefined;
-  const storage =
-    env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY
-      ? { url: env.SUPABASE_URL.replace(/\/$/, ""), serviceKey: env.SUPABASE_SERVICE_ROLE_KEY }
-      : undefined;
+  // Интеграция Neon в Vercel сама кладёт DATABASE_URL (и копию в POSTGRES_URL).
+  const databaseUrl = [env.DATABASE_URL, env.POSTGRES_URL].find((url) => url && /^postgres(ql)?:\/\//.test(url));
+  const storage = databaseUrl ? { databaseUrl } : undefined;
   return { secret: env.AUTH_SECRET ?? "", google, telegram, storage, appUrl: env.APP_URL?.replace(/\/$/, "") };
 }
 
