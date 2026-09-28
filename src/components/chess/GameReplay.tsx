@@ -12,6 +12,7 @@ import { ruSan } from "@/lib/chess";
 import { chessGameViewed, useHydrated, useStore } from "@/lib/store";
 import { ChessBoard, type SquareMark } from "./ChessBoard";
 import { PhotoStrip, Portrait } from "./Figure";
+import { GuessGame, guessHero } from "./GuessGame";
 
 /** Позиции после каждого полухода (индекс 0 — начальная). */
 export function replayPositions(moves: string[]): { fen: string; from: string; to: string; san: string }[] {
@@ -104,6 +105,9 @@ export function GameReplay({ game }: { game: FamousGame }) {
   const total = game.moves.length;
   const level = CHESS_LEVELS.find((l) => l.id === game.level);
   const pictures = chessImages(game.pictures);
+  const [guess, setGuess] = useState(false);
+  const hero = guessHero(game);
+  const guessBest = useStore((s) => s.chessGuess[game.id]);
 
   const isPlaying = playing && ply < total;
 
@@ -173,102 +177,122 @@ export function GameReplay({ game }: { game: FamousGame }) {
         </section>
       )}
 
-      <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]" aria-label="Разбор партии">
-        <div className="space-y-3">
-          <ChessBoard
-            id={`game-${game.id}`}
-            position={cur.fen}
-            marks={marks}
-            maxWidth={520}
-            label={`Позиция после хода ${moveLabel}`}
-          />
-          <div className="flex flex-wrap items-center gap-1.5">
-            <Button variant="secondary" size="sm" onClick={() => go(0)} disabled={ply === 0} aria-label="В начало">
-              ⏮
-            </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => go(ply - 1)}
-              disabled={ply === 0}
-              aria-label="Ход назад"
-            >
-              ◀
-            </Button>
-            <Button size="sm" onClick={() => go(ply + 1)} disabled={ply === total} aria-label="Ход вперёд">
-              Дальше ▶
-            </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => go(total)}
-              disabled={ply === total}
-              aria-label="В конец"
-            >
-              ⏭
-            </Button>
-            <Button
-              variant={isPlaying ? "sun" : "soft"}
-              size="sm"
-              onClick={() => {
-                if (isPlaying) setPlaying(false);
-                else {
-                  if (ply === total) setPly(0);
-                  setPlaying(true);
-                }
-              }}
-            >
-              {isPlaying ? "⏸ Пауза" : "▶ Смотреть"}
-            </Button>
-            <span className="ml-auto text-sm font-extrabold text-muted">
-              {ply} / {total}
+      <div className="flex flex-wrap items-center gap-3 rounded-3xl border-2 border-brand/30 bg-brand-soft/50 p-4">
+        <p className="min-w-0 flex-1 font-bold">
+          {guess
+            ? "Режим «Угадай ход»: делай ходы за победителя — ответы соперника появятся сами."
+            : `🎯 Сыграй как ${hero.name}: угадывай ходы победителя и получай очки.`}
+          {guessBest && !guess && (
+            <span className="ml-1 text-sm text-muted">
+              Рекорд: {guessBest.score} из {guessBest.max}.
             </span>
+          )}
+        </p>
+        <Button size="sm" variant={guess ? "secondary" : "primary"} onClick={() => setGuess((g) => !g)}>
+          {guess ? "← К разбору партии" : "Играть «Угадай ход»"}
+        </Button>
+      </div>
+
+      {guess ? (
+        <GuessGame game={game} onExit={() => setGuess(false)} />
+      ) : (
+        <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]" aria-label="Разбор партии">
+          <div className="space-y-3">
+            <ChessBoard
+              id={`game-${game.id}`}
+              position={cur.fen}
+              marks={marks}
+              maxWidth={520}
+              label={`Позиция после хода ${moveLabel}`}
+            />
+            <div className="flex flex-wrap items-center gap-1.5">
+              <Button variant="secondary" size="sm" onClick={() => go(0)} disabled={ply === 0} aria-label="В начало">
+                ⏮
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => go(ply - 1)}
+                disabled={ply === 0}
+                aria-label="Ход назад"
+              >
+                ◀
+              </Button>
+              <Button size="sm" onClick={() => go(ply + 1)} disabled={ply === total} aria-label="Ход вперёд">
+                Дальше ▶
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => go(total)}
+                disabled={ply === total}
+                aria-label="В конец"
+              >
+                ⏭
+              </Button>
+              <Button
+                variant={isPlaying ? "sun" : "soft"}
+                size="sm"
+                onClick={() => {
+                  if (isPlaying) setPlaying(false);
+                  else {
+                    if (ply === total) setPly(0);
+                    setPlaying(true);
+                  }
+                }}
+              >
+                {isPlaying ? "⏸ Пауза" : "▶ Смотреть"}
+              </Button>
+              <span className="ml-auto text-sm font-extrabold text-muted">
+                {ply} / {total}
+              </span>
+            </div>
+            <div
+              className={cn(
+                "min-h-20 rounded-2xl border-2 px-4 py-3",
+                comment ? "border-brand/30 bg-brand-soft/60" : "border-line bg-white",
+              )}
+              aria-live="polite"
+            >
+              <p className="text-sm font-extrabold text-muted">{moveLabel}</p>
+              <p className="mt-1 text-lg font-semibold">
+                {comment ??
+                  (ply === total
+                    ? `Партия окончена: ${game.result}.`
+                    : "Нажимай «Дальше» — на важных ходах появятся объяснения.")}
+              </p>
+            </div>
           </div>
-          <div
-            className={cn(
-              "min-h-20 rounded-2xl border-2 px-4 py-3",
-              comment ? "border-brand/30 bg-brand-soft/60" : "border-line bg-white",
-            )}
-            aria-live="polite"
-          >
-            <p className="text-sm font-extrabold text-muted">{moveLabel}</p>
-            <p className="mt-1 text-lg font-semibold">
-              {comment ??
-                (ply === total
-                  ? `Партия окончена: ${game.result}.`
-                  : "Нажимай «Дальше» — на важных ходах появятся объяснения.")}
-            </p>
-          </div>
-        </div>
-        <aside className="rounded-2xl bg-white p-3 shadow-card">
-          <p className="mb-2 text-sm font-extrabold text-muted">Ходы партии</p>
-          <ol className="grid max-h-[420px] grid-cols-[auto_1fr_1fr] gap-x-2 gap-y-0.5 overflow-y-auto text-[0.95rem]">
-            {Array.from({ length: Math.ceil(total / 2) }, (_, i) => (
-              <li key={i} className="contents">
-                <span className="text-muted">{i + 1}.</span>
-                {[2 * i + 1, 2 * i + 2].map((p) =>
-                  p <= total ? (
-                    <button
-                      key={p}
-                      type="button"
-                      onClick={() => go(p)}
-                      className={cn(
-                        "rounded-md px-1.5 py-0.5 text-left font-bold hover:bg-brand-soft",
-                        p === ply && "bg-brand text-white hover:bg-brand",
-                        game.comments[p] && p !== ply && "text-brand-dark underline decoration-dotted",
-                      )}
-                    >
-                      {ruSan(positions[p].san)}
-                    </button>
-                  ) : (
-                    <span key={p} />
-                  ),
-                )}
-              </li>
-            ))}
-          </ol>
-        </aside>
-      </section>
+          <aside className="rounded-2xl bg-white p-3 shadow-card">
+            <p className="mb-2 text-sm font-extrabold text-muted">Ходы партии</p>
+            <ol className="grid max-h-[420px] grid-cols-[auto_1fr_1fr] gap-x-2 gap-y-0.5 overflow-y-auto text-[0.95rem]">
+              {Array.from({ length: Math.ceil(total / 2) }, (_, i) => (
+                <li key={i} className="contents">
+                  <span className="text-muted">{i + 1}.</span>
+                  {[2 * i + 1, 2 * i + 2].map((p) =>
+                    p <= total ? (
+                      <button
+                        key={p}
+                        type="button"
+                        onClick={() => go(p)}
+                        className={cn(
+                          "rounded-md px-1.5 py-0.5 text-left font-bold hover:bg-brand-soft",
+                          p === ply && "bg-brand text-white hover:bg-brand",
+                          game.comments[p] && p !== ply && "text-brand-dark underline decoration-dotted",
+                        )}
+                      >
+                        {ruSan(positions[p].san)}
+                      </button>
+                    ) : (
+                      <span key={p} />
+                    ),
+                  )}
+                </li>
+              ))}
+            </ol>
+          </aside>
+        </section>
+      )}
 
       <section aria-labelledby="moments">
         <h2 id="moments" className="mb-3 text-2xl font-black">

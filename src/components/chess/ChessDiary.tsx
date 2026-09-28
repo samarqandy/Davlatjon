@@ -34,7 +34,7 @@ export function ChessDiary() {
     setSaved(true);
   };
 
-  const robotWins = hydrated ? games.filter((g) => g.result === "win").length : 0;
+  const robotWins = hydrated ? games.filter((g) => g.mode === "robot" && g.result === "win").length : 0;
 
   return (
     <div className="space-y-6">

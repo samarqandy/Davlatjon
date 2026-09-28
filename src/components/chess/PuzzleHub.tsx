@@ -19,6 +19,7 @@ import { useAgeProfile } from "@/lib/age";
 import { setHash, useHash } from "@/lib/useHash";
 import { ChessBoard } from "./ChessBoard";
 import { PuzzlePlayer } from "./PuzzleTrainer";
+import { OwnPuzzlesView, ownPuzzles } from "./OwnPuzzles";
 
 const STARS = (n: number) => "⭐".repeat(n);
 
@@ -33,11 +34,15 @@ export function PuzzleHub() {
   const hydrated = useHydrated();
   const progress = useStore((s) => s.chessPuzzles);
   const streakBest = useStore((s) => s.chessStreak);
+  const games = useStore((s) => s.chessGames);
+  const ownSolved = useStore((s) => s.chessOwnPuzzles);
+  const own = hydrated ? ownPuzzles(games) : [];
   const solvedCount = hydrated ? PUZZLES.filter((p) => progress[p.id]?.solvedAt).length : 0;
   const points = hydrated ? puzzlePoints(progress) : 0;
 
   if (hash === "#daily") return <DailyView />;
   if (hash === "#streak") return <StreakView />;
+  if (hash === "#mine") return <OwnPuzzlesView />;
   const themeMatch = hash.match(/^#theme-([a-z0-9]+)(?:-(\d+))?$/);
   if (themeMatch) {
     const theme = PUZZLE_THEMES.find((t) => t.id === themeMatch[1]);
@@ -109,6 +114,25 @@ export function PuzzleHub() {
           </Button>
         </section>
       </div>
+
+      <section
+        className="flex flex-wrap items-center gap-4 rounded-3xl border-2 border-sun/50 bg-sun-soft/60 p-5"
+        aria-labelledby="mine"
+      >
+        <div className="min-w-0 flex-1">
+          <h2 id="mine" className="text-xl font-black">
+            🧩 Задачи из твоих партий
+          </h2>
+          <p className="text-sm text-[#7a4b00]">
+            {own.length
+              ? `Робот-тренер нашёл в твоих партиях ${pluralize(own.length, "момент", "момента", "моментов")}, где был ход сильнее. Решено: ${own.filter((p) => ownSolved[p.key]).length}.`
+              : "Сыграй с роботом и открой разбор партии — твои ошибки станут задачами. Такого нет ни в одном задачнике!"}
+          </p>
+        </div>
+        <Button variant="sun" onClick={() => setHash("#mine")}>
+          {own.length ? "Решать" : "Как это работает"}
+        </Button>
+      </section>
 
       <section aria-labelledby="themes">
         <h2 id="themes" className="mb-3 text-2xl font-black">

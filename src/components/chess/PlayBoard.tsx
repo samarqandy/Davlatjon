@@ -1,11 +1,25 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Button, cn } from "@/components/ui";
+import { Button, ButtonLink, cn } from "@/components/ui";
 import { isInCheck, legalTargets, pieceAt, playMove, ruSan, type Color } from "@/lib/chess";
 import { ROBOT_LEVELS, pawnBattleBest, robotMove, searchBest } from "@/lib/engine/search";
-import { capturedPieces, kingOf, playStatus, startFen, type EndgameVariant, type PlayMode } from "@/lib/play";
+import {
+  capturedPieces,
+  clockLabel,
+  formatClock,
+  kingOf,
+  oddsLabel,
+  playStatus,
+  startFen,
+  withOdds,
+  type ClockSetting,
+  type EndgameVariant,
+  type Odds,
+  type PlayMode,
+} from "@/lib/play";
 import { pluralize } from "@/lib/plural";
+import { random } from "@/lib/random";
 import { recordChessGame } from "@/lib/store";
 import { ChessBoard, PieceIcon, type SquareMark } from "./ChessBoard";
 
@@ -16,6 +30,17 @@ export interface PlayConfig {
   /** За кого играет ребёнок. */
   color: Color;
   variant?: EndgameVariant;
+  /** Шахматные часы (только вдвоём). */
+  clock?: ClockSetting;
+  /** Фора: одна сторона играет без фигуры. */
+  odds?: Odds;
+}
+
+const newGameId = () => `g${Math.floor(random() * 36 ** 8).toString(36)}`;
+
+function initialFen(config: PlayConfig): string {
+  const fen = startFen(config.mode, config.variant);
+  return config.odds ? withOdds(fen, config.odds) : fen;
 }
 
 interface Ply {
@@ -34,7 +59,12 @@ function computerMove(config: PlayConfig, fen: string): string | null {
 }
 
 export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () => void }) {
-  const [start, setStart] = useState(() => startFen(config.mode, config.variant));
+  const [start, setStart] = useState(() => initialFen(config));
+  const [gameId, setGameId] = useState(newGameId);
+  const clockMs = config.clock ? config.clock.base * 60_000 : 0;
+  const [clock, setClock] = useState({ w: clockMs, b: clockMs });
+  const [flag, setFlag] = useState<Color | null>(null);
+  const lastTick = useRef(0);
   const [plies, setPlies] = useState<Ply[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
   const [thinking, setThinking] = useState(config.mode !== "two" && config.color === "b");
@@ -56,7 +86,31 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
         winner: config.color === "w" ? ("b" as const) : ("w" as const),
         reason: "Ты сдался. Ничего страшного — сыграем ещё!",
       }
-    : playStatus(config.mode, fen, positions);
+    : flag
+      ? {
+          over: true,
+          winner: flag === "w" ? ("b" as const) : ("w" as const),
+          reason: `Время ${flag === "w" ? "белых" : "чёрных"} вышло!`,
+        }
+      : playStatus(config.mode, fen, positions);
+  const clockRunning = !!config.clock && !status.over && plies.length > 0;
+
+  // Часы: идут у той стороны, чей ход, начиная с первого хода белых.
+  useEffect(() => {
+    if (!clockRunning) return;
+    lastTick.current = Date.now();
+    const id = setInterval(() => {
+      const now = Date.now();
+      const dt = now - lastTick.current;
+      lastTick.current = now;
+      setClock((c) => {
+        const left = Math.max(0, c[turn] - dt);
+        if (left === 0) setFlag(turn);
+        return { ...c, [turn]: left };
+      });
+    }, 100);
+    return () => clearInterval(id);
+  }, [clockRunning, turn]);
   const last = plies[plies.length - 1];
   const inCheck = !status.over && isInCheck(fen);
   const captured = capturedPieces(fen);
@@ -78,25 +132,32 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fen, myTurn, withRobot, status.over]);
 
-  // Запоминаем результат один раз.
+  // Запоминаем результат один раз — вместе с ходами, чтобы потом разобрать партию.
   useEffect(() => {
-    if (!status.over || recorded.current || !withRobot) return;
+    if (!status.over || recorded.current || plies.length === 0) return;
     recorded.current = true;
     recordChessGame({
+      id: gameId,
       mode: config.mode,
       level: config.mode === "robot" || config.mode === "pawns" ? config.level : undefined,
       variant: config.variant?.id,
       color: config.color,
       result: status.winner === "draw" ? "draw" : status.winner === config.color ? "win" : "loss",
+      winner: status.winner,
       moves: myMoves,
+      start,
+      ucis: plies.map((p) => p.uci),
+      clock: config.clock?.id,
+      odds: config.odds ? `${config.odds.side}${config.odds.piece}` : undefined,
     });
-  }, [status.over, status.winner, withRobot, config, myMoves]);
+  }, [status.over, status.winner, config, myMoves, gameId, start, plies]);
 
   const tryMove = (from: string, to: string): boolean => {
     if (!myTurn || status.over || thinking) return false;
     const played = playMove(fen, from, to, "q");
     if (!played) return false;
     setPlies((p) => [...p, { san: played.san, uci: played.uci, fen: played.fen }]);
+    if (config.clock && plies.length > 0) setClock((c) => ({ ...c, [turn]: c[turn] + config.clock!.inc * 1000 }));
     setSelected(null);
     setHint(null);
     if (withRobot) setThinking(true);
@@ -132,7 +193,10 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
   };
 
   const restart = () => {
-    setStart(startFen(config.mode, config.variant));
+    setStart(initialFen(config));
+    setGameId(newGameId());
+    setClock({ w: clockMs, b: clockMs });
+    setFlag(null);
     setPlies([]);
     setSelected(null);
     setHint(null);
@@ -165,6 +229,20 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
         : config.mode === "pawns"
           ? "Пешечный бой"
           : (config.variant?.name ?? "Тренировка");
+  const topSide: Color = orientation === "white" ? "b" : "w";
+  const clockBox = (side: Color) =>
+    config.clock ? (
+      <div
+        className={cn(
+          "ml-auto rounded-xl px-3 py-1 font-mono text-xl font-black tabular-nums",
+          clockRunning && turn === side ? "bg-ink text-white" : "bg-white text-ink shadow-card",
+          clock[side] < 20_000 && "text-rose",
+        )}
+        aria-label={`Часы ${side === "w" ? "белых" : "чёрных"}`}
+      >
+        {formatClock(clock[side])}
+      </div>
+    ) : null;
 
   const statusText = status.over
     ? status.winner === "draw"
@@ -191,7 +269,16 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
             ← Выбрать другой режим
           </Button>
         </div>
-        <CapturedRow pieces={orientation === "white" ? captured.w : captured.b} label="Взято у соперника сверху" />
+        {(config.odds || config.clock) && (
+          <p className="text-sm font-bold text-muted">
+            {config.odds && `🎁 Фора: ${oddsLabel(config.odds)}. `}
+            {config.clock && `⏱ ${clockLabel(config.clock)} на партию.`}
+          </p>
+        )}
+        <div className="flex items-center gap-2">
+          <CapturedRow pieces={orientation === "white" ? captured.w : captured.b} label="Взято у соперника сверху" />
+          {clockBox(topSide)}
+        </div>
         <ChessBoard
           id="play"
           position={fen}
@@ -203,7 +290,10 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
           arrows={hint ? [{ from: hint.slice(0, 2), to: hint.slice(2, 4), color: "#10b981" }] : []}
           maxWidth={520}
         />
-        <CapturedRow pieces={orientation === "white" ? captured.b : captured.w} label="Взято у соперника снизу" />
+        <div className="flex items-center gap-2">
+          <CapturedRow pieces={orientation === "white" ? captured.b : captured.w} label="Взято у соперника снизу" />
+          {clockBox(topSide === "w" ? "b" : "w")}
+        </div>
         <p
           className={cn(
             "rounded-2xl px-4 py-3 text-lg font-black",
@@ -213,6 +303,11 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
         >
           {statusText}
         </p>
+        {status.over && (config.mode === "robot" || config.mode === "two") && plies.length > 1 && (
+          <ButtonLink href={`/chess/review#${gameId}`} variant="sun">
+            🔎 Разбор партии: где были ошибки и лучшие ходы
+          </ButtonLink>
+        )}
       </div>
 
       <aside className="space-y-3">

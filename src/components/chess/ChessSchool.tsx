@@ -27,7 +27,10 @@ export function ChessSchool() {
   const openingsLearned = hydrated ? new Set(Object.keys(state.chessOpenings).map((k) => k.split(":")[0])).size : 0;
   const gamesViewed = hydrated ? Object.keys(state.chessGamesViewed).length : 0;
   const played = hydrated ? state.chessGames.length : 0;
-  const wins = hydrated ? state.chessGames.filter((g) => g.result === "win").length : 0;
+  const wins = hydrated ? state.chessGames.filter((g) => g.mode === "robot" && g.result === "win").length : 0;
+  const reviewable = hydrated
+    ? state.chessGames.filter((g) => (g.mode === "robot" || g.mode === "two") && (g.ucis?.length ?? 0) > 1).length
+    : 0;
 
   const sections = [
     {
@@ -57,6 +60,20 @@ export function ChessSchool() {
       title: "Знаменитые партии",
       text: `${FAMOUS_GAMES.length} легендарных партий с объяснениями и картинками главных моментов.`,
       stat: `${gamesViewed} из ${FAMOUS_GAMES.length} разобрано`,
+    },
+    {
+      href: "/chess/review",
+      emoji: "🔎",
+      title: "Разбор партий",
+      text: "Робот-тренер находит в твоих партиях лучшие ходы и ошибки, объясняет их и делает из них задачи.",
+      stat: reviewable ? `${reviewable} партий можно разобрать` : "Сыграй — и разбери партию",
+    },
+    {
+      href: "/chess/coordinates",
+      emoji: "🎯",
+      title: "Координаты",
+      text: "Найди клетку, назови клетку, угадай цвет, прочитай запись хода — по 30 секунд на скорость.",
+      stat: hydrated && state.chessDrills.find ? `рекорд ${state.chessDrills.find}` : "Побей свой рекорд",
     },
     {
       href: "/chess/secrets",

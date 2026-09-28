@@ -79,6 +79,33 @@ export interface ChessGameRecord {
   color: "w" | "b";
   result: "win" | "loss" | "draw";
   moves: number;
+  /** Кто победил (для партии вдвоём result считается за белых). */
+  winner?: "w" | "b" | "draw";
+  /** Начальная позиция и все ходы (e2e4) — для разбора партии. */
+  start?: string;
+  ucis?: string[];
+  /** Часы «5+3» и фора «bq» (чёрные без ферзя). */
+  clock?: string;
+  odds?: string;
+  /** Оценки движка для каждой позиции — сохраняются после разбора. */
+  analysis?: {
+    evals: number[];
+    best: (string | null)[];
+    /** Точность белых и чёрных, %. */
+    acc?: { w: number; b: number };
+    /** Ошибки и зевки — для задач «из твоих партий». */
+    moments?: ReviewMoment[];
+  };
+}
+
+export interface ReviewMoment {
+  ply: number;
+  side: "w" | "b";
+  fen: string;
+  san: string;
+  best: string;
+  bestSan: string;
+  kind: "mistake" | "blunder";
 }
 
 export interface ChessPuzzleProgress {
@@ -127,6 +154,12 @@ export interface AppState {
   /** Просмотренные до конца знаменитые партии: id → когда. */
   chessGamesViewed: Record<string, number>;
   chessDiary: ChessDiaryEntry[];
+  /** Задачи из своих партий: «idПартии:полуход» → когда решена. */
+  chessOwnPuzzles: Record<string, number>;
+  /** «Сыграй как…»: лучший счёт в знаменитой партии. */
+  chessGuess: Record<string, { score: number; max: number }>;
+  /** Тренажёр координат: режим → рекорд. */
+  chessDrills: Record<string, number>;
   welcomed?: boolean;
 }
 
@@ -146,6 +179,9 @@ export const DEFAULT_STATE: AppState = Object.freeze({
   chessOpenings: {},
   chessGamesViewed: {},
   chessDiary: [],
+  chessOwnPuzzles: {},
+  chessGuess: {},
+  chessDrills: {},
 }) as AppState;
 
 export const EMPTY_CHESS: ChessExerciseProgress = Object.freeze({ misses: 0 }) as ChessExerciseProgress;
@@ -192,6 +228,9 @@ export function sanitize(raw: unknown): AppState {
     chessOpenings: isObject(raw.chessOpenings) ? (raw.chessOpenings as AppState["chessOpenings"]) : {},
     chessGamesViewed: isObject(raw.chessGamesViewed) ? (raw.chessGamesViewed as AppState["chessGamesViewed"]) : {},
     chessDiary: Array.isArray(raw.chessDiary) ? (raw.chessDiary as ChessDiaryEntry[]) : [],
+    chessOwnPuzzles: isObject(raw.chessOwnPuzzles) ? (raw.chessOwnPuzzles as AppState["chessOwnPuzzles"]) : {},
+    chessGuess: isObject(raw.chessGuess) ? (raw.chessGuess as AppState["chessGuess"]) : {},
+    chessDrills: isObject(raw.chessDrills) ? (raw.chessDrills as AppState["chessDrills"]) : {},
     welcomed: raw.welcomed === true,
   };
 }
@@ -369,11 +408,33 @@ export function chessFound(id: string, key: string) {
   updateChess(id, (p) => (p.found?.includes(key) ? {} : { found: [...(p.found ?? []), key] }));
 }
 
-export function recordChessGame(game: Omit<ChessGameRecord, "id" | "at">) {
+export function recordChessGame(game: Omit<ChessGameRecord, "id" | "at"> & { id?: string }): string {
+  const id = game.id ?? `g${Date.now().toString(36)}`;
   setState((s) => ({
     ...s,
-    chessGames: [{ ...game, id: `g${Date.now().toString(36)}`, at: Date.now() }, ...s.chessGames].slice(0, 200),
+    chessGames: [{ ...game, id, at: Date.now() }, ...s.chessGames.filter((g) => g.id !== id)].slice(0, 200),
   }));
+  return id;
+}
+
+export function saveChessAnalysis(id: string, analysis: NonNullable<ChessGameRecord["analysis"]>) {
+  setState((s) => ({ ...s, chessGames: s.chessGames.map((g) => (g.id === id ? { ...g, analysis } : g)) }));
+}
+
+export function chessOwnPuzzleSolved(key: string) {
+  setState((s) => ({ ...s, chessOwnPuzzles: { ...s.chessOwnPuzzles, [key]: s.chessOwnPuzzles[key] ?? Date.now() } }));
+}
+
+export function chessGuessScored(id: string, score: number, max: number) {
+  setState((s) =>
+    (s.chessGuess[id]?.score ?? -1) >= score ? s : { ...s, chessGuess: { ...s.chessGuess, [id]: { score, max } } },
+  );
+}
+
+export function chessDrillRecord(mode: string, score: number) {
+  setState((s) =>
+    (s.chessDrills[mode] ?? 0) >= score ? s : { ...s, chessDrills: { ...s.chessDrills, [mode]: score } },
+  );
 }
 
 export function chessPuzzleSolved(id: string) {

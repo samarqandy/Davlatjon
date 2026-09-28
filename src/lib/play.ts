@@ -133,3 +133,70 @@ export function kingOf(fen: string, side: "w" | "b"): string | null {
   const k = pos.kings[side === "w" ? WHITE : 1];
   return k >= 0 ? sqName(k) : null;
 }
+
+// ---------------------------------------------------------------------------
+// Фора и шахматные часы
+// ---------------------------------------------------------------------------
+
+export type OddsPiece = "q" | "r" | "n" | "p";
+
+export interface Odds {
+  /** Кто играет без фигуры. */
+  side: "w" | "b";
+  piece: OddsPiece;
+}
+
+export const ODDS_PIECES: { id: OddsPiece; label: string; square: { w: string; b: string } }[] = [
+  { id: "q", label: "без ферзя", square: { w: "d1", b: "d8" } },
+  { id: "r", label: "без ладьи", square: { w: "a1", b: "a8" } },
+  { id: "n", label: "без коня", square: { w: "b1", b: "b8" } },
+  { id: "p", label: "без пешки f", square: { w: "f2", b: "f7" } },
+];
+
+/** Начальная позиция, из которой убрана фигура стороны side (фора). Рокировку с убранной ладьёй запрещаем. */
+export function withOdds(fen: string, odds: Odds): string {
+  const [board, turn, castling, ...rest] = fen.split(" ");
+  const meta = ODDS_PIECES.find((o) => o.id === odds.piece);
+  if (!meta) return fen;
+  const square = meta.square[odds.side];
+  const rows = board.split("/").map((row) => row.replace(/\d/g, (d) => ".".repeat(Number(d))).split(""));
+  const file = square.charCodeAt(0) - 97;
+  const row = 8 - Number(square[1]);
+  rows[row][file] = ".";
+  const packed = rows.map((r) => r.join("").replace(/\.+/g, (dots) => String(dots.length))).join("/");
+  let rights = castling;
+  if (odds.piece === "r") rights = rights.replace(odds.side === "w" ? "Q" : "q", "");
+  return [packed, turn, rights || "-", ...rest].join(" ");
+}
+
+export function oddsLabel(odds: Odds): string {
+  const meta = ODDS_PIECES.find((o) => o.id === odds.piece);
+  return `${odds.side === "w" ? "белые" : "чёрные"} ${meta?.label ?? ""}`;
+}
+
+export interface ClockSetting {
+  id: string;
+  /** Минуты на партию. */
+  base: number;
+  /** Добавка секунд за каждый ход. */
+  inc: number;
+}
+
+export const CLOCKS: ClockSetting[] = [
+  { id: "3_2", base: 3, inc: 2 },
+  { id: "5_3", base: 5, inc: 3 },
+  { id: "10_5", base: 10, inc: 5 },
+  { id: "15_10", base: 15, inc: 10 },
+];
+
+export function clockLabel(c: ClockSetting): string {
+  return `${c.base} мин + ${c.inc} с`;
+}
+
+/** Время на часах: «4:07», меньше 10 секунд — с десятыми: «8.3». */
+export function formatClock(ms: number): string {
+  const t = Math.max(0, ms);
+  if (t < 10_000) return (Math.floor(t / 100) / 10).toFixed(1);
+  const s = Math.ceil(t / 1000);
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+}

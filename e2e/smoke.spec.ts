@@ -408,3 +408,78 @@ test("шахматы: энциклопедия и дневник", async ({ page
   await page.getByRole("button", { name: "Записать в дневник" }).click();
   await expect(page.getByText(/ничья · с папа/)).toBeVisible();
 });
+
+test("разбор партии: ошибки объясняются и становятся задачами", async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      "davlatjon-lab:v1",
+      JSON.stringify({
+        version: 1,
+        welcomed: true,
+        settings: { hintPause: false, bigText: false },
+        chessGames: [
+          {
+            id: "gtest1",
+            at: 1759000000000,
+            mode: "robot",
+            level: 3,
+            color: "b",
+            result: "loss",
+            winner: "w",
+            moves: 3,
+            start: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+            ucis: ["e2e4", "e7e5", "f1c4", "b8c6", "d1h5", "g8f6", "h5f7"],
+          },
+        ],
+      }),
+    );
+  });
+  await page.goto("/chess/review");
+  await page.getByRole("button", { name: /Робот «Слон» · поражение/ }).click();
+  await expect(page.getByText("Твоя точность")).toBeVisible({ timeout: 20_000 });
+  await expect(page.getByRole("heading", { name: "🎯 Главные моменты" })).toBeVisible();
+  await expect(page.getByText(/Кf6 → лучше/)).toBeVisible();
+  await page.getByRole("button", { name: /Кf6 → лучше/ }).click();
+  await expect(page.getByText(/соперник ставит мат: Фxf7#/).first()).toBeVisible();
+  await page.getByRole("link", { name: "🧩 Реши эти моменты как задачи" }).click();
+  await expect(page.getByRole("heading", { name: "🧩 Задачи из твоих партий" })).toBeVisible();
+  await expect(page.getByText(/Найди ход сильнее/)).toBeVisible();
+  await square(page, "own-puzzle", "a7");
+  await square(page, "own-puzzle", "a6");
+  await expect(page.getByText("Есть ход сильнее. Подумай ещё!")).toBeVisible();
+});
+
+test("вдвоём с часами и форой", async ({ page }) => {
+  await page.goto("/chess/play");
+  await page.getByRole("group", { name: "Шахматные часы" }).getByRole("button", { name: "5 мин + 3 с" }).click();
+  await page.getByRole("group", { name: "Фора", exact: true }).getByRole("button", { name: "без ферзя" }).click();
+  await page.getByRole("button", { name: "Начать партию" }).click();
+  await expect(page.getByText(/Фора: белые без ферзя/)).toBeVisible();
+  await expect(page.getByLabel("Часы белых")).toHaveText("5:00");
+  await expect(
+    page.locator('[data-board="play"] [data-square="d1"] img, [data-board="play"] [data-square="d1"] svg'),
+  ).toHaveCount(0);
+  await square(page, "play", "e2");
+  await square(page, "play", "e4");
+  await expect(page.getByText("Ходят чёрные")).toBeVisible();
+  await expect(page.getByLabel("Часы чёрных")).not.toHaveText("5:00", { timeout: 5000 });
+});
+
+test("сыграй как Морфи: угадай ход победителя", async ({ page }) => {
+  await page.goto("/chess/games/opera");
+  await page.getByRole("button", { name: "Играть «Угадай ход»" }).click();
+  await expect(page.getByText(/Твой ход за белых/)).toBeVisible();
+  await square(page, "guess-opera", "e2");
+  await square(page, "guess-opera", "e4");
+  await expect(page.getByText(/точно как Пол Морфи! \+3/)).toBeVisible();
+});
+
+test("тренажёр координат: цвет клетки", async ({ page }) => {
+  await page.goto("/chess/coordinates");
+  await page.getByRole("button", { name: /Какого цвета\?/ }).click();
+  await page.getByRole("button", { name: "▶ Старт" }).click();
+  const sq = (await page.locator("p.text-7xl").innerText()).trim();
+  const light = ("abcdefgh".indexOf(sq[0]) + Number(sq[1])) % 2 === 0;
+  await page.getByRole("button", { name: light ? "светлая" : "тёмная" }).click();
+  await expect(page.getByText("Верно: 1")).toBeVisible();
+});

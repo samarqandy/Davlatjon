@@ -71,6 +71,7 @@ export function ChessBoard({
   label,
   maxWidth = 440,
   orientation = "white",
+  notation = true,
   className,
 }: {
   id: string;
@@ -87,6 +88,8 @@ export function ChessBoard({
   maxWidth?: number;
   /** Кто внизу: белые или чёрные. */
   orientation?: "white" | "black";
+  /** Показывать буквы и цифры по краям. */
+  notation?: boolean;
   className?: string;
 }) {
   const squareStyles: Record<string, CSSProperties> = {};
@@ -115,7 +118,7 @@ export function ChessBoard({
           allowDrawingArrows: false,
           arrows: arrows.map((a) => ({ startSquare: a.from, endSquare: a.to, color: a.color ?? "#16a34a" })),
           animationDurationInMs: 180,
-          showNotation: true,
+          showNotation: notation,
           onSquareClick: onSquare ? ({ square }) => onSquare(square) : undefined,
           onPieceDrop: onDrop
             ? ({ sourceSquare, targetSquare }) => (targetSquare ? onDrop(sourceSquare, targetSquare) : false)
