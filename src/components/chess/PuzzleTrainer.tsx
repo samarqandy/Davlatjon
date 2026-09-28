@@ -65,7 +65,7 @@ export function PuzzlePlayer({
       const left = step.matesLeft > 0 ? step.matesLeft - 1 : 0;
       if (played.mate || left === 0) {
         setDone(true);
-        chessPuzzleSolved(puzzle.id);
+        chessPuzzleSolved(puzzle.id, misses === 0);
         setFeedback({
           tone: "success",
           text: `${ruSan(played.san)}${played.mate ? " — мат!" : " — верно!"} ${misses === 0 ? "С первой попытки! 🎉" : ""}`,
@@ -115,7 +115,7 @@ export function PuzzlePlayer({
     if (played.mate && step.matesLeft === 1) {
       // Любой мат в один ход — тоже решение.
       setDone(true);
-      chessPuzzleSolved(puzzle.id);
+      chessPuzzleSolved(puzzle.id, false);
       setBusy(false);
       onSolved?.(n);
       return true;

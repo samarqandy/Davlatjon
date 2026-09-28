@@ -500,3 +500,48 @@ test("озвучка: кнопки «Послушать», выключение 
   await page.getByRole("button", { name: /Мудрец попросил у царя/ }).click();
   await expect(page.getByRole("button", { name: /Послушать историю/ })).toHaveCount(0);
 });
+
+test("шторм, повторение, награды и PGN", async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      "davlatjon-lab:v1",
+      JSON.stringify({
+        version: 1,
+        welcomed: true,
+        settings: { hintPause: false, bigText: false },
+        chessPuzzles: { "m1-backrank": { misses: 1, box: 1, due: "2020-01-01" } },
+        chessGames: [
+          {
+            id: "gpgn",
+            at: 1759000000000,
+            mode: "robot",
+            level: 1,
+            color: "w",
+            result: "win",
+            winner: "w",
+            moves: 4,
+            start: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+            ucis: ["e2e4", "e7e5", "f1c4", "b8c6", "d1h5", "g8f6", "h5f7"],
+          },
+        ],
+      }),
+    );
+  });
+  await page.goto("/chess/puzzles");
+  await expect(page.getByRole("button", { name: "Повторить (1)" })).toBeVisible();
+  await page.getByRole("button", { name: "Повторить (1)" }).click();
+  await page.getByRole("button", { name: "Начать повторение" }).click();
+  await expect(page.getByText("Задача 1 из 1")).toBeVisible();
+  await page.goto("/chess/puzzles#storm");
+  await page.getByRole("button", { name: "▶ Старт" }).click();
+  await expect(page.getByText(/⚡ 0 · ⏱ 2:5\d|⚡ 0 · ⏱ 3:00/)).toBeVisible();
+  await page.goto("/chess/awards");
+  await expect(page.getByRole("heading", { name: "Мои награды и занятия" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "📅 Календарь занятий" })).toBeVisible();
+  await expect(page.getByText("Первая победа").locator("..")).toContainText("получена");
+  await page.goto("/chess/review#gpgn");
+  await expect(page.getByRole("button", { name: "⬇️ Скачать PGN" })).toBeVisible();
+  const download = page.waitForEvent("download");
+  await page.getByRole("button", { name: "⬇️ Скачать PGN" }).click();
+  expect((await download).suggestedFilename()).toBe("partiya-gpgn.pgn");
+});

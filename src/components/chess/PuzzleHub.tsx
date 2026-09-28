@@ -14,12 +14,14 @@ import {
 } from "@/content/chess/puzzles";
 import { pluralize } from "@/lib/plural";
 import { random } from "@/lib/random";
-import { chessStreakReached, useHydrated, useStore } from "@/lib/store";
+import { chessStreakReached, duePuzzles, useHydrated, useStore } from "@/lib/store";
 import { useAgeProfile } from "@/lib/age";
 import { setHash, useHash } from "@/lib/useHash";
 import { ChessBoard } from "./ChessBoard";
 import { PuzzlePlayer } from "./PuzzleTrainer";
 import { OwnPuzzlesView, ownPuzzles } from "./OwnPuzzles";
+import { RepeatView, StormView } from "./PuzzleModes";
+import { useToday } from "@/lib/useToday";
 
 const STARS = (n: number) => "⭐".repeat(n);
 
@@ -37,12 +39,17 @@ export function PuzzleHub() {
   const games = useStore((s) => s.chessGames);
   const ownSolved = useStore((s) => s.chessOwnPuzzles);
   const own = hydrated ? ownPuzzles(games) : [];
+  const today = useToday();
+  const dueCount = hydrated && today ? duePuzzles(progress, today).length : 0;
+  const stormBest = useStore((s) => s.chessDrills.storm ?? 0);
   const solvedCount = hydrated ? PUZZLES.filter((p) => progress[p.id]?.solvedAt).length : 0;
   const points = hydrated ? puzzlePoints(progress) : 0;
 
   if (hash === "#daily") return <DailyView />;
   if (hash === "#streak") return <StreakView />;
   if (hash === "#mine") return <OwnPuzzlesView />;
+  if (hash === "#storm") return <StormView />;
+  if (hash === "#repeat") return <RepeatView />;
   const themeMatch = hash.match(/^#theme-([a-z0-9]+)(?:-(\d+))?$/);
   if (themeMatch) {
     const theme = PUZZLE_THEMES.find((t) => t.id === themeMatch[1]);
@@ -111,6 +118,32 @@ export function PuzzleHub() {
           <p className="text-lg font-black">Лучшая серия: {hydrated ? streakBest : 0}</p>
           <Button variant="sun" onClick={() => setHash("#streak")} className="mt-auto">
             Начать серию
+          </Button>
+        </section>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <section className="flex flex-col gap-2 rounded-3xl bg-white p-5 shadow-card" aria-labelledby="storm">
+          <h2 id="storm" className="text-xl font-black">
+            ⚡ Шторм
+          </h2>
+          <p className="text-sm text-muted">
+            Три минуты — сколько задач успеешь? Ошибка отнимает 10 секунд. Рекорд: {hydrated ? stormBest : 0}.
+          </p>
+          <Button className="mt-auto" onClick={() => setHash("#storm")}>
+            Начать шторм
+          </Button>
+        </section>
+        <section className="flex flex-col gap-2 rounded-3xl bg-white p-5 shadow-card" aria-labelledby="repeat">
+          <h2 id="repeat" className="text-xl font-black">
+            🔁 Повторение{" "}
+            {dueCount > 0 && <span className="rounded-full bg-rose px-2 py-0.5 text-sm text-white">{dueCount}</span>}
+          </h2>
+          <p className="text-sm text-muted">
+            Задачи с ошибками возвращаются через 1, 3, 7 и 21 день — пока не будут решены без ошибки.
+          </p>
+          <Button variant="secondary" className="mt-auto" onClick={() => setHash("#repeat")}>
+            {dueCount ? `Повторить (${dueCount})` : "Открыть"}
           </Button>
         </section>
       </div>

@@ -8,6 +8,7 @@ import { OPENINGS } from "@/content/chess/openings";
 import { PUZZLES, dailyPuzzleFor } from "@/content/chess/puzzles";
 import { RIDDLES, SECRETS } from "@/content/chess/secrets";
 import { useAgeProfile } from "@/lib/age";
+import { awards, earned } from "@/lib/awards";
 import { currentRank, levelStatuses } from "@/lib/chessProgress";
 import { useHydrated, useStore } from "@/lib/store";
 import { ChessBoard, PieceIcon } from "./ChessBoard";
@@ -74,6 +75,13 @@ export function ChessSchool() {
       title: "Координаты",
       text: "Найди клетку, назови клетку, угадай цвет, прочитай запись хода — по 30 секунд на скорость.",
       stat: hydrated && state.chessDrills.find ? `рекорд ${state.chessDrills.find}` : "Побей свой рекорд",
+    },
+    {
+      href: "/chess/awards",
+      emoji: "🏅",
+      title: "Награды",
+      text: "Медали за задачи, партии и дебюты и календарь занятий: сколько дней подряд ты тренируешься.",
+      stat: hydrated ? `${awards(state).filter(earned).length} из ${awards(state).length} наград` : "Собери все",
     },
     {
       href: "/chess/secrets",

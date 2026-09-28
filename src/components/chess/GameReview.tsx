@@ -17,6 +17,7 @@ import {
 } from "@/lib/engine/analysis";
 import { ROBOT_LEVELS } from "@/lib/engine/search";
 import { ODDS_PIECES, CLOCKS, clockLabel } from "@/lib/play";
+import { gamePgn } from "@/lib/pgn";
 import { pluralize } from "@/lib/plural";
 import { saveChessAnalysis, useHydrated, useStore, type ChessGameRecord } from "@/lib/store";
 import { setHash, useHash } from "@/lib/useHash";
@@ -197,6 +198,8 @@ function ReviewView({ game }: { game: ChessGameRecord }) {
           {game.clock && ` · часы ${clockLabel(CLOCKS.find((c) => c.id === game.clock) ?? CLOCKS[0])}`}
         </p>
       </header>
+
+      <PgnButtons game={game} />
 
       {!review ? (
         <div className="rounded-3xl bg-white p-6 shadow-card" aria-live="polite">
@@ -547,5 +550,39 @@ function AdvantageChart({
         </p>
       )}
     </section>
+  );
+}
+
+/** Скачать партию в PGN или скопировать — чтобы открыть на Lichess или показать тренеру. */
+function PgnButtons({ game }: { game: ChessGameRecord }) {
+  const [copied, setCopied] = useState(false);
+  const pgn = () => gamePgn(game);
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <Button
+        size="sm"
+        variant="secondary"
+        onClick={() => {
+          const url = URL.createObjectURL(new Blob([pgn()], { type: "application/x-chess-pgn" }));
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `partiya-${game.id}.pgn`;
+          a.click();
+          URL.revokeObjectURL(url);
+        }}
+      >
+        ⬇️ Скачать PGN
+      </Button>
+      <Button
+        size="sm"
+        variant="secondary"
+        onClick={() => {
+          void navigator.clipboard?.writeText(pgn()).then(() => setCopied(true));
+        }}
+      >
+        {copied ? "✓ Скопировано" : "📋 Скопировать запись"}
+      </Button>
+      <span className="text-xs text-muted">PGN открывается на Lichess, Chess.com и в любой шахматной программе.</span>
+    </div>
   );
 }

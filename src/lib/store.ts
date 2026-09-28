@@ -113,6 +113,17 @@ export interface ReviewMoment {
 export interface ChessPuzzleProgress {
   solvedAt?: number;
   misses: number;
+  /** Интервальное повторение: коробка 1–4 и день следующего повторения «ГГГГ-ММ-ДД». */
+  box?: number;
+  due?: string;
+}
+
+/** Через сколько дней повторить задачу из коробки 1, 2, 3, 4. */
+export const REVIEW_DAYS = [1, 3, 7, 21];
+
+export function isoDay(ms: number): string {
+  const d = new Date(ms);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
 export interface ChessDiaryEntry {
@@ -440,21 +451,52 @@ export function chessDrillRecord(mode: string, score: number) {
   );
 }
 
-export function chessPuzzleSolved(id: string) {
+/**
+ * Задача решена. clean — без ошибок в этой попытке: тогда задача из очереди повторения переходит
+ * в следующую коробку (повторить позже), а после четвёртой — считается выученной.
+ */
+export function chessPuzzleSolved(id: string, clean = true, now = Date.now()) {
+  setState((s) => {
+    const p = s.chessPuzzles[id];
+    let box = p?.box;
+    let due = p?.due;
+    if (box && clean && due && due <= isoDay(now)) {
+      box += 1;
+      due = box > REVIEW_DAYS.length ? undefined : isoDay(now + REVIEW_DAYS[box - 1] * 86_400_000);
+      if (!due) box = undefined;
+    }
+    return {
+      ...s,
+      chessPuzzles: {
+        ...s.chessPuzzles,
+        [id]: { misses: p?.misses ?? 0, solvedAt: p?.solvedAt ?? now, box, due },
+      },
+    };
+  });
+}
+
+/** Ошибка в задаче: она попадает в первую коробку — повторить завтра. */
+export function chessPuzzleMiss(id: string, now = Date.now()) {
   setState((s) => ({
     ...s,
     chessPuzzles: {
       ...s.chessPuzzles,
-      [id]: { misses: s.chessPuzzles[id]?.misses ?? 0, solvedAt: s.chessPuzzles[id]?.solvedAt ?? Date.now() },
+      [id]: {
+        ...s.chessPuzzles[id],
+        misses: (s.chessPuzzles[id]?.misses ?? 0) + 1,
+        box: 1,
+        due: isoDay(now + 86_400_000),
+      },
     },
   }));
 }
 
-export function chessPuzzleMiss(id: string) {
-  setState((s) => ({
-    ...s,
-    chessPuzzles: { ...s.chessPuzzles, [id]: { ...s.chessPuzzles[id], misses: (s.chessPuzzles[id]?.misses ?? 0) + 1 } },
-  }));
+/** Задачи, которые пора повторить сегодня. */
+export function duePuzzles(progress: Record<string, ChessPuzzleProgress>, today: string): string[] {
+  return Object.entries(progress)
+    .filter(([, p]) => p.due && p.due <= today)
+    .sort((a, b) => (a[1].due! < b[1].due! ? -1 : 1))
+    .map(([id]) => id);
 }
 
 export function chessStreakReached(n: number) {
