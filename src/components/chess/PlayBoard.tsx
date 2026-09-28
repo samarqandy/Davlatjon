@@ -20,6 +20,7 @@ import {
 } from "@/lib/play";
 import { pluralize } from "@/lib/plural";
 import { random } from "@/lib/random";
+import { cheer } from "@/lib/voice";
 import { recordChessGame } from "@/lib/store";
 import { ChessBoard, PieceIcon, type SquareMark } from "./ChessBoard";
 
@@ -136,6 +137,7 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
   useEffect(() => {
     if (!status.over || recorded.current || plies.length === 0) return;
     recorded.current = true;
+    if (status.reason === "Мат!" && (!withRobot || status.winner === config.color)) cheer("mate");
     recordChessGame({
       id: gameId,
       mode: config.mode,
@@ -150,7 +152,7 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
       clock: config.clock?.id,
       odds: config.odds ? `${config.odds.side}${config.odds.piece}` : undefined,
     });
-  }, [status.over, status.winner, config, myMoves, gameId, start, plies]);
+  }, [status.over, status.winner, status.reason, withRobot, config, myMoves, gameId, start, plies]);
 
   const tryMove = (from: string, to: string): boolean => {
     if (!myTurn || status.over || thinking) return false;

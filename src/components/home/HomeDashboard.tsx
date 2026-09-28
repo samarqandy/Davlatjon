@@ -6,6 +6,8 @@ import { ChessHomeCard } from "@/components/chess/ChessHomeCard";
 import { Button, ButtonLink, Card, cn, ProgressBar } from "@/components/ui";
 import { SECTIONS } from "@/content/meta";
 import type { DaySummary, WeekSummary } from "@/content/summary";
+import { ListenButton } from "@/components/ListenButton";
+import { VOICE_CLIPS } from "@/lib/voice";
 import { AGE_MAX, AGE_MIN, PROFILES, ageProfile, profileMeta } from "@/lib/age";
 import { setWelcomed, updateSettings, useHydrated, useStore, type AppState } from "@/lib/store";
 
@@ -297,6 +299,7 @@ function Welcome() {
         <p className="mt-2 text-lg text-muted">
           Здесь живут задачи, над которыми интересно подумать. Три правила Лаборатории:
         </p>
+        <ListenButton src={VOICE_CLIPS.welcome} label="Послушать приветствие" className="mt-2" />
         <ol className="mt-4 space-y-2 text-lg font-bold">
           <li>🐢 Не торопись: думать — важнее, чем быстро отвечать.</li>
           <li>💡 Застрял? Открой подсказку — они приходят по одной.</li>

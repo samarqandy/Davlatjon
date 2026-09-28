@@ -64,6 +64,8 @@ export interface Settings {
   chessOpenAll?: boolean;
   /** Возраст ребёнка (6–15): от него зависят советы и сложность. Спрашивается при первом запуске. */
   age?: number;
+  /** Озвучка: голос диктора, похвала и чтение вслух. По умолчанию включена. */
+  sound?: boolean;
 }
 
 /** Сыгранная с роботом или вдвоём партия. */
@@ -220,6 +222,7 @@ export function sanitize(raw: unknown): AppState {
         Number.isInteger(settings.age) && (settings.age as number) >= 6 && (settings.age as number) <= 15
           ? (settings.age as number)
           : undefined,
+      sound: settings.sound !== false,
     },
     chess: isObject(raw.chess) ? (raw.chess as AppState["chess"]) : {},
     chessGames: Array.isArray(raw.chessGames) ? (raw.chessGames as ChessGameRecord[]) : [],

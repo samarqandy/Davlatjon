@@ -1,5 +1,6 @@
 "use client";
 
+import { ListenButton } from "@/components/ListenButton";
 import { useState } from "react";
 import { RichText } from "@/components/RichText";
 import { Button, cn } from "@/components/ui";
@@ -68,7 +69,10 @@ export function ChessLesson({
           <p className="text-sm font-extrabold text-muted">
             Шаг {step + 1} из {cards.length}
           </p>
-          <h3 className="text-2xl font-black">{card.title}</h3>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h3 className="text-2xl font-black">{card.title}</h3>
+            <ListenButton key={step} text={[card.title, ...card.text].join(". ")} />
+          </div>
           {card.text.map((t, i) => (
             <p key={i} className="text-lg leading-relaxed">
               <RichText text={t} />

@@ -41,6 +41,12 @@ export function SettingsPanel() {
       <Card className="divide-y divide-line">
         <AgeRow value={settings.age} onChange={(age) => updateSettings({ age })} />
         <Toggle
+          title="Озвучка"
+          text="Диктор читает легенды уровней и хвалит за решения, кнопка «🔊 Послушать» читает задачи и истории вслух."
+          value={settings.sound !== false}
+          onChange={(v) => updateSettings({ sound: v })}
+        />
+        <Toggle
           title="Пауза перед следующей подсказкой"
           text="После каждой подсказки следующая откроется через 15 секунд — чтобы ребёнок успел подумать."
           value={settings.hintPause}

@@ -14,6 +14,8 @@ import { useHydrated, useStore } from "@/lib/store";
 import { setHash, useHash } from "@/lib/useHash";
 import { PieceIcon } from "./ChessBoard";
 import { Figure, Portrait } from "./Figure";
+import { ListenButton } from "@/components/ListenButton";
+import { VOICE_CLIPS } from "@/lib/voice";
 import { ChessExerciseView } from "./ChessExercises";
 import { ChessLesson } from "./ChessLesson";
 
@@ -166,7 +168,10 @@ function LevelLegend({ level }: { level: ChessLevel }) {
   const img = level.legend.image ? chessImage(level.legend.image) : undefined;
   return (
     <section className="rounded-3xl bg-white p-5 shadow-card" aria-labelledby="legend-h">
-      <p className="text-xs font-extrabold tracking-wide text-brand uppercase">🔮 Легенда уровня</p>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-xs font-extrabold tracking-wide text-brand uppercase">🔮 Легенда уровня</p>
+        <ListenButton src={VOICE_CLIPS.legend(level.id)} label="Послушать легенду" />
+      </div>
       <h2 id="legend-h" className="mt-1 text-2xl leading-snug font-black">
         {level.legend.hook}
       </h2>

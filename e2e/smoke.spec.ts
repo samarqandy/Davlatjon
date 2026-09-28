@@ -483,3 +483,20 @@ test("тренажёр координат: цвет клетки", async ({ page
   await page.getByRole("button", { name: light ? "светлая" : "тёмная" }).click();
   await expect(page.getByText("Верно: 1")).toBeVisible();
 });
+
+test("озвучка: кнопки «Послушать», выключение в настройках", async ({ page }) => {
+  await page.goto("/chess/pawn");
+  await expect(page.getByRole("button", { name: /Послушать легенду/ })).toBeVisible();
+  await page.goto("/chess/secrets");
+  await page.getByRole("button", { name: /Мудрец попросил у царя/ }).click();
+  await expect(page.getByRole("button", { name: /Послушать историю/ })).toBeVisible();
+  await page.evaluate(() => {
+    const key = "davlatjon-lab:v1";
+    const s = JSON.parse(localStorage.getItem(key) ?? "{}");
+    s.settings = { ...s.settings, sound: false };
+    localStorage.setItem(key, JSON.stringify(s));
+  });
+  await page.reload();
+  await page.getByRole("button", { name: /Мудрец попросил у царя/ }).click();
+  await expect(page.getByRole("button", { name: /Послушать историю/ })).toHaveCount(0);
+});

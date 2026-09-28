@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
+import { ListenButton } from "@/components/ListenButton";
 import { AnswerPanel } from "@/components/answers/AnswerPanel";
 import { LevelBadge, SectionTag } from "@/components/ui";
 import type { Task } from "@/content/types";
@@ -37,6 +38,7 @@ export function TaskView({ task, number, total }: { task: Task; number: number; 
   const progress = useTask(task.id);
   useTaskTimer(task.id);
   const solved = progress.status === "solved";
+  const bodyRef = useRef<HTMLDivElement>(null);
 
   return (
     <TaskIdContext.Provider value={task.id}>
@@ -49,6 +51,7 @@ export function TaskView({ task, number, total }: { task: Task; number: number; 
               <span className="ml-auto text-sm font-bold text-muted">
                 Задача {number} из {total}
               </span>
+              <ListenButton from={bodyRef} label="Прочитать" />
             </div>
             <h2 className="mb-4 flex items-center gap-2 text-2xl font-black sm:text-3xl">
               {task.title}
@@ -58,7 +61,7 @@ export function TaskView({ task, number, total }: { task: Task; number: number; 
                 </span>
               )}
             </h2>
-            <div className="child-text space-y-3.5 text-lg sm:text-xl">
+            <div ref={bodyRef} className="child-text space-y-3.5 text-lg sm:text-xl">
               {task.body.map((b, i) => (
                 <BlockView key={i} block={b} />
               ))}
