@@ -2,7 +2,7 @@
  * Весь шахматный контент одним объектом — на русском или на узбекском.
  * Узбекская версия собирается из русской и накладки src/content/chess/uz (см. src/content/localize.ts).
  */
-import type { Lang } from "@/lib/i18n";
+import type { Lang } from "@/lib/lang";
 import { overlay, type Uz } from "../localize";
 import {
   CHESS_MATH,
@@ -54,7 +54,8 @@ export const CHESS_RU = {
 };
 
 export type ChessContent = typeof CHESS_RU;
-export type ChessContentUz = Uz<ChessContent>;
+/** Накладка по частям контента (сам объект целиком не заменяется). */
+export type ChessContentUz = { readonly [K in keyof ChessContent]?: Uz<ChessContent[K]> };
 
 const cache: Partial<Record<Lang, ChessContent>> = { ru: CHESS_RU };
 

@@ -1,6 +1,6 @@
 "use client";
 
-import type { Lang } from "./i18n";
+import type { Lang } from "./lang";
 import { useStore } from "./store";
 
 /**

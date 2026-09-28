@@ -6,7 +6,7 @@
  * изменяемые (название дня, уровня, партии) страница сообщает сама через useTitleTranslation.
  */
 import { useEffect } from "react";
-import type { Lang } from "./i18n";
+import type { Lang } from "./lang";
 
 const TITLE_UZ: Record<string, string> = {
   "Лаборатория Давлатжона": "Davlatjon laboratoriyasi",

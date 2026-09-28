@@ -5,22 +5,36 @@
  *
  * Правило проверяют тесты: после наложения в узбекском контенте не остаётся ни одной
  * кириллической буквы, а накладка не трогает строки без кириллицы (FEN, ходы, id).
+ *
+ * Редкий случай — задача, завязанная на русский алфавит (шифр, таблица «буква — номер»): там
+ * узбекская версия заменяет кусок целиком — `{ $replace: … }`. Согласованность таких задач проверяют тесты.
  */
-import type { Lang } from "@/lib/i18n";
+import type { Lang } from "@/lib/lang";
+
+/** Полная замена куска контента — только там, где он завязан на русский алфавит. */
+export interface Replace<T> {
+  readonly $replace: T;
+}
 
 /** Накладка для типа T: только строки, всё необязательно. */
 export type Uz<T> = T extends string
   ? string
   : T extends readonly (infer U)[]
-    ? U extends { id: string }
-      ? { readonly [id: string]: Uz<U> } | readonly (Uz<U> | null | undefined)[]
-      : readonly (Uz<U> | null | undefined)[]
+    ? | (U extends { id: string }
+          ? { readonly [id: string]: Uz<U> } | readonly (Uz<U> | null | undefined)[]
+          : readonly (Uz<U> | null | undefined)[])
+      | Replace<T>
     : T extends object
-      ? { readonly [K in keyof T]?: Uz<T[K]> }
+      ? { readonly [K in keyof T]?: Uz<T[K]> } | Replace<T>
       : never;
+
+function isReplace(x: unknown): x is Replace<unknown> {
+  return !!x && typeof x === "object" && !Array.isArray(x) && "$replace" in x;
+}
 
 export function overlay<T>(base: T, uz: unknown): T {
   if (uz === undefined || uz === null) return base;
+  if (isReplace(uz)) return uz.$replace as T;
   if (typeof base === "string") return (typeof uz === "string" ? uz : base) as T;
   if (Array.isArray(base)) {
     if (Array.isArray(uz)) return base.map((b, i) => overlay(b, uz[i])) as T;
@@ -73,6 +87,10 @@ export function cyrillicPaths(x: unknown, path = "", out: string[] = []): string
  */
 export function overlayProblems(base: unknown, uz: unknown, path = "", out: string[] = []): string[] {
   if (uz === undefined || uz === null) return out;
+  if (isReplace(uz)) {
+    if (!cyrillicPaths(base).length) out.push(`${path}: $replace там, где нет русского текста`);
+    return out;
+  }
   if (typeof base === "string") {
     if (typeof uz !== "string") out.push(`${path}: ожидалась строка`);
     else if (!CYRILLIC.test(base) && uz !== base) out.push(`${path}: заменена строка без кириллицы «${base}»`);

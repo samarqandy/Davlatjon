@@ -27,9 +27,11 @@ describe("узбекский шахматный контент", () => {
   });
 
   const parts = (Object.keys(CHESS_RU) as (keyof typeof CHESS_RU)[]).filter((p) => p !== "levels");
+  /** Таблица «как фигура называется на разных языках»: русское название там — на своём месте. */
+  const allowed = (part: string, path: string) => part === "pieceNamesTable" && /\]\.ru: /.test(path);
   it.each(parts)("%s: накладка без ошибок; начатый перевод — полный", (part) => {
     expect(overlayProblems(CHESS_RU[part], CHESS_UZ[part])).toEqual([]);
-    if (started(CHESS_UZ[part])) expect(cyrillicPaths(UZ[part])).toEqual([]);
+    if (started(CHESS_UZ[part])) expect(cyrillicPaths(UZ[part]).filter((p) => !allowed(part, p))).toEqual([]);
   });
 
   it("загадки: ответ — один из вариантов и на узбекском", () => {

@@ -2,7 +2,7 @@
  * Программа занятий по-узбекски: накладки на недели, дни, вопросы наблюдения и методичку.
  * Собирается на сервере — в браузер уходит готовый текст нужного дня на обоих языках.
  */
-import type { Both, Lang } from "@/lib/i18n";
+import type { Both, Lang } from "@/lib/lang";
 import { GUIDE, THINKING_CHAIN } from "./guide";
 import { guideUz, thinkingChainUz } from "./guide.uz";
 import { overlay, type Uz } from "./localize";

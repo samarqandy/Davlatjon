@@ -6,7 +6,7 @@
  * читает голос браузера (Web Speech API) — бесплатно и без интернета, если в системе есть голос нужного языка.
  * Звук выключается в настройках родителя.
  */
-import type { Lang } from "./i18n";
+import type { Lang } from "./lang";
 import { random } from "./random";
 import { getState } from "./store";
 
