@@ -27,6 +27,8 @@ import { useHash } from "@/lib/useHash";
 import { ChessBoard, PieceIcon, type SquareMark } from "./ChessBoard";
 import { Figure, Portrait } from "./Figure";
 import { ListenButton } from "@/components/ListenButton";
+import { useLang } from "@/lib/i18n";
+import { VOICE_CLIPS } from "@/lib/voice";
 
 /** Страница «Тайны шахмат»: карточки-истории с крючком, картинкой и встроенной игрой; загадки про фигуры. */
 export function Secrets() {
@@ -116,6 +118,7 @@ function SecretCard({
   deeperOpen: boolean;
 }) {
   const img = s.image ? chessImage(s.image) : undefined;
+  const lang = useLang();
   return (
     <article
       id={s.id}
@@ -144,7 +147,11 @@ function SecretCard({
         <div className="space-y-4 px-4 pb-5 sm:px-5">
           <div className="gap-5 sm:flex sm:items-start">
             <div className="min-w-0 flex-1 space-y-2 text-lg leading-relaxed">
-              <ListenButton text={[s.hook, ...s.story].join(" ")} label="Послушать историю" />
+              <ListenButton
+                src={VOICE_CLIPS.secret(s.id, lang)}
+                text={[s.hook, ...s.story].join(" ")}
+                label="Послушать историю"
+              />
               {s.story.map((p) => (
                 <p key={p}>{p}</p>
               ))}

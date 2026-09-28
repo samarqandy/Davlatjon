@@ -66,6 +66,8 @@ export interface Settings {
   age?: number;
   /** Озвучка: голос диктора, похвала и чтение вслух. По умолчанию включена. */
   sound?: boolean;
+  /** Язык платформы: русский или узбекский. */
+  lang?: "ru" | "uz";
 }
 
 /** Сыгранная с роботом или вдвоём партия. */
@@ -234,6 +236,7 @@ export function sanitize(raw: unknown): AppState {
           ? (settings.age as number)
           : undefined,
       sound: settings.sound !== false,
+      lang: settings.lang === "uz" ? "uz" : "ru",
     },
     chess: isObject(raw.chess) ? (raw.chess as AppState["chess"]) : {},
     chessGames: Array.isArray(raw.chessGames) ? (raw.chessGames as ChessGameRecord[]) : [],

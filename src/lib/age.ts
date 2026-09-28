@@ -1,5 +1,6 @@
 "use client";
 
+import type { Lang } from "./i18n";
 import { useStore } from "./store";
 
 /**
@@ -74,6 +75,36 @@ export function ageProfile(age: number | undefined): AgeProfile {
 
 export function profileMeta(age: number | undefined): ProfileMeta {
   return PROFILES[ageProfile(age)];
+}
+
+/** Тексты профиля по-узбекски: название, возраст, описание; имя робота — как на кнопке робота. */
+const PROFILES_UZ: Record<AgeProfile, { name: string; ages: string; about: string; robotName: string }> = {
+  junior: {
+    name: "Kichiklar",
+    ages: "6–8 yosh",
+    about:
+      "Hammasi tartib bilan: kunning topshiriqlari birin-ketin, shaxmat darajalari navbat bilan ochiladi, robot «Piyoda», kun masalasi bir yulduzchadan.",
+    robotName: "Piyoda",
+  },
+  middle: {
+    name: "Oʻrta yosh",
+    ages: "9–10 yosh",
+    about:
+      "Oson topshiriqlar — razminka, asosiylari — 🟡🟠🔴. Shaxmatning uchta darajasi ochiq, robot «Ot», kun masalasi ikki yulduzchadan.",
+    robotName: "Ot",
+  },
+  senior: {
+    name: "Kattalar",
+    ages: "11 yosh va undan katta",
+    about:
+      "🟢 va 🟡 topshiriqlar — xohlasang oʻtkazib yuborsa boʻladigan razminka. Shaxmatning barcha darajalari ochiq, robot «Fil», kun masalasi uch yulduzchadan, «kattaroqlar uchun» boʻlimlari darhol ochiq.",
+    robotName: "Fil",
+  },
+};
+
+/** Профиль с текстами на нужном языке. */
+export function profileText(meta: ProfileMeta, lang: Lang): ProfileMeta {
+  return lang === "uz" ? { ...meta, ...PROFILES_UZ[meta.id] } : meta;
 }
 
 /** Профиль ребёнка из настроек; до гидратации — младший. */

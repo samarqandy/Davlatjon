@@ -10,6 +10,7 @@ import { chessImage, chessImages } from "@/content/chess/images";
 import { OPENINGS } from "@/content/chess/openings";
 import type { ChessLevel } from "@/content/chess/types";
 import { levelStatuses } from "@/lib/chessProgress";
+import { useLang } from "@/lib/i18n";
 import { useHydrated, useStore } from "@/lib/store";
 import { setHash, useHash } from "@/lib/useHash";
 import { PieceIcon } from "./ChessBoard";
@@ -165,12 +166,17 @@ export function ChessLevelView({ levelId }: { levelId: string }) {
 function LevelLegend({ level }: { level: ChessLevel }) {
   const [revealed, setRevealed] = useState(false);
   const hydrated = useHydrated();
+  const lang = useLang();
   const img = level.legend.image ? chessImage(level.legend.image) : undefined;
   return (
     <section className="rounded-3xl bg-white p-5 shadow-card" aria-labelledby="legend-h">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-xs font-extrabold tracking-wide text-brand uppercase">🔮 Легенда уровня</p>
-        <ListenButton src={VOICE_CLIPS.legend(level.id)} label="Послушать легенду" />
+        <ListenButton
+          src={VOICE_CLIPS.legend(level.id, lang)}
+          text={[level.legend.hook, level.legend.title, ...level.legend.story].join(" ")}
+          label="Послушать легенду"
+        />
       </div>
       <h2 id="legend-h" className="mt-1 text-2xl leading-snug font-black">
         {level.legend.hook}

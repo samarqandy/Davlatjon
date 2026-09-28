@@ -40,9 +40,18 @@ export function normalizeCoord(input: string): string {
   return [...input.trim().toUpperCase().replace(/\s+/g, "")].map((ch) => LATIN_TO_CYRILLIC[ch] ?? ch).join("");
 }
 
-/** Слово для сравнения: заглавные буквы, «ё» = «е», латинские буквы-двойники — кириллицей, без лишних пробелов. */
+/**
+ * Слово для сравнения: заглавные буквы, «ё» = «е», латинские буквы-двойники — кириллицей, без лишних пробелов.
+ * Узбекские «oʻ», «gʻ» и знак «ʼ» можно набрать как угодно: o', o‘, o`, oʻ — всё считается одним и тем же.
+ */
 export function normalizeText(input: string): string {
-  return [...input.trim().toUpperCase().replace(/\s+/g, " ")]
+  return [
+    ...input
+      .trim()
+      .toUpperCase()
+      .replace(/\s+/g, " ")
+      .replace(/['`‘’ʻʼ´]/g, "'"),
+  ]
     .map((ch) => LATIN_TO_CYRILLIC[ch] ?? ch)
     .join("")
     .replace(/Ё/g, "Е");

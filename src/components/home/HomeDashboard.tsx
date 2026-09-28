@@ -4,11 +4,12 @@ import Link from "next/link";
 import { useState } from "react";
 import { ChessHomeCard } from "@/components/chess/ChessHomeCard";
 import { Button, ButtonLink, Card, cn, ProgressBar } from "@/components/ui";
-import { SECTIONS } from "@/content/meta";
+import { sectionsFor } from "@/content/meta";
 import type { DaySummary, WeekSummary } from "@/content/summary";
 import { ListenButton } from "@/components/ListenButton";
 import { VOICE_CLIPS } from "@/lib/voice";
-import { AGE_MAX, AGE_MIN, PROFILES, ageProfile, profileMeta } from "@/lib/age";
+import { AGE_MAX, AGE_MIN, PROFILES, ageProfile, profileMeta, profileText } from "@/lib/age";
+import { LANGS, setLang, useBoth, useLang, useT, type Both, type T } from "@/lib/i18n";
 import { setWelcomed, updateSettings, useHydrated, useStore, type AppState } from "@/lib/store";
 
 type Status = "done" | "active" | "next" | "later";
@@ -20,8 +21,12 @@ function dayStatus(d: DaySummary, s: AppState, nextId: string | null): Status {
   return "later";
 }
 
-export function HomeDashboard({ weeks }: { weeks: WeekSummary[] }) {
+export function HomeDashboard({ weeks: both }: { weeks: Both<WeekSummary[]> }) {
   const hydrated = useHydrated();
+  const t = useT();
+  const lang = useLang();
+  const weeks = useBoth(both);
+  const SECTIONS = sectionsFor(lang);
   const state = useStore((s) => s);
   const allDays = weeks.flatMap((w) => w.days);
   const next = hydrated ? (allDays.find((d) => !state.days[d.id]?.completedAt) ?? null) : allDays[0];
@@ -45,25 +50,33 @@ export function HomeDashboard({ weeks }: { weeks: WeekSummary[] }) {
           <div className="absolute -top-10 -right-8 text-[9rem] leading-none opacity-15 select-none" aria-hidden>
             ∑
           </div>
-          <p className="text-lg font-bold text-white/80">Привет, Давлатжон! 👋</p>
+          <p className="text-lg font-bold text-white/80">{t("Привет, Давлатжон! 👋", "Salom, Davlatjon! 👋")}</p>
           <h1 className="mt-1 text-3xl leading-tight font-black sm:text-4xl">
-            Математика — это место, где происходят интересные вещи
+            {t("Математика — это место, где происходят интересные вещи", "Matematika — qiziqarli kashfiyotlar olami")}
           </h1>
           {next ? (
             <div className="mt-6 rounded-3xl bg-white/12 p-4 ring-1 ring-white/25 backdrop-blur-sm">
               <p className="text-sm font-extrabold tracking-wide text-white/75 uppercase">
-                {hydrated && state.days[next.id]?.startedAt ? "Продолжим" : "Сегодняшнее занятие"}
+                {hydrated && state.days[next.id]?.startedAt
+                  ? t("Продолжим", "Davom etamiz")
+                  : t("Сегодняшнее занятие", "Bugungi mashgʻulot")}
               </p>
               <p className="mt-1 text-2xl font-black">
-                <span aria-hidden>{next.emoji}</span> {weeks.length > 1 && `Неделя ${next.week} · `}День {next.day}.{" "}
-                {next.title}
+                <span aria-hidden>{next.emoji}</span>{" "}
+                {weeks.length > 1 && t(`Неделя ${next.week} · `, `${next.week}-hafta · `)}
+                {t(`День ${next.day}.`, `${next.day}-kun.`)} {next.title}
               </p>
               <p className="mt-1 text-sm text-white/80">
-                {next.tasks.length} задач · около 25 минут · привычка «{next.habit.name}»
+                {t(
+                  `${next.tasks.length} задач · около 25 минут · привычка «${next.habit.name}»`,
+                  `${next.tasks.length} ta masala · taxminan 25 daqiqa · odat: «${next.habit.name}»`,
+                )}
               </p>
               <div className="mt-4 flex flex-wrap gap-2">
                 <ButtonLink href={`/week/${next.week}/day/${next.day}`} variant="sun" size="lg">
-                  {hydrated && state.days[next.id]?.startedAt ? "Продолжить ▶" : "Начать ▶"}
+                  {hydrated && state.days[next.id]?.startedAt
+                    ? t("Продолжить ▶", "Davom etish ▶")
+                    : t("Начать ▶", "Boshlash ▶")}
                 </ButtonLink>
                 <ButtonLink
                   href={`/week/${next.week}/day/${next.day}/print`}
@@ -71,31 +84,36 @@ export function HomeDashboard({ weeks }: { weeks: WeekSummary[] }) {
                   size="lg"
                   className="border-white/30 bg-white/10 text-white hover:bg-white/20"
                 >
-                  🖨 Распечатать
+                  🖨 {t("Распечатать", "Chop etish")}
                 </ButtonLink>
               </div>
             </div>
           ) : (
             <div className="mt-6 rounded-3xl bg-white/12 p-4 ring-1 ring-white/25">
-              <p className="text-2xl font-black">🎉 Все дни пройдены!</p>
+              <p className="text-2xl font-black">🎉 {t("Все дни пройдены!", "Barcha kunlarni tamomlading!")}</p>
               <p className="mt-1 text-white/85">
-                Можно вернуться к любимым задачам, придумать свои или попросить родителей открыть недельный обзор.
+                {t(
+                  "Можно вернуться к любимым задачам, придумать свои или попросить родителей открыть недельный обзор.",
+                  "Sevimli masalalaringga qaytishing, oʻzing yangi masala oʻylab topishing yoki ota-onangdan haftalik sharhni ochib berishni soʻrashing mumkin.",
+                )}
               </p>
             </div>
           )}
           {hydrated && state.settings.age && (
             <p className="mt-3 text-xs font-bold text-white/70">
-              Режим занятий: {profileMeta(state.settings.age).ages} ·{" "}
+              {t("Режим занятий", "Mashgʻulot rejimi")}: {profileText(profileMeta(state.settings.age), lang).ages} ·{" "}
               <Link href="/parent/settings" className="underline hover:text-white">
-                изменить
+                {t("изменить", "oʻzgartirish")}
               </Link>
             </p>
           )}
         </div>
 
         <Card className="p-5 sm:p-6">
-          <h2 className="mb-1 text-lg font-extrabold">Мои привычки мыслителя</h2>
-          <p className="mb-4 text-sm text-muted">Каждый пройденный день добавляет новую привычку.</p>
+          <h2 className="mb-1 text-lg font-extrabold">{t("Мои привычки мыслителя", "Fikrlash odatlarim")}</h2>
+          <p className="mb-4 text-sm text-muted">
+            {t("Каждый пройденный день добавляет новую привычку.", "Har bir oʻtilgan kun yangi odat qoʻshadi.")}
+          </p>
           <div className="space-y-4">
             {weeks.map((w) => {
               const full = weeks.length === 1 || w.number === currentWeek;
@@ -104,7 +122,7 @@ export function HomeDashboard({ weeks }: { weeks: WeekSummary[] }) {
                 <div key={w.number}>
                   {weeks.length > 1 && (
                     <p className="mb-1.5 text-xs font-extrabold tracking-wide text-muted uppercase">
-                      Неделя {w.number} · {w.title}
+                      {t(`Неделя ${w.number}`, `${w.number}-hafta`)} · {w.title}
                     </p>
                   )}
                   {full ? (
@@ -133,7 +151,7 @@ export function HomeDashboard({ weeks }: { weeks: WeekSummary[] }) {
                         <li
                           key={d.id}
                           title={d.habit.name}
-                          aria-label={`${d.habit.name}${got(d) ? " — есть" : ""}`}
+                          aria-label={`${d.habit.name}${got(d) ? t(" — есть", " — bor") : ""}`}
                           className={cn(
                             "flex h-10 w-10 items-center justify-center rounded-xl border-2 text-xl",
                             got(d) ? "border-sun/60 bg-sun-soft" : "border-dashed border-line opacity-50 grayscale",
@@ -157,7 +175,9 @@ export function HomeDashboard({ weeks }: { weeks: WeekSummary[] }) {
         <section key={w.number} aria-labelledby={`week-${w.number}`}>
           <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
             <div>
-              <p className="text-sm font-extrabold tracking-wide text-brand uppercase">Неделя {w.number}</p>
+              <p className="text-sm font-extrabold tracking-wide text-brand uppercase">
+                {t(`Неделя ${w.number}`, `${w.number}-hafta`)}
+              </p>
               <h2 id={`week-${w.number}`} className="text-2xl font-black sm:text-3xl">
                 {w.title}: {w.subtitle.toLowerCase()}
               </h2>
@@ -166,7 +186,7 @@ export function HomeDashboard({ weeks }: { weeks: WeekSummary[] }) {
               href={`/week/${w.number}/print`}
               className="rounded-xl px-3 py-2 text-sm font-extrabold text-brand hover:bg-brand-soft"
             >
-              🖨 Распечатать всю неделю
+              🖨 {t("Распечатать всю неделю", "Butun haftani chop etish")}
             </Link>
           </div>
           <ol className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -183,8 +203,8 @@ export function HomeDashboard({ weeks }: { weeks: WeekSummary[] }) {
                     )}
                   >
                     <div className="mb-2 flex items-center justify-between">
-                      <span className="text-sm font-extrabold text-muted">День {d.day}</span>
-                      <StatusBadge status={status} />
+                      <span className="text-sm font-extrabold text-muted">{t(`День ${d.day}`, `${d.day}-kun`)}</span>
+                      <StatusBadge status={status} t={t} />
                     </div>
                     <div className="flex items-center gap-3">
                       <span
@@ -212,7 +232,7 @@ export function HomeDashboard({ weeks }: { weeks: WeekSummary[] }) {
                     <div className="mt-auto pt-3">
                       <ProgressBar value={solved} max={d.tasks.length} />
                       <p className="mt-1 text-xs font-bold text-muted">
-                        {solved} из {d.tasks.length} задач
+                        {t(`${solved} из ${d.tasks.length} задач`, `${d.tasks.length} ta masaladan ${solved} tasi`)}
                       </p>
                     </div>
                   </Link>
@@ -225,9 +245,12 @@ export function HomeDashboard({ weeks }: { weeks: WeekSummary[] }) {
                   <p className="text-3xl" aria-hidden>
                     🧭
                   </p>
-                  <p className="mt-1 font-extrabold">Дальше — новые недели</p>
+                  <p className="mt-1 font-extrabold">{t("Дальше — новые недели", "Keyin — yangi haftalar")}</p>
                   <p className="mt-1 text-sm text-muted">
-                    Логика, геометрия, комбинаторика и алгоритмы — шаг за шагом.
+                    {t(
+                      "Логика, геометрия, комбинаторика и алгоритмы — шаг за шагом.",
+                      "Mantiq, geometriya, kombinatorika va algoritmlar — qadamma-qadam.",
+                    )}
                   </p>
                 </div>
               </li>
@@ -236,22 +259,31 @@ export function HomeDashboard({ weeks }: { weeks: WeekSummary[] }) {
         </section>
       ))}
 
-      <section className="grid grid-cols-2 gap-3 sm:grid-cols-4" aria-label="Мои достижения">
-        <StatCard emoji="✅" value={hydrated ? stats.solved : 0} label="задач решено" />
-        <StatCard emoji="💬" value={hydrated ? stats.explained : 0} label="решений объяснено" />
-        <StatCard emoji="🔁" value={hydrated ? stats.anotherWay : 0} label="других способов" />
-        <StatCard emoji="✍️" value={hydrated ? stats.own : 0} label="своих задач" href="/my-problems" />
+      <section className="grid grid-cols-2 gap-3 sm:grid-cols-4" aria-label={t("Мои достижения", "Yutuqlarim")}>
+        <StatCard emoji="✅" value={hydrated ? stats.solved : 0} label={t("задач решено", "ta masala yechildi")} />
+        <StatCard
+          emoji="💬"
+          value={hydrated ? stats.explained : 0}
+          label={t("решений объяснено", "ta yechim tushuntirildi")}
+        />
+        <StatCard emoji="🔁" value={hydrated ? stats.anotherWay : 0} label={t("других способов", "ta boshqa usul")} />
+        <StatCard
+          emoji="✍️"
+          value={hydrated ? stats.own : 0}
+          label={t("своих задач", "ta oʻz masalam")}
+          href="/my-problems"
+        />
       </section>
     </div>
   );
 }
 
-function StatusBadge({ status }: { status: Status }) {
+function StatusBadge({ status, t }: { status: Status; t: T }) {
   const map: Record<Status, { text: string; cls: string }> = {
-    done: { text: "✓ пройден", cls: "bg-mint-soft text-[#047857]" },
-    next: { text: "▶ сегодня", cls: "bg-brand text-white" },
-    active: { text: "в процессе", cls: "bg-sun-soft text-[#7a4b00]" },
-    later: { text: "впереди", cls: "bg-paper text-muted" },
+    done: { text: t("✓ пройден", "✓ oʻtildi"), cls: "bg-mint-soft text-[#047857]" },
+    next: { text: t("▶ сегодня", "▶ bugun"), cls: "bg-brand text-white" },
+    active: { text: t("в процессе", "jarayonda"), cls: "bg-sun-soft text-[#7a4b00]" },
+    later: { text: t("впереди", "oldinda"), cls: "bg-paper text-muted" },
   };
   return (
     <span className={cn("rounded-full px-2.5 py-0.5 text-xs font-extrabold", map[status].cls)}>{map[status].text}</span>
@@ -279,8 +311,10 @@ function StatCard({ emoji, value, label, href }: { emoji: string; value: number;
 }
 
 function Welcome() {
+  const t = useT();
+  const lang = useLang();
   const [age, setAge] = useState<number | null>(null);
-  const profile = age ? PROFILES[ageProfile(age)] : null;
+  const profile = age ? profileText(PROFILES[ageProfile(age)], lang) : null;
   const ages = Array.from({ length: AGE_MAX - AGE_MIN + 1 }, (_, i) => AGE_MIN + i);
   return (
     <div
@@ -290,25 +324,71 @@ function Welcome() {
       aria-labelledby="welcome-title"
     >
       <div className="my-auto w-full max-w-lg animate-pop rounded-[2rem] bg-white p-6 shadow-lift sm:p-8">
-        <div className="mb-3 text-5xl" aria-hidden>
-          🤖🧠✨
+        <div className="mb-3 flex items-start justify-between gap-3">
+          <div className="text-5xl" aria-hidden>
+            🤖🧠✨
+          </div>
+          <div className="flex gap-1.5" role="group" aria-label="Язык · Til">
+            {LANGS.map((l) => (
+              <button
+                key={l.id}
+                type="button"
+                onClick={() => setLang(l.id)}
+                aria-pressed={lang === l.id}
+                className={cn(
+                  "rounded-xl border-2 px-3 py-1.5 text-sm font-black transition",
+                  lang === l.id ? "border-brand bg-brand text-white" : "border-line bg-white hover:border-brand/40",
+                )}
+              >
+                {l.label}
+              </button>
+            ))}
+          </div>
         </div>
         <h2 id="welcome-title" className="text-2xl font-black">
-          Привет! Добро пожаловать в Лабораторию Давлатжона!
+          {t("Привет! Добро пожаловать в Лабораторию Давлатжона!", "Salom! Davlatjon laboratoriyasiga xush kelibsan!")}
         </h2>
         <p className="mt-2 text-lg text-muted">
-          Здесь живут задачи, над которыми интересно подумать. Три правила Лаборатории:
+          {t(
+            "Здесь живут задачи, над которыми интересно подумать. Три правила Лаборатории:",
+            "Bu yerda ustida bosh qotirish maroqli boʻlgan masalalar yashaydi. Laboratoriyaning uchta qoidasi bor:",
+          )}
         </p>
-        <ListenButton src={VOICE_CLIPS.welcome} label="Послушать приветствие" className="mt-2" />
+        <ListenButton
+          src={VOICE_CLIPS.welcome(lang)}
+          label={t("Послушать приветствие", "Salomlashuvni tinglash")}
+          className="mt-2"
+        />
         <ol className="mt-4 space-y-2 text-lg font-bold">
-          <li>🐢 Не торопись: думать — важнее, чем быстро отвечать.</li>
-          <li>💡 Застрял? Открой подсказку — они приходят по одной.</li>
-          <li>💬 Нашёл ответ? Объясни, почему это так — и поищи другой способ.</li>
+          <li>
+            🐢{" "}
+            {t(
+              "Не торопись: думать — важнее, чем быстро отвечать.",
+              "Shoshilma: tez javob berishdan koʻra oʻylab koʻrish muhimroq.",
+            )}
+          </li>
+          <li>
+            💡{" "}
+            {t(
+              "Застрял? Открой подсказку — они приходят по одной.",
+              "Qiynaldingmi? Maslahatni och — ular bittadan keladi.",
+            )}
+          </li>
+          <li>
+            💬{" "}
+            {t(
+              "Нашёл ответ? Объясни, почему это так — и поищи другой способ.",
+              "Javobni topdingmi? Nega aynan shunday ekanini tushuntir va boshqa yoʻlini ham izla.",
+            )}
+          </li>
         </ol>
         <fieldset className="mt-5">
-          <legend className="text-lg font-black">Сколько тебе лет?</legend>
+          <legend className="text-lg font-black">{t("Сколько тебе лет?", "Necha yoshdasan?")}</legend>
           <p className="text-sm text-muted">
-            От этого зависит, с каких заданий начать. Изменить можно в разделе для родителей.
+            {t(
+              "От этого зависит, с каких заданий начать. Изменить можно в разделе для родителей.",
+              "Qaysi topshiriqlardan boshlash shunga bogʻliq. Keyin ota-onalar boʻlimida oʻzgartirsa boʻladi.",
+            )}
           </p>
           <div className="mt-2 flex flex-wrap gap-1.5">
             {ages.map((a) => (
@@ -328,7 +408,7 @@ function Welcome() {
           </div>
           {profile && (
             <p className="mt-2 rounded-2xl bg-brand-soft/60 px-3 py-2 text-sm font-semibold" aria-live="polite">
-              {profile.name} профиль · {profile.ages}. {profile.about}
+              {t(`${profile.name} профиль`, `«${profile.name}» rejimi`)} · {profile.ages}. {profile.about}
             </p>
           )}
         </fieldset>
@@ -341,7 +421,7 @@ function Welcome() {
             setWelcomed();
           }}
         >
-          Поехали! 🚀
+          {t("Поехали! 🚀", "Ketdik! 🚀")}
         </Button>
       </div>
     </div>

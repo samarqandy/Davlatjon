@@ -373,12 +373,12 @@ export function isPublicDomain(img: Pick<ChessImage, "licenseCode">): boolean {
 }
 
 /** Строка авторства: «Фото: Frans Peeters · CC BY-SA 2.0» или «Общественное достояние». */
-export function imageCredit(img: ChessImage): string {
-  const what =
-    img.kind === "art" ? "" : img.kind === "person" || img.kind === "place" || img.kind === "object" ? "Фото: " : "";
+export function imageCredit(img: ChessImage, lang: "ru" | "uz" = "ru"): string {
+  const uz = lang === "uz";
+  const what = img.kind === "art" ? "" : uz ? "Surat: " : "Фото: ";
   if (isPublicDomain(img)) {
     const by = img.author && !/unknown|неизвест/i.test(img.author) ? `${img.author} · ` : "";
-    return `${what}${by}${img.licenseCode === "cc0" ? "CC0" : "общественное достояние"}`;
+    return `${what}${by}${img.licenseCode === "cc0" ? "CC0" : uz ? "jamoat mulki" : "общественное достояние"}`;
   }
-  return `${what}${img.author || "автор неизвестен"} · ${img.license}`;
+  return `${what}${img.author || (uz ? "muallif nomaʼlum" : "автор неизвестен")} · ${img.license}`;
 }

@@ -277,6 +277,8 @@ describe("шифр Цезаря", () => {
     expect(normalizeText("  мОлОдец ")).toBe("МОЛОДЕЦ");
     expect(normalizeText("ёлка")).toBe("ЕЛКА");
     expect(normalizeText("KOT")).toBe("КОТ");
+    expect(normalizeText("oʻrik")).toBe(normalizeText("O'RIK"));
+    expect(normalizeText("toʻgʻri")).toBe(normalizeText("to‘g`ri"));
     const field = { type: "text", id: "w", label: "слово", answer: "МЁД" } as const;
     expect(fieldMatches(field, "мед")).toBe(true);
     expect(fieldMatches(field, "мёд ")).toBe(true);

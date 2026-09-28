@@ -1,19 +1,21 @@
 "use client";
 
-import { useEffect, useId, useState, type RefObject } from "react";
+import { useEffect, useId, useState, useSyncExternalStore, type RefObject } from "react";
 import { cn } from "@/components/ui";
+import { useLang, useT } from "@/lib/i18n";
 import { useStore } from "@/lib/store";
-import { onVoiceChange, playClip, playingId, speak, stopVoice } from "@/lib/voice";
+import { canSpeak, onVoiceChange, onVoicesChanged, playClip, playingId, speak, stopVoice } from "@/lib/voice";
 
 /**
  * Кнопка «Послушать»: запись диктора (src), а если её нет — голос браузера читает текст.
  * Текст можно передать строкой или взять из блока на странице (from).
+ * Нет ни записи, ни голоса на языке интерфейса — кнопки нет.
  */
 export function ListenButton({
   src,
   text,
   from,
-  label = "Послушать",
+  label,
   className,
 }: {
   src?: string;
@@ -23,17 +25,24 @@ export function ListenButton({
   className?: string;
 }) {
   const id = useId();
+  const t = useT();
+  const lang = useLang();
   const sound = useStore((s) => s.settings.sound !== false);
   const [playing, setPlaying] = useState(false);
+  const speech = useSyncExternalStore(
+    onVoicesChanged,
+    () => canSpeak(lang),
+    () => false,
+  );
 
   useEffect(() => onVoiceChange((now) => setPlaying(now === id)), [id]);
   useEffect(() => () => void (playingId() === id && stopVoice()), [id]);
 
-  if (!sound) return null;
+  if (!sound || (!src && !speech)) return null;
 
   const read = () => {
-    const t = text ?? from?.current?.innerText ?? "";
-    if (t) speak(t, id);
+    const x = text ?? from?.current?.innerText ?? "";
+    if (x && canSpeak(lang)) speak(x, id, lang);
   };
 
   return (
@@ -52,7 +61,7 @@ export function ListenButton({
       )}
     >
       <span aria-hidden>{playing ? "⏹" : "🔊"}</span>
-      {playing ? "Стоп" : label}
+      {playing ? t("Стоп", "Toʻxtatish") : (label ?? t("Послушать", "Tinglash"))}
     </button>
   );
 }

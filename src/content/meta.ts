@@ -1,3 +1,4 @@
+import type { Lang } from "@/lib/i18n";
 import type { Level, SectionId } from "./types";
 
 export interface SectionMeta {
@@ -137,8 +138,8 @@ export const LEVELS: Record<Level, LevelMeta> = {
 };
 
 /** Подпись шага подсказки с двоеточием: «Что известно?» — без двоеточия. */
-export function hintLabel(i: number): string {
-  const step = HINT_STEPS[i];
+export function hintLabel(i: number, lang: Lang = "ru"): string {
+  const step = hintSteps(lang)[i];
   return step.endsWith("?") ? step : `${step}:`;
 }
 
@@ -172,3 +173,83 @@ export const COLOR_NAME_RU: Record<string, string> = {
   purple: "фиолетовый",
   orange: "оранжевый",
 };
+
+export const COLOR_NAME_UZ: Record<string, string> = {
+  red: "qizil",
+  blue: "koʻk",
+  green: "yashil",
+  yellow: "sariq",
+  black: "qora",
+  gray: "kulrang",
+  purple: "binafsha",
+  orange: "toʻq sariq",
+};
+
+// ---------------------------------------------------------------------------
+// По-узбекски
+// ---------------------------------------------------------------------------
+
+const SECTIONS_UZ: Record<SectionId, { name: string; about: string }> = {
+  warmup: { name: "Razminka", about: "Ogʻzaki hisob va zukkolik: qanday hisoblasa qulayroq va tezroq." },
+  logic: {
+    name: "Mantiq",
+    about: "Mulohaza yuritish, keraksiz variantlarni chiqarib tashlash, «agar… boʻlsa, unda…».",
+  },
+  pattern: { name: "Qonuniyatlar", about: "Yashirin qoidani topish va uni tekshirib koʻrish." },
+  algorithm: { name: "Algoritmlar", about: "Qadamlar, takrorlash, shartlar, eng yaxshi yoʻlni izlash." },
+  spatial: { name: "Fazoviy tasavvur", about: "Kataklar, simmetriya, burish, kubiklar, koordinatalar." },
+  real: { name: "Atrofimizdagi matematika", about: "Pul, vaqt, xarid, yoʻl — hayotdagi matematika." },
+  challenge: { name: "Yulduzchali masala", about: "Bitta qiyinroq masala: uzoqroq oʻylash va taslim boʻlmaslik." },
+  research: {
+    name: "Kichik tadqiqot",
+    about: "Yechish, tushuntirish, boshqa yoʻlini topish, shartni oʻzgartirish, tadqiq qilish, oʻz masalangni tuzish.",
+  },
+};
+
+const LEVELS_UZ: Record<Level, { name: string; about: string }> = {
+  1: { name: "Oson", about: "Mustaqil yechsa boʻladi." },
+  2: { name: "Oʻylash kerak", about: "Biroz mulohaza yuritish kerak." },
+  3: { name: "Gʻayrioddiy", about: "Yangi gʻoya kerak." },
+  4: { name: "Olimpiada", about: "Shu yosh uchun olimpiada masalasi — chuqur mulohaza talab qiladi." },
+  5: { name: "Tadqiqot", about: "Bir nechta yechim va yondashuv, tajriba kerak." },
+};
+
+const HINT_STEPS_UZ = [
+  "Shartni qayta oʻqi",
+  "Nima maʼlum?",
+  "Chizib yoki yozib ol",
+  "Kichikroq masalani yech",
+  "Gʻoya",
+];
+
+const SECTIONS_BY_LANG: Record<Lang, Record<SectionId, SectionMeta>> = {
+  ru: SECTIONS,
+  uz: Object.fromEntries(Object.values(SECTIONS).map((s) => [s.id, { ...s, ...SECTIONS_UZ[s.id] }])) as Record<
+    SectionId,
+    SectionMeta
+  >,
+};
+
+const LEVELS_BY_LANG: Record<Lang, Record<Level, LevelMeta>> = {
+  ru: LEVELS,
+  uz: Object.fromEntries(Object.values(LEVELS).map((l) => [l.level, { ...l, ...LEVELS_UZ[l.level] }])) as Record<
+    Level,
+    LevelMeta
+  >,
+};
+
+export function sectionsFor(lang: Lang): Record<SectionId, SectionMeta> {
+  return SECTIONS_BY_LANG[lang];
+}
+
+export function levelsFor(lang: Lang): Record<Level, LevelMeta> {
+  return LEVELS_BY_LANG[lang];
+}
+
+export function hintSteps(lang: Lang): readonly string[] {
+  return lang === "uz" ? HINT_STEPS_UZ : HINT_STEPS;
+}
+
+export function colorName(color: string, lang: Lang): string {
+  return (lang === "uz" ? COLOR_NAME_UZ : COLOR_NAME_RU)[color] ?? color;
+}
