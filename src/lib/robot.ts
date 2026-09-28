@@ -1,10 +1,18 @@
 import type { Cell, Dir } from "@/content/types";
+import type { Lang } from "./lang";
 
 export const DIRS: Dir[] = ["U", "D", "L", "R"];
 
 export const ARROW: Record<Dir, string> = { U: "↑", D: "↓", L: "←", R: "→" };
 
 export const DIR_NAME: Record<Dir, string> = { U: "вверх", D: "вниз", L: "влево", R: "вправо" };
+
+export const DIR_NAME_UZ: Record<Dir, string> = { U: "yuqoriga", D: "pastga", L: "chapga", R: "oʻngga" };
+
+/** Команда робота словами на нужном языке: «вверх» / «yuqoriga». */
+export function dirName(dir: Dir, lang: Lang = "ru"): string {
+  return (lang === "uz" ? DIR_NAME_UZ : DIR_NAME)[dir];
+}
 
 const DELTA: Record<Dir, readonly [number, number]> = {
   U: [0, -1],

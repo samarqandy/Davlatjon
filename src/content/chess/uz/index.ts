@@ -11,6 +11,7 @@ import {
   womenChampionsUz,
   worldChampionsUz,
 } from "./encyclopedia";
+import { endgameMatesUz, endgameSchoolUz, endgamesUz } from "./endgames";
 import { gamesUz } from "./games";
 import { imagesUz } from "./images";
 import { bishopUz } from "./bishop";
@@ -61,4 +62,7 @@ export const CHESS_UZ: ChessContentUz = {
   chessMath: chessMathUz,
   uzbekChess: uzbekChessUz,
   images: imagesUz,
+  endgameSchool: endgameSchoolUz,
+  endgames: endgamesUz,
+  endgameMates: endgameMatesUz,
 };

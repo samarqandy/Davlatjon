@@ -3,7 +3,8 @@
  * считаем, сколько «шансов на победу» потерял игрок, точность в процентах и вид хода —
  * лучший, хороший, неточность, ошибка, зевок. К ошибкам — объяснение простыми словами.
  */
-import { attackersOf, pieceAt, playMove, ruSan, sanOf, type PieceType } from "@/lib/chess";
+import { attackersOf, pieceAt, playMove, sanOf, type PieceType } from "@/lib/chess";
+import { sanFor, tFor, type Lang } from "@/lib/lang";
 import type { ChessGameRecord } from "@/lib/store";
 import { MATE, searchBest } from "./search";
 
@@ -92,35 +93,64 @@ const ACC: Record<PieceType, string> = {
   k: "короля",
 };
 
-function explain(r: PlyReview, before: PositionEval, after: PositionEval): string {
+/** Фигуры по-узбекски; винительный падеж — с окончанием «-ni»: «farzinni». */
+const PIECE_UZ: Record<PieceType, string> = {
+  p: "piyoda",
+  n: "ot",
+  b: "fil",
+  r: "rux",
+  q: "farzin",
+  k: "shoh",
+};
+
+/** Объяснение ошибки на нужном языке; ходы — в записи этого языка (по-узбекски — фигурками). */
+function explain(r: PlyReview, before: PositionEval, after: PositionEval, lang: Lang): string {
+  const t = tFor(lang);
+  const san = (x: string) => sanFor(lang, x);
   const mover = r.side === "w" ? 1 : -1;
-  const bestLine = r.bestSan ? ` Лучше было ${ruSan(r.bestSan)}.` : "";
+  const bestLine = r.bestSan ? t(` Лучше было ${san(r.bestSan)}.`, ` Eng yaxshi yurish — ${san(r.bestSan)}.`) : "";
   // 1. Был мат — а его не заметили.
   const hadMate = mateMoves(before.score);
   if (hadMate && before.score * mover > 0 && r.best) {
+    const first = san(r.bestSan ?? r.best);
     return hadMate === 1
-      ? `Здесь был мат в один ход: ${ruSan(r.bestSan ?? r.best)}! Перед каждым ходом ищи шахи — вдруг это мат.`
-      : `Здесь был мат в ${hadMate} хода, первый ход — ${ruSan(r.bestSan ?? r.best)}. Шахи и взятия проверяй первыми.`;
+      ? t(
+          `Здесь был мат в один ход: ${first}! Перед каждым ходом ищи шахи — вдруг это мат.`,
+          `Bu yerda bir yurishda mot bor edi: ${first}! Har yurishdan oldin shoh beradigan yurishlarni qidir — balki ulardan biri mot.`,
+        )
+      : t(
+          `Здесь был мат в ${hadMate} хода, первый ход — ${first}. Шахи и взятия проверяй первыми.`,
+          `Bu yerda ${hadMate} yurishda mot bor edi, birinchi yurish — ${first}. Avval shoh berish va urib olish yurishlarini tekshir.`,
+        );
   }
   // 2. Ход разрешил сопернику поставить мат.
   const theyMate = mateMoves(after.score);
   if (theyMate && after.score * mover < 0 && after.best) {
-    const reply = ruSan(sanOf(r.fenAfter, after.best));
+    const reply = san(sanOf(r.fenAfter, after.best));
     return theyMate === 1
-      ? `После этого хода соперник ставит мат: ${reply}. Посмотри, что будет, если соперник сделает шах.${bestLine}`
-      : `После этого хода у соперника есть мат в ${theyMate} хода — начинается с ${reply}.${bestLine}`;
+      ? t(
+          `После этого хода соперник ставит мат: ${reply}. Посмотри, что будет, если соперник сделает шах.${bestLine}`,
+          `Bu yurishdan keyin raqib mot qiladi: ${reply}. Raqib shoh bersa nima boʻlishini oldindan tekshirib koʻr.${bestLine}`,
+        )
+      : t(
+          `После этого хода у соперника есть мат в ${theyMate} хода — начинается с ${reply}.${bestLine}`,
+          `Bu yurishdan keyin raqibda ${theyMate} yurishda mot bor, birinchi yurishi — ${reply}.${bestLine}`,
+        );
   }
   const missed = r.best ? pieceAt(r.fenBefore, r.best.slice(2, 4)) : null;
   const missedCapture =
     missed && missed.color !== r.side
-      ? `Можно было взять ${ACC[missed.type]}: ${ruSan(r.bestSan ?? r.best ?? "")}. Смотри, что стоит без защиты у соперника.`
+      ? t(
+          `Можно было взять ${ACC[missed.type]}: ${san(r.bestSan ?? r.best ?? "")}. Смотри, что стоит без защиты у соперника.`,
+          `${capitalize(PIECE_UZ[missed.type])}ni urib olish mumkin edi: ${san(r.bestSan ?? r.best ?? "")}. Raqibning himoyasiz donalariga eʼtibor ber.`,
+        )
       : null;
   // 3. После хода фигура под боем.
   if (after.best) {
     const square = after.best.slice(2, 4);
     const target = pieceAt(r.fenAfter, square);
     if (target && target.color === r.side) {
-      const reply = ruSan(sanOf(r.fenAfter, after.best));
+      const reply = san(sanOf(r.fenAfter, after.best));
       const moved = r.uci.slice(2, 4) === square;
       const was = pieceAt(r.fenBefore, square);
       const opponent = r.side === "w" ? "b" : "w";
@@ -131,22 +161,49 @@ function explain(r: PlyReview, before: PositionEval, after: PositionEval): strin
         attackersOf(r.fenBefore, square, opponent).length > 0;
       if (alreadyAttacked && missedCapture) return missedCapture;
       if (alreadyAttacked)
-        return `Не спасли ${ACC[target.type]} на ${square}: соперник возьмёт ходом ${reply}. Если фигуру атакуют — уведи её или защити.${bestLine}`;
+        return t(
+          `Не спасли ${ACC[target.type]} на ${square}: соперник возьмёт ходом ${reply}. Если фигуру атакуют — уведи её или защити.${bestLine}`,
+          `${square} dagi ${PIECE_UZ[target.type]} qutqarilmadi: raqib uni ${reply} bilan urib oladi. Donangga hujum qilishsa — uni olib qoch yoki himoya qil.${bestLine}`,
+        );
       return moved
-        ? `Фигура встала под удар: соперник возьмёт ${ACC[target.type]} ходом ${reply}. Перед ходом спроси себя: «Кто может меня взять?»${bestLine}`
-        : `Теперь соперник может взять ${ACC[target.type]} на ${square}: ${reply}.${bestLine}`;
+        ? t(
+            `Фигура встала под удар: соперник возьмёт ${ACC[target.type]} ходом ${reply}. Перед ходом спроси себя: «Кто может меня взять?»${bestLine}`,
+            `Dona zarba ostiga tushdi: raqib ${PIECE_UZ[target.type]}ni ${reply} bilan urib oladi. Yurishdan oldin oʻzingdan soʻra: «Meni kim urib olishi mumkin?»${bestLine}`,
+          )
+        : t(
+            `Теперь соперник может взять ${ACC[target.type]} на ${square}: ${reply}.${bestLine}`,
+            `Endi raqib ${square} dagi ${PIECE_UZ[target.type]}ni urib olishi mumkin: ${reply}.${bestLine}`,
+          );
     }
   }
   // 4. Пропустили взятие.
   if (missedCapture) return missedCapture;
   // 5. Ход не проиграл фигуру, но позиция стала хуже.
   return r.kind === "inaccuracy"
-    ? `Ход неплохой, но есть сильнее: ${ruSan(r.bestSan ?? r.best ?? "")}.`
-    : `После этого хода позиция стала заметно хуже.${bestLine}`;
+    ? t(
+        `Ход неплохой, но есть сильнее: ${san(r.bestSan ?? r.best ?? "")}.`,
+        `Yurish yomon emas, lekin bundan kuchlirogʻi bor: ${san(r.bestSan ?? r.best ?? "")}.`,
+      )
+    : t(
+        `После этого хода позиция стала заметно хуже.${bestLine}`,
+        `Bu yurishdan keyin pozitsiya ancha yomonlashdi.${bestLine}`,
+      );
 }
 
-/** Разбор по готовым оценкам всех позиций: evals[k] — позиция после k полуходов. */
-export function buildReview(start: string, ucis: readonly string[], evals: readonly PositionEval[]): GameReview {
+function capitalize(x: string): string {
+  return x.charAt(0).toUpperCase() + x.slice(1);
+}
+
+/**
+ * Разбор по готовым оценкам всех позиций: evals[k] — позиция после k полуходов.
+ * Объяснения ошибок — на языке lang (в хранилище они не сохраняются, их собирают заново при показе).
+ */
+export function buildReview(
+  start: string,
+  ucis: readonly string[],
+  evals: readonly PositionEval[],
+  lang: Lang = "ru",
+): GameReview {
   const fens = [start];
   const plies: PlyReview[] = [];
   for (const [i, uci] of ucis.entries()) {
@@ -189,7 +246,7 @@ export function buildReview(start: string, ucis: readonly string[], evals: reado
       accuracy: moveAccuracy(drop),
       kind,
     };
-    if (kind === "inaccuracy" || kind === "mistake" || kind === "blunder") r.reason = explain(r, before, after);
+    if (kind === "inaccuracy" || kind === "mistake" || kind === "blunder") r.reason = explain(r, before, after, lang);
     plies.push(r);
   }
   const summary = (side: "w" | "b"): SideSummary => {
@@ -218,19 +275,24 @@ export function gamePositions(start: string, ucis: readonly string[]): string[] 
 }
 
 /** Разбор целиком — для тестов и коротких партий. */
-export function analyzeGame(start: string, ucis: readonly string[], timeMs = 400): GameReview {
+export function analyzeGame(start: string, ucis: readonly string[], timeMs = 400, lang: Lang = "ru"): GameReview {
   const evals = gamePositions(start, ucis).map((fen) => evaluatePosition(fen, timeMs));
-  return buildReview(start, ucis, evals);
+  return buildReview(start, ucis, evals, lang);
 }
 
-export const KIND_META: Record<MoveKind, { label: string; mark: string; color: string }> = {
-  best: { label: "лучший ход", mark: "✓", color: "#059669" },
-  good: { label: "хороший ход", mark: "", color: "#64748b" },
-  inaccuracy: { label: "неточность", mark: "?!", color: "#ca8a04" },
-  mistake: { label: "ошибка", mark: "?", color: "#ea580c" },
-  blunder: { label: "зевок", mark: "??", color: "#dc2626" },
-  mate: { label: "мат", mark: "#", color: "#4f46e5" },
+export const KIND_META: Record<MoveKind, { label: string; labelUz: string; mark: string; color: string }> = {
+  best: { label: "лучший ход", labelUz: "eng yaxshi yurish", mark: "✓", color: "#059669" },
+  good: { label: "хороший ход", labelUz: "yaxshi yurish", mark: "", color: "#64748b" },
+  inaccuracy: { label: "неточность", labelUz: "noaniqlik", mark: "?!", color: "#ca8a04" },
+  mistake: { label: "ошибка", labelUz: "xato", mark: "?", color: "#ea580c" },
+  blunder: { label: "зевок", labelUz: "qoʻpol xato", mark: "??", color: "#dc2626" },
+  mate: { label: "мат", labelUz: "mot", mark: "#", color: "#4f46e5" },
 };
+
+/** Вид хода словами на нужном языке: «зевок» / «qoʻpol xato». */
+export function kindLabel(kind: MoveKind, lang: Lang = "ru"): string {
+  return lang === "uz" ? KIND_META[kind].labelUz : KIND_META[kind].label;
+}
 
 /** Хорош ли ход в позиции почти как лучший: оценка не хуже чем на margin сотых пешки. */
 export function isAlmostBest(fen: string, uci: string, best: string, margin = 40, depth = 2): boolean {

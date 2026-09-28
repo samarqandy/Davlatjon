@@ -2,11 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Button, ButtonLink, cn } from "@/components/ui";
-import { isInCheck, legalTargets, pieceAt, playMove, ruSan, type Color } from "@/lib/chess";
-import { ROBOT_LEVELS, pawnBattleBest, robotMove, searchBest } from "@/lib/engine/search";
+import { isInCheck, legalTargets, pieceAt, playMove, type Color } from "@/lib/chess";
+import { pawnBattleBest, robotLevels, robotMove, searchBest } from "@/lib/engine/search";
+import { useLang, useSan, useT } from "@/lib/i18n";
 import {
   capturedPieces,
   clockLabel,
+  endgameText,
   formatClock,
   kingOf,
   oddsLabel,
@@ -17,6 +19,7 @@ import {
   type EndgameVariant,
   type Odds,
   type PlayMode,
+  type PlayStatus,
 } from "@/lib/play";
 import { pluralize } from "@/lib/plural";
 import { random } from "@/lib/random";
@@ -60,6 +63,9 @@ function computerMove(config: PlayConfig, fen: string): string | null {
 }
 
 export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () => void }) {
+  const t = useT();
+  const lang = useLang();
+  const san = useSan();
   const [start, setStart] = useState(() => initialFen(config));
   const [gameId, setGameId] = useState(newGameId);
   const clockMs = config.clock ? config.clock.base * 60_000 : 0;
@@ -81,19 +87,22 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
   const withRobot = config.mode !== "two";
   const myTurn = !withRobot || turn === config.color;
   const positions = [start, ...plies.map((p) => p.fen)];
-  const status = resigned
+  const status: PlayStatus = resigned
     ? {
         over: true,
         winner: config.color === "w" ? ("b" as const) : ("w" as const),
-        reason: "Ты сдался. Ничего страшного — сыграем ещё!",
+        reason: t("Ты сдался. Ничего страшного — сыграем ещё!", "Sen taslim boʻlding. Hechqisi yoʻq — yana oʻynaymiz!"),
       }
     : flag
       ? {
           over: true,
           winner: flag === "w" ? ("b" as const) : ("w" as const),
-          reason: `Время ${flag === "w" ? "белых" : "чёрных"} вышло!`,
+          reason: t(
+            `Время ${flag === "w" ? "белых" : "чёрных"} вышло!`,
+            `${flag === "w" ? "Oqlar" : "Qoralar"}ning vaqti tugadi!`,
+          ),
         }
-      : playStatus(config.mode, fen, positions);
+      : playStatus(config.mode, fen, positions, lang);
   const clockRunning = !!config.clock && !status.over && plies.length > 0;
 
   // Часы: идут у той стороны, чей ход, начиная с первого хода белых.
@@ -137,7 +146,7 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
   useEffect(() => {
     if (!status.over || recorded.current || plies.length === 0) return;
     recorded.current = true;
-    if (status.reason === "Мат!" && (!withRobot || status.winner === config.color)) cheer("mate");
+    if (status.mate && (!withRobot || status.winner === config.color)) cheer("mate");
     recordChessGame({
       id: gameId,
       mode: config.mode,
@@ -152,7 +161,7 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
       clock: config.clock?.id,
       odds: config.odds ? `${config.odds.side}${config.odds.piece}` : undefined,
     });
-  }, [status.over, status.winner, status.reason, withRobot, config, myMoves, gameId, start, plies]);
+  }, [status.over, status.winner, status.mate, withRobot, config, myMoves, gameId, start, plies]);
 
   const tryMove = (from: string, to: string): boolean => {
     if (!myTurn || status.over || thinking) return false;
@@ -219,18 +228,20 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
   }
   if (selected) {
     marks[selected] = "selected";
-    for (const t of legalTargets(fen, selected)) marks[t] = pieceAt(fen, t) ? "capture" : "target";
+    for (const sq of legalTargets(fen, selected)) marks[sq] = pieceAt(fen, sq) ? "capture" : "target";
   }
   const orientation = (config.color === "b") !== flipped ? "black" : "white";
 
+  const robot = robotLevels(lang)[config.level - 1];
+  const variant = config.variant ? endgameText(config.variant, lang) : undefined;
   const title =
     config.mode === "robot"
-      ? `Робот «${ROBOT_LEVELS[config.level - 1]?.name ?? ""}»`
+      ? t(`Робот «${robot?.name ?? ""}»`, `Robot «${robot?.name ?? ""}»`)
       : config.mode === "two"
-        ? "Партия вдвоём"
+        ? t("Партия вдвоём", "Ikki kishilik partiya")
         : config.mode === "pawns"
-          ? "Пешечный бой"
-          : (config.variant?.name ?? "Тренировка");
+          ? t("Пешечный бой", "Piyodalar jangi")
+          : (variant?.name ?? t("Тренировка", "Mashq"));
   const topSide: Color = orientation === "white" ? "b" : "w";
   const clockBox = (side: Color) =>
     config.clock ? (
@@ -240,27 +251,32 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
           clockRunning && turn === side ? "bg-ink text-white" : "bg-white text-ink shadow-card",
           clock[side] < 20_000 && "text-rose",
         )}
-        aria-label={`Часы ${side === "w" ? "белых" : "чёрных"}`}
+        aria-label={t(`Часы ${side === "w" ? "белых" : "чёрных"}`, `${side === "w" ? "Oqlar" : "Qoralar"}ning soati`)}
       >
         {formatClock(clock[side])}
       </div>
     ) : null;
 
+  const sideName = (side: Color | undefined) =>
+    t(side === "w" ? "белые" : "чёрные", side === "w" ? "Oqlar" : "Qoralar");
   const statusText = status.over
     ? status.winner === "draw"
       ? `🤝 ${status.reason}`
       : withRobot
         ? status.winner === config.color
-          ? `🏆 Победа! ${status.reason}`
-          : `${status.reason} Робот выиграл — сыграем ещё?`
-        : `🏆 ${status.reason} Победили ${status.winner === "w" ? "белые" : "чёрные"}.`
+          ? t(`🏆 Победа! ${status.reason}`, `🏆 Gʻalaba! ${status.reason}`)
+          : t(`${status.reason} Робот выиграл — сыграем ещё?`, `${status.reason} Robot yutdi — yana oʻynaymizmi?`)
+        : t(
+            `🏆 ${status.reason} Победили ${sideName(status.winner)}.`,
+            `🏆 ${status.reason} ${sideName(status.winner)} yutdi.`,
+          )
     : thinking
-      ? "🤖 Робот думает…"
+      ? t("🤖 Робот думает…", "🤖 Robot oʻylayapti…")
       : inCheck
-        ? `⚠️ Шах! Ходят ${turn === "w" ? "белые" : "чёрные"}.`
+        ? t(`⚠️ Шах! Ходят ${sideName(turn)}.`, `⚠️ Shoh! ${sideName(turn)} yuradi.`)
         : withRobot
-          ? "🙂 Твой ход"
-          : `Ходят ${turn === "w" ? "белые" : "чёрные"}`;
+          ? t("🙂 Твой ход", "🙂 Navbat senda")
+          : t(`Ходят ${sideName(turn)}`, `${sideName(turn)} yuradi`);
 
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
@@ -268,17 +284,21 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-2xl font-black">{title}</h2>
           <Button variant="ghost" size="sm" onClick={onExit}>
-            ← Выбрать другой режим
+            ← {t("Выбрать другой режим", "Boshqa rejimni tanlash")}
           </Button>
         </div>
         {(config.odds || config.clock) && (
           <p className="text-sm font-bold text-muted">
-            {config.odds && `🎁 Фора: ${oddsLabel(config.odds)}. `}
-            {config.clock && `⏱ ${clockLabel(config.clock)} на партию.`}
+            {config.odds && t(`🎁 Фора: ${oddsLabel(config.odds)}. `, `🎁 Fora: ${oddsLabel(config.odds, lang)}. `)}
+            {config.clock &&
+              t(`⏱ ${clockLabel(config.clock)} на партию.`, `⏱ Partiyaga ${clockLabel(config.clock, lang)}.`)}
           </p>
         )}
         <div className="flex items-center gap-2">
-          <CapturedRow pieces={orientation === "white" ? captured.w : captured.b} label="Взято у соперника сверху" />
+          <CapturedRow
+            pieces={orientation === "white" ? captured.w : captured.b}
+            label={t("Взято у соперника сверху", "Raqibdan olingan donalar (yuqorida)")}
+          />
           {clockBox(topSide)}
         </div>
         <ChessBoard
@@ -293,7 +313,10 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
           maxWidth={520}
         />
         <div className="flex items-center gap-2">
-          <CapturedRow pieces={orientation === "white" ? captured.b : captured.w} label="Взято у соперника снизу" />
+          <CapturedRow
+            pieces={orientation === "white" ? captured.b : captured.w}
+            label={t("Взято у соперника снизу", "Raqibdan olingan donalar (pastda)")}
+          />
           {clockBox(topSide === "w" ? "b" : "w")}
         </div>
         <p
@@ -307,7 +330,11 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
         </p>
         {status.over && (config.mode === "robot" || config.mode === "two") && plies.length > 1 && (
           <ButtonLink href={`/chess/review#${gameId}`} variant="sun">
-            🔎 Разбор партии: где были ошибки и лучшие ходы
+            🔎{" "}
+            {t(
+              "Разбор партии: где были ошибки и лучшие ходы",
+              "Partiya tahlili: qayerda xato, qayerda eng yaxshi yurish boʻlgan",
+            )}
           </ButtonLink>
         )}
       </div>
@@ -315,53 +342,63 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
       <aside className="space-y-3">
         <div className="flex flex-wrap gap-2">
           <Button variant="secondary" size="sm" onClick={showHint} disabled={!myTurn || status.over || thinking}>
-            💡 Подсказка{hints ? ` (${hints})` : ""}
+            💡 {t("Подсказка", "Maslahat")}
+            {hints ? ` (${hints})` : ""}
           </Button>
           <Button variant="secondary" size="sm" onClick={undo} disabled={plies.length === 0 || thinking}>
-            ↶ Отменить
+            ↶ {t("Отменить", "Ortga qaytarish")}
           </Button>
           <Button variant="secondary" size="sm" onClick={() => setFlipped((f) => !f)}>
-            🔄 Перевернуть
+            🔄 {t("Перевернуть", "Taxtani aylantirish")}
           </Button>
           {withRobot && !status.over && (
             <Button variant="ghost" size="sm" onClick={() => setResigned(true)} disabled={plies.length === 0}>
-              🏳️ Сдаться
+              🏳️ {t("Сдаться", "Taslim boʻlish")}
             </Button>
           )}
           <Button size="sm" onClick={restart}>
-            ↺ Новая партия
+            ↺ {t("Новая партия", "Yangi partiya")}
           </Button>
         </div>
         <div className="rounded-2xl bg-white p-3 shadow-card">
           <p className="mb-2 text-sm font-extrabold text-muted">
-            Ходы · {movesWord(Math.ceil(plies.length / 2))}
-            {config.variant && ` · цель: до ${config.variant.target}`}
+            {t("Ходы", "Yurishlar")} ·{" "}
+            {t(movesWord(Math.ceil(plies.length / 2)), `${Math.ceil(plies.length / 2)} ta yurish`)}
+            {config.variant &&
+              t(` · цель: до ${config.variant.target}`, ` · maqsad: ${config.variant.target} yurishgacha`)}
           </p>
           <ol
             className="grid max-h-72 grid-cols-[auto_1fr_1fr] gap-x-3 gap-y-1 overflow-y-auto text-[0.95rem]"
-            aria-label="Список ходов"
+            aria-label={t("Список ходов", "Yurishlar roʻyxati")}
           >
             {Array.from({ length: Math.ceil(plies.length / 2) }, (_, i) => (
               <li key={i} className="contents">
                 <span className="text-muted">{i + 1}.</span>
-                <span className="font-bold">{ruSan(plies[2 * i].san)}</span>
-                <span className="font-bold">{plies[2 * i + 1] ? ruSan(plies[2 * i + 1].san) : ""}</span>
+                <span className="font-bold">{san(plies[2 * i].san)}</span>
+                <span className="font-bold">{plies[2 * i + 1] ? san(plies[2 * i + 1].san) : ""}</span>
               </li>
             ))}
           </ol>
-          {plies.length === 0 && <p className="text-sm text-muted">Партия ещё не началась.</p>}
+          {plies.length === 0 && (
+            <p className="text-sm text-muted">{t("Партия ещё не началась.", "Partiya hali boshlanmadi.")}</p>
+          )}
         </div>
-        {config.mode === "robot" && (
-          <p className="text-sm font-bold text-muted">{ROBOT_LEVELS[config.level - 1]?.about}</p>
-        )}
+        {config.mode === "robot" && <p className="text-sm font-bold text-muted">{robot?.about}</p>}
         {config.mode === "endgame" && (
           <p className="text-sm font-bold text-muted">
-            {config.variant?.about} Если получится пат — партия закончится вничью, и её придётся начать заново.
+            {variant?.about}{" "}
+            {t(
+              "Если получится пат — партия закончится вничью, и её придётся начать заново.",
+              "Agar pat boʻlib qolsa — partiya durang bilan tugaydi va uni qaytadan boshlashga toʻgʻri keladi.",
+            )}
           </p>
         )}
         {config.mode === "pawns" && (
           <p className="text-sm font-bold text-muted">
-            Только пешки! Кто первым доведёт пешку до последней горизонтали — победил. Если ходить нечем — проиграл.
+            {t(
+              "Только пешки! Кто первым доведёт пешку до последней горизонтали — победил. Если ходить нечем — проиграл.",
+              "Faqat piyodalar! Kim piyodasini birinchi boʻlib oxirgi gorizontalga olib borsa — oʻsha yutadi. Yurishga imkoni qolmagan tomon yutqazadi.",
+            )}
           </p>
         )}
       </aside>

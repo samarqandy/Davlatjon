@@ -3,35 +3,32 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Button, cn } from "@/components/ui";
-import { chessImage } from "@/content/chess/images";
+import { chessImageIn } from "@/content/chess/content";
 import {
-  DILARAM,
   ENVOY_ROUNDS,
-  PIECE_NAMES_RU,
-  RIDDLES,
-  SAGES,
-  SECRETS,
-  TURK_OPTIONS,
-  TURK_REVEAL,
   formatBig,
   grainsOn,
   grainsUpTo,
   knightMoves,
   squareName,
   warnsdorffBest,
+  type EnvoyRound,
   type Secret,
   type SecretWidget,
 } from "@/content/chess/secrets";
 import { useAgeProfile } from "@/lib/age";
+import { useChess, useChessImage } from "@/lib/useChess";
 import { useHash } from "@/lib/useHash";
 import { ChessBoard, PieceIcon, type SquareMark } from "./ChessBoard";
 import { Figure, Portrait } from "./Figure";
 import { ListenButton } from "@/components/ListenButton";
-import { useLang } from "@/lib/i18n";
+import { useLang, useT, type T } from "@/lib/i18n";
 import { VOICE_CLIPS } from "@/lib/voice";
 
 /** Страница «Тайны шахмат»: карточки-истории с крючком, картинкой и встроенной игрой; загадки про фигуры. */
 export function Secrets() {
+  const t = useT();
+  const { secrets, riddles } = useChess();
   const hash = useHash().replace(/^#/, "");
   const profile = useAgeProfile();
   const [opened, setOpened] = useState<Set<string>>(() => new Set());
@@ -58,33 +55,37 @@ export function Secrets() {
   return (
     <div className="space-y-8">
       <Link href="/chess" className="inline-flex items-center gap-1 text-sm font-extrabold text-brand hover:underline">
-        ← Шахматная школа
+        {t("← Шахматная школа", "← Shaxmat maktabi")}
       </Link>
       <header>
-        <p className="text-sm font-extrabold tracking-wide text-brand uppercase">Тайны и легенды</p>
-        <h1 className="text-3xl font-black">Тайны шахмат</h1>
-        <p className="mt-1 max-w-2xl text-muted">
-          Учёные Хорезма и Бухары, сказания «Шахнаме», халифы Багдада, машина, которая обманула Европу, и задача,
-          которую не могли решить тысячу лет. Нажми на вопрос — и узнай ответ.
+        <p className="text-sm font-extrabold tracking-wide text-brand uppercase">
+          {t("Тайны и легенды", "Sirlar va afsonalar")}
         </p>
-        <nav className="mt-3 flex flex-wrap gap-1.5" aria-label="Разделы">
+        <h1 className="text-3xl font-black">{t("Тайны шахмат", "Shaxmat sirlari")}</h1>
+        <p className="mt-1 max-w-2xl text-muted">
+          {t(
+            "Учёные Хорезма и Бухары, сказания «Шахнаме», халифы Багдада, машина, которая обманула Европу, и задача, которую не могли решить тысячу лет. Нажми на вопрос — и узнай ответ.",
+            "Xorazm va Buxoro olimlari, «Shohnoma» rivoyatlari, Bagʻdod xalifalari, butun Yevropani aldagan mashina va ming yil davomida hech kim yecha olmagan masala. Savolni bos — javobini bilib olasan.",
+          )}
+        </p>
+        <nav className="mt-3 flex flex-wrap gap-1.5" aria-label={t("Разделы", "Boʻlimlar")}>
           <a
             href="#stories"
             className="rounded-xl bg-white px-3 py-1.5 text-sm font-extrabold text-brand-dark shadow-sm"
           >
-            🔮 {SECRETS.length} историй
+            🔮 {t(`${secrets.length} историй`, `${secrets.length} ta hikoya`)}
           </a>
           <a
             href="#riddles"
             className="rounded-xl bg-white px-3 py-1.5 text-sm font-extrabold text-brand-dark shadow-sm"
           >
-            🧩 {RIDDLES.length} загадок
+            🧩 {t(`${riddles.length} загадок`, `${riddles.length} ta topishmoq`)}
           </a>
         </nav>
       </header>
 
-      <section id="stories" className="scroll-mt-24 space-y-3" aria-label="Истории">
-        {SECRETS.map((s) => (
+      <section id="stories" className="scroll-mt-24 space-y-3" aria-label={t("Истории", "Hikoyalar")}>
+        {secrets.map((s) => (
           <SecretCard
             key={s.id}
             secret={s}
@@ -97,9 +98,14 @@ export function Secrets() {
 
       <section id="riddles" className="scroll-mt-24 space-y-3" aria-labelledby="riddles-h">
         <h2 id="riddles-h" className="text-2xl font-black">
-          🧩 Загадки про фигуры
+          {t("🧩 Загадки про фигуры", "🧩 Donalar haqida topishmoqlar")}
         </h2>
-        <p className="text-muted">Угадай, о ком речь. Ошибся — не беда: под ответом написано, почему.</p>
+        <p className="text-muted">
+          {t(
+            "Угадай, о ком речь. Ошибся — не беда: под ответом написано, почему.",
+            "Kim haqida gap ketayotganini top. Adashsang ham mayli: javob ostida nega shundayligi yozilgan.",
+          )}
+        </p>
         <Riddles />
       </section>
     </div>
@@ -117,7 +123,8 @@ function SecretCard({
   onToggle: () => void;
   deeperOpen: boolean;
 }) {
-  const img = s.image ? chessImage(s.image) : undefined;
+  const img = useChessImage(s.image);
+  const t = useT();
   const lang = useLang();
   return (
     <article
@@ -150,7 +157,7 @@ function SecretCard({
               <ListenButton
                 src={VOICE_CLIPS.secret(s.id, lang)}
                 text={[s.hook, ...s.story].join(" ")}
-                label="Послушать историю"
+                label={t("Послушать историю", "Hikoyani tinglash")}
               />
               {s.story.map((p) => (
                 <p key={p}>{p}</p>
@@ -167,7 +174,9 @@ function SecretCard({
           {s.widget && <Widget kind={s.widget} />}
           {s.deeper && (
             <details className="rounded-2xl bg-brand-soft/50 px-4 py-3" open={deeperOpen || undefined}>
-              <summary className="cursor-pointer font-extrabold text-brand-dark">🔎 Для тех, кто постарше</summary>
+              <summary className="cursor-pointer font-extrabold text-brand-dark">
+                {t("🔎 Для тех, кто постарше", "🔎 Kattaroqlar uchun")}
+              </summary>
               <p className="mt-2">{s.deeper}</p>
             </details>
           )}
@@ -200,27 +209,44 @@ function Widget({ kind }: { kind: SecretWidget }) {
 }
 
 /** Сколько это зерна — по-человечески. Зерно пшеницы весит около 0,04 г. */
-function grainScale(k: number): string {
-  if (k < 10) return "Пока это горсть.";
-  if (k < 17) return "Уже от горсти до пары килограммов.";
-  if (k < 25) return "Это мешки: сотни килограммов.";
-  if (k < 33) return "Целый грузовик — больше ста тонн.";
-  if (k < 41) return "Это огромный корабль, полный зерна.";
-  if (k < 49) return "Столько пшеницы за год собирает целая страна.";
-  if (k < 57) return "Больше, чем весь мир собирает за несколько лет.";
-  return "Больше, чем весь мир вырастил бы почти за тысячу лет. Царь разорён!";
+function grainScale(k: number, t: T): string {
+  if (k < 10) return t("Пока это горсть.", "Hozircha bu bir hovuch.");
+  if (k < 17) return t("Уже от горсти до пары килограммов.", "Endi bir hovuchdan bir-ikki kilogrammgacha.");
+  if (k < 25) return t("Это мешки: сотни килограммов.", "Bu endi qoplar: yuzlab kilogramm.");
+  if (k < 33) return t("Целый грузовик — больше ста тонн.", "Butun boshli yuk mashinasi — yuz tonnadan ham koʻp.");
+  if (k < 41) return t("Это огромный корабль, полный зерна.", "Bu — donga liq toʻla ulkan kema.");
+  if (k < 49)
+    return t(
+      "Столько пшеницы за год собирает целая страна.",
+      "Shuncha bugʻdoyni butun boshli bir mamlakat bir yilda yigʻib oladi.",
+    );
+  if (k < 57)
+    return t(
+      "Больше, чем весь мир собирает за несколько лет.",
+      "Butun dunyo bir necha yilda yigʻadigan hosildan ham koʻp.",
+    );
+  return t(
+    "Больше, чем весь мир вырастил бы почти за тысячу лет. Царь разорён!",
+    "Butun dunyo qariyb ming yilda yetishtiradigan hosildan ham koʻp. Podshoh xonavayron boʻldi!",
+  );
 }
 
 function GrainsBoard() {
+  const t = useT();
   const [n, setN] = useState(0);
   return (
     <div className="rounded-2xl bg-sun-soft/60 p-4">
-      <p className="font-extrabold">🌾 Нажимай на клетки: на каждой следующей зёрен вдвое больше</p>
+      <p className="font-extrabold">
+        {t(
+          "🌾 Нажимай на клетки: на каждой следующей зёрен вдвое больше",
+          "🌾 Kataklarni bosib chiq: har bir keyingi katakda don ikki baravar koʻp",
+        )}
+      </p>
       <div className="mt-3 grid gap-4 sm:grid-cols-[auto_1fr] sm:items-start">
         <div
           className="grid w-[320px] max-w-full grid-cols-8 overflow-hidden rounded-lg border-2 border-[#8a5a2b]"
           role="group"
-          aria-label="Доска с зёрнами"
+          aria-label={t("Доска с зёрнами", "Donlar taxtasi")}
         >
           {Array.from({ length: 64 }, (_, i) => {
             const row = Math.floor(i / 8);
@@ -233,7 +259,7 @@ function GrainsBoard() {
                 key={i}
                 type="button"
                 onClick={() => setN(k)}
-                aria-label={`Клетка ${k}`}
+                aria-label={t(`Клетка ${k}`, `${k}-katak`)}
                 aria-pressed={on}
                 className={cn(
                   "aspect-square text-[10px] font-black transition",
@@ -248,26 +274,33 @@ function GrainsBoard() {
         </div>
         <div className="space-y-2" aria-live="polite">
           {n === 0 ? (
-            <p className="text-lg">Нажми на клетку в левом нижнем углу — это первая, a1.</p>
+            <p className="text-lg">
+              {t(
+                "Нажми на клетку в левом нижнем углу — это первая, a1.",
+                "Chap pastki burchakdagi katakni bos — bu birinchi katak, a1.",
+              )}
+            </p>
           ) : (
             <>
-              <p className="text-sm font-extrabold text-muted">Клетка {n} из 64</p>
-              <p className="text-lg font-black break-words">На ней зёрен: {formatBig(grainsOn(n))}</p>
-              <p className="break-words">
-                Всего на доске: <b>{formatBig(grainsUpTo(n))}</b>
+              <p className="text-sm font-extrabold text-muted">{t(`Клетка ${n} из 64`, `${n}-katak, jami 64 ta`)}</p>
+              <p className="text-lg font-black break-words">
+                {t(`На ней зёрен: ${formatBig(grainsOn(n))}`, `Bu katakda: ${formatBig(grainsOn(n))} ta don`)}
               </p>
-              <p className="font-semibold text-[#7a4b00]">{grainScale(n)}</p>
+              <p className="break-words">
+                {t("Всего на доске", "Taxtada jami")}: <b>{formatBig(grainsUpTo(n))}</b>
+              </p>
+              <p className="font-semibold text-[#7a4b00]">{grainScale(n, t)}</p>
             </>
           )}
           <div className="flex flex-wrap gap-2 pt-1">
             <Button size="sm" onClick={() => setN(Math.min(64, n + 1))} disabled={n >= 64}>
-              Следующая клетка
+              {t("Следующая клетка", "Keyingi katak")}
             </Button>
             <Button size="sm" variant="secondary" onClick={() => setN(64)} disabled={n >= 64}>
-              Сразу до 64
+              {t("Сразу до 64", "Birdaniga 64 gacha")}
             </Button>
             <Button size="sm" variant="ghost" onClick={() => setN(0)} disabled={n === 0}>
-              Сначала
+              {t("Сначала", "Boshidan")}
             </Button>
           </div>
         </div>
@@ -276,9 +309,13 @@ function GrainsBoard() {
   );
 }
 
-const ENVOY_OPTIONS = ["Конь", "Слон", "Ладья", "Ферзь", "Король", "Пешка"];
+/** Варианты ответа в «Загадке посла» — в этом порядке. */
+const ENVOY_PIECES: EnvoyRound["piece"][] = ["n", "b", "r", "q", "k", "p"];
 
 function EnvoyGame() {
+  const t = useT();
+  const { pieceNames } = useChess();
+  const options = ENVOY_PIECES.map((p) => pieceNames[p]);
   const [round, setRound] = useState(0);
   const [picked, setPicked] = useState<string | null>(null);
   const [score, setScore] = useState(0);
@@ -287,8 +324,11 @@ function EnvoyGame() {
       <div className="rounded-2xl bg-mint-soft/70 p-4 text-center">
         <p className="text-xl font-black">
           {score === ENVOY_ROUNDS.length
-            ? "🏆 Все фигуры разгаданы — как Бузурджмихр!"
-            : `Разгадано ${score} из ${ENVOY_ROUNDS.length}.`}
+            ? t("🏆 Все фигуры разгаданы — как Бузурджмихр!", "🏆 Hamma donalarni topding — xuddi Buzurgmehr kabi!")
+            : t(
+                `Разгадано ${score} из ${ENVOY_ROUNDS.length}.`,
+                `${ENVOY_ROUNDS.length} tadan ${score} tasini topding.`,
+              )}
         </p>
         <Button
           size="sm"
@@ -299,20 +339,22 @@ function EnvoyGame() {
             setPicked(null);
           }}
         >
-          ↺ Ещё раз
+          {t("↺ Ещё раз", "↺ Yana bir marta")}
         </Button>
       </div>
     );
   }
   const r = ENVOY_ROUNDS[round];
-  const answer = PIECE_NAMES_RU[r.piece];
+  const answer = pieceNames[r.piece];
   const marks: Record<string, SquareMark> = { [r.from]: "selected" };
   for (const t of r.targets) marks[t] = "target";
   return (
     <div className="rounded-2xl bg-brand-soft/40 p-4">
       <p className="font-extrabold">
-        🎁 Загадка посла {round + 1} из {ENVOY_ROUNDS.length}: звёздочка — таинственная фигура, точки — все клетки, куда
-        она может пойти. Кто это?
+        {t(
+          `🎁 Загадка посла ${round + 1} из ${ENVOY_ROUNDS.length}: звёздочка — таинственная фигура, точки — все клетки, куда она может пойти. Кто это?`,
+          `🎁 Elchining ${round + 1}-topishmogʻi (jami ${ENVOY_ROUNDS.length} ta): yulduzcha — sirli dona, nuqtalar — u yura oladigan hamma kataklar. Bu kim?`,
+        )}
       </p>
       <div className="mt-3 grid gap-4 md:grid-cols-[auto_1fr] md:items-start">
         <ChessBoard
@@ -321,10 +363,10 @@ function EnvoyGame() {
           marks={marks}
           maxWidth={320}
           className="!mx-0"
-          label="Загадка посла"
+          label={t("Загадка посла", "Elchining topishmogʻi")}
         />
         <div className="flex flex-wrap content-start gap-2">
-          {ENVOY_OPTIONS.map((o) => (
+          {options.map((o) => (
             <Button
               key={o}
               size="sm"
@@ -342,8 +384,11 @@ function EnvoyGame() {
             <div className="w-full space-y-2" aria-live="polite">
               <p className="font-semibold">
                 {picked === answer
-                  ? `Верно! Это ${answer.toLowerCase()}.`
-                  : `Это ${answer.toLowerCase()}: посмотри на форму ходов ещё раз.`}
+                  ? t(`Верно! Это ${answer.toLowerCase()}.`, `Toʻgʻri! Bu — ${answer.toLowerCase()}.`)
+                  : t(
+                      `Это ${answer.toLowerCase()}: посмотри на форму ходов ещё раз.`,
+                      `Bu — ${answer.toLowerCase()}. Uning yurishlari qanday shaklda ekaniga yana bir qarab koʻr.`,
+                    )}
               </p>
               <Button
                 size="sm"
@@ -352,7 +397,7 @@ function EnvoyGame() {
                   setPicked(null);
                 }}
               >
-                Дальше →
+                {t("Дальше →", "Keyingisi →")}
               </Button>
             </div>
           )}
@@ -363,6 +408,7 @@ function EnvoyGame() {
 }
 
 function KnightTour() {
+  const t = useT();
   const [path, setPath] = useState<number[]>([]);
   const [best, setBest] = useState(0);
   const [hint, setHint] = useState(false);
@@ -382,12 +428,17 @@ function KnightTour() {
   };
   return (
     <div className="rounded-2xl bg-brand-soft/40 p-4">
-      <p className="font-extrabold">♞ Путешествие коня: нажми на любую клетку, потом ходи только конём</p>
+      <p className="font-extrabold">
+        {t(
+          "♞ Путешествие коня: нажми на любую клетку, потом ходи только конём",
+          "♞ Otning sayohati: istalgan katakni bos, keyin faqat ot bilan yur",
+        )}
+      </p>
       <div className="mt-3 grid gap-4 sm:grid-cols-[auto_1fr] sm:items-start">
         <div
           className="grid w-[320px] max-w-full grid-cols-8 overflow-hidden rounded-lg border-2 border-[#8a5a2b]"
           role="group"
-          aria-label="Доска для коня"
+          aria-label={t("Доска для коня", "Ot uchun taxta")}
         >
           {Array.from({ length: 64 }, (_, i) => {
             const row = 7 - Math.floor(i / 8);
@@ -401,7 +452,13 @@ function KnightTour() {
                 key={sq}
                 type="button"
                 onClick={() => tap(sq)}
-                aria-label={`${squareName(sq)}${order.has(sq) ? `, ход ${order.get(sq)}` : canGo ? ", можно пойти" : ""}`}
+                aria-label={`${squareName(sq)}${
+                  order.has(sq)
+                    ? t(`, ход ${order.get(sq)}`, `, ${order.get(sq)}-yurish`)
+                    : canGo
+                      ? t(", можно пойти", ", yurish mumkin")
+                      : ""
+                }`}
                 disabled={current !== undefined && !canGo}
                 className={cn(
                   "relative flex aspect-square items-center justify-center text-[11px] font-black transition",
@@ -418,24 +475,40 @@ function KnightTour() {
         </div>
         <div className="space-y-2" aria-live="polite">
           <p className="text-lg font-black">
-            Пройдено: {path.length} из 64{best > 0 && ` · рекорд ${best}`}
+            {t(`Пройдено: ${path.length} из 64`, `Bosib oʻtilgan kataklar: ${path.length} / 64`)}
+            {best > 0 && t(` · рекорд ${best}`, ` · rekord: ${best}`)}
           </p>
           {path.length === 64 ? (
             <p className="rounded-2xl bg-mint-soft px-3 py-2 font-semibold">
-              🏆 Все 64 клетки! Ты повторил подвиг аль-Адли.
+              {t(
+                "🏆 Все 64 клетки! Ты повторил подвиг аль-Адли.",
+                "🏆 Hamma 64 katak! Sen al-Adliyning jasoratini takrorlading.",
+              )}
             </p>
           ) : stuck ? (
             <p className="rounded-2xl bg-sun-soft px-3 py-2 font-semibold">
-              Тупик: коню некуда прыгнуть. Попробуй ещё раз — с подсказкой будет легче.
+              {t(
+                "Тупик: коню некуда прыгнуть. Попробуй ещё раз — с подсказкой будет легче.",
+                "Boshi berk koʻcha: otning sakraydigan joyi qolmadi. Yana urinib koʻr — maslahat bilan osonroq boʻladi.",
+              )}
             </p>
           ) : current === undefined ? (
-            <p>Совет Эйлера: начни с угла и сначала обходи края.</p>
+            <p>
+              {t(
+                "Совет Эйлера: начни с угла и сначала обходи края.",
+                "Eylerning maslahati: burchakdan boshla va avval chetlarini aylanib chiq.",
+              )}
+            </p>
           ) : (
-            <p className="text-muted">Подсвечены клетки, куда можно прыгнуть.</p>
+            <p className="text-muted">
+              {t("Подсвечены клетки, куда можно прыгнуть.", "Sakrash mumkin boʻlgan kataklar belgilab qoʻyilgan.")}
+            </p>
           )}
           <div className="flex flex-wrap gap-2 pt-1">
             <Button size="sm" variant={hint ? "success" : "secondary"} onClick={() => setHint((h) => !h)}>
-              {hint ? "✓ Подсказка включена" : "Подсказка Варнсдорфа"}
+              {hint
+                ? t("✓ Подсказка включена", "✓ Maslahat yoqilgan")
+                : t("Подсказка Варнсдорфа", "Varnsdorf maslahati")}
             </Button>
             <Button
               size="sm"
@@ -443,10 +516,10 @@ function KnightTour() {
               onClick={() => setPath((p) => p.slice(0, -1))}
               disabled={!path.length}
             >
-              ↶ Отменить
+              {t("↶ Отменить", "↶ Bekor qilish")}
             </Button>
             <Button size="sm" variant="ghost" onClick={() => setPath([])} disabled={!path.length}>
-              Сначала
+              {t("Сначала", "Boshidan")}
             </Button>
           </div>
         </div>
@@ -456,28 +529,45 @@ function KnightTour() {
 }
 
 function DilaramStory() {
+  const t = useT();
+  const { dilaram } = useChess();
   const [i, setI] = useState(0);
-  const f = DILARAM[i];
+  const f = dilaram[i];
   return (
     <div className="rounded-2xl bg-white p-4 ring-2 ring-line">
       <div className="grid gap-4 md:grid-cols-[auto_1fr] md:items-start">
-        <ChessBoard id="dilaram" position={f.fen} maxWidth={340} className="!mx-0" label="Задача Дилярам" />
+        <ChessBoard
+          id="dilaram"
+          position={f.fen}
+          maxWidth={340}
+          className="!mx-0"
+          label={t("Задача Дилярам", "Dilorom masalasi")}
+        />
         <div>
           <p className="text-sm font-extrabold text-muted">
-            Кадр {i + 1} из {DILARAM.length} · старинные правила шатранджа
+            {t(
+              `Кадр ${i + 1} из ${dilaram.length} · старинные правила шатранджа`,
+              `${i + 1}-kadr, jami ${dilaram.length} ta · shatranjning qadimiy qoidalari`,
+            )}
           </p>
           <p className="mt-1 text-lg font-semibold" aria-live="polite">
             {f.text}
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
-            <Button size="sm" variant="secondary" onClick={() => setI(i - 1)} disabled={i === 0} aria-label="Назад">
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => setI(i - 1)}
+              disabled={i === 0}
+              aria-label={t("Назад", "Orqaga")}
+            >
               ◀
             </Button>
-            <Button size="sm" onClick={() => setI(i + 1)} disabled={i === DILARAM.length - 1}>
-              Дальше ▶
+            <Button size="sm" onClick={() => setI(i + 1)} disabled={i === dilaram.length - 1}>
+              {t("Дальше ▶", "Keyingisi ▶")}
             </Button>
             <Button size="sm" variant="ghost" onClick={() => setI(0)} disabled={i === 0}>
-              Сначала
+              {t("Сначала", "Boshidan")}
             </Button>
           </div>
         </div>
@@ -487,12 +577,14 @@ function DilaramStory() {
 }
 
 function TurkReveal() {
+  const t = useT();
+  const { turkOptions, turkReveal } = useChess();
   const [picked, setPicked] = useState<number | null>(null);
   return (
     <div className="rounded-2xl bg-brand-soft/40 p-4">
-      <p className="font-extrabold">🤖 В чём был секрет «Турка»?</p>
+      <p className="font-extrabold">{t("🤖 В чём был секрет «Турка»?", "🤖 «Turk»ning siri nimada edi?")}</p>
       <div className="mt-2 flex flex-wrap gap-2">
-        {TURK_OPTIONS.map((o, i) => (
+        {turkOptions.map((o, i) => (
           <Button
             key={o.text}
             size="sm"
@@ -506,8 +598,10 @@ function TurkReveal() {
       </div>
       {picked !== null && (
         <p className="mt-3 rounded-2xl bg-white px-4 py-3 font-semibold" aria-live="polite">
-          {TURK_OPTIONS[picked].right ? "Точно! " : "Нет — всё проще и хитрее. "}
-          {TURK_REVEAL}
+          {turkOptions[picked].right
+            ? t("Точно! ", "Toʻppa-toʻgʻri! ")
+            : t("Нет — всё проще и хитрее. ", "Yoʻq — hammasi oddiyroq va ayyorroq. ")}
+          {turkReveal}
         </p>
       )}
     </div>
@@ -515,10 +609,12 @@ function TurkReveal() {
 }
 
 function Sages() {
+  const lang = useLang();
+  const { sages } = useChess();
   return (
     <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-      {SAGES.map((s) => {
-        const img = s.image ? chessImage(s.image) : undefined;
+      {sages.map((s) => {
+        const img = chessImageIn(lang, s.image);
         return (
           <li key={s.name} className="rounded-2xl bg-sun-soft/60 p-4">
             <div className="flex items-center gap-3">
@@ -538,15 +634,17 @@ function Sages() {
 }
 
 function Riddles() {
+  const t = useT();
+  const { riddles } = useChess();
   const [picked, setPicked] = useState<Record<number, string>>({});
-  const solved = RIDDLES.filter((r, i) => picked[i] === r.answer).length;
+  const solved = riddles.filter((r, i) => picked[i] === r.answer).length;
   return (
     <div className="space-y-3">
       <p className="text-sm font-extrabold text-brand-dark">
-        Отгадано: {solved} из {RIDDLES.length}
+        {t(`Отгадано: ${solved} из ${riddles.length}`, `Topilgan topishmoqlar: ${solved} / ${riddles.length}`)}
       </p>
       <ul className="grid gap-3 md:grid-cols-2">
-        {RIDDLES.map((r, i) => {
+        {riddles.map((r, i) => {
           const p = picked[i];
           return (
             <li key={r.text} className="rounded-3xl bg-white p-4 shadow-card">
@@ -568,7 +666,9 @@ function Riddles() {
               </div>
               {p && (
                 <p className="mt-2 text-sm font-semibold" aria-live="polite">
-                  {p === r.answer ? "✅ Верно! " : `Это ${r.answer.toLowerCase()}. `}
+                  {p === r.answer
+                    ? t("✅ Верно! ", "✅ Toʻgʻri! ")
+                    : t(`Это ${r.answer.toLowerCase()}. `, `Bu — ${r.answer.toLowerCase()}. `)}
                   {r.why}
                 </p>
               )}

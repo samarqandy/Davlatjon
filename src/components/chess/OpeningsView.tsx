@@ -4,17 +4,11 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Feedback, type FeedbackState } from "@/components/answers/Feedback";
 import { Button, cn } from "@/components/ui";
-import {
-  OPENINGS,
-  OPENING_CATEGORIES,
-  OPENING_PRINCIPLES,
-  getOpening,
-  type Opening,
-  type OpeningCategory,
-} from "@/content/chess/openings";
-import { chessImage } from "@/content/chess/images";
-import { legalTargets, pieceAt, playMove, ruSan, type Color } from "@/lib/chess";
+import { getOpening, type Opening, type OpeningCategory } from "@/content/chess/openings";
+import { legalTargets, pieceAt, playMove, type Color } from "@/lib/chess";
+import { useSan, useT, type T } from "@/lib/i18n";
 import { chessOpeningLearned, useHydrated, useStore } from "@/lib/store";
+import { useChess, useChessImage } from "@/lib/useChess";
 import { setHash, useHash } from "@/lib/useHash";
 import { ChessBoard, type SquareMark } from "./ChessBoard";
 import { Figure } from "./Figure";
@@ -25,14 +19,20 @@ const CATEGORY_ORDER: OpeningCategory[] = ["open", "semiOpen", "closed", "gambit
 
 export function OpeningsView() {
   const hash = useHash();
+  const { openings } = useChess();
+  // Дебют на языке интерфейса: ходы и id те же, тексты — переведённые.
+  const find = (id: string) => {
+    const ru = getOpening(id);
+    return ru && (openings.find((o) => o.id === ru.id) ?? ru);
+  };
   const detail = hash.match(/^#open-(.+)$/);
   const train = hash.match(/^#train-([a-z0-9-]+)-(white|black)$/);
   if (train) {
-    const opening = getOpening(train[1]);
+    const opening = find(train[1]);
     if (opening) return <OpeningTrainer key={hash} opening={opening} side={train[2] as "white" | "black"} />;
   }
   if (detail) {
-    const opening = getOpening(detail[1]);
+    const opening = find(detail[1]);
     if (opening) return <OpeningDetail key={opening.id} opening={opening} />;
   }
   return <OpeningsList />;
@@ -40,27 +40,31 @@ export function OpeningsView() {
 
 function OpeningsList() {
   const hydrated = useHydrated();
+  const t = useT();
+  const { openings, openingCategories, openingPrinciples } = useChess();
   const learned = useStore((s) => s.chessOpenings);
   return (
     <div className="space-y-6">
       <Link href="/chess" className="inline-flex items-center gap-1 text-sm font-extrabold text-brand hover:underline">
-        ← Шахматная школа
+        ← {t("Шахматная школа", "Shaxmat maktabi")}
       </Link>
       <header>
-        <p className="text-sm font-extrabold tracking-wide text-brand uppercase">Дебюты</p>
-        <h1 className="text-3xl font-black">Как начинать партию</h1>
+        <p className="text-sm font-extrabold tracking-wide text-brand uppercase">{t("Дебюты", "Debyutlar")}</p>
+        <h1 className="text-3xl font-black">{t("Как начинать партию", "Partiyani qanday boshlash kerak")}</h1>
         <p className="mt-1 max-w-2xl text-muted">
-          Дебют — это первые ходы партии. Сначала пять главных правил, потом {OPENINGS.length} дебютов с идеями и
-          тренажёром: повтори ходы на доске, и дебют запомнится сам.
+          {t(
+            `Дебют — это первые ходы партии. Сначала пять главных правил, потом ${openings.length} дебютов с идеями и тренажёром: повтори ходы на доске, и дебют запомнится сам.`,
+            `Debyut — partiyaning dastlabki yurishlari. Avval beshta asosiy qoida, keyin ${openings.length} ta debyut — gʻoyalari va trenajyori bilan: yurishlarni taxtada takrorla, debyut oʻzi esda qoladi.`,
+          )}
         </p>
       </header>
 
       <section aria-labelledby="principles" className="rounded-3xl bg-white p-5 shadow-card">
         <h2 id="principles" className="text-xl font-black">
-          Пять правил дебюта
+          {t("Пять правил дебюта", "Debyutning beshta qoidasi")}
         </h2>
         <ol className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-          {OPENING_PRINCIPLES.map((p, i) => (
+          {openingPrinciples.map((p, i) => (
             <li key={p.title} className="rounded-2xl bg-brand-soft/60 p-3">
               <p className="text-2xl" aria-hidden>
                 {p.emoji}
@@ -77,37 +81,39 @@ function OpeningsList() {
       {CATEGORY_ORDER.map((cat) => (
         <section key={cat} aria-labelledby={`cat-${cat}`}>
           <h2 id={`cat-${cat}`} className="text-2xl font-black">
-            {OPENING_CATEGORIES[cat].name}
+            {openingCategories[cat].name}
           </h2>
-          <p className="mb-3 text-muted">{OPENING_CATEGORIES[cat].about}</p>
+          <p className="mb-3 text-muted">{openingCategories[cat].about}</p>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {OPENINGS.filter((o) => o.category === cat).map((o) => {
-              const positions = replayPositions(o.moves);
-              const done = hydrated && (learned[`${o.id}:white`] || learned[`${o.id}:black`]);
-              return (
-                <button
-                  key={o.id}
-                  type="button"
-                  onClick={() => setHash(`#open-${o.id}`)}
-                  className="flex gap-3 rounded-3xl bg-white p-3 text-left shadow-card transition hover:-translate-y-0.5"
-                >
-                  <ChessBoard
-                    id={`op-${o.id}`}
-                    position={positions[positions.length - 1].fen}
-                    maxWidth={120}
-                    className="!mx-0 shrink-0"
-                  />
-                  <div className="min-w-0">
-                    <p className="text-xs font-extrabold text-muted">
-                      {o.eco} · {STARS(o.stars)}
-                      {done ? " · ✅" : ""}
-                    </p>
-                    <p className="text-lg leading-tight font-black">{o.name}</p>
-                    <p className="mt-1 line-clamp-3 text-sm text-muted">{o.idea}</p>
-                  </div>
-                </button>
-              );
-            })}
+            {openings
+              .filter((o) => o.category === cat)
+              .map((o) => {
+                const positions = replayPositions(o.moves);
+                const done = hydrated && (learned[`${o.id}:white`] || learned[`${o.id}:black`]);
+                return (
+                  <button
+                    key={o.id}
+                    type="button"
+                    onClick={() => setHash(`#open-${o.id}`)}
+                    className="flex gap-3 rounded-3xl bg-white p-3 text-left shadow-card transition hover:-translate-y-0.5"
+                  >
+                    <ChessBoard
+                      id={`op-${o.id}`}
+                      position={positions[positions.length - 1].fen}
+                      maxWidth={120}
+                      className="!mx-0 shrink-0"
+                    />
+                    <div className="min-w-0">
+                      <p className="text-xs font-extrabold text-muted">
+                        {o.eco} · {STARS(o.stars)}
+                        {done ? " · ✅" : ""}
+                      </p>
+                      <p className="text-lg leading-tight font-black">{o.name}</p>
+                      <p className="mt-1 line-clamp-3 text-sm text-muted">{o.idea}</p>
+                    </div>
+                  </button>
+                );
+              })}
           </div>
         </section>
       ))}
@@ -116,13 +122,16 @@ function OpeningsList() {
 }
 
 function OpeningDetail({ opening }: { opening: Opening }) {
+  const t = useT();
+  const san = useSan();
+  const { openingCategories } = useChess();
   const positions = useMemo(() => replayPositions(opening.moves), [opening.moves]);
   const [ply, setPly] = useState(positions.length - 1);
   const learned = useStore((s) => s.chessOpenings);
   const hydrated = useHydrated();
   const cur = positions[ply];
   const marks: Record<string, SquareMark> = ply > 0 ? { [cur.from]: "last", [cur.to]: "last" } : {};
-  const picture = opening.image ? chessImage(opening.image) : undefined;
+  const picture = useChessImage(opening.image);
   return (
     <div className="space-y-5">
       <button
@@ -130,11 +139,11 @@ function OpeningDetail({ opening }: { opening: Opening }) {
         onClick={() => setHash("#all")}
         className="text-sm font-extrabold text-brand hover:underline"
       >
-        ← Все дебюты
+        ← {t("Все дебюты", "Barcha debyutlar")}
       </button>
       <header>
         <p className="text-sm font-extrabold tracking-wide text-brand uppercase">
-          {OPENING_CATEGORIES[opening.category].name} · {opening.eco} · {STARS(opening.stars)}
+          {openingCategories[opening.category].name} · {opening.eco} · {STARS(opening.stars)}
         </p>
         <h1 className="text-3xl font-black">{opening.name}</h1>
         <p className="text-lg font-bold text-brand-dark">{opening.idea}</p>
@@ -159,7 +168,7 @@ function OpeningDetail({ opening }: { opening: Opening }) {
               onClick={() => setPly((p) => Math.min(positions.length - 1, p + 1))}
               disabled={ply === positions.length - 1}
             >
-              Дальше ▶
+              {t("Дальше ▶", "Oldinga ▶")}
             </Button>
             <span className="ml-auto text-sm font-extrabold text-muted">
               {ply} / {positions.length - 1}
@@ -167,7 +176,7 @@ function OpeningDetail({ opening }: { opening: Opening }) {
           </div>
           <p
             className="flex flex-wrap gap-x-3 gap-y-1 rounded-2xl bg-white px-4 py-3 font-bold shadow-card"
-            aria-label="Ходы дебюта"
+            aria-label={t("Ходы дебюта", "Debyut yurishlari")}
           >
             {opening.moves.map((m, i) => (
               <button
@@ -180,7 +189,7 @@ function OpeningDetail({ opening }: { opening: Opening }) {
                 )}
               >
                 {i % 2 === 0 ? `${i / 2 + 1}. ` : ""}
-                {ruSan(m)}
+                {san(m)}
               </button>
             ))}
           </p>
@@ -188,7 +197,7 @@ function OpeningDetail({ opening }: { opening: Opening }) {
         <aside className="space-y-3">
           {picture && <Figure image={picture} sizes="(max-width: 1024px) 100vw, 340px" />}
           <div className="rounded-2xl bg-white p-4 shadow-card">
-            <p className="text-sm font-extrabold text-muted">Как играть</p>
+            <p className="text-sm font-extrabold text-muted">{t("Как играть", "Qanday oʻynash kerak")}</p>
             <ul className="mt-2 space-y-2">
               {opening.plan.map((p) => (
                 <li key={p} className="flex gap-2">
@@ -199,10 +208,14 @@ function OpeningDetail({ opening }: { opening: Opening }) {
                 </li>
               ))}
             </ul>
-            {opening.playedBy && <p className="mt-3 text-sm font-bold text-muted">Играли: {opening.playedBy}</p>}
+            {opening.playedBy && (
+              <p className="mt-3 text-sm font-bold text-muted">
+                {t("Играли", "Kimlar oʻynagan")}: {opening.playedBy}
+              </p>
+            )}
           </div>
           <div className="rounded-2xl bg-sun-soft/70 p-4">
-            <p className="text-sm font-extrabold text-[#7a4b00]">💡 Интересно</p>
+            <p className="text-sm font-extrabold text-[#7a4b00]">💡 {t("Интересно", "Qiziqarli")}</p>
             {opening.facts.map((f) => (
               <p key={f} className="mt-1 text-sm">
                 {f}
@@ -210,13 +223,17 @@ function OpeningDetail({ opening }: { opening: Opening }) {
             ))}
           </div>
           <div className="rounded-2xl bg-white p-4 shadow-card">
-            <p className="text-sm font-extrabold text-muted">Тренажёр: повтори ходы на доске</p>
+            <p className="text-sm font-extrabold text-muted">
+              {t("Тренажёр: повтори ходы на доске", "Trenajyor: yurishlarni taxtada takrorla")}
+            </p>
             <div className="mt-2 flex flex-wrap gap-2">
               <Button size="sm" onClick={() => setHash(`#train-${opening.id}-white`)}>
-                За белых{hydrated && learned[`${opening.id}:white`] ? " ✓" : ""}
+                {t("За белых", "Oqlar uchun")}
+                {hydrated && learned[`${opening.id}:white`] ? " ✓" : ""}
               </Button>
               <Button size="sm" variant="secondary" onClick={() => setHash(`#train-${opening.id}-black`)}>
-                За чёрных{hydrated && learned[`${opening.id}:black`] ? " ✓" : ""}
+                {t("За чёрных", "Qoralar uchun")}
+                {hydrated && learned[`${opening.id}:black`] ? " ✓" : ""}
               </Button>
             </div>
           </div>
@@ -228,17 +245,24 @@ function OpeningDetail({ opening }: { opening: Opening }) {
 
 /** Ребёнок играет за side, компьютер отвечает ходами из книги. */
 /** Итог тренажёра: без ошибок — отдельная похвала, с ошибками — тоже победа. */
-function finishedFeedback(name: string, misses: number): FeedbackState {
+function finishedFeedback(name: string, misses: number, t: T): FeedbackState {
   return {
     tone: "success",
-    text: misses ? "Дебют сыгран до конца! 🎉" : "Дебют сыгран без ошибок! 🎉",
+    text: misses
+      ? t("Дебют сыгран до конца! 🎉", "Debyut oxirigacha oʻynaldi! 🎉")
+      : t("Дебют сыгран без ошибок! 🎉", "Debyut xatosiz oʻynaldi! 🎉"),
     sub: misses
-      ? `Теперь ты знаешь, как начинается «${name}». Повтори ещё раз — и получится без подсказок.`
-      : `Теперь ты знаешь, как начинается «${name}».`,
+      ? t(
+          `Теперь ты знаешь, как начинается «${name}». Повтори ещё раз — и получится без подсказок.`,
+          `Endi «${name}» qanday boshlanishini bilasan. Yana bir bor takrorla — maslahatsiz ham uddalaysan.`,
+        )
+      : t(`Теперь ты знаешь, как начинается «${name}».`, `Endi «${name}» qanday boshlanishini bilasan.`),
   };
 }
 
 function OpeningTrainer({ opening, side }: { opening: Opening; side: "white" | "black" }) {
+  const t = useT();
+  const san = useSan();
   const positions = useMemo(() => replayPositions(opening.moves), [opening.moves]);
   const me: Color = side === "white" ? "w" : "b";
   const [ply, setPly] = useState(0);
@@ -261,12 +285,12 @@ function OpeningTrainer({ opening, side }: { opening: Opening; side: "white" | "
       setPly((p) => p + 1);
       setShown(positions[ply + 1].fen);
       setBusy(false);
-      if (ply + 1 >= total) setFeedback(finishedFeedback(opening.name, misses));
+      if (ply + 1 >= total) setFeedback(finishedFeedback(opening.name, misses, t));
     }, 600);
     return () => {
       if (timer.current) clearTimeout(timer.current);
     };
-  }, [done, myTurn, ply, positions, total, opening.name, misses]);
+  }, [done, myTurn, ply, positions, total, opening.name, misses, t]);
 
   useEffect(() => {
     if (done) chessOpeningLearned(opening.id, side);
@@ -283,8 +307,12 @@ function OpeningTrainer({ opening, side }: { opening: Opening; side: "white" | "
       setBusy(true);
       setFeedback(
         ply + 1 >= total
-          ? finishedFeedback(opening.name, misses)
-          : { tone: "info", text: `${ruSan(played.san)} — верно!`, sub: misses ? undefined : "Так держать." },
+          ? finishedFeedback(opening.name, misses, t)
+          : {
+              tone: "info",
+              text: t(`${san(played.san)} — верно!`, `${san(played.san)} — toʻgʻri!`),
+              sub: misses ? undefined : t("Так держать.", "Shunday davom et."),
+            },
       );
       return true;
     }
@@ -296,11 +324,14 @@ function OpeningTrainer({ opening, side }: { opening: Opening; side: "white" | "
       tone: "retry",
       text:
         n === 1
-          ? "В этом дебюте ходят по-другому."
+          ? t("В этом дебюте ходят по-другому.", "Bu debyutda boshqacha yuriladi.")
           : n === 2
-            ? "Подсвечена фигура, которой нужно ходить."
-            : "Стрелка показывает ход.",
-      sub: n === 1 ? "Вспомни ходы дебюта и попробуй ещё раз." : undefined,
+            ? t("Подсвечена фигура, которой нужно ходить.", "Qaysi dona yurishi kerakligi belgilab qoʻyildi.")
+            : t("Стрелка показывает ход.", "Strelka yurishni koʻrsatib turibdi."),
+      sub:
+        n === 1
+          ? t("Вспомни ходы дебюта и попробуй ещё раз.", "Debyut yurishlarini eslab, yana urinib koʻr.")
+          : undefined,
     });
     timer.current = setTimeout(() => {
       setShown(positions[ply].fen);
@@ -328,8 +359,8 @@ function OpeningTrainer({ opening, side }: { opening: Opening; side: "white" | "
   if (misses >= 2 && expected && myTurn) marks[expected.from] = "hint";
   if (selected) {
     marks[selected] = "selected";
-    for (const t of legalTargets(positions[ply].fen, selected))
-      marks[t] = pieceAt(positions[ply].fen, t) ? "capture" : "target";
+    for (const sq of legalTargets(positions[ply].fen, selected))
+      marks[sq] = pieceAt(positions[ply].fen, sq) ? "capture" : "target";
   }
 
   return (
@@ -342,7 +373,10 @@ function OpeningTrainer({ opening, side }: { opening: Opening; side: "white" | "
         ← {opening.name}
       </button>
       <h1 className="text-2xl font-black">
-        Повтори дебют за {side === "white" ? "белых" : "чёрных"}: {opening.name}
+        {t(
+          `Повтори дебют за ${side === "white" ? "белых" : "чёрных"}: ${opening.name}`,
+          `${side === "white" ? "Oqlar" : "Qoralar"} uchun debyutni takrorla: ${opening.name}`,
+        )}
       </h1>
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
         <div className="space-y-3">
@@ -364,14 +398,20 @@ function OpeningTrainer({ opening, side }: { opening: Opening; side: "white" | "
         <aside className="space-y-3">
           <div className="rounded-2xl bg-white p-4 shadow-card">
             <p className="text-sm font-extrabold text-muted">
-              Ход {Math.min(ply, total)} из {total}
+              {t(`Ход ${Math.min(ply, total)} из ${total}`, `Yurish: ${Math.min(ply, total)} / ${total}`)}
             </p>
-            <p className="mt-1 text-lg font-black">{done ? "Готово!" : myTurn ? "🙂 Твой ход" : "📖 Ход из книги…"}</p>
+            <p className="mt-1 text-lg font-black">
+              {done
+                ? t("Готово!", "Tayyor!")
+                : myTurn
+                  ? t("🙂 Твой ход", "🙂 Navbat senda")
+                  : t("📖 Ход из книги…", "📖 Kitobdagi yurish…")}
+            </p>
             <p className="mt-2 flex flex-wrap gap-x-2 gap-y-1 text-sm font-bold">
               {opening.moves.map((m, i) => (
                 <span key={i} className={cn("rounded px-1", i < ply ? "bg-mint-soft text-[#065f46]" : "text-muted")}>
                   {i % 2 === 0 ? `${i / 2 + 1}.` : ""}
-                  {i < ply ? ruSan(m) : "…"}
+                  {i < ply ? san(m) : "…"}
                 </span>
               ))}
             </p>
@@ -380,10 +420,13 @@ function OpeningTrainer({ opening, side }: { opening: Opening; side: "white" | "
           {done && (
             <div className="flex flex-wrap gap-2">
               <Button size="sm" onClick={() => setHash(`#train-${opening.id}-${side === "white" ? "black" : "white"}`)}>
-                Теперь за {side === "white" ? "чёрных" : "белых"} →
+                {t(
+                  `Теперь за ${side === "white" ? "чёрных" : "белых"} →`,
+                  `Endi ${side === "white" ? "qoralar" : "oqlar"} uchun →`,
+                )}
               </Button>
               <Button size="sm" variant="secondary" onClick={() => setHash("#all")}>
-                Другой дебют
+                {t("Другой дебют", "Boshqa debyut")}
               </Button>
             </div>
           )}

@@ -9,6 +9,9 @@ import { day6Uz } from "./day6.uz";
 import { day7Uz } from "./day7.uz";
 
 export const week1Uz: WeekUz = {
+  title: "Kashfiyotlar haftasi",
+  subtitle: "Matematiklar qanday fikrlaydi",
+  goal: "Mutafakkirning asosiy odatlarini shakllantirish: payqash, qoidani izlash, tekshirish, variantlarni tartib bilan koʻrib chiqish, qadamma-qadam oʻylash, boshqa yoʻlini izlash va tadqiq qilish.",
   days: {
     w1d1: day1Uz,
     w1d2: day2Uz,

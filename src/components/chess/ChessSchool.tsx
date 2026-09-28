@@ -2,29 +2,34 @@
 
 import Link from "next/link";
 import { cn, ProgressBar } from "@/components/ui";
-import { CHESS_LEVELS, CHESS_SCHOOL, chessGlossary, chessLevelHref } from "@/content/chess";
-import { FAMOUS_GAMES } from "@/content/chess/games";
-import { OPENINGS } from "@/content/chess/openings";
-import { PUZZLES, dailyPuzzleFor } from "@/content/chess/puzzles";
-import { RIDDLES, SECRETS } from "@/content/chess/secrets";
-import { useAgeProfile } from "@/lib/age";
+import { chessLevelHref } from "@/content/chess";
+import { dailyPuzzleFor } from "@/content/chess/puzzles";
+import { profileText, useAgeProfile } from "@/lib/age";
 import { awards, earned } from "@/lib/awards";
 import { currentRank, levelStatuses } from "@/lib/chessProgress";
+import { useLang, useT } from "@/lib/i18n";
 import { useHydrated, useStore } from "@/lib/store";
+import { useChess } from "@/lib/useChess";
 import { ChessBoard, PieceIcon } from "./ChessBoard";
 import { DidYouKnow } from "./DidYouKnow";
 
 export function ChessSchool() {
   const hydrated = useHydrated();
+  const t = useT();
+  const lang = useLang();
+  const { levels, school, puzzles, openings, games, secrets, riddles, endgames } = useChess();
   const state = useStore((s) => s);
-  const statuses = levelStatuses(CHESS_LEVELS, state);
-  const rank = hydrated ? currentRank(CHESS_LEVELS, state) : null;
+  const statuses = levelStatuses(levels, state);
+  const rank = hydrated ? currentRank(levels, state) : null;
   const solved = statuses.reduce((s, x) => s + x.solved, 0);
   const total = statuses.reduce((s, x) => s + x.total, 0);
-  const glossary = chessGlossary();
+  // Словарик шахматиста: все термины всех уровней — на языке интерфейса.
+  const glossary = levels.flatMap((level) => level.terms.map((term) => ({ ...term, level })));
   const profile = useAgeProfile();
-  const daily = dailyPuzzleFor(profile.minStars);
-  const puzzlesSolved = hydrated ? PUZZLES.filter((p) => state.chessPuzzles[p.id]?.solvedAt).length : 0;
+  const robotName = profileText(profile, lang).robotName;
+  const dailyRu = dailyPuzzleFor(profile.minStars);
+  const daily = puzzles.find((p) => p.id === dailyRu.id) ?? dailyRu;
+  const puzzlesSolved = hydrated ? puzzles.filter((p) => state.chessPuzzles[p.id]?.solvedAt).length : 0;
   const openingsLearned = hydrated ? new Set(Object.keys(state.chessOpenings).map((k) => k.split(":")[0])).size : 0;
   const gamesViewed = hydrated ? Object.keys(state.chessGamesViewed).length : 0;
   const played = hydrated ? state.chessGames.length : 0;
@@ -37,72 +42,151 @@ export function ChessSchool() {
     {
       href: "/chess/play",
       emoji: "🤖",
-      title: "Играть",
-      text: "С роботом пяти уровней, вдвоём на одном экране, пешечный бой, тренировка мата.",
-      stat: played ? `${played} партий · ${wins} побед` : "Сыграй первую партию!",
+      title: t("Играть", "Oʻynash"),
+      text: t(
+        "С роботом пяти уровней, вдвоём на одном экране, пешечный бой, тренировка мата.",
+        "Besh darajali robotga qarshi, bitta ekranda ikki kishi boʻlib, piyodalar jangi va mot qoʻyish mashqi.",
+      ),
+      stat: played
+        ? t(`${played} партий · ${wins} побед`, `${played} ta partiya · ${wins} ta gʻalaba`)
+        : t("Сыграй первую партию!", "Birinchi partiyangni oʻyna!"),
     },
     {
       href: "/chess/puzzles",
       emoji: "🎯",
-      title: "Задачи",
-      text: `${PUZZLES.length} задач: маты, вилки, связки, комбинации из великих партий. Задача дня и серия.`,
-      stat: `${puzzlesSolved} из ${PUZZLES.length} решено`,
+      title: t("Задачи", "Masalalar"),
+      text: t(
+        `${puzzles.length} задач: маты, вилки, связки, комбинации из великих партий. Задача дня и серия.`,
+        `${puzzles.length} ta masala: motlar, vilkalar, bogʻlashlar, buyuk partiyalardan olingan kombinatsiyalar. Kun masalasi va «Ketma-ket» oʻyini.`,
+      ),
+      stat: t(`${puzzlesSolved} из ${puzzles.length} решено`, `${puzzles.length} tadan ${puzzlesSolved} tasi yechildi`),
     },
     {
       href: "/chess/openings",
       emoji: "📖",
-      title: "Дебюты",
-      text: `Пять правил дебюта и ${OPENINGS.length} дебютов с идеями, историей и тренажёром ходов.`,
-      stat: `${openingsLearned} из ${OPENINGS.length} выучено`,
+      title: t("Дебюты", "Debyutlar"),
+      text: t(
+        `Пять правил дебюта и ${openings.length} дебютов с идеями, историей и тренажёром ходов.`,
+        `Debyutning beshta qoidasi va ${openings.length} ta debyut — gʻoyalari, tarixi va yurishlar trenajyori bilan.`,
+      ),
+      stat: t(
+        `${openingsLearned} из ${openings.length} выучено`,
+        `${openings.length} tadan ${openingsLearned} tasi oʻrganildi`,
+      ),
     },
     {
       href: "/chess/games",
       emoji: "🏛️",
-      title: "Знаменитые партии",
-      text: `${FAMOUS_GAMES.length} легендарных партий с объяснениями и картинками главных моментов.`,
-      stat: `${gamesViewed} из ${FAMOUS_GAMES.length} разобрано`,
+      title: t("Знаменитые партии", "Mashhur partiyalar"),
+      text: t(
+        `${games.length} легендарных партий с объяснениями и картинками главных моментов.`,
+        `${games.length} ta afsonaviy partiya — izohlar va eng muhim lahzalarning rasmlari bilan.`,
+      ),
+      stat: t(
+        `${gamesViewed} из ${games.length} разобрано`,
+        `${games.length} tadan ${gamesViewed} tasi koʻrib chiqildi`,
+      ),
     },
     {
       href: "/chess/review",
       emoji: "🔎",
-      title: "Разбор партий",
-      text: "Робот-тренер находит в твоих партиях лучшие ходы и ошибки, объясняет их и делает из них задачи.",
-      stat: reviewable ? `${reviewable} партий можно разобрать` : "Сыграй — и разбери партию",
+      title: t("Разбор партий", "Partiyalar tahlili"),
+      text: t(
+        "Робот-тренер находит в твоих партиях лучшие ходы и ошибки, объясняет их и делает из них задачи.",
+        "Robot-murabbiy partiyalaringdagi eng yaxshi yurishlar va xatolarni topadi, ularni tushuntiradi va ulardan masala tuzadi.",
+      ),
+      stat: reviewable
+        ? t(`${reviewable} партий можно разобрать`, `${reviewable} ta partiyani tahlil qilsa boʻladi`)
+        : t("Сыграй — и разбери партию", "Oʻyna — keyin partiyangni tahlil qil"),
+    },
+    {
+      href: "/chess/endgames",
+      emoji: "♔",
+      title: t("Эндшпиль", "Endshpil"),
+      text: t(
+        "Король и пешка против короля: правило квадрата, оппозиция, ключевые поля — и робот, который защищается без ошибок.",
+        "Shoh va piyoda yolgʻiz shohga qarshi: kvadrat qoidasi, oppozitsiya, kalit kataklar — va xato qilmaydigan robot.",
+      ),
+      stat: hydrated
+        ? t(
+            `${Object.keys(state.chessEndgames).length} из ${endgames.flatMap((l) => l.drills).length} заданий`,
+            `${endgames.flatMap((l) => l.drills).length} ta topshiriqdan ${Object.keys(state.chessEndgames).length} tasi`,
+          )
+        : t("Начни с правила квадрата", "Kvadrat qoidasidan boshla"),
+    },
+    {
+      href: "/chess/analysis",
+      emoji: "🧪",
+      title: t("Доска анализа", "Tahlil taxtasi"),
+      text: t(
+        "Расставь позицию или вставь партию, ходи за обе стороны — робот оценит и покажет лучший ход.",
+        "Holatni joylashtir yoki partiyani qoʻy, ikkala tomon uchun yur — robot baholaydi va eng yaxshi yurishni koʻrsatadi.",
+      ),
+      stat: t("Проверь свою идею", "Gʻoyangni sinab koʻr"),
     },
     {
       href: "/chess/coordinates",
       emoji: "🎯",
-      title: "Координаты",
-      text: "Найди клетку, назови клетку, угадай цвет, прочитай запись хода — по 30 секунд на скорость.",
-      stat: hydrated && state.chessDrills.find ? `рекорд ${state.chessDrills.find}` : "Побей свой рекорд",
+      title: t("Координаты", "Koordinatalar"),
+      text: t(
+        "Найди клетку, назови клетку, угадай цвет, прочитай запись хода — по 30 секунд на скорость.",
+        "Katakni top, katakning nomini ayt, rangini top, yurish yozuvini oʻqi — hammasi tezlikka, har biriga 30 soniya.",
+      ),
+      stat:
+        hydrated && state.chessDrills.find
+          ? t(`рекорд ${state.chessDrills.find}`, `rekord: ${state.chessDrills.find}`)
+          : t("Побей свой рекорд", "Oʻz rekordingni yangila"),
     },
     {
       href: "/chess/awards",
       emoji: "🏅",
-      title: "Награды",
-      text: "Медали за задачи, партии и дебюты и календарь занятий: сколько дней подряд ты тренируешься.",
-      stat: hydrated ? `${awards(state).filter(earned).length} из ${awards(state).length} наград` : "Собери все",
+      title: t("Награды", "Mukofotlar"),
+      text: t(
+        "Медали за задачи, партии и дебюты и календарь занятий: сколько дней подряд ты тренируешься.",
+        "Masalalar, partiyalar va debyutlar uchun medallar hamda mashgʻulotlar taqvimi: necha kun ketma-ket shugʻullanayotganing.",
+      ),
+      stat: hydrated
+        ? t(
+            `${awards(state).filter(earned).length} из ${awards(state).length} наград`,
+            `${awards(state).length} ta mukofotdan ${awards(state).filter(earned).length} tasi`,
+          )
+        : t("Собери все", "Hammasini yigʻ"),
     },
     {
       href: "/chess/secrets",
       emoji: "🔮",
-      title: "Тайны и легенды",
-      text: "Учёные Хорезма и Бухары, сказания «Шахнаме», машина «Турок», путешествие коня и загадки про фигуры.",
-      stat: `${SECRETS.length} историй · ${RIDDLES.length} загадок`,
+      title: t("Тайны и легенды", "Sirlar va afsonalar"),
+      text: t(
+        "Учёные Хорезма и Бухары, сказания «Шахнаме», машина «Турок», путешествие коня и загадки про фигуры.",
+        "Xorazm va Buxoro olimlari, «Shohnoma» rivoyatlari, «Turk» mashinasi, otning sayohati va donalar haqida topishmoqlar.",
+      ),
+      stat: t(
+        `${secrets.length} историй · ${riddles.length} загадок`,
+        `${secrets.length} ta hikoya · ${riddles.length} ta topishmoq`,
+      ),
     },
     {
       href: "/chess/history",
       emoji: "🗺️",
-      title: "Энциклопедия",
-      text: "История от Индии до Самарканда, чемпионы мира, имена фигур, рекорды, шахматы и математика.",
-      stat: "Открывай и читай",
+      title: t("Энциклопедия", "Ensiklopediya"),
+      text: t(
+        "История от Индии до Самарканда, чемпионы мира, имена фигур, рекорды, шахматы и математика.",
+        "Hindistondan Samarqandgacha tarix, jahon chempionlari, donalarning nomlari, rekordlar, shaxmat va matematika.",
+      ),
+      stat: t("Открывай и читай", "Och va oʻqi"),
     },
     {
       href: "/chess/diary",
       emoji: "✍️",
-      title: "Дневник партий",
-      text: "Записывай партии с папой, мамой и друзьями — и что ты в них понял.",
-      stat: hydrated && state.chessDiary.length ? `${state.chessDiary.length} записей` : "Пока пусто",
+      title: t("Дневник партий", "Partiyalar kundaligi"),
+      text: t(
+        "Записывай партии с папой, мамой и друзьями — и что ты в них понял.",
+        "Dadang, oying va doʻstlaring bilan oʻynagan partiyalaringni yozib bor — ulardan nimani tushunganingni ham.",
+      ),
+      stat:
+        hydrated && state.chessDiary.length
+          ? t(`${state.chessDiary.length} записей`, `${state.chessDiary.length} ta yozuv`)
+          : t("Пока пусто", "Hozircha boʻsh"),
     },
   ];
 
@@ -112,27 +196,38 @@ export function ChessSchool() {
         <div className="absolute -top-6 -right-4 flex gap-2 opacity-20" aria-hidden>
           <PieceIcon piece="bN" className="h-40 w-40" />
         </div>
-        <p className="text-lg font-bold text-white/80">♞ Для Давлатжона</p>
-        <h1 className="mt-1 text-3xl leading-tight font-black sm:text-4xl">{CHESS_SCHOOL.title}</h1>
-        <p className="mt-1 text-xl font-bold text-white/85">{CHESS_SCHOOL.subtitle}</p>
-        <p className="mt-3 max-w-2xl text-white/85">{CHESS_SCHOOL.about}</p>
+        <p className="text-lg font-bold text-white/80">{t("♞ Для Давлатжона", "♞ Davlatjon uchun")}</p>
+        <h1 className="mt-1 text-3xl leading-tight font-black sm:text-4xl">{school.title}</h1>
+        <p className="mt-1 text-xl font-bold text-white/85">{school.subtitle}</p>
+        <p className="mt-3 max-w-2xl text-white/85">{school.about}</p>
         <div className="mt-5 flex flex-wrap items-center gap-4 rounded-3xl bg-white/12 p-4 ring-1 ring-white/25">
           {rank ? (
             <>
               <PieceIcon piece={rank.piece} className="h-14 w-14 rounded-2xl bg-[#f0d9b5] p-1" />
               <div>
-                <p className="text-sm font-extrabold tracking-wide text-white/70 uppercase">Твоё звание</p>
-                <p className="text-2xl font-black">
-                  {rank.name} <span className="text-base font-bold text-white/70">· {rank.uz}</span>
+                <p className="text-sm font-extrabold tracking-wide text-white/70 uppercase">
+                  {t("Твоё звание", "Sening unvoning")}
                 </p>
+                {lang === "uz" ? (
+                  <p className="text-2xl font-black">{rank.name}</p>
+                ) : (
+                  <p className="text-2xl font-black">
+                    {rank.name} <span className="text-base font-bold text-white/70">· {rank.uz}</span>
+                  </p>
+                )}
               </div>
             </>
           ) : (
-            <p className="text-lg font-bold">Звания пока нет — начни с уровня «Пешка»!</p>
+            <p className="text-lg font-bold">
+              {t("Звания пока нет — начни с уровня «Пешка»!", "Hozircha unvoning yoʻq — «Piyoda» darajasidan boshla!")}
+            </p>
           )}
           <div className="ml-auto min-w-48 flex-1 sm:max-w-64">
             <p className="text-sm font-bold text-white/80">
-              Упражнений решено: {hydrated ? solved : 0} из {total}
+              {t(
+                `Упражнений решено: ${hydrated ? solved : 0} из ${total}`,
+                `Yechilgan mashqlar: ${total} tadan ${hydrated ? solved : 0} tasi`,
+              )}
             </p>
             <ProgressBar value={hydrated ? solved : 0} max={total} className="mt-1 bg-white/20" />
           </div>
@@ -141,7 +236,7 @@ export function ChessSchool() {
 
       <section aria-labelledby="chess-sections">
         <h2 id="chess-sections" className="mb-3 text-2xl font-black">
-          Разделы школы
+          {t("Разделы школы", "Maktab boʻlimlari")}
         </h2>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {sections.map((s) => (
@@ -164,10 +259,10 @@ export function ChessSchool() {
       <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]" aria-labelledby="daily-home">
         <div>
           <h2 id="daily-home" className="mb-3 text-2xl font-black">
-            Уровни и звания
+            {t("Уровни и звания", "Darajalar va unvonlar")}
           </h2>
           <ol className="grid gap-3 sm:grid-cols-2">
-            {CHESS_LEVELS.map((level, i) => {
+            {levels.map((level, i) => {
               const st = statuses[i];
               const open = !hydrated || st.unlocked;
               const inner = (
@@ -179,12 +274,15 @@ export function ChessSchool() {
                     />
                     <div className="min-w-0">
                       <p className="text-xs font-extrabold tracking-wide text-muted uppercase">
-                        Уровень {level.order} · {"⭐".repeat(level.order)}
+                        {t(`Уровень ${level.order}`, `${level.order}-daraja`)} · {"⭐".repeat(level.order)}
                       </p>
                       <p className="text-xl font-black">{level.name}</p>
-                      <p lang="uz" className="text-sm font-bold text-muted">
-                        {level.uz}
-                      </p>
+                      {/* По-узбекски название уровня уже узбекское — подпись с ним нужна только русскому тексту. */}
+                      {lang === "ru" && (
+                        <p lang="uz" className="text-sm font-bold text-muted">
+                          {level.uz}
+                        </p>
+                      )}
                     </div>
                     <span
                       className={cn(
@@ -196,7 +294,11 @@ export function ChessSchool() {
                             : "bg-line/60 text-muted",
                       )}
                     >
-                      {hydrated && st.passed ? "🏅 звание" : open ? "открыт" : "🔒 закрыт"}
+                      {hydrated && st.passed
+                        ? t("🏅 звание", "🏅 unvon")
+                        : open
+                          ? t("открыт", "ochiq")
+                          : t("🔒 закрыт", "🔒 yopiq")}
                     </span>
                   </div>
                   <p className="mt-3 font-bold">{level.title}</p>
@@ -204,7 +306,7 @@ export function ChessSchool() {
                   <div className="mt-3 flex items-center gap-2">
                     <ProgressBar value={hydrated ? st.solved : 0} max={st.total} className="flex-1" />
                     <span className="text-xs font-extrabold whitespace-nowrap text-muted">
-                      {hydrated ? st.solved : 0} из {st.total}
+                      {t(`${hydrated ? st.solved : 0} из ${st.total}`, `${hydrated ? st.solved : 0} / ${st.total}`)}
                     </span>
                   </div>
                 </>
@@ -225,7 +327,10 @@ export function ChessSchool() {
                     >
                       {inner}
                       <p className="mt-2 text-xs font-bold text-muted">
-                        Откроется после звания «{CHESS_LEVELS[i - 1]?.name}».
+                        {t(
+                          `Откроется после звания «${levels[i - 1]?.name}».`,
+                          `«${levels[i - 1]?.name}» unvonidan keyin ochiladi.`,
+                        )}
                       </p>
                     </div>
                   )}
@@ -240,10 +345,13 @@ export function ChessSchool() {
             href="/chess/puzzles#daily"
             className="block rounded-3xl bg-white p-4 shadow-card transition hover:-translate-y-0.5"
           >
-            <p className="text-xs font-extrabold tracking-wide text-muted uppercase">📅 Задача дня</p>
+            <p className="text-xs font-extrabold tracking-wide text-muted uppercase">
+              {t("📅 Задача дня", "📅 Kun masalasi")}
+            </p>
             <p className="text-lg font-black">{daily.title}</p>
             <p className="mb-2 text-xs font-bold text-muted">
-              {"⭐".repeat(daily.stars)} · {daily.fen.split(" ")[1] === "w" ? "ходят белые" : "ходят чёрные"}
+              {"⭐".repeat(daily.stars)} ·{" "}
+              {daily.fen.split(" ")[1] === "w" ? t("ходят белые", "oqlar yuradi") : t("ходят чёрные", "qoralar yuradi")}
               {hydrated && state.chessPuzzles[daily.id]?.solvedAt ? " · ✅" : ""}
             </p>
             <ChessBoard
@@ -255,38 +363,63 @@ export function ChessSchool() {
             />
           </Link>
           <div className="rounded-3xl bg-white p-4 shadow-card">
-            <h2 className="text-lg font-black">🧭 Как заниматься</h2>
+            <h2 className="text-lg font-black">{t("🧭 Как заниматься", "🧭 Qanday shugʻullanamiz")}</h2>
             <ul className="mt-2 space-y-1.5 text-sm">
-              <li>📖 Прочитай урок уровня и понажимай на фигуры.</li>
+              <li>
+                {t("📖 Прочитай урок уровня и понажимай на фигуры.", "📖 Daraja darsini oʻqi va donalarni bosib koʻr.")}
+              </li>
               <li>
                 🖨{" "}
                 <Link href="/chess/print" className="font-extrabold text-brand hover:underline">
-                  Распечатай задачи
+                  {t("Распечатай задачи", "Masalalarni chop et")}
                 </Link>{" "}
-                — решай на бумаге.
+                {t("— решай на бумаге.", "— qogʻozda yech.")}
               </li>
-              <li>🎯 Реши упражнения — получишь звание и следующий уровень.</li>
-              <li>🤖 Сыграй с роботом «{profile.robotName}» — он тебе по силам.</li>
-              <li>🏛️ Разбери знаменитую партию — там самые красивые идеи.</li>
-              <li>♟ И играй с папой или мамой — записывай партии в дневник.</li>
+              <li>
+                {t(
+                  "🎯 Реши упражнения — получишь звание и следующий уровень.",
+                  "🎯 Mashqlarni yech — unvon va keyingi darajani olasan.",
+                )}
+              </li>
+              <li>
+                {t(
+                  `🤖 Сыграй с роботом «${robotName}» — он тебе по силам.`,
+                  `🤖 «${robotName}» roboti bilan oʻyna — u aynan sening darajangda.`,
+                )}
+              </li>
+              <li>
+                {t(
+                  "🏛️ Разбери знаменитую партию — там самые красивые идеи.",
+                  "🏛️ Mashhur partiyani koʻrib chiq — eng chiroyli gʻoyalar oʻsha yerda.",
+                )}
+              </li>
+              <li>
+                {t(
+                  "♟ И играй с папой или мамой — записывай партии в дневник.",
+                  "♟ Dadang yoki oying bilan ham oʻyna — partiyalarni kundalikka yozib bor.",
+                )}
+              </li>
             </ul>
           </div>
           <details className="rounded-3xl bg-white p-4 shadow-card">
             <summary className="cursor-pointer text-lg font-black">
-              📚 Словарик <span className="text-sm font-bold text-muted">({glossary.length} слов)</span>
+              {t("📚 Словарик", "📚 Lugʻat")}{" "}
+              <span className="text-sm font-bold text-muted">
+                {t(`(${glossary.length} слов)`, `(${glossary.length} ta soʻz)`)}
+              </span>
             </summary>
             <dl className="mt-3 space-y-2">
-              {glossary.map((t) => (
-                <div key={t.term}>
+              {glossary.map((term, i) => (
+                <div key={i}>
                   <dt className="font-black">
-                    {t.term}
-                    {t.uz && (
+                    {term.term}
+                    {term.uz && lang === "ru" && (
                       <span lang="uz" className="ml-2 text-sm font-extrabold text-brand-dark">
-                        {t.uz}
+                        {term.uz}
                       </span>
                     )}
                   </dt>
-                  <dd className="text-sm text-muted">{t.text}</dd>
+                  <dd className="text-sm text-muted">{term.text}</dd>
                 </div>
               ))}
             </dl>

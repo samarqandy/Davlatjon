@@ -25,7 +25,8 @@ export function Feedback({ state, className }: { state: FeedbackState | null; cl
   const text = state?.text;
   useEffect(() => {
     if (!text) return;
-    if (tone === "success") cheer(/мат/i.test(text) ? "mate" : "praise");
+    // «мат» — по-русски, «mot» — по-узбекски.
+    if (tone === "success") cheer(/мат|\bmot\b/i.test(text) ? "mate" : "praise");
     else if (tone === "retry") cheer("retry");
   }, [tone, text]);
   return (

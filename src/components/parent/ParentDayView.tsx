@@ -6,29 +6,33 @@ import { BlockView } from "@/components/task/BlockView";
 import { ButtonLink, Card, cn, LevelBadge, SectionTag } from "@/components/ui";
 import { hintLabel } from "@/content/meta";
 import type { Day, Task } from "@/content/types";
+import { useBoth, useLang, useT, type Both, type Lang, type T } from "@/lib/i18n";
 import { PARENT_CHIPS } from "@/lib/insights";
 import { formatMinutes, pluralize } from "@/lib/plural";
 import { updateDay, updateTask, useHydrated, useStore, type TaskProgress } from "@/lib/store";
 
-const MOOD_LABEL: Record<string, string> = {
-  "😀": "было здорово",
-  "🙂": "хорошо",
-  "😐": "так себе",
-  "😕": "было трудно",
+const MOOD_LABEL: Record<string, { ru: string; uz: string }> = {
+  "😀": { ru: "было здорово", uz: "zoʻr boʻldi" },
+  "🙂": { ru: "хорошо", uz: "yaxshi" },
+  "😐": { ru: "так себе", uz: "oʻrtacha" },
+  "😕": { ru: "было трудно", uz: "qiyin boʻldi" },
 };
 
-export function ParentDayView({ day }: { day: Day }) {
+export function ParentDayView({ day: both }: { day: Both<Day> }) {
   const hydrated = useHydrated();
+  const t = useT();
+  const day = useBoth(both);
   const progress = useStore((s) => s.days[day.id]);
   const tasks = useStore((s) => s.tasks);
-  const taskTitle = (id?: string) => day.tasks.find((t) => t.id === id)?.title;
+  const taskTitle = (id?: string) => day.tasks.find((task) => task.id === id)?.title ?? "";
+  const mood = progress?.mood ? MOOD_LABEL[progress.mood] : undefined;
 
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="text-sm font-extrabold tracking-wide text-brand uppercase">
-            Неделя {day.week} · День {day.day}
+            {t(`Неделя ${day.week} · День ${day.day}`, `${day.week}-hafta · ${day.day}-kun`)}
           </p>
           <h1 className="text-3xl font-black">
             {day.emoji} {day.title}
@@ -36,33 +40,56 @@ export function ParentDayView({ day }: { day: Day }) {
         </div>
         <div className="flex flex-wrap gap-2">
           <ButtonLink href={`/week/${day.week}/day/${day.day}/print#answers`} variant="secondary">
-            🖨 Лист с ответами
+            🖨 {t("Лист с ответами", "Javoblar varagʻi")}
           </ButtonLink>
           <ButtonLink href={`/week/${day.week}/day/${day.day}`} variant="soft">
-            Открыть занятие
+            {t("Открыть занятие", "Mashgʻulotni ochish")}
           </ButtonLink>
         </div>
       </div>
 
       <Card className="grid grid-cols-1 gap-5 p-5 sm:grid-cols-2 sm:p-6">
-        <NoteList title="🧠 Какие навыки тренируем" items={day.parent.skills} />
-        <NoteList title="👀 На что обратить внимание" items={day.parent.observe} />
-        <NoteList title="🙂 Какие ошибки нормальны" items={day.parent.mistakes} />
+        <NoteList
+          title={t("🧠 Какие навыки тренируем", "🧠 Qaysi koʻnikmalarni mashq qilamiz")}
+          items={day.parent.skills}
+        />
+        <NoteList
+          title={t("👀 На что обратить внимание", "👀 Nimaga eʼtibor berish kerak")}
+          items={day.parent.observe}
+        />
+        <NoteList title={t("🙂 Какие ошибки нормальны", "🙂 Qaysi xatolar tabiiy")} items={day.parent.mistakes} />
         <div>
-          <h2 className="mb-1.5 font-extrabold">❓ Вопрос после занятия</h2>
+          <h2 className="mb-1.5 font-extrabold">{t("❓ Вопрос после занятия", "❓ Mashgʻulotdan keyingi savol")}</h2>
           <p className="rounded-2xl bg-brand-soft px-4 py-3 font-bold text-brand-dark">{day.parent.question}</p>
         </div>
       </Card>
 
       {hydrated && (progress?.favorite || progress?.hardest || progress?.mood) && (
         <Card className="p-5">
-          <h2 className="mb-2 font-extrabold">🏁 Итоги дня глазами ребёнка</h2>
+          <h2 className="mb-2 font-extrabold">
+            {t("🏁 Итоги дня глазами ребёнка", "🏁 Kun yakunlari — farzandingiz nigohida")}
+          </h2>
           <ul className="space-y-1 text-[0.95rem]">
-            {progress?.favorite && <li>Самая интересная задача: «{taskTitle(progress.favorite)}»</li>}
-            {progress?.hardest && <li>Над этой пришлось подумать дольше всего: «{taskTitle(progress.hardest)}»</li>}
+            {progress?.favorite && (
+              <li>
+                {t(
+                  `Самая интересная задача: «${taskTitle(progress.favorite)}»`,
+                  `Eng qiziq masala: «${taskTitle(progress.favorite)}»`,
+                )}
+              </li>
+            )}
+            {progress?.hardest && (
+              <li>
+                {t(
+                  `Над этой пришлось подумать дольше всего: «${taskTitle(progress.hardest)}»`,
+                  `Eng koʻp bosh qotirgan masalasi: «${taskTitle(progress.hardest)}»`,
+                )}
+              </li>
+            )}
             {progress?.mood && (
               <li>
-                Настроение: {progress.mood} {MOOD_LABEL[progress.mood]}
+                {t("Настроение: ", "Kayfiyati: ")}
+                {progress.mood} {mood && t(mood.ru, mood.uz)}
               </li>
             )}
           </ul>
@@ -70,17 +97,19 @@ export function ParentDayView({ day }: { day: Day }) {
       )}
 
       <div className="space-y-4">
-        {day.tasks.map((t, i) => (
-          <TaskAnswerCard key={t.id} task={t} number={i + 1} p={hydrated ? tasks[t.id] : undefined} />
+        {day.tasks.map((task, i) => (
+          <TaskAnswerCard key={task.id} task={task} number={i + 1} p={hydrated ? tasks[task.id] : undefined} />
         ))}
       </div>
 
       <Card className="p-5">
         <label className="block">
-          <span className="mb-1.5 block font-extrabold">📝 Мои заметки о дне</span>
+          <span className="mb-1.5 block font-extrabold">{t("📝 Мои заметки о дне", "📝 Kun haqidagi qaydlarim")}</span>
           <span className="mb-2 block text-sm text-muted">
-            Описывайте поведение, а не ярлыки: «Сегодня сам нашёл закономерность», «Понадобилась подсказка, чтобы
-            упорядочить варианты».
+            {t(
+              "Описывайте поведение, а не ярлыки: «Сегодня сам нашёл закономерность», «Понадобилась подсказка, чтобы упорядочить варианты».",
+              "Yorliq yopishtirmang — nima qilganini yozing: «Bugun qonuniyatni oʻzi topdi», «Variantlarni tartibga solish uchun maslahat kerak boʻldi».",
+            )}
           </span>
           <textarea
             defaultValue={progress?.parentNote ?? ""}
@@ -119,7 +148,7 @@ const best = (found: string[] | undefined, prefix: string) => {
 };
 
 /** Лучший результат и найденные варианты — по-своему для каждого инструмента. */
-function results(task: Task, found: string[] | undefined): string[] {
+function results(task: Task, found: string[] | undefined, t: T): string[] {
   const a = task.answer;
   const len = best(found, "len:");
   const others = (found ?? []).filter((f) => !f.startsWith("len:")).length;
@@ -127,13 +156,18 @@ function results(task: Task, found: string[] | undefined): string[] {
     case "robot":
     case "performer":
       return [
-        len ? `🤖 самая короткая программа: ${pluralize(len, "команда", "команды", "команд")}` : null,
-        others ? `🔁 найдено вариантов: ${others}` : null,
+        len
+          ? t(
+              `🤖 самая короткая программа: ${pluralize(len, "команда", "команды", "команд")}`,
+              `🤖 eng qisqa dastur: ${len} ta buyruq`,
+            )
+          : null,
+        others ? t(`🔁 найдено вариантов: ${others}`, `🔁 ${others} ta variant topildi`) : null,
       ].filter((x): x is string => x !== null);
     case "crossing":
-      return len ? [`⛵ меньше всего переправ: ${len}`] : [];
+      return len ? [t(`⛵ меньше всего переправ: ${len}`, `⛵ eng kam qatnov: ${len} ta`)] : [];
     case "jugs":
-      return len ? [`🪣 меньше всего действий: ${len}`] : [];
+      return len ? [t(`🪣 меньше всего действий: ${len}`, `🪣 eng kam amal: ${len} ta`)] : [];
     case "hanoi": {
       const bySize = new Map<number, number>();
       for (const f of found ?? []) {
@@ -144,9 +178,11 @@ function results(task: Task, found: string[] | undefined): string[] {
         ? [
             `🗼 ${[...bySize.entries()]
               .sort((x, y) => x[0] - y[0])
-              .map(
-                ([size, moves]) =>
+              .map(([size, moves]) =>
+                t(
                   `${pluralize(size, "кольцо", "кольца", "колец")} — ${pluralize(moves, "ход", "хода", "ходов")}`,
+                  `${size} ta halqa — ${moves} ta yurish`,
+                ),
               )
               .join(", ")}`,
           ]
@@ -154,45 +190,68 @@ function results(task: Task, found: string[] | undefined): string[] {
     }
     case "wallLab": {
       const tops = (found ?? []).filter((f) => f.startsWith("top:")).map((f) => Number(f.slice(4)));
-      return tops.length ? [`🔬 числа наверху: ${[...tops].sort((x, y) => x - y).join(", ")}`] : [];
+      const sorted = [...tops].sort((x, y) => x - y).join(", ");
+      return tops.length ? [t(`🔬 числа наверху: ${sorted}`, `🔬 tepadagi sonlar: ${sorted}`)] : [];
     }
     case "scales":
-      return len ? [`⚖️ нашёл фальшивую монету за ${pluralize(len, "взвешивание", "взвешивания", "взвешиваний")}`] : [];
+      return len
+        ? [
+            t(
+              `⚖️ нашёл фальшивую монету за ${pluralize(len, "взвешивание", "взвешивания", "взвешиваний")}`,
+              `⚖️ soxta tangani ${len} marta tortib topdi`,
+            ),
+          ]
+        : [];
     case "swapSort":
-      return len ? [`🔀 меньше всего обменов: ${len}`] : [];
+      return len ? [t(`🔀 меньше всего обменов: ${len}`, `🔀 eng kam almashtirish: ${len} ta`)] : [];
     case "nim":
-      return (found ?? []).includes("win") ? ["🏆 обыграл робота"] : [];
+      return (found ?? []).includes("win") ? [t("🏆 обыграл робота", "🏆 robotni yutdi")] : [];
     case "weightsLab":
       return a.sets
         .map((set, i) => {
           const loads = (found ?? []).filter((f) => f.startsWith(`set${i}:`)).length;
-          return loads ? `⚖️ гири ${set.weights.join(", ")}: уравновешено ${loads} из ${set.max}` : null;
+          const weights = set.weights.join(", ");
+          return loads
+            ? t(
+                `⚖️ гири ${weights}: уравновешено ${loads} из ${set.max}`,
+                `⚖️ ${weights} toshlar: ${set.max} tadan ${loads} tasi muvozanatga keltirildi`,
+              )
+            : null;
         })
         .filter((x): x is string => x !== null);
     default:
-      return others ? [`🔁 найдено вариантов: ${others}`] : [];
+      return others ? [t(`🔁 найдено вариантов: ${others}`, `🔁 ${others} ta variant topildi`)] : [];
   }
 }
 
-function Activity({ task, p }: { task: Task; p: TaskProgress | undefined }) {
+function Activity({ task, p, t, lang }: { task: Task; p: TaskProgress | undefined; t: T; lang: Lang }) {
   if (!p || (!p.status && p.hints === 0 && p.checks === 0))
-    return <p className="text-sm text-muted">Ребёнок ещё не открывал эту задачу.</p>;
+    return (
+      <p className="text-sm text-muted">
+        {t("Ребёнок ещё не открывал эту задачу.", "Farzandingiz bu masalani hali ochmagan.")}
+      </p>
+    );
   const facts = [
     p.status === "solved"
       ? p.firstTry && p.hints === 0
-        ? "✅ решено с первой попытки без подсказок"
-        : "✅ решено"
-      : "⏳ в процессе",
-    `💡 подсказок: ${p.hints} из 5`,
-    p.checks > 0 ? `🔎 проверок: ${p.checks}${p.missed ? `, не сошлось: ${p.missed}` : ""}` : null,
-    p.timeMs > 0 ? `⏱ ${formatMinutes(p.timeMs)}` : null,
-    ...results(task, p.found),
+        ? t("✅ решено с первой попытки без подсказок", "✅ birinchi urinishda, maslahatsiz yechildi")
+        : t("✅ решено", "✅ yechildi")
+      : t("⏳ в процессе", "⏳ jarayonda"),
+    t(`💡 подсказок: ${p.hints} из 5`, `💡 maslahat: 5 tadan ${p.hints} tasi`),
+    p.checks > 0
+      ? t(
+          `🔎 проверок: ${p.checks}${p.missed ? `, не сошлось: ${p.missed}` : ""}`,
+          `🔎 ${p.checks} marta tekshirdi${p.missed ? `, ${p.missed} marta mos kelmadi` : ""}`,
+        )
+      : null,
+    p.timeMs > 0 ? `⏱ ${formatMinutes(p.timeMs, lang)}` : null,
+    ...results(task, p.found, t),
   ].filter(Boolean);
   const marks = [
-    p.marks.explained && "💬 объяснил",
-    p.marks.anotherWay && "🔁 другой способ",
-    p.marks.liked && "❤️ понравилась",
-    p.marks.hard && "🧗 было трудно",
+    p.marks.explained && t("💬 объяснил", "💬 tushuntirdi"),
+    p.marks.anotherWay && t("🔁 другой способ", "🔁 boshqa usul"),
+    p.marks.liked && t("❤️ понравилась", "❤️ yoqdi"),
+    p.marks.hard && t("🧗 было трудно", "🧗 qiyin boʻldi"),
   ].filter(Boolean);
   return (
     <div className="space-y-1 text-sm">
@@ -201,19 +260,26 @@ function Activity({ task, p }: { task: Task; p: TaskProgress | undefined }) {
           <span key={f as string}>{f}</span>
         ))}
       </p>
-      {marks.length > 0 && <p className="text-muted">Отметки ребёнка: {marks.join(" · ")}</p>}
+      {marks.length > 0 && (
+        <p className="text-muted">
+          {t("Отметки ребёнка: ", "Farzandingiz belgilari: ")}
+          {marks.join(" · ")}
+        </p>
+      )}
     </div>
   );
 }
 
 function TaskAnswerCard({ task, number, p }: { task: Task; number: number; p: TaskProgress | undefined }) {
+  const t = useT();
+  const lang = useLang();
   const [showTask, setShowTask] = useState(false);
   const chips = p?.parentChips ?? [];
   const toggleChip = (id: string) =>
-    updateTask(task.id, (t) => ({
-      parentChips: (t.parentChips ?? []).includes(id)
-        ? (t.parentChips ?? []).filter((c) => c !== id)
-        : [...(t.parentChips ?? []), id],
+    updateTask(task.id, (tp) => ({
+      parentChips: (tp.parentChips ?? []).includes(id)
+        ? (tp.parentChips ?? []).filter((c) => c !== id)
+        : [...(tp.parentChips ?? []), id],
     }));
 
   return (
@@ -224,14 +290,14 @@ function TaskAnswerCard({ task, number, p }: { task: Task; number: number; p: Ta
             {number}
           </span>
           <h2 className="text-lg font-black">{task.title}</h2>
-          <SectionTag section={task.section} className="text-xs" />
-          <LevelBadge level={task.level} />
+          <SectionTag section={task.section} className="text-xs" lang={lang} />
+          <LevelBadge level={task.level} lang={lang} />
           <button
             type="button"
             onClick={() => setShowTask((v) => !v)}
             className="ml-auto text-sm font-bold text-brand hover:underline"
           >
-            {showTask ? "Скрыть условие" : "Показать условие"}
+            {showTask ? t("Скрыть условие", "Shartni yashirish") : t("Показать условие", "Shartni koʻrsatish")}
           </button>
         </div>
       </div>
@@ -245,7 +311,7 @@ function TaskAnswerCard({ task, number, p }: { task: Task; number: number; p: Ta
             </div>
           )}
           <p className="rounded-2xl bg-mint-soft px-4 py-2.5 text-[1.05rem]">
-            <b>Ответ:</b> <RichText text={task.solution.answer} />
+            <b>{t("Ответ:", "Javob:")}</b> <RichText text={task.solution.answer} />
           </p>
           <div className="space-y-1">
             {task.solution.explanation.map((e) => (
@@ -260,12 +326,14 @@ function TaskAnswerCard({ task, number, p }: { task: Task; number: number; p: Ta
             </p>
           ))}
           <details className="rounded-2xl border border-[#fde68a] bg-[#fffbeb] px-4 py-2.5">
-            <summary className="cursor-pointer font-extrabold">💡 Подсказки по порядку</summary>
+            <summary className="cursor-pointer font-extrabold">
+              💡 {t("Подсказки по порядку", "Maslahatlar tartib bilan")}
+            </summary>
             <ol className="mt-2 space-y-1.5 text-[0.95rem]">
               {task.hints.map((h, j) => (
                 <li key={j}>
                   <b>
-                    {j + 1}. {hintLabel(j)}
+                    {j + 1}. {hintLabel(j, lang)}
                   </b>{" "}
                   <RichText text={h} />
                 </li>
@@ -275,11 +343,15 @@ function TaskAnswerCard({ task, number, p }: { task: Task; number: number; p: Ta
         </div>
         <div className="space-y-3">
           <div className="rounded-2xl bg-paper p-4">
-            <h3 className="mb-1.5 text-sm font-extrabold text-muted uppercase">Как решал Давлатжон</h3>
-            <Activity task={task} p={p} />
+            <h3 className="mb-1.5 text-sm font-extrabold text-muted uppercase">
+              {t("Как решал Давлатжон", "Davlatjon qanday yechdi")}
+            </h3>
+            <Activity task={task} p={p} t={t} lang={lang} />
           </div>
           <div>
-            <h3 className="mb-1.5 text-sm font-extrabold text-muted uppercase">Мои наблюдения</h3>
+            <h3 className="mb-1.5 text-sm font-extrabold text-muted uppercase">
+              {t("Мои наблюдения", "Kuzatuvlarim")}
+            </h3>
             <div className="flex flex-wrap gap-1.5">
               {PARENT_CHIPS.map((c) => (
                 <button
@@ -294,14 +366,17 @@ function TaskAnswerCard({ task, number, p }: { task: Task; number: number; p: Ta
                       : "border-line bg-white text-muted hover:border-brand/40",
                   )}
                 >
-                  {c.label}
+                  {t(c.label, c.uz)}
                 </button>
               ))}
             </div>
             <textarea
               defaultValue={p?.parentNote ?? ""}
               onBlur={(e) => updateTask(task.id, () => ({ parentNote: e.target.value }))}
-              placeholder="Что вы заметили? Например: «сначала ответил 6, потом сам нашёл большие квадраты»."
+              placeholder={t(
+                "Что вы заметили? Например: «сначала ответил 6, потом сам нашёл большие квадраты».",
+                "Nimani payqadingiz? Masalan: «avval 6 deb javob berdi, keyin katta kvadratlarni oʻzi topdi».",
+              )}
               rows={2}
               className="mt-2 w-full rounded-2xl border-2 border-line bg-white px-3 py-2 text-sm outline-none focus:border-brand"
             />

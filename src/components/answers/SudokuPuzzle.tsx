@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { Button, cn } from "@/components/ui";
 import { askExplain, praise, retrySub } from "@/lib/feedback";
+import { useLang, useT } from "@/lib/i18n";
 import { sudokuConflicts, type SudokuGrid } from "@/lib/sudoku";
 import { recordCheck, saveTaskInput, useTask } from "@/lib/store";
 import { Feedback, type FeedbackState } from "./Feedback";
@@ -50,6 +51,8 @@ export function SudokuPuzzle({
   box: [number, number];
   hintsLeft: boolean;
 }) {
+  const t = useT();
+  const lang = useLang();
   const progress = useTask(taskId);
   const n = grid.length;
   const [values, setValues] = useState<Record<string, string>>(
@@ -82,18 +85,30 @@ export function SudokuPuzzle({
     recordCheck(taskId, ok);
     setFeedback(
       ok
-        ? { tone: "success", text: praise(i), sub: `В каждой строке, столбце и квадрате — все числа! ${askExplain(i)}` }
+        ? {
+            tone: "success",
+            text: praise(i, lang),
+            sub: t(
+              `В каждой строке, столбце и квадрате — все числа! ${askExplain(i, lang)}`,
+              `Har bir qator, ustun va kvadratda hamma sonlar bor! ${askExplain(i, lang)}`,
+            ),
+          }
         : {
             tone: "retry",
-            text: "Посмотри на клетки, выделенные жёлтым: там числа повторяются.",
-            sub: retrySub(i, hintsLeft),
+            text: t(
+              "Посмотри на клетки, выделенные жёлтым: там числа повторяются.",
+              "Sariq rangli kataklarga qara: u yerda sonlar takrorlanyapti.",
+            ),
+            sub: retrySub(i, hintsLeft, lang),
           },
     );
   };
 
   return (
     <div className="space-y-4">
-      <p className="text-sm font-bold text-muted">Впиши в пустые клетки числа от 1 до {n}.</p>
+      <p className="text-sm font-bold text-muted">
+        {t(`Впиши в пустые клетки числа от 1 до ${n}.`, `Boʻsh kataklarga 1 dan ${n} gacha sonlarni yoz.`)}
+      </p>
       <div
         className="inline-grid rounded-xl bg-white p-1 shadow-card"
         style={{ gridTemplateColumns: `repeat(${n}, minmax(0, 4rem))` }}
@@ -116,7 +131,7 @@ export function SudokuPuzzle({
                 ) : (
                   <input
                     inputMode="numeric"
-                    aria-label={`Строка ${r + 1}, столбец ${c + 1}`}
+                    aria-label={t(`Строка ${r + 1}, столбец ${c + 1}`, `${r + 1}-qator, ${c + 1}-ustun`)}
                     value={values[key] ?? ""}
                     onChange={(e) => set(key, e.target.value)}
                     className="h-full w-full bg-transparent text-center text-3xl font-black text-brand-dark outline-none focus:bg-brand-soft"
@@ -130,7 +145,7 @@ export function SudokuPuzzle({
       </div>
       <div>
         <Button onClick={check} size="lg" disabled={!filled}>
-          Проверить
+          {t("Проверить", "Tekshirish")}
         </Button>
       </div>
       <Feedback state={feedback} />

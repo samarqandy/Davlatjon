@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ParentDayView } from "@/components/parent/ParentDayView";
 import { ParentGate } from "@/components/parent/ParentGate";
 import { allDays, getDay } from "@/content/program";
+import { localizeDay } from "@/content/uz";
 
 type Props = { params: Promise<{ week: string; day: string }> };
 
@@ -23,7 +24,7 @@ export default async function ParentDayPage({ params }: Props) {
   if (!d) notFound();
   return (
     <ParentGate>
-      <ParentDayView day={d} />
+      <ParentDayView day={{ ru: d, uz: localizeDay(d, "uz") }} />
     </ParentGate>
   );
 }

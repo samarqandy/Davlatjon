@@ -3,19 +3,27 @@
 import { useRef, useState } from "react";
 import { Button, cn } from "@/components/ui";
 import { askExplain, praise } from "@/lib/feedback";
-import { pluralize } from "@/lib/plural";
+import { countText, useLang, useT, type Both, type Lang } from "@/lib/i18n";
 import { candidates, trickyWeigh, type Weighing, type WeighingRecord } from "@/lib/scales";
 import { addFound, recordCheck, saveTaskInput, useTask } from "@/lib/store";
 import { Feedback, type FeedbackState } from "./Feedback";
 
 type Place = "left" | "right";
 
-const weighingsWord = (n: number) => pluralize(n, "взвешивание", "взвешивания", "взвешиваний");
+const weighingsWord = (n: number, lang: Lang) =>
+  countText(lang, n, ["взвешивание", "взвешивания", "взвешиваний"], "marta tortish");
 
-const RESULT_TEXT: Record<Weighing, string> = {
-  equal: "равновесие",
-  left: "перевесила левая чаша",
-  right: "перевесила правая чаша",
+const RESULT_TEXT: Both<Record<Weighing, string>> = {
+  ru: {
+    equal: "равновесие",
+    left: "перевесила левая чаша",
+    right: "перевесила правая чаша",
+  },
+  uz: {
+    equal: "muvozanat",
+    left: "chap palla ogʻir keldi",
+    right: "oʻng palla ogʻir keldi",
+  },
 };
 
 /** Монетка с номером — для рисунков и списков. */
@@ -43,6 +51,7 @@ export function CoinScale({
   right: readonly number[];
   tilt?: Weighing;
 }) {
+  const t = useT();
   const w = 320;
   const pivot = { x: w / 2, y: 40 };
   const arm = 112;
@@ -87,10 +96,15 @@ export function CoinScale({
   };
   const label =
     left.length === 0 && right.length === 0
-      ? "Пустые весы"
-      : `Весы: слева ${left.join(", ") || "ничего"}, справа ${right.join(", ") || "ничего"}${
-          tilt === "equal" ? "" : tilt === "left" ? " — перевесила левая чаша" : " — перевесила правая чаша"
-        }`;
+      ? t("Пустые весы", "Boʻsh tarozi")
+      : t(
+          `Весы: слева ${left.join(", ") || "ничего"}, справа ${right.join(", ") || "ничего"}${
+            tilt === "equal" ? "" : tilt === "left" ? " — перевесила левая чаша" : " — перевесила правая чаша"
+          }`,
+          `Tarozi: chapda ${left.join(", ") || "hech narsa"}, oʻngda ${right.join(", ") || "hech narsa"}${
+            tilt === "equal" ? "" : tilt === "left" ? " — chap palla ogʻir keldi" : " — oʻng palla ogʻir keldi"
+          }`,
+        );
   return (
     <svg width="100%" viewBox={`0 0 ${w} 190`} className="max-w-[360px]" role="img" aria-label={label}>
       <polygon points={`${w / 2 - 40},184 ${w / 2 + 40},184 ${w / 2},156`} fill="#9ca3af" />
@@ -112,6 +126,8 @@ export function CoinScale({
 }
 
 export function ScalesPuzzle({ taskId, coins, weighings }: { taskId: string; coins: number; weighings: number }) {
+  const t = useT();
+  const lang = useLang();
   const progress = useTask(taskId);
   const [history, setHistory] = useState<WeighingRecord[]>(() => {
     const saved = progress.input?.scales;
@@ -152,14 +168,21 @@ export function ScalesPuzzle({ taskId, coins, weighings }: { taskId: string; coi
 
   const doWeigh = () => {
     if (left.length === 0 || right.length === 0) {
-      setFeedback({ tone: "info", text: "Положи монеты на обе чаши.", sub: "Нажимай на монеты внизу." });
+      setFeedback({
+        tone: "info",
+        text: t("Положи монеты на обе чаши.", "Ikkala pallaga ham tanga qoʻy."),
+        sub: t("Нажимай на монеты внизу.", "Pastdagi tangalarni bos."),
+      });
       return;
     }
     if (left.length !== right.length) {
       setFeedback({
         tone: "info",
-        text: "На чашах должно быть поровну монет.",
-        sub: "Иначе перевесит та чаша, где монет больше, — и про фальшивую монету мы ничего не узнаем.",
+        text: t("На чашах должно быть поровну монет.", "Pallalarda tangalar soni teng boʻlishi kerak."),
+        sub: t(
+          "Иначе перевесит та чаша, где монет больше, — и про фальшивую монету мы ничего не узнаем.",
+          "Aks holda tangasi koʻp palla ogʻir keladi — qalbaki tanga haqida esa hech narsa bilolmaymiz.",
+        ),
       });
       return;
     }
@@ -175,18 +198,27 @@ export function ScalesPuzzle({ taskId, coins, weighings }: { taskId: string; coi
       recordCheck(taskId, false);
       setFeedback({
         tone: "retry",
-        text: `Взвешивания закончились, а весы ещё не доказали, какая монета фальшивая.`,
-        sub: "Фальшивой может оказаться не одна монета. Начни заново и попробуй разделить монеты по-другому.",
+        text: t(
+          `Взвешивания закончились, а весы ещё не доказали, какая монета фальшивая.`,
+          "Tortishlar tugadi, lekin tarozi qaysi tanga qalbaki ekanini hali isbotlamadi.",
+        ),
+        sub: t(
+          "Фальшивой может оказаться не одна монета. Начни заново и попробуй разделить монеты по-другому.",
+          "Hali bir nechta tanga shubhali. Qaytadan boshla va tangalarni boshqacha guruhlarga ajratib koʻr.",
+        ),
       });
       return;
     }
     setFeedback({
       tone: "info",
-      text: `Весы: ${RESULT_TEXT[result]}.`,
+      text: t(`Весы: ${RESULT_TEXT.ru[result]}.`, `Tarozi: ${RESULT_TEXT.uz[result]}.`),
       sub:
         result === "equal"
-          ? "Что это значит? Где может быть фальшивая монета?"
-          : "Фальшивая монета легче. На какой она чаше?",
+          ? t(
+              "Что это значит? Где может быть фальшивая монета?",
+              "Bu nimani bildiradi? Qalbaki tanga qayerda boʻlishi mumkin?",
+            )
+          : t("Фальшивая монета легче. На какой она чаше?", "Qalbaki tanga yengilroq. U qaysi pallada?"),
     });
   };
 
@@ -199,8 +231,11 @@ export function ScalesPuzzle({ taskId, coins, weighings }: { taskId: string; coi
       setDone(true);
       setFeedback({
         tone: "success",
-        text: `${praise(n)} Фальшивая — монета № ${c}.`,
-        sub: `Ты доказал это за ${weighingsWord(history.length)}. ${askExplain(n)}`,
+        text: t(`${praise(n, lang)} Фальшивая — монета № ${c}.`, `${praise(n, lang)} Qalbakisi — ${c}-tanga.`),
+        sub: t(
+          `Ты доказал это за ${weighingsWord(history.length, lang)}. ${askExplain(n, lang)}`,
+          `Buni ${weighingsWord(history.length, lang)}da isbotlading. ${askExplain(n, lang)}`,
+        ),
       });
       return;
     }
@@ -210,15 +245,21 @@ export function ScalesPuzzle({ taskId, coins, weighings }: { taskId: string; coi
       const proof = history.findIndex((h) => !candidates(coins, [h]).includes(c));
       setFeedback({
         tone: "retry",
-        text: `Монета № ${c} точно настоящая.`,
-        sub: `Посмотри ещё раз на взвешивание № ${proof + 1}: могла ли там фальшивая монета быть на этом месте?`,
+        text: t(`Монета № ${c} точно настоящая.`, `${c}-tanga aniq haqiqiy.`),
+        sub: t(
+          `Посмотри ещё раз на взвешивание № ${proof + 1}: могла ли там фальшивая монета быть на этом месте?`,
+          `${proof + 1}-tortishga yana bir qara: qalbaki tanga oʻshanda shu joyda boʻlishi mumkinmidi?`,
+        ),
       });
       return;
     }
     setFeedback({
       tone: "retry",
-      text: `Может быть, это монета № ${c}. А может быть, и другая.`,
-      sub: "Весы пока не доказали, какая монета фальшивая. Нужно ещё взвешивание.",
+      text: t(`Может быть, это монета № ${c}. А может быть, и другая.`, `Balki bu ${c}-tangadir. Balki boshqasidir.`),
+      sub: t(
+        "Весы пока не доказали, какая монета фальшивая. Нужно ещё взвешивание.",
+        "Tarozi qaysi tanga qalbaki ekanini hali isbotlamadi. Yana tortib koʻrish kerak.",
+      ),
     });
   };
 
@@ -234,19 +275,25 @@ export function ScalesPuzzle({ taskId, coins, weighings }: { taskId: string; coi
   return (
     <div className="space-y-4">
       <p className="text-sm font-bold text-muted">
-        Нажимай на монету: первый раз она ляжет на левую чашу, второй — на правую, третий — вернётся на стол.
+        {t(
+          "Нажимай на монету: первый раз она ляжет на левую чашу, второй — на правую, третий — вернётся на стол.",
+          "Tangani bos: birinchi marta u chap pallaga tushadi, ikkinchi marta — oʻng pallaga, uchinchi marta — stolga qaytadi.",
+        )}
       </p>
 
       <div className="flex flex-col items-center rounded-3xl bg-white p-3 shadow-card">
         <CoinScale left={left} right={right} tilt={shown} />
-        <div className="mt-2 flex flex-wrap justify-center gap-1.5" role="group" aria-label="Монеты">
+        <div className="mt-2 flex flex-wrap justify-center gap-1.5" role="group" aria-label={t("Монеты", "Tangalar")}>
           {all.map((c) => (
             <button
               key={c}
               type="button"
               onClick={() => cycle(c)}
               disabled={done}
-              aria-label={`Монета ${c}: ${places[c] === "left" ? "на левой чаше" : places[c] === "right" ? "на правой чаше" : "на столе"}`}
+              aria-label={t(
+                `Монета ${c}: ${places[c] === "left" ? "на левой чаше" : places[c] === "right" ? "на правой чаше" : "на столе"}`,
+                `${c}-tanga: ${places[c] === "left" ? "chap pallada" : places[c] === "right" ? "oʻng pallada" : "stolda"}`,
+              )}
               className={cn(
                 "flex h-16 w-14 flex-col items-center justify-center gap-0.5 rounded-2xl border-2 transition",
                 naming
@@ -260,7 +307,11 @@ export function ScalesPuzzle({ taskId, coins, weighings }: { taskId: string; coi
             >
               <Coin n={c} size={30} muted={!!places[c] && !naming} />
               <span className="text-[0.65rem] font-extrabold text-muted">
-                {places[c] === "left" ? "слева" : places[c] === "right" ? "справа" : "на столе"}
+                {places[c] === "left"
+                  ? t("слева", "chapda")
+                  : places[c] === "right"
+                    ? t("справа", "oʻngda")
+                    : t("на столе", "stolda")}
               </span>
             </button>
           ))}
@@ -269,7 +320,7 @@ export function ScalesPuzzle({ taskId, coins, weighings }: { taskId: string; coi
 
       <div className="flex flex-wrap items-center gap-2">
         <Button onClick={doWeigh} disabled={done || outOfWeighings}>
-          ⚖️ Взвесить
+          ⚖️ {t("Взвесить", "Tortish")}
         </Button>
         <Button
           variant={naming ? "sun" : "secondary"}
@@ -280,14 +331,14 @@ export function ScalesPuzzle({ taskId, coins, weighings }: { taskId: string; coi
                 ? null
                 : {
                     tone: "info",
-                    text: "Нажми на монету, которую считаешь фальшивой.",
-                    sub: "Помни: нужно быть уверенным!",
+                    text: t("Нажми на монету, которую считаешь фальшивой.", "Qalbaki deb oʻylagan tangangni bos."),
+                    sub: t("Помни: нужно быть уверенным!", "Esingda boʻlsin: bunga ishonching komil boʻlishi kerak!"),
                   },
             );
           }}
           disabled={done}
         >
-          🔍 Это фальшивая…
+          🔍 {t("Это фальшивая…", "Qalbakisini topdim…")}
         </Button>
         <Button
           variant="ghost"
@@ -297,15 +348,15 @@ export function ScalesPuzzle({ taskId, coins, weighings }: { taskId: string; coi
           }}
           disabled={done || (left.length === 0 && right.length === 0)}
         >
-          Снять монеты
+          {t("Снять монеты", "Tangalarni olish")}
         </Button>
         <Button variant="ghost" onClick={restart}>
-          ↺ Начать заново
+          ↺ {t("Начать заново", "Qaytadan boshlash")}
         </Button>
       </div>
 
       <p className="flex items-center gap-2 text-sm font-extrabold text-muted">
-        Взвешиваний: {history.length} из {weighings}
+        {t(`Взвешиваний: ${history.length} из ${weighings}`, `Tortishlar: ${weighings} tadan ${history.length} tasi`)}
         <span className="flex gap-1" aria-hidden>
           {Array.from({ length: weighings }, (_, i) => (
             <span
@@ -320,7 +371,7 @@ export function ScalesPuzzle({ taskId, coins, weighings }: { taskId: string; coi
 
       {history.length > 0 && (
         <div className="rounded-2xl bg-white p-3 shadow-card">
-          <p className="mb-2 text-sm font-extrabold text-muted">Дневник взвешиваний</p>
+          <p className="mb-2 text-sm font-extrabold text-muted">{t("Дневник взвешиваний", "Tortishlar kundaligi")}</p>
           <ol className="space-y-2">
             {history.map((h, i) => (
               <li key={i} className="flex flex-wrap items-center gap-x-2 gap-y-1">
@@ -330,13 +381,13 @@ export function ScalesPuzzle({ taskId, coins, weighings }: { taskId: string; coi
                     <Coin key={c} n={c} size={24} />
                   ))}
                 </span>
-                <span className="font-black text-muted">и</span>
+                <span className="font-black text-muted">{t("и", "va")}</span>
                 <span className="flex gap-0.5">
                   {h.right.map((c) => (
                     <Coin key={c} n={c} size={24} />
                   ))}
                 </span>
-                <span className="font-bold">→ {RESULT_TEXT[h.result]}</span>
+                <span className="font-bold">→ {RESULT_TEXT[lang][h.result]}</span>
               </li>
             ))}
           </ol>

@@ -15,6 +15,7 @@ import {
   WOMEN_CHAMPIONS,
   WORLD_CHAMPIONS,
 } from "./encyclopedia";
+import { ENDGAME_LESSONS, ENDGAME_MATES, ENDGAME_SCHOOL } from "./endgames";
 import { FAMOUS_GAMES } from "./games";
 import { CHESS_IMAGES, type ChessImage } from "./images";
 import { CHESS_LEVELS, CHESS_SCHOOL, LEVEL_EXTRAS } from "./index";
@@ -51,6 +52,9 @@ export const CHESS_RU = {
   chessMath: CHESS_MATH,
   uzbekChess: UZBEK_CHESS,
   images: CHESS_IMAGES,
+  endgameSchool: ENDGAME_SCHOOL,
+  endgames: ENDGAME_LESSONS,
+  endgameMates: ENDGAME_MATES,
 };
 
 export type ChessContent = typeof CHESS_RU;

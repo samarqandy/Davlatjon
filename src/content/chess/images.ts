@@ -377,7 +377,7 @@ export function imageCredit(img: ChessImage, lang: "ru" | "uz" = "ru"): string {
   const uz = lang === "uz";
   const what = img.kind === "art" ? "" : uz ? "Surat: " : "Фото: ";
   if (isPublicDomain(img)) {
-    const by = img.author && !/unknown|неизвест/i.test(img.author) ? `${img.author} · ` : "";
+    const by = img.author && !/unknown|неизвест|nomaʼlum/i.test(img.author) ? `${img.author} · ` : "";
     return `${what}${by}${img.licenseCode === "cc0" ? "CC0" : uz ? "jamoat mulki" : "общественное достояние"}`;
   }
   return `${what}${img.author || (uz ? "muallif nomaʼlum" : "автор неизвестен")} · ${img.license}`;

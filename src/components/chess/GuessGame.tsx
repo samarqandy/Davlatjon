@@ -4,8 +4,9 @@ import { useEffect, useMemo, useState } from "react";
 import { Feedback, type FeedbackState } from "@/components/answers/Feedback";
 import { Button } from "@/components/ui";
 import type { FamousGame } from "@/content/chess/games";
-import { legalTargets, pieceAt, playMove, ruSan, type Color } from "@/lib/chess";
+import { legalTargets, pieceAt, playMove, type Color } from "@/lib/chess";
 import { isAlmostBest } from "@/lib/engine/analysis";
+import { useSan, useT } from "@/lib/i18n";
 import { pluralize } from "@/lib/plural";
 import { chessGuessScored, useStore } from "@/lib/store";
 import { ChessBoard, type SquareMark } from "./ChessBoard";
@@ -20,8 +21,11 @@ export function guessHero(game: FamousGame): { color: Color; name: string } {
 /**
  * «Сыграй как Морфи»: ребёнок угадывает ходы победителя знаменитой партии.
  * Точно как в партии — 3 очка, сильный ход по оценке движка — 1 очко. Ответы соперника делаются сами.
+ * game — партия уже на языке интерфейса (имена игроков и комментарии).
  */
 export function GuessGame({ game, onExit }: { game: FamousGame; onExit: () => void }) {
+  const t = useT();
+  const san = useSan();
   const positions = useMemo(() => replayPositions(game.moves), [game.moves]);
   const hero = guessHero(game);
   const total = game.moves.length;
@@ -63,12 +67,18 @@ export function GuessGame({ game, onExit }: { game: FamousGame; onExit: () => vo
     if (played.uci.slice(0, 4) === histUci) {
       points = hint ? 1 : 3;
       setExact((e) => e + 1);
-      text = `${ruSan(next.san)} — точно как ${hero.name}! +${points}`;
+      text = t(
+        `${san(next.san)} — точно как ${hero.name}! +${points}`,
+        `${san(next.san)} — xuddi ${hero.name} kabi! +${points}`,
+      );
     } else if (isAlmostBest(fen, played.uci, histUci)) {
       points = 1;
-      text = `${ruSan(played.san)} — тоже сильный ход, +1. А ${hero.name} сыграл ${ruSan(next.san)}.`;
+      text = t(
+        `${san(played.san)} — тоже сильный ход, +1. А ${hero.name} сыграл ${san(next.san)}.`,
+        `${san(played.san)} — bu ham kuchli yurish, +1. ${hero.name} esa ${san(next.san)} yurgan edi.`,
+      );
     } else {
-      text = `${hero.name} сыграл ${ruSan(next.san)}.`;
+      text = t(`${hero.name} сыграл ${san(next.san)}.`, `${hero.name} ${san(next.san)} yurgan edi.`);
     }
     setScore((s) => s + points);
     setFeedback({ tone: points >= 3 ? "success" : points > 0 ? "info" : "retry", text, sub: comment });
@@ -96,7 +106,7 @@ export function GuessGame({ game, onExit }: { game: FamousGame; onExit: () => vo
   if (hint && heroTurn) marks[positions[ply + 1].from] = "hint";
   if (selected) {
     marks[selected] = "selected";
-    for (const t of legalTargets(fen, selected)) marks[t] = pieceAt(fen, t) ? "capture" : "target";
+    for (const sq of legalTargets(fen, selected)) marks[sq] = pieceAt(fen, sq) ? "capture" : "target";
   }
 
   const restart = () => {
@@ -109,7 +119,7 @@ export function GuessGame({ game, onExit }: { game: FamousGame; onExit: () => vo
   };
 
   return (
-    <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]" aria-label="Угадай ход">
+    <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]" aria-label={t("Угадай ход", "Yurishni top")}>
       <div className="space-y-3">
         <ChessBoard
           id={`guess-${game.id}`}
@@ -125,55 +135,69 @@ export function GuessGame({ game, onExit }: { game: FamousGame; onExit: () => vo
       </div>
       <aside className="space-y-3">
         <div className="rounded-2xl bg-white p-4 shadow-card">
-          <p className="text-xs font-extrabold tracking-wide text-muted uppercase">🎯 Сыграй как {hero.name}</p>
+          <p className="text-xs font-extrabold tracking-wide text-muted uppercase">
+            🎯 {t(`Сыграй как ${hero.name}`, `${hero.name} kabi oʻyna`)}
+          </p>
           <p className="mt-1 text-3xl font-black text-brand-dark">
-            {score} <span className="text-base text-muted">из {max} очков</span>
+            {score} <span className="text-base text-muted">{t(`из ${max} очков`, `/ ${max} ochko`)}</span>
           </p>
           <p className="text-sm text-muted">
-            Угадано точно: {exact} из {heroMoves}
-            {best ? ` · рекорд ${best.score}` : ""}
+            {t(`Угадано точно: ${exact} из ${heroMoves}`, `Aniq topildi: ${exact} / ${heroMoves}`)}
+            {best ? t(` · рекорд ${best.score}`, ` · rekord ${best.score}`) : ""}
           </p>
           <p className="mt-2 text-lg font-black" aria-live="polite">
             {done
-              ? "Партия окончена!"
+              ? t("Партия окончена!", "Partiya tugadi!")
               : heroTurn
-                ? `Твой ход за ${hero.color === "w" ? "белых" : "чёрных"}: как сыграл бы ${hero.name}?`
-                : "Соперник думает…"}
+                ? t(
+                    `Твой ход за ${hero.color === "w" ? "белых" : "чёрных"}: как сыграл бы ${hero.name}?`,
+                    `${hero.color === "w" ? "Oqlar" : "Qoralar"} uchun yur: ${hero.name} bu yerda qanday yurgan boʻlardi?`,
+                  )
+                : t("Соперник думает…", "Raqib oʻylayapti…")}
           </p>
         </div>
         {done ? (
           <div className="rounded-2xl bg-sun-soft p-4">
             <p className="font-black">
               {score >= max * 0.7
-                ? `🏆 Ты думаешь как ${hero.name}!`
+                ? t(`🏆 Ты думаешь как ${hero.name}!`, `🏆 Sen ${hero.name} kabi fikrlaysan!`)
                 : score >= max * 0.4
-                  ? "💪 Хорошо! Многие ходы найдены."
-                  : "Эту партию стоит разобрать ещё раз — и попробовать снова."}
+                  ? t("💪 Хорошо! Многие ходы найдены.", "💪 Yaxshi! Koʻp yurishlarni topding.")
+                  : t(
+                      "Эту партию стоит разобрать ещё раз — и попробовать снова.",
+                      "Bu partiyani yana bir bor tahlil qilib chiq — keyin qaytadan urinib koʻr.",
+                    )}
             </p>
             <p className="mt-1 text-sm">
-              Точных попаданий: {pluralize(exact, "ход", "хода", "ходов")} из {heroMoves}.
+              {t(
+                `Точных попаданий: ${pluralize(exact, "ход", "хода", "ходов")} из ${heroMoves}.`,
+                `Aniq topilgan yurishlar: ${exact} / ${heroMoves}.`,
+              )}
             </p>
             <div className="mt-2 flex flex-wrap gap-2">
               <Button size="sm" onClick={restart}>
-                ↺ Ещё раз
+                ↺ {t("Ещё раз", "Yana bir bor")}
               </Button>
               <Button size="sm" variant="secondary" onClick={onExit}>
-                К разбору партии
+                {t("К разбору партии", "Partiya tahliliga")}
               </Button>
             </div>
           </div>
         ) : (
           <div className="flex flex-wrap gap-2">
             <Button size="sm" variant="secondary" onClick={() => setHint(true)} disabled={!heroTurn || hint}>
-              💡 Какой фигурой? (1 очко)
+              💡 {t("Какой фигурой? (1 очко)", "Qaysi dona bilan? (1 ochko)")}
             </Button>
             <Button size="sm" variant="ghost" onClick={onExit}>
-              Выйти
+              {t("Выйти", "Chiqish")}
             </Button>
           </div>
         )}
         <p className="text-sm text-muted">
-          Точно как в партии — 3 очка, с подсказкой — 1. Если ход другой, но сильный — робот-тренер тоже даст 1 очко.
+          {t(
+            "Точно как в партии — 3 очка, с подсказкой — 1. Если ход другой, но сильный — робот-тренер тоже даст 1 очко.",
+            "Partiyadagidek yursang — 3 ochko, maslahat bilan — 1 ochko. Boshqa, lekin kuchli yurish qilsang ham robot-murabbiy 1 ochko beradi.",
+          )}
         </p>
       </aside>
     </section>

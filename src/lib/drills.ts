@@ -44,6 +44,8 @@ export interface ReadTask {
   uci: string;
   /** Запись хода по-русски: «Кf3», «Сxc6+», «0-0». */
   notation: string;
+  /** Международная запись того же хода («Nf3») — из неё интерфейс собирает запись на своём языке. */
+  san: string;
 }
 
 /** Позиция из нескольких случайных ходов и ход в ней, который надо прочитать и сделать. Чаще — ходы фигурами. */
@@ -72,9 +74,9 @@ export function readTask(rnd: () => number): ReadTask {
     const pieces = withSan.filter((m) => /^[KQRBNO]/.test(m.san));
     const pool = pieces.length && rnd() < 0.75 ? pieces : withSan;
     const m = pool[Math.floor(rnd() * pool.length)];
-    return { fen, uci: m.u, notation: ruSan(m.san) };
+    return { fen, uci: m.u, notation: ruSan(m.san), san: m.san };
   }
-  return { fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", uci: "g1f3", notation: "Кf3" };
+  return { fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", uci: "g1f3", notation: "Кf3", san: "Nf3" };
 }
 
 /** Верно ли сделан ход из задания (превращение — любое, если записи совпадают). */

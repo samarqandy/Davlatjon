@@ -1,5 +1,8 @@
+"use client";
+
 import { COLOR_HEX } from "@/content/meta";
 import type { Cell, ColorName } from "@/content/types";
+import { useT } from "@/lib/i18n";
 
 /** Реплики персонажей: значок, имя и «облачко» с тем, что сказано. */
 export function SpeechVisual({ items }: { items: { emoji: string; name: string; text: string }[] }) {
@@ -28,8 +31,9 @@ export function SpeechVisual({ items }: { items: { emoji: string; name: string; 
 
 /** Таблица кода: знак сверху, код снизу. */
 export function CodeTableVisual({ pairs }: { pairs: [string, string][] }) {
+  const t = useT();
   return (
-    <div className="flex flex-wrap gap-1" role="table" aria-label="Таблица кода">
+    <div className="flex flex-wrap gap-1" role="table" aria-label={t("Таблица кода", "Kod jadvali")}>
       {pairs.map(([sign, code]) => (
         <div
           key={sign}
@@ -54,6 +58,7 @@ export function StrokesVisual({
 }: {
   figures: { label: string; points: [number, number][]; lines: [number, number][] }[];
 }) {
+  const t = useT();
   const size = 120;
   const pad = 10;
   const k = (size - pad * 2) / 100;
@@ -66,7 +71,10 @@ export function StrokesVisual({
             height={size}
             viewBox={`0 0 ${size} ${size}`}
             role="img"
-            aria-label={`Фигура ${f.label}: ${f.lines.length} линий`}
+            aria-label={t(
+              `Фигура ${f.label}: ${f.lines.length} линий`,
+              `«${f.label}» shakl: ${f.lines.length} ta chiziq`,
+            )}
           >
             {f.lines.map(([a, b], i) => (
               <line
@@ -101,6 +109,7 @@ export function ChessboardVisual({
   rows: number;
   pieces: { cell: Cell; emoji: string }[];
 }) {
+  const t = useT();
   const s = 52;
   return (
     <svg
@@ -108,7 +117,7 @@ export function ChessboardVisual({
       height={rows * s + 6}
       viewBox={`-3 -3 ${cols * s + 6} ${rows * s + 6}`}
       role="img"
-      aria-label={`Доска ${cols} на ${rows} клетки`}
+      aria-label={t(`Доска ${cols} на ${rows} клетки`, `${cols}×${rows} katakli taxta`)}
     >
       <rect x={-3} y={-3} width={cols * s + 6} height={rows * s + 6} rx={6} fill="#7c5a33" />
       {Array.from({ length: rows }, (_, r) =>
@@ -148,6 +157,7 @@ export function CellGridVisual({
   rows: number;
   rects: { col: number; row: number; w: number; h: number; color: ColorName }[];
 }) {
+  const t = useT();
   const s = 40;
   return (
     <svg
@@ -155,7 +165,10 @@ export function CellGridVisual({
       height={rows * s + 6}
       viewBox={`-3 -3 ${cols * s + 6} ${rows * s + 6}`}
       role="img"
-      aria-label={`Клетчатое поле ${cols} на ${rows} с ${rects.length} прямоугольниками`}
+      aria-label={t(
+        `Клетчатое поле ${cols} на ${rows} с ${rects.length} прямоугольниками`,
+        `${cols}×${rows} katakli maydon, unda ${rects.length} ta toʻgʻri toʻrtburchak`,
+      )}
     >
       {rects.map((r, i) => (
         <rect

@@ -4,8 +4,9 @@ import Link from "next/link";
 import { useState } from "react";
 import { Feedback, type FeedbackState } from "@/components/answers/Feedback";
 import { Button, ButtonLink, cn } from "@/components/ui";
-import { legalTargets, pieceAt, playMove, ruSan, type Color } from "@/lib/chess";
+import { legalTargets, pieceAt, playMove, type Color } from "@/lib/chess";
 import { isAlmostBest } from "@/lib/engine/analysis";
+import { sanFor, tFor, useLang, useSan, useT, type Lang } from "@/lib/i18n";
 import { chessOwnPuzzleSolved, useHydrated, useStore, type ChessGameRecord } from "@/lib/store";
 import { setHash } from "@/lib/useHash";
 import { ChessBoard, type SquareMark } from "./ChessBoard";
@@ -23,21 +24,26 @@ export interface OwnPuzzle {
   kind: "mistake" | "blunder";
 }
 
-/** Ошибки и зевки из разобранных партий — позиция перед ошибкой становится задачей «найди ход сильнее». */
-export function ownPuzzles(games: readonly ChessGameRecord[]): OwnPuzzle[] {
+/**
+ * Ошибки и зевки из разобранных партий — позиция перед ошибкой становится задачей «найди ход сильнее».
+ * Название и запись ходов — на языке lang.
+ */
+export function ownPuzzles(games: readonly ChessGameRecord[], lang: Lang = "ru"): OwnPuzzle[] {
+  const t = tFor(lang);
   const out: OwnPuzzle[] = [];
   for (const g of games) {
     for (const m of g.analysis?.moments ?? []) {
       if (g.mode === "robot" && m.side !== g.color) continue;
+      const move = Math.ceil(m.ply / 2);
       out.push({
         key: `${g.id}:${m.ply}`,
         gameId: g.id,
-        title: `${gameTitle(g)}, ход ${Math.ceil(m.ply / 2)}`,
+        title: t(`${gameTitle(g)}, ход ${move}`, `${gameTitle(g, lang)}, ${move}-yurish`),
         fen: m.fen,
         side: m.side,
-        played: ruSan(m.san),
+        played: sanFor(lang, m.san),
         best: m.best,
-        bestSan: ruSan(m.bestSan),
+        bestSan: sanFor(lang, m.bestSan),
         kind: m.kind,
       });
     }
@@ -47,9 +53,11 @@ export function ownPuzzles(games: readonly ChessGameRecord[]): OwnPuzzle[] {
 
 export function OwnPuzzlesView() {
   const hydrated = useHydrated();
+  const t = useT();
+  const lang = useLang();
   const games = useStore((s) => s.chessGames);
   const solved = useStore((s) => s.chessOwnPuzzles);
-  const list = hydrated ? ownPuzzles(games) : [];
+  const list = hydrated ? ownPuzzles(games, lang) : [];
   const firstOpen = Math.max(
     0,
     list.findIndex((p) => !solved[p.key]),
@@ -66,38 +74,46 @@ export function OwnPuzzlesView() {
         onClick={() => setHash("#all")}
         className="text-sm font-extrabold text-brand hover:underline"
       >
-        ← Все задачи
+        ← {t("Все задачи", "Barcha masalalar")}
       </button>
       <header>
-        <h1 className="text-2xl font-black">🧩 Задачи из твоих партий</h1>
+        <h1 className="text-2xl font-black">🧩 {t("Задачи из твоих партий", "Oʻz partiyalaringdan masalalar")}</h1>
         <p className="text-muted">
-          Робот-тренер нашёл в твоих партиях моменты, где был ход сильнее. Найди его сейчас — тогда в следующей партии
-          ты его не пропустишь.
+          {t(
+            "Робот-тренер нашёл в твоих партиях моменты, где был ход сильнее. Найди его сейчас — тогда в следующей партии ты его не пропустишь.",
+            "Robot-murabbiy partiyalaringda kuchliroq yurish bor boʻlgan lahzalarni topdi. Oʻsha yurishni hozir top — keyingi partiyada uni qoʻldan boy bermaysan.",
+          )}
         </p>
       </header>
       {!hydrated ? null : list.length === 0 ? (
         <div className="rounded-3xl bg-white p-6 text-center shadow-card">
-          <p className="text-lg font-black">Пока задач нет.</p>
+          <p className="text-lg font-black">{t("Пока задач нет.", "Hozircha masala yoʻq.")}</p>
           <p className="mt-1 text-muted">
-            Сыграй партию с роботом и открой её разбор — ошибки из разобранных партий появятся здесь.
+            {t(
+              "Сыграй партию с роботом и открой её разбор — ошибки из разобранных партий появятся здесь.",
+              "Robot bilan partiya oʻyna va uning tahlilini och — tahlil qilingan partiyalardagi xatolar shu yerda paydo boʻladi.",
+            )}
           </p>
           <div className="mt-3 flex flex-wrap justify-center gap-2">
-            <ButtonLink href="/chess/play">Играть</ButtonLink>
+            <ButtonLink href="/chess/play">{t("Играть", "Oʻynash")}</ButtonLink>
             <ButtonLink href="/chess/review" variant="secondary">
-              Разбор партий
+              {t("Разбор партий", "Partiyalar tahlili")}
             </ButtonLink>
           </div>
         </div>
       ) : (
         <>
-          <div className="flex flex-wrap items-center gap-1.5" aria-label="Задачи">
+          <div className="flex flex-wrap items-center gap-1.5" aria-label={t("Задачи", "Masalalar")}>
             {list.map((p, k) => (
               <button
                 key={p.key}
                 type="button"
                 onClick={() => setIndex(k)}
                 aria-current={k === i ? "step" : undefined}
-                aria-label={`Задача ${k + 1}${solved[p.key] ? " (решена)" : ""}`}
+                aria-label={t(
+                  `Задача ${k + 1}${solved[p.key] ? " (решена)" : ""}`,
+                  `${k + 1}-masala${solved[p.key] ? " (yechilgan)" : ""}`,
+                )}
                 className={cn(
                   "h-10 min-w-10 rounded-xl border-2 px-2 font-black",
                   k === i
@@ -111,7 +127,7 @@ export function OwnPuzzlesView() {
               </button>
             ))}
             <span className="ml-auto text-sm font-extrabold text-muted">
-              Решено {done} из {list.length}
+              {t(`Решено ${done} из ${list.length}`, `Yechildi: ${done} / ${list.length}`)}
             </span>
           </div>
           {puzzle && (
@@ -128,6 +144,8 @@ export function OwnPuzzlesView() {
 }
 
 function OwnPuzzleBoard({ puzzle, onNext }: { puzzle: OwnPuzzle; onNext?: () => void }) {
+  const t = useT();
+  const san = useSan();
   const [selected, setSelected] = useState<string | null>(null);
   const [misses, setMisses] = useState(0);
   const [shown, setShown] = useState(puzzle.fen);
@@ -147,12 +165,18 @@ function OwnPuzzleBoard({ puzzle, onNext }: { puzzle: OwnPuzzle; onNext?: () => 
         tone: "success",
         text:
           played.uci === puzzle.best
-            ? `${ruSan(played.san)} — точно! 🎉`
-            : `${ruSan(played.san)} — тоже сильный ход! 🎉`,
+            ? t(`${san(played.san)} — точно! 🎉`, `${san(played.san)} — aynan shu! 🎉`)
+            : t(`${san(played.san)} — тоже сильный ход! 🎉`, `${san(played.san)} — bu ham kuchli yurish! 🎉`),
         sub:
           played.uci === puzzle.best
-            ? `В партии было ${puzzle.played} — теперь ты знаешь, как лучше.`
-            : `Робот-тренер предлагал ${puzzle.bestSan}, но твой ход почти так же хорош.`,
+            ? t(
+                `В партии было ${puzzle.played} — теперь ты знаешь, как лучше.`,
+                `Partiyada ${puzzle.played} yurilgan edi — endi qanday qilish yaxshiroq ekanini bilasan.`,
+              )
+            : t(
+                `Робот-тренер предлагал ${puzzle.bestSan}, но твой ход почти так же хорош.`,
+                `Robot-murabbiy ${puzzle.bestSan} yurishni taklif qilgan edi, lekin sening yurishing ham deyarli shunchalik yaxshi.`,
+              ),
       });
     } else {
       const n = misses + 1;
@@ -161,11 +185,17 @@ function OwnPuzzleBoard({ puzzle, onNext }: { puzzle: OwnPuzzle; onNext?: () => 
         tone: "retry",
         text:
           n === 1
-            ? "Есть ход сильнее. Подумай ещё!"
+            ? t("Есть ход сильнее. Подумай ещё!", "Bundan kuchliroq yurish bor. Yana oʻylab koʻr!")
             : n === 2
-              ? "Подсвечена фигура, которой нужно ходить."
-              : "Зелёная стрелка показывает ход.",
-        sub: n === 1 ? "Проверь шахи, взятия и угрозы — свои и соперника." : undefined,
+              ? t("Подсвечена фигура, которой нужно ходить.", "Qaysi dona yurishi kerakligi belgilab qoʻyildi.")
+              : t("Зелёная стрелка показывает ход.", "Yashil strelka yurishni koʻrsatib turibdi."),
+        sub:
+          n === 1
+            ? t(
+                "Проверь шахи, взятия и угрозы — свои и соперника.",
+                "Shoh berish, urib olish va tahdidlarni tekshir — oʻzingnikini ham, raqibnikini ham.",
+              )
+            : undefined,
       });
       setTimeout(() => setShown(puzzle.fen), 700);
     }
@@ -186,7 +216,7 @@ function OwnPuzzleBoard({ puzzle, onNext }: { puzzle: OwnPuzzle; onNext?: () => 
   if (misses >= 2 && !done) marks[puzzle.best.slice(0, 2)] = "hint";
   if (selected) {
     marks[selected] = "selected";
-    for (const t of legalTargets(puzzle.fen, selected)) marks[t] = pieceAt(puzzle.fen, t) ? "capture" : "target";
+    for (const sq of legalTargets(puzzle.fen, selected)) marks[sq] = pieceAt(puzzle.fen, sq) ? "capture" : "target";
   }
 
   return (
@@ -213,11 +243,16 @@ function OwnPuzzleBoard({ puzzle, onNext }: { puzzle: OwnPuzzle; onNext?: () => 
         <div className="rounded-2xl bg-white p-4 shadow-card">
           <p className="text-xs font-extrabold tracking-wide text-muted uppercase">{puzzle.title}</p>
           <p className="mt-1 text-lg font-black">
-            Ходят {puzzle.side === "w" ? "белые" : "чёрные"}. Найди ход сильнее!
+            {t(
+              `Ходят ${puzzle.side === "w" ? "белые" : "чёрные"}. Найди ход сильнее!`,
+              `${puzzle.side === "w" ? "Oqlar" : "Qoralar"} yuradi. Kuchliroq yurishni top!`,
+            )}
           </p>
           <p className="mt-1 text-sm text-muted">
-            В партии было сыграно {puzzle.played} — это была{" "}
-            {puzzle.kind === "blunder" ? "грубая ошибка (зевок)" : "ошибка"}.
+            {t(
+              `В партии было сыграно ${puzzle.played} — это была ${puzzle.kind === "blunder" ? "грубая ошибка (зевок)" : "ошибка"}.`,
+              `Partiyada ${puzzle.played} yurilgan edi — bu ${puzzle.kind === "blunder" ? "qoʻpol xato" : "xato"} edi.`,
+            )}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -225,11 +260,11 @@ function OwnPuzzleBoard({ puzzle, onNext }: { puzzle: OwnPuzzle; onNext?: () => 
             href={`/chess/review#${puzzle.gameId}`}
             className="rounded-xl px-3 py-2 text-sm font-extrabold text-brand hover:bg-brand-soft"
           >
-            🔎 Разбор этой партии
+            🔎 {t("Разбор этой партии", "Shu partiya tahlili")}
           </Link>
           {onNext && (
             <Button size="sm" onClick={onNext}>
-              Следующая задача →
+              {t("Следующая задача →", "Keyingi masala →")}
             </Button>
           )}
         </div>

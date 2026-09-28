@@ -5,8 +5,9 @@ import { Feedback, type FeedbackState } from "@/components/answers/Feedback";
 import { Button, cn } from "@/components/ui";
 import type { Cell, Dir, RobotPuzzle as RobotPuzzleSpec } from "@/content/types";
 import { askExplain, praise, retrySub } from "@/lib/feedback";
+import { useLang, useT } from "@/lib/i18n";
 import { plural, pluralize } from "@/lib/plural";
-import { ARROW, DIR_NAME, compress, isFree, parseMap, sameCell, step as stepCell, type RobotMap } from "@/lib/robot";
+import { ARROW, compress, dirName, isFree, parseMap, sameCell, step as stepCell, type RobotMap } from "@/lib/robot";
 import { addFound, markSolved, recordCheck, saveTaskInput, useTask } from "@/lib/store";
 import { RobotBoard } from "./RobotBoard";
 
@@ -49,6 +50,8 @@ export function RobotPuzzle({
   hintsLeft: boolean;
 }) {
   const map = useMemo(() => parseMap(puzzle.map), [puzzle.map]);
+  const t = useT();
+  const lang = useLang();
   const progress = useTask(taskId);
   const saved = progress.input?.program as Dir[] | undefined;
   const editable = puzzle.mode !== "trace";
@@ -131,8 +134,14 @@ export function RobotPuzzle({
       recordCheck(taskId, false);
       setFeedback({
         tone: "retry",
-        text: `Ой! На шаге ${ex.pc + 1} робот ${outside ? "вышел бы за край поля" : "упёрся в стену"}.`,
-        sub: "Давай проверим эту команду. Можно нажимать «Шаг», чтобы выполнять программу по одной команде.",
+        text: t(
+          `Ой! На шаге ${ex.pc + 1} робот ${outside ? "вышел бы за край поля" : "упёрся в стену"}.`,
+          `Voy! ${ex.pc + 1}-qadamda robot ${outside ? "maydondan chiqib ketardi" : "devorga urilib qoldi"}.`,
+        ),
+        sub: t(
+          "Давай проверим эту команду. Можно нажимать «Шаг», чтобы выполнять программу по одной команде.",
+          "Qani, shu buyruqni tekshirib koʻramiz. «Qadam» tugmasini bossang, dastur buyruqlarni bittalab bajaradi.",
+        ),
       });
       return;
     }
@@ -141,7 +150,11 @@ export function RobotPuzzle({
 
     if (!reached) {
       recordCheck(taskId, false);
-      setFeedback({ tone: "retry", text: "Робот остановился, но не у флажка.", sub: retrySub(n, hintsLeft) });
+      setFeedback({
+        tone: "retry",
+        text: t("Робот остановился, но не у флажка.", "Robot toʻxtadi, lekin bayroqcha yonida emas."),
+        sub: retrySub(n, hintsLeft, lang),
+      });
       return;
     }
 
@@ -149,8 +162,14 @@ export function RobotPuzzle({
       recordCheck(taskId, false);
       setFeedback({
         tone: "retry",
-        text: `Робот у флажка, но собрал не все звёзды: ${ex.collected.length} из ${map.stars.length}.`,
-        sub: "Какую звезду он пропустил? Как изменить маршрут?",
+        text: t(
+          `Робот у флажка, но собрал не все звёзды: ${ex.collected.length} из ${map.stars.length}.`,
+          `Robot bayroqchaga yetib keldi, lekin hamma yulduzchani yigʻmadi: ${map.stars.length} tadan ${ex.collected.length} tasi.`,
+        ),
+        sub: t(
+          "Какую звезду он пропустил? Как изменить маршрут?",
+          "Qaysi yulduzchani tashlab ketdi? Yoʻlni qanday oʻzgartirsa boʻladi?",
+        ),
       });
       return;
     }
@@ -160,15 +179,21 @@ export function RobotPuzzle({
         recordCheck(taskId, true);
         setFeedback({
           tone: "success",
-          text: `${praise(n)} Робот у флажка!`,
-          sub: `Ошибка найдена и исправлена. ${askExplain(n)}`,
+          text: `${praise(n, lang)} ${t("Робот у флажка!", "Robot bayroqchaga yetib keldi!")}`,
+          sub: `${t("Ошибка найдена и исправлена.", "Xato topildi va tuzatildi.")} ${askExplain(n, lang)}`,
         });
       } else {
         recordCheck(taskId, false);
         setFeedback({
           tone: "info",
-          text: `Робот у флажка! Но изменено команд: ${changes}.`,
-          sub: "А можно исправить всего одну команду? Нажми «Как было» и найди первую ошибку.",
+          text: t(
+            `Робот у флажка! Но изменено команд: ${changes}.`,
+            `Robot bayroqchaga yetib keldi! Lekin ${changes} ta buyruq oʻzgardi.`,
+          ),
+          sub: t(
+            "А можно исправить всего одну команду? Нажми «Как было» и найди первую ошибку.",
+            "Faqat bitta buyruqni tuzatib koʻra olasanmi? «Asl holiga» tugmasini bos va birinchi xatoni top.",
+          ),
         });
       }
       return;
@@ -178,8 +203,11 @@ export function RobotPuzzle({
       if (len !== puzzle.optimal) {
         setFeedback({
           tone: "retry",
-          text: `Робот дошёл за ${pluralize(len, "шаг", "шага", "шагов")}.`,
-          sub: `Нужен короткий путь — ровно ${pluralize(puzzle.optimal ?? 0, "шаг", "шага", "шагов")}.`,
+          text: t(`Робот дошёл за ${pluralize(len, "шаг", "шага", "шагов")}.`, `Robot ${len} qadamda yetib bordi.`),
+          sub: t(
+            `Нужен короткий путь — ровно ${pluralize(puzzle.optimal ?? 0, "шаг", "шага", "шагов")}.`,
+            `Eng qisqa yoʻl kerak — roppa-rosa ${puzzle.optimal ?? 0} qadam.`,
+          ),
         });
         return;
       }
@@ -188,8 +216,11 @@ export function RobotPuzzle({
       if (found.includes(key)) {
         setFeedback({
           tone: "info",
-          text: "Такой путь уже есть в списке.",
-          sub: "Найди другой! Попробуй поменять порядок стрелок.",
+          text: t("Такой путь уже есть в списке.", "Bu yoʻl roʻyxatda allaqachon bor."),
+          sub: t(
+            "Найди другой! Попробуй поменять порядок стрелок.",
+            "Boshqasini top! Strelkalar tartibini almashtirib koʻr.",
+          ),
         });
         return;
       }
@@ -197,12 +228,16 @@ export function RobotPuzzle({
       const total = found.length + 1;
       if (total >= (puzzle.pathsCount ?? Infinity)) {
         markSolved(taskId);
-        setFeedback({ tone: "success", text: `Ты нашёл все пути: ${total}! 🏆`, sub: "Как доказать, что других нет?" });
+        setFeedback({
+          tone: "success",
+          text: t(`Ты нашёл все пути: ${total}! 🏆`, `Hamma yoʻllarni topding: ${total} ta! 🏆`),
+          sub: t("Как доказать, что других нет?", "Boshqa yoʻl yoʻqligini qanday isbotlaysan?"),
+        });
       } else {
         setFeedback({
           tone: "success",
-          text: `Новый путь! Найдено путей: ${total}.`,
-          sub: "Есть ли ещё? Ищи по порядку.",
+          text: t(`Новый путь! Найдено путей: ${total}.`, `Yangi yoʻl! Topilgan yoʻllar: ${total} ta.`),
+          sub: t("Есть ли ещё? Ищи по порядку.", "Yana bormi? Tartib bilan izla."),
         });
       }
       return;
@@ -212,17 +247,31 @@ export function RobotPuzzle({
     recordCheck(taskId, true);
     addFound(taskId, `len:${len}`);
     const best = puzzle.optimal;
+    const collect = puzzle.mode === "collect";
+    const atFlag = {
+      ru: `Робот у ${collect ? "флажка со всеми звёздами" : "флажка"}!`,
+      uz: `Robot ${collect ? "hamma yulduzchani yigʻib, bayroqchaga" : "bayroqchaga"} yetib keldi!`,
+    };
     if (best !== undefined && len <= best) {
       setFeedback({
         tone: "success",
-        text: `${praise(n)} Робот у ${puzzle.mode === "collect" ? "флажка со всеми звёздами" : "флажка"}!`,
-        sub: `Программа из ${pluralize(len, "команды", "команд", "команд")} — короче не бывает. ${askExplain(n)}`,
+        text: `${praise(n, lang)} ${t(atFlag.ru, atFlag.uz)}`,
+        sub: `${t(
+          `Программа из ${pluralize(len, "команды", "команд", "команд")} — короче не бывает.`,
+          `${len} ta buyruqdan iborat dastur — bundan qisqasi boʻlmaydi.`,
+        )} ${askExplain(n, lang)}`,
       });
     } else {
       setFeedback({
         tone: "success",
-        text: `Робот у ${puzzle.mode === "collect" ? "флажка со всеми звёздами" : "флажка"}! Программа из ${pluralize(len, "команды", "команд", "команд")}.`,
-        sub: "А можно короче? Попробуй найти программу покороче.",
+        text: t(
+          `${atFlag.ru} Программа из ${pluralize(len, "команды", "команд", "команд")}.`,
+          `${atFlag.uz} Dastur ${len} ta buyruqdan iborat.`,
+        ),
+        sub: t(
+          "А можно короче? Попробуй найти программу покороче.",
+          "Bundan qisqaroq qilsa boʻladimi? Qisqaroq dastur topib koʻr.",
+        ),
       });
     }
   };
@@ -278,11 +327,18 @@ export function RobotPuzzle({
     const n = attempts.current++;
     setFeedback(
       correct
-        ? { tone: "success", text: praise(n), sub: "А теперь запусти робота и проверь себя!" }
+        ? {
+            tone: "success",
+            text: praise(n, lang),
+            sub: t("А теперь запусти робота и проверь себя!", "Endi robotni ishga tushir va oʻzingni tekshirib koʻr!"),
+          }
         : {
             tone: "retry",
-            text: "Давай проверим твою идею!",
-            sub: "Запусти робота и посмотри, где он остановится. Где разошлись твой путь и путь робота?",
+            text: t("Давай проверим твою идею!", "Qani, fikringni tekshirib koʻramiz!"),
+            sub: t(
+              "Запусти робота и посмотри, где он остановится. Где разошлись твой путь и путь робота?",
+              "Robotni ishga tushir va qayerda toʻxtashini kuzat. Sening yoʻling bilan robotning yoʻli qayerda ajralib ketdi?",
+            ),
           },
     );
   };
@@ -308,19 +364,30 @@ export function RobotPuzzle({
           <div>
             <div className="mb-1.5 flex items-center justify-between gap-2">
               <span className="text-sm font-extrabold text-muted">
-                Программа
-                {program.length > 0 && ` · ${program.length} ${plural(program.length, "команда", "команды", "команд")}`}
+                {t("Программа", "Dastur")}
+                {program.length > 0 &&
+                  t(
+                    ` · ${program.length} ${plural(program.length, "команда", "команды", "команд")}`,
+                    ` · ${program.length} ta buyruq`,
+                  )}
               </span>
               {puzzle.mode === "debug" && (
-                <span className="text-xs font-bold text-muted">Нажми на команду, чтобы заменить её</span>
+                <span className="text-xs font-bold text-muted">
+                  {t("Нажми на команду, чтобы заменить её", "Almashtirish uchun buyruqni bos")}
+                </span>
               )}
             </div>
             <div
               className="flex min-h-14 flex-wrap items-center gap-1.5 rounded-2xl border-2 border-dashed border-brand/30 bg-white p-2"
-              aria-label="Программа робота"
+              aria-label={t("Программа робота", "Robot dasturi")}
             >
               {program.length === 0 && (
-                <span className="px-2 text-sm text-muted">Нажимай стрелки ниже — команды появятся здесь</span>
+                <span className="px-2 text-sm text-muted">
+                  {t(
+                    "Нажимай стрелки ниже — команды появятся здесь",
+                    "Pastdagi strelkalarni bos — buyruqlar shu yerda paydo boʻladi",
+                  )}
+                </span>
               )}
               {program.map((d, i) => {
                 const active = running || exec.pc > 0 ? i === exec.pc - 1 : false;
@@ -341,7 +408,7 @@ export function RobotPuzzle({
                       active && "ring-4 ring-brand/40",
                       exec.crash && i === exec.pc && "border-rose bg-rose/10",
                     )}
-                    aria-label={`Команда ${i + 1}: ${DIR_NAME[d]}`}
+                    aria-label={t(`Команда ${i + 1}: ${dirName(d)}`, `${i + 1}-buyruq: ${dirName(d, "uz")}`)}
                   >
                     {ARROW[d]}
                   </button>
@@ -350,14 +417,14 @@ export function RobotPuzzle({
             </div>
             {program.length > 1 && (
               <p className="mt-1.5 text-sm text-muted">
-                Короткая запись: <span className="font-extrabold text-ink">{shortForm}</span>
+                {t("Короткая запись:", "Qisqa yozuv:")} <span className="font-extrabold text-ink">{shortForm}</span>
               </p>
             )}
           </div>
 
           {editable && (
             <div className="flex flex-wrap items-center gap-2">
-              <div className="grid grid-cols-3 gap-1.5" role="group" aria-label="Стрелки">
+              <div className="grid grid-cols-3 gap-1.5" role="group" aria-label={t("Стрелки", "Strelkalar")}>
                 <span />
                 <ArrowButton dir="U" onPress={press} disabled={running} />
                 <span />
@@ -374,15 +441,15 @@ export function RobotPuzzle({
                       onClick={backspace}
                       disabled={running || program.length === 0}
                     >
-                      ⌫ Стереть
+                      ⌫ {t("Стереть", "Oʻchirish")}
                     </Button>
                     <Button variant="ghost" size="sm" onClick={clear} disabled={running || program.length === 0}>
-                      Очистить
+                      {t("Очистить", "Tozalash")}
                     </Button>
                   </>
                 ) : (
                   <Button variant="secondary" size="sm" onClick={clear} disabled={running || changes === 0}>
-                    ↺ Как было
+                    ↺ {t("Как было", "Asl holiga")}
                   </Button>
                 )}
               </div>
@@ -391,7 +458,7 @@ export function RobotPuzzle({
 
           {puzzle.mode === "trace" && (
             <div className="space-y-2 rounded-2xl bg-white p-3 shadow-card">
-              <p className="font-bold">Какой предмет найдёт робот?</p>
+              <p className="font-bold">{t("Какой предмет найдёт робот?", "Robot qaysi narsani topadi?")}</p>
               <div className="flex flex-wrap gap-2">
                 {map.items.map((it) => {
                   const lg = puzzle.legend?.[it.key];
@@ -414,7 +481,7 @@ export function RobotPuzzle({
                 })}
               </div>
               <Button onClick={checkTrace} disabled={!traceChoice}>
-                Ответить
+                {t("Ответить", "Javob berish")}
               </Button>
             </div>
           )}
@@ -425,17 +492,20 @@ export function RobotPuzzle({
               onClick={run}
               disabled={running || program.length === 0 || (puzzle.mode === "trace" && !traceAnswered)}
             >
-              ▶ {puzzle.mode === "trace" ? "Запустить и проверить" : "Запустить"}
+              ▶{" "}
+              {puzzle.mode === "trace"
+                ? t("Запустить и проверить", "Ishga tushirib tekshirish")
+                : t("Запустить", "Ishga tushirish")}
             </Button>
             <Button
               variant="secondary"
               onClick={stepOnce}
               disabled={running || program.length === 0 || (puzzle.mode === "trace" && !traceAnswered)}
             >
-              Шаг ⏭
+              {t("Шаг ⏭", "Qadam ⏭")}
             </Button>
             <Button variant="ghost" onClick={resetExec} disabled={exec.pc === 0 && !exec.crash}>
-              ↺ На старт
+              ↺ {t("На старт", "Boshiga")}
             </Button>
           </div>
         </div>
@@ -445,7 +515,9 @@ export function RobotPuzzle({
 
       {puzzle.mode === "paths" && found.length > 0 && (
         <div className="rounded-2xl bg-white p-3 shadow-card">
-          <p className="mb-2 text-sm font-extrabold text-muted">Найденные пути: {found.length}</p>
+          <p className="mb-2 text-sm font-extrabold text-muted">
+            {t(`Найденные пути: ${found.length}`, `Topilgan yoʻllar: ${found.length}`)}
+          </p>
           <div className="flex flex-wrap gap-2">
             {found.map((k) => (
               <span
@@ -463,13 +535,14 @@ export function RobotPuzzle({
 }
 
 function ArrowButton({ dir, onPress, disabled }: { dir: Dir; onPress: (d: Dir) => void; disabled?: boolean }) {
+  const lang = useLang();
   return (
     <button
       type="button"
       onClick={() => onPress(dir)}
       disabled={disabled}
       className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand text-2xl font-black text-white shadow-[0_3px_0_0_#3730a3] transition active:translate-y-[2px] active:shadow-[0_1px_0_0_#3730a3] disabled:opacity-40"
-      aria-label={DIR_NAME[dir]}
+      aria-label={dirName(dir, lang)}
     >
       {ARROW[dir]}
     </button>

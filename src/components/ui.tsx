@@ -1,7 +1,8 @@
 import Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
-import { LEVELS, SECTIONS } from "@/content/meta";
+import { levelsFor, sectionsFor } from "@/content/meta";
 import type { Level, SectionId } from "@/content/types";
+import type { Lang } from "@/lib/lang";
 
 export function cn(...classes: (string | false | null | undefined)[]): string {
   return classes.filter(Boolean).join(" ");
@@ -56,13 +57,14 @@ export function Card({ className, children, ...props }: ComponentProps<"div">) {
   );
 }
 
-export function LevelBadge({ level, compact = false }: { level: Level; compact?: boolean }) {
-  const meta = LEVELS[level];
+/** Модуль общий для серверных и клиентских страниц, поэтому язык передаётся явно (по умолчанию — русский). */
+export function LevelBadge({ level, compact = false, lang = "ru" }: { level: Level; compact?: boolean; lang?: Lang }) {
+  const meta = levelsFor(lang)[level];
   return (
     <span
       className="inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-sm font-bold"
       style={{ color: meta.color, borderColor: `${meta.color}55`, background: `${meta.color}12` }}
-      title={`Уровень: ${meta.name} — ${meta.about}`}
+      title={`${lang === "uz" ? "Daraja" : "Уровень"}: ${meta.name} — ${meta.about}`}
     >
       <span aria-hidden>{meta.emoji}</span>
       {!compact && meta.name}
@@ -70,8 +72,16 @@ export function LevelBadge({ level, compact = false }: { level: Level; compact?:
   );
 }
 
-export function SectionTag({ section, className }: { section: SectionId; className?: string }) {
-  const meta = SECTIONS[section];
+export function SectionTag({
+  section,
+  className,
+  lang = "ru",
+}: {
+  section: SectionId;
+  className?: string;
+  lang?: Lang;
+}) {
+  const meta = sectionsFor(lang)[section];
   return (
     <span
       className={cn("inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-extrabold", className)}

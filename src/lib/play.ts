@@ -2,6 +2,7 @@
 import { Chess } from "chess.js";
 import { legalMoves, parseFen, sqName, WHITE } from "./engine/board";
 import { PAWN_BATTLE_FEN, gameResult, insufficientMaterial, pawnBattleResult } from "./engine/search";
+import { tFor, type Lang } from "./lang";
 import { random } from "./random";
 
 export type PlayMode = "robot" | "two" | "pawns" | "endgame";
@@ -39,6 +40,27 @@ export const ENDGAMES: EndgameVariant[] = [
     target: 10,
   },
 ];
+
+/** Названия и описания тренировок мата по-узбекски. */
+const ENDGAMES_UZ: Record<string, { name: string; about: string }> = {
+  kq: {
+    name: "Farzin bilan mot",
+    about: "Shoh va farzin yolgʻiz shohga qarshi. Shohni chetga siqib bor va mot qil — faqat pat boʻlib qolmasin!",
+  },
+  kr: {
+    name: "Rux bilan mot",
+    about: "Shoh va rux yolgʻiz shohga qarshi. Bu yerda shohsiz ish bitmaydi: rux yolgʻiz oʻzi mot qila olmaydi.",
+  },
+  krr: {
+    name: "Ikki rux bilan mot",
+    about: "Ikki rux «narvon» usulida mot qiladi — shohning yordami shart emas.",
+  },
+};
+
+/** Название и описание тренировки мата на нужном языке. */
+export function endgameText(v: EndgameVariant, lang: Lang = "ru"): { name: string; about: string } {
+  return lang === "uz" ? (ENDGAMES_UZ[v.id] ?? v) : v;
+}
 
 const FILES = "abcdefgh";
 
@@ -80,27 +102,53 @@ export interface PlayStatus {
   /** Кто победил: w, b или draw. */
   winner?: "w" | "b" | "draw";
   reason?: string;
+  /** Партия закончилась матом (по этому признаку, а не по тексту, радуемся мату). */
+  mate?: boolean;
 }
 
 /** Закончилась ли партия и почему. positions — все позиции партии для правила троекратного повторения. */
-export function playStatus(mode: PlayMode, fen: string, positions: readonly string[]): PlayStatus {
+export function playStatus(mode: PlayMode, fen: string, positions: readonly string[], lang: Lang = "ru"): PlayStatus {
+  const t = tFor(lang);
   const pos = parseFen(fen);
   if (mode === "pawns") {
     const r = pawnBattleResult(pos);
     return r
-      ? { over: true, winner: r, reason: r === "w" ? "Пешка белых дошла до края!" : "Пешка чёрных дошла до края!" }
+      ? {
+          over: true,
+          winner: r,
+          reason:
+            r === "w"
+              ? t("Пешка белых дошла до края!", "Oqlarning piyodasi chetga yetib bordi!")
+              : t("Пешка чёрных дошла до края!", "Qoralarning piyodasi chetga yetib bordi!"),
+        }
       : { over: false };
   }
   const result = gameResult(pos);
-  if (result === "w" || result === "b") return { over: true, winner: result, reason: "Мат!" };
+  if (result === "w" || result === "b") return { over: true, winner: result, reason: t("Мат!", "Mot!"), mate: true };
   if (result === "draw") {
-    if (legalMoves(pos).length === 0) return { over: true, winner: "draw", reason: "Пат — ничья." };
-    if (insufficientMaterial(pos)) return { over: true, winner: "draw", reason: "Ничья: мат уже не поставить." };
-    return { over: true, winner: "draw", reason: "Ничья: 50 ходов без взятий и ходов пешками." };
+    if (legalMoves(pos).length === 0) return { over: true, winner: "draw", reason: t("Пат — ничья.", "Pat — durang.") };
+    if (insufficientMaterial(pos))
+      return {
+        over: true,
+        winner: "draw",
+        reason: t("Ничья: мат уже не поставить.", "Durang: endi hech kim mot qila olmaydi."),
+      };
+    return {
+      over: true,
+      winner: "draw",
+      reason: t(
+        "Ничья: 50 ходов без взятий и ходов пешками.",
+        "Durang: 50 yurish davomida hech narsa urilmadi va piyodalar yurmadi.",
+      ),
+    };
   }
   const key = fen.split(" ").slice(0, 4).join(" ");
   if (positions.filter((p) => p.split(" ").slice(0, 4).join(" ") === key).length >= 3)
-    return { over: true, winner: "draw", reason: "Ничья: позиция повторилась три раза." };
+    return {
+      over: true,
+      winner: "draw",
+      reason: t("Ничья: позиция повторилась три раза.", "Durang: pozitsiya uch marta takrorlandi."),
+    };
   return { over: false };
 }
 
@@ -146,12 +194,18 @@ export interface Odds {
   piece: OddsPiece;
 }
 
-export const ODDS_PIECES: { id: OddsPiece; label: string; square: { w: string; b: string } }[] = [
-  { id: "q", label: "без ферзя", square: { w: "d1", b: "d8" } },
-  { id: "r", label: "без ладьи", square: { w: "a1", b: "a8" } },
-  { id: "n", label: "без коня", square: { w: "b1", b: "b8" } },
-  { id: "p", label: "без пешки f", square: { w: "f2", b: "f7" } },
+export const ODDS_PIECES: { id: OddsPiece; label: string; labelUz: string; square: { w: string; b: string } }[] = [
+  { id: "q", label: "без ферзя", labelUz: "farzinsiz", square: { w: "d1", b: "d8" } },
+  { id: "r", label: "без ладьи", labelUz: "ruxsiz", square: { w: "a1", b: "a8" } },
+  { id: "n", label: "без коня", labelUz: "otsiz", square: { w: "b1", b: "b8" } },
+  { id: "p", label: "без пешки f", labelUz: "f piyodasiz", square: { w: "f2", b: "f7" } },
 ];
+
+/** «без ферзя» / «farzinsiz» — подпись форы на нужном языке. */
+export function oddsPieceLabel(piece: string | undefined, lang: Lang = "ru"): string {
+  const meta = ODDS_PIECES.find((o) => o.id === piece);
+  return (lang === "uz" ? meta?.labelUz : meta?.label) ?? "";
+}
 
 /** Начальная позиция, из которой убрана фигура стороны side (фора). Рокировку с убранной ладьёй запрещаем. */
 export function withOdds(fen: string, odds: Odds): string {
@@ -169,9 +223,9 @@ export function withOdds(fen: string, odds: Odds): string {
   return [packed, turn, rights || "-", ...rest].join(" ");
 }
 
-export function oddsLabel(odds: Odds): string {
-  const meta = ODDS_PIECES.find((o) => o.id === odds.piece);
-  return `${odds.side === "w" ? "белые" : "чёрные"} ${meta?.label ?? ""}`;
+export function oddsLabel(odds: Odds, lang: Lang = "ru"): string {
+  const side = lang === "uz" ? (odds.side === "w" ? "oqlar" : "qoralar") : odds.side === "w" ? "белые" : "чёрные";
+  return `${side} ${oddsPieceLabel(odds.piece, lang)}`;
 }
 
 export interface ClockSetting {
@@ -189,8 +243,8 @@ export const CLOCKS: ClockSetting[] = [
   { id: "15_10", base: 15, inc: 10 },
 ];
 
-export function clockLabel(c: ClockSetting): string {
-  return `${c.base} мин + ${c.inc} с`;
+export function clockLabel(c: ClockSetting, lang: Lang = "ru"): string {
+  return lang === "uz" ? `${c.base} daqiqa + ${c.inc} soniya` : `${c.base} мин + ${c.inc} с`;
 }
 
 /** Время на часах: «4:07», меньше 10 секунд — с десятыми: «8.3». */

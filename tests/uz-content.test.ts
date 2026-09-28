@@ -67,8 +67,8 @@ describe("узбекская программа занятий", () => {
     const week = WEEKS.find((w) => w.number === n)!;
     const uz = WEEKS_UZ[n];
     if (!uz?.title) return;
-    const { days: _days, ...head } = localizeWeek(week, "uz");
-    expect(cyrillicPaths(head)).toEqual([]);
+    const w = localizeWeek(week, "uz");
+    expect(cyrillicPaths({ title: w.title, subtitle: w.subtitle, goal: w.goal })).toEqual([]);
   });
 
   it.each(days.map((d) => d.id))("день %s: клетки карт и шифры согласованы с ответами", (id) => {
@@ -90,10 +90,30 @@ describe("узбекская программа занятий", () => {
     expect(cyrillicPaths(COLOR_NAME_UZ)).toEqual([]);
   });
 
-  it("методичка для родителя — без ошибок накладки", () => {
+  it("методичка и вопросы недельного обзора — по-узбекски", () => {
     const uz = guideFor("uz");
-    expect(uz.guide.length).toBeGreaterThan(0);
-    expect(uz.chain.length).toBeGreaterThan(0);
+    expect(cyrillicPaths(uz)).toEqual([]);
+    for (const w of WEEKS) expect(cyrillicPaths(localizeWeek(w, "uz").review), `week ${w.number}`).toEqual([]);
+  });
+
+  it("переведено всё: каждый день и каждая неделя", () => {
+    for (const d of days) expect(started(WEEKS_UZ[d.week]?.days[d.id]), d.id).toBe(true);
+    for (const w of WEEKS) {
+      const uz = localizeWeek(w, "uz");
+      expect(cyrillicPaths({ title: uz.title, subtitle: uz.subtitle, goal: uz.goal }), `week ${w.number}`).toEqual([]);
+    }
+  });
+});
+
+describe("узбекский шахматный контент — полнота", () => {
+  it("у каждой части и каждого уровня есть перевод", () => {
+    for (const part of Object.keys(CHESS_RU) as (keyof typeof CHESS_RU)[]) {
+      const needs = cyrillicPaths(CHESS_RU[part]).length > 0;
+      if (part === "levels") continue;
+      if (needs) expect(started(CHESS_UZ[part]), part).toBe(true);
+    }
+    for (const l of CHESS_RU.levels)
+      expect(started((CHESS_UZ.levels as Record<string, unknown>)[l.id]), l.id).toBe(true);
   });
 });
 

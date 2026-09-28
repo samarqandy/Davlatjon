@@ -4,11 +4,13 @@ import { useEffect, useRef, useState } from "react";
 import { Feedback, type FeedbackState } from "@/components/answers/Feedback";
 import { Button } from "@/components/ui";
 import type { ChessPuzzle } from "@/content/chess/puzzles";
-import { isInCheck, legalTargets, pieceAt, playMove, ruSan, type Color } from "@/lib/chess";
+import { isInCheck, legalTargets, pieceAt, playMove, type Color } from "@/lib/chess";
 import { matingMovesIn, searchBest } from "@/lib/engine/search";
+import { useSan, useT } from "@/lib/i18n";
 import { kingOf } from "@/lib/play";
 import { pluralize } from "@/lib/plural";
 import { chessPuzzleMiss, chessPuzzleSolved } from "@/lib/store";
+import { useChess } from "@/lib/useChess";
 import { ChessBoard, type SquareMark } from "./ChessBoard";
 
 const STARS = (n: number) => "⭐".repeat(n);
@@ -36,6 +38,11 @@ export function PuzzlePlayer({
   onFailed?: () => void;
   next?: { label: string; onClick: () => void };
 }) {
+  const t = useT();
+  const san = useSan();
+  // Тексты задачи — на языке интерфейса; задачи из партий ребёнка (их нет в списке) показываем как есть.
+  const { puzzles } = useChess();
+  const text = puzzles.find((p) => p.id === puzzle.id) ?? puzzle;
   const solver = puzzle.fen.split(" ")[1] as Color;
   const [step, setStep] = useState<Step>({ fen: puzzle.fen, matesLeft: puzzle.mateIn ?? 0 });
   const [shown, setShown] = useState(puzzle.fen);
@@ -68,15 +75,24 @@ export function PuzzlePlayer({
         chessPuzzleSolved(puzzle.id, misses === 0);
         setFeedback({
           tone: "success",
-          text: `${ruSan(played.san)}${played.mate ? " — мат!" : " — верно!"} ${misses === 0 ? "С первой попытки! 🎉" : ""}`,
-          sub: puzzle.explanation,
+          text: t(
+            `${san(played.san)}${played.mate ? " — мат!" : " — верно!"} ${misses === 0 ? "С первой попытки! 🎉" : ""}`,
+            `${san(played.san)}${played.mate ? " — mot!" : " — toʻgʻri!"} ${misses === 0 ? "Birinchi urinishdayoq! 🎉" : ""}`,
+          ),
+          sub: text.explanation,
         });
         onSolved?.(misses);
         return true;
       }
       // Соперник защищается, как может, и ход снова наш.
       setBusy(true);
-      setFeedback({ tone: "info", text: `${ruSan(played.san)} — верно! Соперник защищается…` });
+      setFeedback({
+        tone: "info",
+        text: t(
+          `${san(played.san)} — верно! Соперник защищается…`,
+          `${san(played.san)} — toʻgʻri! Raqib himoyalanyapti…`,
+        ),
+      });
       timer.current = setTimeout(() => {
         const reply = searchBest(played.fen, { depth: 2, timeMs: 400 }).uci;
         const after = reply ? playMove(played.fen, reply.slice(0, 2), reply.slice(2, 4), "q") : null;
@@ -87,8 +103,13 @@ export function PuzzlePlayer({
         setBusy(false);
         setFeedback({
           tone: "info",
-          text: after ? `Соперник ответил ${ruSan(after.san)}.` : "Твой ход.",
-          sub: left === 1 ? "Теперь поставь мат!" : `Осталось ${pluralize(left, "ход", "хода", "ходов")} до мата.`,
+          text: after
+            ? t(`Соперник ответил ${san(after.san)}.`, `Raqib ${san(after.san)} bilan javob berdi.`)
+            : t("Твой ход.", "Navbat senda."),
+          sub:
+            left === 1
+              ? t("Теперь поставь мат!", "Endi mot qil!")
+              : t(`Осталось ${pluralize(left, "ход", "хода", "ходов")} до мата.`, `Motgacha ${left} yurish qoldi.`),
         });
       }, 700);
       return true;
@@ -104,13 +125,16 @@ export function PuzzlePlayer({
     setFeedback({
       tone: "retry",
       text: played.mate
-        ? "Это мат, но задача была другая — впрочем, засчитано!"
+        ? t(
+            "Это мат, но задача была другая — впрочем, засчитано!",
+            "Bu ham mot, garchi masalada boshqa yechim kutilgan boʻlsa-da — hisobga olindi!",
+          )
         : n === 1
-          ? "Пока не то. Попробуй ещё раз."
+          ? t("Пока не то. Попробуй ещё раз.", "Hali toʻgʻri emas — yana oʻylab koʻr.")
           : n === 2
-            ? "Ещё не то. Загляни в подсказку ниже."
-            : "Подсвечена фигура, которой нужно ходить.",
-      sub: n >= 2 ? puzzle.hint : undefined,
+            ? t("Ещё не то. Загляни в подсказку ниже.", "Bu ham emas. Pastdagi maslahatga qarab koʻr.")
+            : t("Подсвечена фигура, которой нужно ходить.", "Qaysi dona yurishi kerakligi belgilab qoʻyildi."),
+      sub: n >= 2 ? text.hint : undefined,
     });
     if (played.mate && step.matesLeft === 1) {
       // Любой мат в один ход — тоже решение.
@@ -151,17 +175,17 @@ export function PuzzlePlayer({
   if (hintFrom && !done) marks[hintFrom] = "hint";
   if (selected) {
     marks[selected] = "selected";
-    for (const t of legalTargets(step.fen, selected)) marks[t] = pieceAt(step.fen, t) ? "capture" : "target";
+    for (const sq of legalTargets(step.fen, selected)) marks[sq] = pieceAt(step.fen, sq) ? "capture" : "target";
   }
 
   const goal =
     puzzle.mateIn === 1
-      ? "Поставь мат в 1 ход"
+      ? t("Поставь мат в 1 ход", "1 yurishda mot qil")
       : puzzle.mateIn === 2
-        ? "Поставь мат в 2 хода"
+        ? t("Поставь мат в 2 хода", "2 yurishda mot qil")
         : puzzle.mateIn === 3
-          ? "Поставь мат в 3 хода"
-          : "Найди лучший ход";
+          ? t("Поставь мат в 3 хода", "3 yurishda mot qil")
+          : t("Найди лучший ход", "Eng yaxshi yurishni top");
 
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
@@ -182,12 +206,18 @@ export function PuzzlePlayer({
       <aside className="space-y-3">
         <div className="rounded-2xl bg-white p-4 shadow-card">
           <p className="text-xs font-extrabold tracking-wide text-muted uppercase">
-            {STARS(puzzle.stars)} · {solver === "w" ? "ходят белые" : "ходят чёрные"}
+            {STARS(puzzle.stars)} ·{" "}
+            {solver === "w" ? t("ходят белые", "oqlar yuradi") : t("ходят чёрные", "qoralar yuradi")}
           </p>
-          <h2 className="mt-1 text-xl font-black">{puzzle.title}</h2>
+          <h2 className="mt-1 text-xl font-black">{text.title}</h2>
           <p className="mt-1 text-lg font-bold text-brand-dark">{goal}</p>
-          {puzzle.source && <p className="mt-1 text-xs text-muted">{puzzle.source}</p>}
-          <p className="mt-2 text-sm text-muted">Нажми на фигуру, потом на клетку — или перетащи фигуру.</p>
+          {text.source && <p className="mt-1 text-xs text-muted">{text.source}</p>}
+          <p className="mt-2 text-sm text-muted">
+            {t(
+              "Нажми на фигуру, потом на клетку — или перетащи фигуру.",
+              "Avval donani, keyin katakni bos — yoki donani sudrab olib bor.",
+            )}
+          </p>
         </div>
         {!done && misses < 2 && (
           <Button
@@ -195,10 +225,10 @@ export function PuzzlePlayer({
             size="sm"
             onClick={() => {
               setMisses(2);
-              setFeedback({ tone: "info", text: "Подсказка", sub: puzzle.hint });
+              setFeedback({ tone: "info", text: t("Подсказка", "Maslahat"), sub: text.hint });
             }}
           >
-            💡 Подсказка
+            💡 {t("Подсказка", "Maslahat")}
           </Button>
         )}
         {done && next && (

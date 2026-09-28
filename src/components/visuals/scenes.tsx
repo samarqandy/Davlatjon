@@ -1,5 +1,8 @@
-import { COLOR_HEX, COLOR_NAME_RU } from "@/content/meta";
+"use client";
+
+import { COLOR_HEX, colorName } from "@/content/meta";
 import type { ColorName } from "@/content/types";
+import { useLang, useT } from "@/lib/i18n";
 
 function HouseIcon({ color }: { color: string }) {
   return (
@@ -42,6 +45,7 @@ const TILT_DEG = 9;
 const TILT_DY = 11;
 
 function Scale({ left, right, tilt }: { left: string[]; right: string[]; tilt?: "left" | "right" }) {
+  const t = useT();
   const w = 280;
   const dy = tilt === "left" ? TILT_DY : tilt === "right" ? -TILT_DY : 0;
   const pan = (cx: number, items: string[], shift: number) => (
@@ -54,12 +58,13 @@ function Scale({ left, right, tilt }: { left: string[]; right: string[]; tilt?: 
       </text>
     </g>
   );
-  const label =
-    tilt === "left"
-      ? `Весы: ${left.join(" ")} тяжелее, чем ${right.join(" ")}`
-      : tilt === "right"
-        ? `Весы: ${right.join(" ")} тяжелее, чем ${left.join(" ")}`
-        : `Весы: ${left.join(" ")} = ${right.join(" ")}`;
+  const [heavy, light] = tilt === "right" ? [right, left] : [left, right];
+  const label = tilt
+    ? t(
+        `Весы: ${heavy.join(" ")} тяжелее, чем ${light.join(" ")}`,
+        `Tarozi: ${heavy.join(" ")} ogʻirroq, ${light.join(" ")} yengilroq`,
+      )
+    : t(`Весы: ${left.join(" ")} = ${right.join(" ")}`, `Tarozi: ${left.join(" ")} = ${right.join(" ")}`);
   return (
     <svg width={w} height={172} viewBox={`0 -8 ${w} 172`} role="img" aria-label={label}>
       <polygon points={`${w / 2 - 34},156 ${w / 2 + 34},156 ${w / 2},130`} fill="#9ca3af" />
@@ -115,21 +120,23 @@ function PantsIcon({ color }: { color: string }) {
 }
 
 export function OutfitsVisual({ shirts, pants }: { shirts: ColorName[]; pants: ColorName[] }) {
+  const t = useT();
+  const lang = useLang();
   const row = (title: string, colors: ColorName[], Icon: typeof ShirtIcon) => (
     <div className="flex flex-wrap items-center gap-3">
       <span className="w-20 text-sm font-extrabold text-muted">{title}</span>
       {colors.map((c) => (
         <div key={c} className="flex flex-col items-center rounded-2xl border border-line bg-white px-2 pt-2 pb-1">
           <Icon color={COLOR_HEX[c]} />
-          <span className="text-xs font-bold text-muted">{COLOR_NAME_RU[c]}</span>
+          <span className="text-xs font-bold text-muted">{colorName(c, lang)}</span>
         </div>
       ))}
     </div>
   );
   return (
     <div className="flex flex-col gap-3">
-      {row("Футболки", shirts, ShirtIcon)}
-      {row("Брюки", pants, PantsIcon)}
+      {row(t("Футболки", "Futbolkalar"), shirts, ShirtIcon)}
+      {row(t("Брюки", "Shimlar"), pants, PantsIcon)}
     </div>
   );
 }
@@ -143,6 +150,7 @@ export function DecisionTreeVisual({
   second: string;
   boxes: [string, string, string, string];
 }) {
+  const t = useT();
   const W = 520;
   const node = (x: number, y: number, text: string, w = 190) => (
     <g>
@@ -152,7 +160,7 @@ export function DecisionTreeVisual({
       </text>
     </g>
   );
-  const edge = (x1: number, y1: number, x2: number, y2: number, label: string) => (
+  const edge = (x1: number, y1: number, x2: number, y2: number, yes: boolean) => (
     <g>
       <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="#4f46e5" strokeWidth="2.5" markerEnd="url(#dt-arrow)" />
       <rect x={(x1 + x2) / 2 - 22} y={(y1 + y2) / 2 - 13} width={44} height={24} rx={8} fill="#fff" stroke="#c7d2fe" />
@@ -162,9 +170,9 @@ export function DecisionTreeVisual({
         textAnchor="middle"
         fontSize="16"
         fontWeight="800"
-        fill={label === "Да" ? "#047857" : "#b91c1c"}
+        fill={yes ? "#047857" : "#b91c1c"}
       >
-        {label}
+        {yes ? t("Да", "Ha") : t("Нет", "Yoʻq")}
       </text>
     </g>
   );
@@ -175,7 +183,10 @@ export function DecisionTreeVisual({
       viewBox={`0 0 ${W} 300`}
       className="max-w-[520px]"
       role="img"
-      aria-label={`Схема: ${first} Затем: ${second} Коробки ${boxes.join(", ")}`}
+      aria-label={t(
+        `Схема: ${first} Затем: ${second} Коробки ${boxes.join(", ")}`,
+        `Sxema: ${first} Keyin: ${second} Qutilar: ${boxes.join(", ")}`,
+      )}
     >
       <defs>
         <marker
@@ -190,12 +201,12 @@ export function DecisionTreeVisual({
           <path d="M 0 0 L 10 5 L 0 10 z" fill="#4f46e5" />
         </marker>
       </defs>
-      {edge(W / 2 - 40, 50, 150, 112, "Да")}
-      {edge(W / 2 + 40, 50, 370, 112, "Нет")}
-      {edge(110, 158, leafX[0], 218, "Да")}
-      {edge(190, 158, leafX[1], 218, "Нет")}
-      {edge(330, 158, leafX[2], 218, "Да")}
-      {edge(410, 158, leafX[3], 218, "Нет")}
+      {edge(W / 2 - 40, 50, 150, 112, true)}
+      {edge(W / 2 + 40, 50, 370, 112, false)}
+      {edge(110, 158, leafX[0], 218, true)}
+      {edge(190, 158, leafX[1], 218, false)}
+      {edge(330, 158, leafX[2], 218, true)}
+      {edge(410, 158, leafX[3], 218, false)}
       {node(W / 2, 30, first, 250)}
       {node(150, 136, second, 200)}
       {node(370, 136, second, 200)}
@@ -212,7 +223,7 @@ export function DecisionTreeVisual({
             strokeWidth="2"
           />
           <text x={leafX[i]} y={246} textAnchor="middle" fontSize="15" fontWeight="700" fill="#92400e">
-            Коробка
+            {t("Коробка", "Quti")}
           </text>
           <text x={leafX[i]} y={273} textAnchor="middle" fontSize="25" fontWeight="900" fill="#1d2140">
             {b}
@@ -234,6 +245,7 @@ export function CoordGridVisual({
   items: { cell: string; emoji: string; label: string }[];
   legend?: boolean;
 }) {
+  const t = useT();
   const s = 50;
   const offX = 30;
   const W = offX + cols.length * s + 6;
@@ -245,7 +257,13 @@ export function CoordGridVisual({
   };
   return (
     <div className="flex flex-wrap items-start gap-4">
-      <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Карта острова с клетками">
+      <svg
+        width={W}
+        height={H}
+        viewBox={`0 0 ${W} ${H}`}
+        role="img"
+        aria-label={t("Карта острова с клетками", "Kataklarga boʻlingan orol xaritasi")}
+      >
         <rect x={offX} y={4} width={cols.length * s} height={rows * s} rx={6} fill="#e0f2fe" />
         {Array.from({ length: rows }, (_, r) =>
           cols.map((_, c) => (
@@ -316,6 +334,7 @@ export function CoordGridVisual({
 const r2 = (n: number) => Math.round(n * 100) / 100;
 
 export function ClockVisual({ time, caption, mirror = false }: { time: string; caption?: string; mirror?: boolean }) {
+  const t = useT();
   const [h, m] = time.split(":").map(Number);
   const r = 64;
   const c = 72;
@@ -332,7 +351,11 @@ export function ClockVisual({ time, caption, mirror = false }: { time: string; c
         height={144}
         viewBox="0 0 144 144"
         role="img"
-        aria-label={mirror ? "Часы, отражённые в зеркале" : `Часы показывают ${time}`}
+        aria-label={
+          mirror
+            ? t("Часы, отражённые в зеркале", "Oynada aks etgan soat")
+            : t(`Часы показывают ${time}`, `Soat ${time} ni koʻrsatyapti`)
+        }
       >
         <g transform={mirror ? "translate(144 0) scale(-1 1)" : undefined}>
           <circle cx={c} cy={c} r={r + 4} fill="#fff" stroke="#1d2140" strokeWidth="4" />
@@ -378,11 +401,18 @@ export function ClockVisual({ time, caption, mirror = false }: { time: string; c
 }
 
 export function PoleVisual({ height, emoji }: { height: number; emoji: string }) {
+  const t = useT();
   const step = 30;
   const top = 18;
   const H = top + height * step + 22;
   return (
-    <svg width={150} height={H} viewBox={`0 0 150 ${H}`} role="img" aria-label={`Столб высотой ${height} метров`}>
+    <svg
+      width={150}
+      height={H}
+      viewBox={`0 0 150 ${H}`}
+      role="img"
+      aria-label={t(`Столб высотой ${height} метров`, `Balandligi ${height} metr boʻlgan ustun`)}
+    >
       <rect x={60} y={top} width={16} height={height * step} rx={4} fill="#d6b48a" stroke="#7c5a33" strokeWidth="2" />
       {Array.from({ length: height + 1 }, (_, i) => {
         const y = top + (height - i) * step;
@@ -390,7 +420,7 @@ export function PoleVisual({ height, emoji }: { height: number; emoji: string })
           <g key={i}>
             <line x1={54} y1={y} x2={82} y2={y} stroke="#7c5a33" strokeWidth="2" />
             <text x={46} y={y + 5} textAnchor="end" fontSize="14" fontWeight="800" fill="#1d2140">
-              {i} м
+              {i} {t("м", "m")}
             </text>
           </g>
         );
@@ -408,10 +438,13 @@ export function PoleVisual({ height, emoji }: { height: number; emoji: string })
 const CALC_KEYS = ["7", "8", "9", "×", "4", "5", "6", "−", "1", "2", "3", "+", "0", "(", ")", "="];
 
 export function CalculatorVisual({ broken, target }: { broken: string[]; target?: number }) {
+  const t = useT();
   return (
     <div className="inline-block rounded-3xl bg-[#1f2937] p-3 shadow-card">
       {target !== undefined && (
-        <p className="mb-2 text-center text-sm font-extrabold text-[#fde68a]">Нужно получить: {target}</p>
+        <p className="mb-2 text-center text-sm font-extrabold text-[#fde68a]">
+          {t(`Нужно получить: ${target}`, `${target} ni hosil qilish kerak`)}
+        </p>
       )}
       <div className="mb-2 rounded-xl bg-[#d9f99d] px-3 py-2 text-right font-mono text-2xl font-bold text-[#1a2e05]">
         0
@@ -430,7 +463,7 @@ export function CalculatorVisual({ broken, target }: { broken: string[]; target?
               {isBroken && (
                 <span
                   className="absolute inset-0 flex items-center justify-center text-2xl font-black text-[#ef4444]"
-                  aria-label="кнопка сломана"
+                  aria-label={t("кнопка сломана", "tugma buzilgan")}
                 >
                   ✕
                 </span>

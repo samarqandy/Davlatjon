@@ -34,7 +34,17 @@ export const SECRET_IDS = [
  * Какие записи уже есть по-узбекски. Пока записи нет, по-узбекски ничего не звучит —
  * русский диктор в узбекском интерфейсе был бы некстати.
  */
-export const UZ_CLIPS: ReadonlySet<string> = new Set<string>([]);
+export const UZ_CLIPS: ReadonlySet<string> = new Set<string>([
+  "welcome",
+  "praise-1",
+  "praise-2",
+  "praise-3",
+  "retry-1",
+  "retry-2",
+  "mate",
+  "legend-pawn",
+  "legend-knight",
+]);
 
 function clip(lang: Lang, name: string): string | undefined {
   if (lang === "ru") return `/audio/${name}.mp3`;

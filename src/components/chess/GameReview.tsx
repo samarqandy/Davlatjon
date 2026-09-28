@@ -3,20 +3,21 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Button, ButtonLink, cn, ProgressBar } from "@/components/ui";
-import { ruSan } from "@/lib/chess";
 import {
   KIND_META,
   analysisRecord,
   buildReview,
   evaluatePosition,
   gamePositions,
+  kindLabel,
   type GameReview,
   type MoveKind,
   type PlyReview,
   type PositionEval,
 } from "@/lib/engine/analysis";
-import { ROBOT_LEVELS } from "@/lib/engine/search";
-import { ODDS_PIECES, CLOCKS, clockLabel } from "@/lib/play";
+import { robotLevels } from "@/lib/engine/search";
+import { tFor, useLang, useSan, useT, type Lang, type T } from "@/lib/i18n";
+import { ODDS_PIECES, CLOCKS, clockLabel, oddsPieceLabel } from "@/lib/play";
 import { gamePgn } from "@/lib/pgn";
 import { pluralize } from "@/lib/plural";
 import { saveChessAnalysis, useHydrated, useStore, type ChessGameRecord } from "@/lib/store";
@@ -24,17 +25,28 @@ import { setHash, useHash } from "@/lib/useHash";
 import { ChessBoard, type SquareMark } from "./ChessBoard";
 
 const RESULT = { win: "победа", loss: "поражение", draw: "ничья" } as const;
+const RESULT_UZ = { win: "gʻalaba", loss: "magʻlubiyat", draw: "durang" } as const;
 
-export function gameTitle(g: ChessGameRecord): string {
-  if (g.mode === "two") return "Партия вдвоём";
-  if (g.mode === "robot") return `Робот «${ROBOT_LEVELS[(g.level ?? 1) - 1]?.name ?? ""}»`;
-  if (g.mode === "pawns") return "Пешечный бой";
-  return "Тренировка мата";
+export function gameTitle(g: ChessGameRecord, lang: Lang = "ru"): string {
+  const t = tFor(lang);
+  if (g.mode === "two") return t("Партия вдвоём", "Ikki kishilik partiya");
+  if (g.mode === "robot") {
+    const name = robotLevels(lang)[(g.level ?? 1) - 1]?.name ?? "";
+    return t(`Робот «${name}»`, `Robot «${name}»`);
+  }
+  if (g.mode === "pawns") return t("Пешечный бой", "Piyodalar jangi");
+  return t("Тренировка мата", "Mot qilish mashqi");
 }
 
-function gameResultText(g: ChessGameRecord): string {
-  if (g.mode === "two") return g.winner === "draw" ? "ничья" : g.winner === "b" ? "победили чёрные" : "победили белые";
-  return RESULT[g.result];
+function gameResultText(g: ChessGameRecord, lang: Lang = "ru"): string {
+  const t = tFor(lang);
+  if (g.mode === "two")
+    return g.winner === "draw"
+      ? t("ничья", "durang")
+      : g.winner === "b"
+        ? t("победили чёрные", "qoralar yutdi")
+        : t("победили белые", "oqlar yutdi");
+  return lang === "uz" ? RESULT_UZ[g.result] : RESULT[g.result];
 }
 
 /** Можно ли разобрать партию: есть ходы и это обычные шахматы. */
@@ -42,17 +54,21 @@ export function canReview(g: ChessGameRecord): boolean {
   return (g.mode === "robot" || g.mode === "two") && !!g.start && !!g.ucis && g.ucis.length > 1;
 }
 
-const reviewCache = new WeakMap<ChessGameRecord, GameReview | null>();
+const reviewCache: Record<Lang, WeakMap<ChessGameRecord, GameReview | null>> = { ru: new WeakMap(), uz: new WeakMap() };
 
-/** Готовый разбор из сохранённых оценок, если они есть. */
-export function cachedReview(g: ChessGameRecord): GameReview | null {
-  if (reviewCache.has(g)) return reviewCache.get(g)!;
+/**
+ * Готовый разбор из сохранённых оценок, если они есть. В хранилище лежат только оценки и лучшие ходы,
+ * а объяснения ошибок собираются здесь — на языке интерфейса.
+ */
+export function cachedReview(g: ChessGameRecord, lang: Lang = "ru"): GameReview | null {
+  const cache = reviewCache[lang];
+  if (cache.has(g)) return cache.get(g)!;
   let review: GameReview | null = null;
   if (g.analysis && g.start && g.ucis && g.analysis.evals.length === g.ucis.length + 1) {
     const evals: PositionEval[] = g.analysis.evals.map((score, i) => ({ score, best: g.analysis!.best[i] }));
-    review = buildReview(g.start, g.ucis, evals);
+    review = buildReview(g.start, g.ucis, evals, lang);
   }
-  reviewCache.set(g, review);
+  cache.set(g, review);
   return review;
 }
 
@@ -73,32 +89,47 @@ function dateText(at: number): string {
 
 function ReviewList({ notFound }: { notFound: boolean }) {
   const hydrated = useHydrated();
+  const t = useT();
+  const lang = useLang();
   const games = useStore((s) => s.chessGames);
   const list = hydrated ? games.filter(canReview) : [];
   return (
     <div className="space-y-6">
       <Link href="/chess" className="inline-flex items-center gap-1 text-sm font-extrabold text-brand hover:underline">
-        ← Шахматная школа
+        ← {t("Шахматная школа", "Shaxmat maktabi")}
       </Link>
       <header>
-        <p className="text-sm font-extrabold tracking-wide text-brand uppercase">Разбор партий</p>
-        <h1 className="text-3xl font-black">Робот-тренер смотрит твои партии</h1>
+        <p className="text-sm font-extrabold tracking-wide text-brand uppercase">
+          {t("Разбор партий", "Partiyalar tahlili")}
+        </p>
+        <h1 className="text-3xl font-black">
+          {t("Робот-тренер смотрит твои партии", "Robot-murabbiy partiyalaringni koʻrib chiqadi")}
+        </h1>
         <p className="mt-1 max-w-2xl text-muted">
-          После каждой партии робот проверяет все ходы: где был лучший ход, где неточность, а где фигура осталась под
-          боем. Он объясняет ошибки простыми словами и делает из них задачи — чтобы в следующий раз ты их нашёл сам.
+          {t(
+            "После каждой партии робот проверяет все ходы: где был лучший ход, где неточность, а где фигура осталась под боем. Он объясняет ошибки простыми словами и делает из них задачи — чтобы в следующий раз ты их нашёл сам.",
+            "Har bir partiyadan keyin robot barcha yurishlarni tekshiradi: qayerda eng yaxshi yurish boʻlgan, qayerda noaniqlik, qayerda esa dona zarba ostida qolgan. U xatolarni oddiy soʻzlar bilan tushuntiradi va ulardan masala tuzadi — keyingi safar ularni oʻzing topishing uchun.",
+          )}
         </p>
       </header>
       {notFound && (
-        <p className="rounded-2xl bg-sun-soft px-4 py-3 font-semibold">Такой партии нет на этом устройстве.</p>
+        <p className="rounded-2xl bg-sun-soft px-4 py-3 font-semibold">
+          {t("Такой партии нет на этом устройстве.", "Bu qurilmada bunday partiya yoʻq.")}
+        </p>
       )}
       {hydrated && list.length === 0 ? (
         <div className="rounded-3xl bg-white p-6 text-center shadow-card">
           <p className="text-5xl" aria-hidden>
             🤖
           </p>
-          <p className="mt-2 text-lg font-black">Сыграй партию с роботом или вдвоём — и её можно будет разобрать.</p>
+          <p className="mt-2 text-lg font-black">
+            {t(
+              "Сыграй партию с роботом или вдвоём — и её можно будет разобрать.",
+              "Robot bilan yoki ikki kishi boʻlib partiya oʻyna — keyin uni tahlil qilsa boʻladi.",
+            )}
+          </p>
           <ButtonLink href="/chess/play" className="mt-3">
-            Играть
+            {t("Играть", "Oʻynash")}
           </ButtonLink>
         </div>
       ) : (
@@ -118,25 +149,29 @@ function ReviewList({ notFound }: { notFound: boolean }) {
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block font-black">
-                      {gameTitle(g)} · {gameResultText(g)}
+                      {gameTitle(g, lang)} · {gameResultText(g, lang)}
                     </span>
                     <span className="block text-sm text-muted">
-                      {dateText(g.at)} · {pluralize(Math.ceil(g.ucis!.length / 2), "ход", "хода", "ходов")}
-                      {g.mode === "robot" && ` · ты ${g.color === "w" ? "белыми" : "чёрными"}`}
+                      {dateText(g.at)} · {movesText(t, Math.ceil(g.ucis!.length / 2))}
+                      {g.mode === "robot" &&
+                        t(
+                          ` · ты ${g.color === "w" ? "белыми" : "чёрными"}`,
+                          ` · sen ${g.color === "w" ? "oqlar" : "qoralar"} bilan`,
+                        )}
                     </span>
                   </span>
                   <span className="text-right text-sm font-extrabold">
                     {mine !== null ? (
                       <>
                         <span className="block text-2xl text-brand-dark">{mine}%</span>
-                        точность
+                        {t("точность", "aniqlik")}
                       </>
                     ) : acc ? (
                       <span className="text-brand-dark">
                         {acc.w}% / {acc.b}%
                       </span>
                     ) : (
-                      <span className="text-brand">Разобрать →</span>
+                      <span className="text-brand">{t("Разобрать →", "Tahlil qilish →")}</span>
                     )}
                   </span>
                 </button>
@@ -149,9 +184,15 @@ function ReviewList({ notFound }: { notFound: boolean }) {
   );
 }
 
+/** «12 ходов» / «12 ta yurish». */
+function movesText(t: T, n: number): string {
+  return t(pluralize(n, "ход", "хода", "ходов"), `${n} ta yurish`);
+}
+
 /** Оценки считаются по одной позиции за раз, чтобы страница не зависала. */
 function useAnalysis(game: ChessGameRecord): { review: GameReview | null; done: number; total: number } {
-  const cached = useMemo(() => cachedReview(game), [game]);
+  const lang = useLang();
+  const cached = useMemo(() => cachedReview(game, lang), [game, lang]);
   const fens = useMemo(() => gamePositions(game.start!, game.ucis!), [game.start, game.ucis]);
   const [evals, setEvals] = useState<PositionEval[]>([]);
   const complete = !cached && evals.length === fens.length;
@@ -163,8 +204,8 @@ function useAnalysis(game: ChessGameRecord): { review: GameReview | null; done: 
   }, [cached, evals, fens]);
 
   const fresh = useMemo(
-    () => (complete ? buildReview(game.start!, game.ucis!, evals) : null),
-    [complete, evals, game.start, game.ucis],
+    () => (complete ? buildReview(game.start!, game.ucis!, evals, lang) : null),
+    [complete, evals, game.start, game.ucis, lang],
   );
 
   useEffect(() => {
@@ -175,6 +216,8 @@ function useAnalysis(game: ChessGameRecord): { review: GameReview | null; done: 
 }
 
 function ReviewView({ game }: { game: ChessGameRecord }) {
+  const t = useT();
+  const lang = useLang();
   const { review, done, total } = useAnalysis(game);
   const [ply, setPly] = useState(0);
   const sides: ("w" | "b")[] = game.mode === "two" ? ["w", "b"] : [game.color];
@@ -183,19 +226,32 @@ function ReviewView({ game }: { game: ChessGameRecord }) {
   return (
     <div className="space-y-5">
       <button type="button" onClick={() => setHash("")} className="text-sm font-extrabold text-brand hover:underline">
-        ← Все мои партии
+        ← {t("Все мои партии", "Barcha partiyalarim")}
       </button>
       <header>
-        <p className="text-sm font-extrabold tracking-wide text-brand uppercase">Разбор партии · {dateText(game.at)}</p>
+        <p className="text-sm font-extrabold tracking-wide text-brand uppercase">
+          {t("Разбор партии", "Partiya tahlili")} · {dateText(game.at)}
+        </p>
         <h1 className="text-3xl font-black">
-          {gameTitle(game)} · {gameResultText(game)}
+          {gameTitle(game, lang)} · {gameResultText(game, lang)}
         </h1>
         <p className="font-bold text-muted">
-          {hero && `Ты играл ${hero === "w" ? "белыми" : "чёрными"} · `}
-          {pluralize(Math.ceil(game.ucis!.length / 2), "ход", "хода", "ходов")}
+          {hero &&
+            t(
+              `Ты играл ${hero === "w" ? "белыми" : "чёрными"} · `,
+              `Sen ${hero === "w" ? "oqlar" : "qoralar"} bilan oʻynading · `,
+            )}
+          {movesText(t, Math.ceil(game.ucis!.length / 2))}
           {game.odds &&
-            ` · фора: ${game.odds[0] === "w" ? "белые" : "чёрные"} ${ODDS_PIECES.find((o) => o.id === game.odds![1])?.label ?? ""}`}
-          {game.clock && ` · часы ${clockLabel(CLOCKS.find((c) => c.id === game.clock) ?? CLOCKS[0])}`}
+            t(
+              ` · фора: ${game.odds[0] === "w" ? "белые" : "чёрные"} ${ODDS_PIECES.find((o) => o.id === game.odds![1])?.label ?? ""}`,
+              ` · fora: ${game.odds[0] === "w" ? "oqlar" : "qoralar"} ${oddsPieceLabel(game.odds[1], lang)}`,
+            )}
+          {game.clock &&
+            t(
+              ` · часы ${clockLabel(CLOCKS.find((c) => c.id === game.clock) ?? CLOCKS[0])}`,
+              ` · soat: ${clockLabel(CLOCKS.find((c) => c.id === game.clock) ?? CLOCKS[0], lang)}`,
+            )}
         </p>
       </header>
 
@@ -203,9 +259,11 @@ function ReviewView({ game }: { game: ChessGameRecord }) {
 
       {!review ? (
         <div className="rounded-3xl bg-white p-6 shadow-card" aria-live="polite">
-          <p className="text-lg font-black">🤖 Робот-тренер смотрит партию…</p>
+          <p className="text-lg font-black">
+            🤖 {t("Робот-тренер смотрит партию…", "Robot-murabbiy partiyani koʻrib chiqyapti…")}
+          </p>
           <p className="text-sm text-muted">
-            Проверено позиций: {done} из {total}
+            {t(`Проверено позиций: ${done} из ${total}`, `Tekshirilgan pozitsiyalar: ${done} / ${total}`)}
           </p>
           <ProgressBar value={done} max={total} className="mt-3" />
         </div>
@@ -233,6 +291,9 @@ function ReviewBody({
   ply: number;
   setPly: (p: number) => void;
 }) {
+  const t = useT();
+  const lang = useLang();
+  const san = useSan();
   const total = review.plies.length;
   const cur: PlyReview | undefined = review.plies[ply - 1];
   const fen = cur ? cur.fenAfter : game.start!;
@@ -252,13 +313,17 @@ function ReviewBody({
 
   return (
     <>
-      <section className={cn("grid gap-3", sides.length > 1 && "md:grid-cols-2")} aria-label="Точность">
+      <section className={cn("grid gap-3", sides.length > 1 && "md:grid-cols-2")} aria-label={t("Точность", "Aniqlik")}>
         {sides.map((side) => {
           const s = review.sides[side];
           return (
             <div key={side} className="rounded-3xl bg-white p-5 shadow-card">
               <p className="text-sm font-extrabold text-muted">
-                {hero ? "Твоя точность" : side === "w" ? "Точность белых" : "Точность чёрных"}
+                {hero
+                  ? t("Твоя точность", "Sening aniqliging")
+                  : side === "w"
+                    ? t("Точность белых", "Oqlarning aniqligi")
+                    : t("Точность чёрных", "Qoralarning aniqligi")}
               </p>
               <p className="text-4xl font-black text-brand-dark">{s.accuracy}%</p>
               <ul className="mt-2 flex flex-wrap gap-1.5 text-sm font-bold">
@@ -269,11 +334,11 @@ function ReviewBody({
                     style={{ color: KIND_META[k].color, background: `${KIND_META[k].color}14` }}
                   >
                     {KIND_META[k].mark && `${KIND_META[k].mark} `}
-                    {KIND_META[k].label}: {s.counts[k]}
+                    {kindLabel(k, lang)}: {s.counts[k]}
                   </li>
                 ))}
               </ul>
-              <p className="mt-2 text-sm text-muted">{accuracyWords(s.accuracy)}</p>
+              <p className="mt-2 text-sm text-muted">{accuracyWords(s.accuracy, t)}</p>
             </div>
           );
         })}
@@ -292,10 +357,20 @@ function ReviewBody({
               showBest && cur?.best ? [{ from: cur.best.slice(0, 2), to: cur.best.slice(2, 4), color: "#10b981" }] : []
             }
             maxWidth={520}
-            label={cur ? `Позиция после хода ${ruSan(cur.san)}` : "Начальная позиция"}
+            label={
+              cur
+                ? t(`Позиция после хода ${san(cur.san)}`, `${san(cur.san)} yurishidan keyingi pozitsiya`)
+                : t("Начальная позиция", "Boshlangʻich pozitsiya")
+            }
           />
           <div className="flex flex-wrap items-center gap-1.5">
-            <Button variant="secondary" size="sm" onClick={() => setPly(0)} disabled={ply === 0} aria-label="В начало">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setPly(0)}
+              disabled={ply === 0}
+              aria-label={t("В начало", "Boshiga")}
+            >
               ⏮
             </Button>
             <Button
@@ -303,19 +378,24 @@ function ReviewBody({
               size="sm"
               onClick={() => setPly(ply - 1)}
               disabled={ply === 0}
-              aria-label="Ход назад"
+              aria-label={t("Ход назад", "Bir yurish orqaga")}
             >
               ◀
             </Button>
-            <Button size="sm" onClick={() => setPly(ply + 1)} disabled={ply === total} aria-label="Ход вперёд">
-              Дальше ▶
+            <Button
+              size="sm"
+              onClick={() => setPly(ply + 1)}
+              disabled={ply === total}
+              aria-label={t("Ход вперёд", "Bir yurish oldinga")}
+            >
+              {t("Дальше ▶", "Oldinga ▶")}
             </Button>
             <Button
               variant="secondary"
               size="sm"
               onClick={() => setPly(total)}
               disabled={ply === total}
-              aria-label="В конец"
+              aria-label={t("В конец", "Oxiriga")}
             >
               ⏭
             </Button>
@@ -324,12 +404,18 @@ function ReviewBody({
             </span>
           </div>
           <MoveComment cur={cur} hero={hero} />
+          <Link
+            href={`/chess/analysis#fen=${encodeURIComponent(fen)}`}
+            className="inline-flex items-center gap-1 text-sm font-extrabold text-brand hover:underline"
+          >
+            🧪 {t("Разобрать эту позицию на доске анализа", "Bu pozitsiyani tahlil taxtasida koʻrib chiqish")}
+          </Link>
         </div>
         <aside className="rounded-2xl bg-white p-3 shadow-card">
-          <p className="mb-2 text-sm font-extrabold text-muted">Ходы партии</p>
+          <p className="mb-2 text-sm font-extrabold text-muted">{t("Ходы партии", "Partiya yurishlari")}</p>
           <ol
             className="grid max-h-[460px] grid-cols-[auto_1fr_1fr] gap-x-2 gap-y-0.5 overflow-y-auto text-[0.95rem]"
-            aria-label="Ходы с оценками"
+            aria-label={t("Ходы с оценками", "Baholangan yurishlar")}
           >
             {Array.from({ length: Math.ceil(total / 2) }, (_, i) => (
               <li key={i} className="contents">
@@ -349,7 +435,7 @@ function ReviewBody({
                       )}
                       style={p === ply || !meta.mark ? undefined : { color: meta.color }}
                     >
-                      {ruSan(r.san)}
+                      {san(r.san)}
                       {meta.mark && r.kind !== "mate" ? meta.mark : ""}
                     </button>
                   );
@@ -362,11 +448,11 @@ function ReviewBody({
 
       <section aria-labelledby="moments-h">
         <h2 id="moments-h" className="mb-3 text-2xl font-black">
-          🎯 Главные моменты
+          🎯 {t("Главные моменты", "Muhim lahzalar")}
         </h2>
         {moments.length === 0 ? (
           <p className="rounded-2xl bg-mint-soft px-4 py-3 font-semibold">
-            Серьёзных ошибок не найдено — отличная партия! 🎉
+            {t("Серьёзных ошибок не найдено — отличная партия! 🎉", "Jiddiy xato topilmadi — ajoyib partiya! 🎉")}
           </p>
         ) : (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -384,10 +470,10 @@ function ReviewBody({
                   className="text-xs font-extrabold tracking-wide uppercase"
                   style={{ color: KIND_META[m.kind].color }}
                 >
-                  Ход {Math.ceil(m.ply / 2)} · {KIND_META[m.kind].label}
+                  {t(`Ход ${Math.ceil(m.ply / 2)}`, `${Math.ceil(m.ply / 2)}-yurish`)} · {kindLabel(m.kind, lang)}
                 </p>
                 <p className="font-black">
-                  {ruSan(m.san)} → лучше {m.bestSan ? ruSan(m.bestSan) : "—"}
+                  {san(m.san)} → {t("лучше", "yaxshisi")} {m.bestSan ? san(m.bestSan) : "—"}
                 </p>
                 <p className="mt-1 line-clamp-3 text-sm text-muted">{m.reason}</p>
               </button>
@@ -396,7 +482,7 @@ function ReviewBody({
         )}
         {moments.some((m) => m.kind !== "inaccuracy") && (
           <ButtonLink href="/chess/puzzles#mine" variant="sun" className="mt-3">
-            🧩 Реши эти моменты как задачи
+            🧩 {t("Реши эти моменты как задачи", "Bu lahzalarni masala sifatida yech")}
           </ButtonLink>
         )}
       </section>
@@ -404,29 +490,51 @@ function ReviewBody({
   );
 }
 
-function accuracyWords(a: number): string {
-  if (a >= 85) return "Играл как настоящий мастер!";
-  if (a >= 70) return "Очень хорошая партия — почти без ошибок.";
-  if (a >= 50) return "Хорошо! Посмотри главные моменты — там спрятаны уроки.";
-  return "Партия с приключениями. Разбери ошибки — и в следующий раз будет лучше.";
+function accuracyWords(a: number, t: T): string {
+  if (a >= 85) return t("Играл как настоящий мастер!", "Haqiqiy ustalarcha oʻyin!");
+  if (a >= 70) return t("Очень хорошая партия — почти без ошибок.", "Juda yaxshi partiya — deyarli xatosiz.");
+  if (a >= 50)
+    return t(
+      "Хорошо! Посмотри главные моменты — там спрятаны уроки.",
+      "Yaxshi! Muhim lahzalarni koʻrib chiq — ularda saboqlar yashiringan.",
+    );
+  return t(
+    "Партия с приключениями. Разбери ошибки — и в следующий раз будет лучше.",
+    "Sarguzashtlarga boy partiya. Xatolarni tahlil qil — keyingi safar yanada yaxshi chiqadi.",
+  );
 }
 
 function MoveComment({ cur, hero }: { cur: PlyReview | undefined; hero: "w" | "b" | null }) {
+  const t = useT();
+  const lang = useLang();
+  const san = useSan();
   if (!cur)
     return (
       <p className="rounded-2xl border-2 border-line bg-white px-4 py-3 text-lg font-semibold">
-        Нажимай «Дальше» или на ход в списке — робот-тренер расскажет о каждом ходе.
+        {t(
+          "Нажимай «Дальше» или на ход в списке — робот-тренер расскажет о каждом ходе.",
+          "«Oldinga» tugmasini yoki roʻyxatdagi yurishni bos — robot-murabbiy har bir yurish haqida aytib beradi.",
+        )}
       </p>
     );
   const meta = KIND_META[cur.kind];
-  const who = hero ? (cur.side === hero ? "Твой ход" : "Ход робота") : cur.side === "w" ? "Ход белых" : "Ход чёрных";
+  const who = hero
+    ? cur.side === hero
+      ? t("Твой ход", "Sening yurishing")
+      : t("Ход робота", "Robotning yurishi")
+    : cur.side === "w"
+      ? t("Ход белых", "Oqlarning yurishi")
+      : t("Ход чёрных", "Qoralarning yurishi");
   const text =
     cur.kind === "best"
-      ? "Робот-тренер сыграл бы так же. 👍"
+      ? t("Робот-тренер сыграл бы так же. 👍", "Robot-murabbiy ham xuddi shunday yurardi. 👍")
       : cur.kind === "mate"
-        ? "Мат! Партия окончена. 🎉"
+        ? t("Мат! Партия окончена. 🎉", "Mot! Partiya tugadi. 🎉")
         : cur.kind === "good"
-          ? `Хороший ход.${cur.bestSan ? ` Робот-тренер предлагал ${ruSan(cur.bestSan)} — но разница небольшая.` : ""}`
+          ? t(
+              `Хороший ход.${cur.bestSan ? ` Робот-тренер предлагал ${san(cur.bestSan)} — но разница небольшая.` : ""}`,
+              `Yaxshi yurish.${cur.bestSan ? ` Robot-murabbiy ${san(cur.bestSan)} yurishni taklif qilgan edi — lekin farqi katta emas.` : ""}`,
+            )
           : cur.reason;
   return (
     <div
@@ -436,14 +544,16 @@ function MoveComment({ cur, hero }: { cur: PlyReview | undefined; hero: "w" | "b
     >
       <p className="text-sm font-extrabold text-muted">
         {who} {Math.ceil(cur.ply / 2)}
-        {cur.side === "w" ? "." : "…"} {ruSan(cur.san)} ·{" "}
+        {cur.side === "w" ? "." : "…"} {san(cur.san)} ·{" "}
         <span style={{ color: meta.color }}>
-          {meta.mark} {meta.label}
+          {meta.mark} {kindLabel(cur.kind, lang)}
         </span>
       </p>
       <p className="mt-1 text-lg font-semibold">{text}</p>
       {cur.best && cur.best !== cur.uci && cur.kind !== "good" && cur.kind !== "best" && (
-        <p className="mt-1 text-sm font-bold text-[#065f46]">Зелёная стрелка — лучший ход.</p>
+        <p className="mt-1 text-sm font-bold text-[#065f46]">
+          {t("Зелёная стрелка — лучший ход.", "Yashil strelka — eng yaxshi yurish.")}
+        </p>
       )}
     </div>
   );
@@ -461,6 +571,8 @@ function AdvantageChart({
   ply: number;
   onPick: (p: number) => void;
 }) {
+  const t = useT();
+  const san = useSan();
   const [hover, setHover] = useState<number | null>(null);
   const W = 600;
   const H = 120;
@@ -479,12 +591,18 @@ function AdvantageChart({
     <section className="rounded-3xl bg-white p-4 shadow-card" aria-labelledby="chart-h">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h2 id="chart-h" className="text-lg font-black">
-          📈 Кто был ближе к победе
+          📈 {t("Кто был ближе к победе", "Kim gʻalabaga yaqinroq edi")}
         </h2>
         <p className="text-sm text-muted">
           {hover !== null
-            ? `${hover === 0 ? "Начало" : `Ход ${Math.ceil(hover / 2)}${tip ? ` · ${ruSan(tip.san)}` : ""}`} · шансы белых ${Math.round(review.whiteWin[hover])}%`
-            : "Выше середины — лучше белым, ниже — чёрным. Нажми на график, чтобы перейти к ходу."}
+            ? t(
+                `${hover === 0 ? "Начало" : `Ход ${Math.ceil(hover / 2)}${tip ? ` · ${san(tip.san)}` : ""}`} · шансы белых ${Math.round(review.whiteWin[hover])}%`,
+                `${hover === 0 ? "Boshlanish" : `${Math.ceil(hover / 2)}-yurish${tip ? ` · ${san(tip.san)}` : ""}`} · oqlarning imkoniyati ${Math.round(review.whiteWin[hover])}%`,
+              )
+            : t(
+                "Выше середины — лучше белым, ниже — чёрным. Нажми на график, чтобы перейти к ходу.",
+                "Oʻrtadan yuqorisi — oqlar ustun, pasti — qoralar ustun. Yurishga oʻtish uchun grafikni bos.",
+              )}
         </p>
       </div>
       <svg
@@ -492,7 +610,7 @@ function AdvantageChart({
         preserveAspectRatio="none"
         className="mt-2 h-28 w-full cursor-pointer touch-none overflow-hidden rounded-xl"
         role="img"
-        aria-label="График шансов белых по ходу партии"
+        aria-label={t("График шансов белых по ходу партии", "Partiya davomida oqlarning imkoniyatlari grafigi")}
         onPointerMove={(e) => setHover(pickAt(e.clientX, e.currentTarget.getBoundingClientRect()))}
         onPointerLeave={() => setHover(null)}
         onClick={(e) => onPick(pickAt(e.clientX, e.currentTarget.getBoundingClientRect()))}
@@ -538,14 +656,14 @@ function AdvantageChart({
               className="mr-1 inline-block h-2.5 w-2.5 rounded-full"
               style={{ background: KIND_META.mistake.color }}
             />
-            ошибка ?
+            {t("ошибка", "xato")} ?
           </span>
           <span>
             <span
               className="mr-1 inline-block h-2.5 w-2.5 rounded-full"
               style={{ background: KIND_META.blunder.color }}
             />
-            зевок ??
+            {t("зевок", "qoʻpol xato")} ??
           </span>
         </p>
       )}
@@ -555,8 +673,10 @@ function AdvantageChart({
 
 /** Скачать партию в PGN или скопировать — чтобы открыть на Lichess или показать тренеру. */
 function PgnButtons({ game }: { game: ChessGameRecord }) {
+  const t = useT();
+  const lang = useLang();
   const [copied, setCopied] = useState(false);
-  const pgn = () => gamePgn(game);
+  const pgn = () => gamePgn(game, lang);
   return (
     <div className="flex flex-wrap items-center gap-2">
       <Button
@@ -571,7 +691,7 @@ function PgnButtons({ game }: { game: ChessGameRecord }) {
           URL.revokeObjectURL(url);
         }}
       >
-        ⬇️ Скачать PGN
+        ⬇️ {t("Скачать PGN", "PGN yuklab olish")}
       </Button>
       <Button
         size="sm"
@@ -580,9 +700,14 @@ function PgnButtons({ game }: { game: ChessGameRecord }) {
           void navigator.clipboard?.writeText(pgn()).then(() => setCopied(true));
         }}
       >
-        {copied ? "✓ Скопировано" : "📋 Скопировать запись"}
+        {copied ? t("✓ Скопировано", "✓ Nusxa olindi") : t("📋 Скопировать запись", "📋 Yozuvdan nusxa olish")}
       </Button>
-      <span className="text-xs text-muted">PGN открывается на Lichess, Chess.com и в любой шахматной программе.</span>
+      <span className="text-xs text-muted">
+        {t(
+          "PGN открывается на Lichess, Chess.com и в любой шахматной программе.",
+          "PGN faylni Lichess, Chess.com va istalgan shaxmat dasturida ochish mumkin.",
+        )}
+      </span>
     </div>
   );
 }

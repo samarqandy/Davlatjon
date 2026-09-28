@@ -9,6 +9,9 @@ import { day6Uz } from "./day6.uz";
 import { day7Uz } from "./day7.uz";
 
 export const week2Uz: WeekUz = {
+  title: "Asboblar haftasi",
+  subtitle: "Qiyin masalalar qanday yechiladi",
+  goal: "Mutafakkirning asboblar qutisini yigʻish: rasm, oxiridan boshlash, kichik misol, aqlli sinov, oʻzgarmaydigan narsani izlash, oʻxshash masala — va kerakli asbobni tanlashni oʻrganish.",
   days: {
     w2d1: day1Uz,
     w2d2: day2Uz,

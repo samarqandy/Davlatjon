@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import "@fontsource-variable/nunito";
 import "./globals.css";
+import { AccountSync } from "@/components/AccountSync";
 import { LangSync } from "@/components/LangSwitch";
 import { ServiceWorker } from "@/components/ServiceWorker";
 
@@ -40,6 +41,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
         {children}
         <ServiceWorker />
         <LangSync />
+        <AccountSync />
       </body>
     </html>
   );

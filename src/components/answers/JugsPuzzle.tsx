@@ -3,12 +3,12 @@
 import { useRef, useState } from "react";
 import { Button, cn } from "@/components/ui";
 import { askExplain, praise } from "@/lib/feedback";
+import { countText, useLang, useT, type Lang } from "@/lib/i18n";
 import { applyJugs, isUseless, jugsReached, replayJugs, type JugsAction, type JugsState } from "@/lib/jugs";
-import { pluralize } from "@/lib/plural";
 import { addFound, recordCheck, saveTaskInput, useTask } from "@/lib/store";
 import { Feedback, type FeedbackState } from "./Feedback";
 
-const stepsWord = (n: number) => pluralize(n, "действие", "действия", "действий");
+const stepsWord = (n: number, lang: Lang) => countText(lang, n, ["действие", "действия", "действий"], "ta harakat");
 
 /** Ведро без делений: видно только, сколько в нём воды. */
 export function Bucket({
@@ -24,6 +24,7 @@ export function Bucket({
   highlight?: boolean;
   showAmount?: boolean;
 }) {
+  const t = useT();
   const unit = 22;
   const h = capacity * unit;
   const top = (maxCapacity - capacity) * unit + 8;
@@ -33,8 +34,8 @@ export function Bucket({
   const water = amount * unit;
   const y0 = top + h;
   const lerp = (y: number) => {
-    const t = (y - top) / h;
-    return wTop - (wTop - wBottom) * t;
+    const k = (y - top) / h;
+    return wTop - (wTop - wBottom) * k;
   };
   const cx = 60;
   const waterTop = y0 - water;
@@ -44,7 +45,10 @@ export function Bucket({
       height={H}
       viewBox={`0 0 120 ${H}`}
       role="img"
-      aria-label={`Ведро на ${capacity} л: ${showAmount ? `в нём ${amount} л` : "пустое"}`}
+      aria-label={t(
+        `Ведро на ${capacity} л: ${showAmount ? `в нём ${amount} л` : "пустое"}`,
+        `${capacity} litrli chelak: ${showAmount ? `ichida ${amount} l` : "boʻsh"}`,
+      )}
     >
       {water > 0 && (
         <polygon
@@ -68,7 +72,7 @@ export function Bucket({
       />
       {showAmount && (
         <text x={cx} y={y0 - 10} textAnchor="middle" fontSize="20" fontWeight="900" fill="#1d2140">
-          {amount} л
+          {amount} {t("л", "l")}
         </text>
       )}
     </svg>
@@ -86,6 +90,8 @@ export function JugsPuzzle({
   target: number;
   optimal: number;
 }) {
+  const t = useT();
+  const lang = useLang();
   const progress = useTask(taskId);
   const [actions, setActions] = useState<JugsAction[]>(() => {
     const saved = progress.input?.actions;
@@ -97,7 +103,7 @@ export function JugsPuzzle({
   const current = states[states.length - 1];
   const done = jugsReached(current, target);
   const maxCap = Math.max(...capacities);
-  const name = (j: 0 | 1) => `ведро на ${capacities[j]} л`;
+  const name = (j: 0 | 1) => t(`ведро на ${capacities[j]} л`, `${capacities[j]} litrli chelak`);
 
   const save = (next: JugsAction[]) => {
     setActions(next);
@@ -109,13 +115,26 @@ export function JugsPuzzle({
     if (isUseless(capacities, current, a)) {
       const why =
         a.type === "fill"
-          ? `${capitalize(name(a.jug))} уже полное.`
+          ? t(`${capitalize(name(a.jug))} уже полное.`, `${name(a.jug)} allaqachon toʻla.`)
           : a.type === "empty"
-            ? `${capitalize(name(a.jug))} и так пустое.`
+            ? t(`${capitalize(name(a.jug))} и так пустое.`, `${name(a.jug)} shundoq ham boʻsh.`)
             : current[a.from] === 0
-              ? `${capitalize(name(a.from))} пустое — переливать нечего.`
-              : `${capitalize(name(a.from === 0 ? 1 : 0))} уже полное.`;
-      setFeedback({ tone: "info", text: why, sub: "Это действие ничего не изменит. Попробуй другое." });
+              ? t(
+                  `${capitalize(name(a.from))} пустое — переливать нечего.`,
+                  `${name(a.from)} boʻsh — quyadigan narsa yoʻq.`,
+                )
+              : t(
+                  `${capitalize(name(a.from === 0 ? 1 : 0))} уже полное.`,
+                  `${name(a.from === 0 ? 1 : 0)} allaqachon toʻla.`,
+                );
+      setFeedback({
+        tone: "info",
+        text: why,
+        sub: t(
+          "Это действие ничего не изменит. Попробуй другое.",
+          "Bu harakat hech narsani oʻzgartirmaydi. Boshqasini sinab koʻr.",
+        ),
+      });
       return;
     }
     const next = [...actions, a];
@@ -132,30 +151,41 @@ export function JugsPuzzle({
       next.length <= optimal
         ? {
             tone: "success",
-            text: `${praise(n)} Ровно ${target} л — за ${stepsWord(next.length)}!`,
-            sub: `Быстрее не бывает. ${askExplain(n)}`,
+            text: t(
+              `${praise(n, lang)} Ровно ${target} л — за ${stepsWord(next.length, lang)}!`,
+              `${praise(n, lang)} Roppa-rosa ${target} litr — ${stepsWord(next.length, lang)}da!`,
+            ),
+            sub: t(`Быстрее не бывает. ${askExplain(n, lang)}`, `Bundan tezroq boʻlmaydi. ${askExplain(n, lang)}`),
           }
         : {
             tone: "success",
-            text: `Получилось ${target} л! Понадобилось ${stepsWord(next.length)}.`,
-            sub: "А можно быстрее? Попробуй найти путь покороче.",
+            text: t(
+              `Получилось ${target} л! Понадобилось ${stepsWord(next.length, lang)}.`,
+              `${target} litr chiqdi! Buning uchun ${stepsWord(next.length, lang)} kerak boʻldi.`,
+            ),
+            sub: t("А можно быстрее? Попробуй найти путь покороче.", "Tezroq boʻlmaydimi? Qisqaroq yoʻl topib koʻr."),
           },
     );
   };
 
   const describe = (a: JugsAction) =>
     a.type === "fill"
-      ? `Наполнить ${name(a.jug)}`
+      ? t(`Наполнить ${name(a.jug)}`, `${name(a.jug)}ni toʻldirish`)
       : a.type === "empty"
-        ? `Вылить ${name(a.jug)}`
-        : `Перелить из ведра на ${capacities[a.from]} л в ведро на ${capacities[a.from === 0 ? 1 : 0]} л`;
+        ? t(`Вылить ${name(a.jug)}`, `${name(a.jug)}ni boʻshatish`)
+        : t(
+            `Перелить из ведра на ${capacities[a.from]} л в ведро на ${capacities[a.from === 0 ? 1 : 0]} л`,
+            `${capacities[a.from]} litrli chelakdan ${capacities[a.from === 0 ? 1 : 0]} litrli chelakka quyish`,
+          );
 
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-2 sm:gap-3">
         {([0, 1] as const).map((j) => (
           <div key={j} className="flex flex-col items-center gap-2 rounded-3xl bg-white p-2 shadow-card sm:p-3">
-            <p className="text-sm font-extrabold text-muted">Ведро на {capacities[j]} л</p>
+            <p className="text-sm font-extrabold text-muted">
+              {t(`Ведро на ${capacities[j]} л`, `${capacities[j]} litrli chelak`)}
+            </p>
             <Bucket
               capacity={capacities[j]}
               amount={current[j]}
@@ -164,13 +194,13 @@ export function JugsPuzzle({
             />
             <div className="flex flex-wrap justify-center gap-1.5">
               <Button size="sm" variant="soft" onClick={() => act({ type: "fill", jug: j })} disabled={done}>
-                🚰 Наполнить
+                🚰 {t("Наполнить", "Toʻldirish")}
               </Button>
               <Button size="sm" variant="soft" onClick={() => act({ type: "empty", jug: j })} disabled={done}>
-                Вылить
+                {t("Вылить", "Boʻshatish")}
               </Button>
               <Button size="sm" variant="soft" onClick={() => act({ type: "pour", from: j })} disabled={done}>
-                {j === 0 ? "Перелить →" : "← Перелить"}
+                {j === 0 ? t("Перелить →", "Quyish →") : t("← Перелить", "← Quyish")}
               </Button>
             </div>
           </div>
@@ -179,7 +209,7 @@ export function JugsPuzzle({
 
       <div className="flex flex-wrap items-center gap-3">
         <span className={cn("tabular rounded-2xl bg-white px-4 py-2 text-lg font-black shadow-card")}>
-          Действий: {actions.length}
+          {t(`Действий: ${actions.length}`, `Harakatlar: ${actions.length}`)}
         </span>
         <Button
           variant="secondary"
@@ -189,7 +219,7 @@ export function JugsPuzzle({
           }}
           disabled={actions.length === 0}
         >
-          ↶ Отменить
+          ↶ {t("Отменить", "Bekor qilish")}
         </Button>
         <Button
           variant="ghost"
@@ -199,7 +229,7 @@ export function JugsPuzzle({
           }}
           disabled={actions.length === 0}
         >
-          ↺ Сначала
+          ↺ {t("Сначала", "Qaytadan boshlash")}
         </Button>
       </div>
 
@@ -207,14 +237,15 @@ export function JugsPuzzle({
 
       {actions.length > 0 && (
         <div className="rounded-2xl bg-white p-3 shadow-card">
-          <p className="mb-2 text-sm font-extrabold text-muted">Мои действия</p>
+          <p className="mb-2 text-sm font-extrabold text-muted">{t("Мои действия", "Harakatlarim")}</p>
           <ol className="space-y-1 text-[0.95rem]">
             {actions.map((a, i) => (
               <li key={i} className="flex flex-wrap items-baseline gap-x-2">
                 <span className="w-6 text-right font-bold text-muted">{i + 1}.</span>
                 <span className="font-bold">{describe(a)}</span>
                 <span className="tabular text-sm text-muted">
-                  → {states[i + 1][0]} л и {states[i + 1][1]} л
+                  →{" "}
+                  {t(`${states[i + 1][0]} л и ${states[i + 1][1]} л`, `${states[i + 1][0]} l va ${states[i + 1][1]} l`)}
                 </span>
               </li>
             ))}

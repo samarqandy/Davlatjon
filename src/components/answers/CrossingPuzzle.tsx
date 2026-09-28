@@ -14,6 +14,7 @@ import {
   type Side,
 } from "@/lib/crossing";
 import { askExplain, praise } from "@/lib/feedback";
+import { useLang, useT } from "@/lib/i18n";
 import { pluralize } from "@/lib/plural";
 import { addFound, recordCheck, saveTaskInput, useTask } from "@/lib/store";
 import { Feedback, type FeedbackState } from "./Feedback";
@@ -32,18 +33,15 @@ export function RiverScene({
   boatLoad?: string[];
   onItem?: (id: string) => void;
 }) {
+  const t = useT();
   const item = (id: string) => puzzle.items.find((i) => i.id === id)!;
   const bank = (side: Side) => {
     const ids = bankItems(puzzle, state, side).filter((id) => !boatLoad.includes(id));
     const driverHere = state.boat === side;
+    const name = side === "left" ? t("Левый берег", "Chap qirgʻoq") : t("Правый берег", "Oʻng qirgʻoq");
     return (
-      <div
-        className="flex min-h-40 flex-col items-center gap-1.5 rounded-2xl bg-[#dcfce7] p-2"
-        aria-label={side === "left" ? "Левый берег" : "Правый берег"}
-      >
-        <span className="text-xs font-extrabold text-[#166534]">
-          {side === "left" ? "Левый берег" : "Правый берег"}
-        </span>
+      <div className="flex min-h-40 flex-col items-center gap-1.5 rounded-2xl bg-[#dcfce7] p-2" aria-label={name}>
+        <span className="text-xs font-extrabold text-[#166534]">{name}</span>
         {ids.map((id) => {
           const it = item(id);
           const canBoard = onItem && driverHere;
@@ -53,7 +51,7 @@ export function RiverScene({
               type="button"
               onClick={() => onItem(id)}
               className="flex h-12 w-full max-w-24 items-center justify-center gap-1 rounded-xl border-2 border-[#16a34a]/40 bg-white text-3xl transition hover:border-[#16a34a]"
-              aria-label={`${it.name}: посадить в лодку`}
+              aria-label={t(`${it.name}: посадить в лодку`, `${it.name}: qayiqqa oʻtqazish`)}
             >
               {it.emoji}
             </button>
@@ -80,11 +78,14 @@ export function RiverScene({
         style={{
           backgroundImage: "repeating-linear-gradient(170deg, rgb(255 255 255 / 0.35) 0 4px, transparent 4px 18px)",
         }}
-        aria-label="Река"
+        aria-label={t("Река", "Daryo")}
       >
         <div
           className={cn("flex flex-col items-center gap-1", state.boat === "left" ? "self-start" : "self-end")}
-          aria-label={`Лодка у ${state.boat === "left" ? "левого" : "правого"} берега`}
+          aria-label={t(
+            `Лодка у ${state.boat === "left" ? "левого" : "правого"} берега`,
+            `Qayiq ${state.boat === "left" ? "chap" : "oʻng"} qirgʻoqda`,
+          )}
         >
           <div className="flex min-h-12 items-end gap-0.5">
             <span className="text-2xl" aria-hidden>
@@ -97,7 +98,7 @@ export function RiverScene({
                   type="button"
                   onClick={() => onItem(id)}
                   className="rounded-lg bg-white/70 text-2xl"
-                  aria-label={`${item(id).name}: высадить из лодки`}
+                  aria-label={t(`${item(id).name}: высадить из лодки`, `${item(id).name}: qayiqdan tushirish`)}
                 >
                   {item(id).emoji}
                 </button>
@@ -127,6 +128,8 @@ export function CrossingPuzzle({
   puzzle: CrossingSpec;
   hintsLeft: boolean;
 }) {
+  const t = useT();
+  const lang = useLang();
   const progress = useTask(taskId);
   const [trips, setTrips] = useState<string[][]>(() => {
     const saved = progress.input?.trips;
@@ -157,8 +160,11 @@ export function CrossingPuzzle({
     if (boatLoad.length >= puzzle.capacity) {
       setFeedback({
         tone: "info",
-        text: `В лодке место только для ${puzzle.capacity === 1 ? "одного пассажира" : pluralize(puzzle.capacity, "пассажира", "пассажиров", "пассажиров")}.`,
-        sub: "Сначала высади того, кто уже сидит в лодке.",
+        text: t(
+          `В лодке место только для ${puzzle.capacity === 1 ? "одного пассажира" : pluralize(puzzle.capacity, "пассажира", "пассажиров", "пассажиров")}.`,
+          `Qayiqqa faqat ${puzzle.capacity === 1 ? "bitta" : `${puzzle.capacity} ta`} yoʻlovchi sigʻadi.`,
+        ),
+        sub: t("Сначала высади того, кто уже сидит в лодке.", "Avval qayiqda oʻtirganni qirgʻoqqa tushir."),
       });
       return;
     }
@@ -173,11 +179,20 @@ export function CrossingPuzzle({
         recordCheck(taskId, false);
         setFeedback({
           tone: "retry",
-          text: `Стоп! Если ${puzzle.driver.name.toLowerCase()} уплывёт, ${r.conflict.text}`,
+          text: t(
+            `Стоп! Если ${puzzle.driver.name.toLowerCase()} уплывёт, ${r.conflict.text}`,
+            `Toʻxta! ${puzzle.driver.name} suzib ketsa, ${r.conflict.text}`,
+          ),
           sub:
             n >= 2 && hintsLeft
-              ? "Так плыть нельзя. Можно открыть подсказку 💡"
-              : "Так плыть нельзя. Подумай, кого лучше взять с собой.",
+              ? t(
+                  "Так плыть нельзя. Можно открыть подсказку 💡",
+                  "Bunday suzib boʻlmaydi. Maslahatni ochsang ham boʻladi 💡",
+                )
+              : t(
+                  "Так плыть нельзя. Подумай, кого лучше взять с собой.",
+                  "Bunday suzib boʻlmaydi. Oʻylab koʻr: kimni oʻzi bilan olgani maʼqul?",
+                ),
         });
       }
       setBoatLoad([]);
@@ -194,13 +209,22 @@ export function CrossingPuzzle({
         next.length <= puzzle.optimal
           ? {
               tone: "success",
-              text: `${praise(n)} Все на другом берегу — за ${tripsWord(next.length)}!`,
-              sub: `Быстрее не бывает. ${askExplain(n)}`,
+              text: t(
+                `${praise(n, lang)} Все на другом берегу — за ${tripsWord(next.length)}!`,
+                `${praise(n, lang)} Hamma narigi qirgʻoqda — bor-yoʻgʻi ${next.length} marta suzib oʻtding!`,
+              ),
+              sub: t(`Быстрее не бывает. ${askExplain(n, lang)}`, `Bundan tezroq boʻlmaydi. ${askExplain(n, lang)}`),
             }
           : {
               tone: "success",
-              text: `Все на другом берегу! Понадобилось ${tripsWord(next.length)}.`,
-              sub: "А можно быстрее? Попробуй найти план покороче.",
+              text: t(
+                `Все на другом берегу! Понадобилось ${tripsWord(next.length)}.`,
+                `Hamma narigi qirgʻoqda! Buning uchun ${next.length} marta suzib oʻtishga toʻgʻri keldi.`,
+              ),
+              sub: t(
+                "А можно быстрее? Попробуй найти план покороче.",
+                "Kamroq suzib ham boʻlarmikan? Qisqaroq reja topib koʻr.",
+              ),
             },
       );
     } else {
@@ -225,31 +249,36 @@ export function CrossingPuzzle({
   return (
     <div className="space-y-4">
       <p className="text-sm font-bold text-muted">
-        Нажми на того, кого {puzzle.driver.name.toLowerCase()} возьмёт в лодку, а потом — «Плыть». Можно плыть и одному.
+        {t(
+          `Нажми на того, кого ${puzzle.driver.name.toLowerCase()} возьмёт в лодку, а потом — «Плыть». Можно плыть и одному.`,
+          `${puzzle.driver.name} qayiqqa kimni oladi? Oʻshani bos, keyin — «Suzish». Qayiqda yolgʻiz oʻzi ham suzsa boʻladi.`,
+        )}
       </p>
       <RiverScene puzzle={puzzle} state={state} boatLoad={boatLoad} onItem={onItem} />
       <div className="flex flex-wrap items-center gap-2">
         <Button size="lg" onClick={go} disabled={solved}>
-          {toRight ? "Плыть →" : "← Плыть"}
+          {toRight ? t("Плыть →", "Suzish →") : t("← Плыть", "← Suzish")}
         </Button>
         <Button variant="secondary" onClick={undo} disabled={trips.length === 0}>
-          ↶ Отменить поездку
+          ↶ {t("Отменить поездку", "Bekor qilish")}
         </Button>
         <Button variant="ghost" onClick={reset} disabled={trips.length === 0}>
-          ↺ Сначала
+          ↺ {t("Сначала", "Qaytadan boshlash")}
         </Button>
       </div>
       <Feedback state={feedback} />
       {trips.length > 0 && (
         <div className="rounded-2xl bg-white p-3 shadow-card">
-          <p className="mb-2 text-sm font-extrabold text-muted">Мои поездки: {trips.length}</p>
+          <p className="mb-2 text-sm font-extrabold text-muted">
+            {t(`Мои поездки: ${trips.length}`, `Qayiq ${trips.length} marta suzdi:`)}
+          </p>
           <ol className="flex flex-wrap gap-1.5">
-            {trips.map((t, i) => (
+            {trips.map((trip, i) => (
               <li key={i} className="rounded-xl bg-brand-soft px-2.5 py-1 font-extrabold text-brand-dark">
                 <span className="mr-1 text-xs opacity-70">{i + 1}.</span>
                 {i % 2 === 1 && "← "}
                 {puzzle.driver.emoji}
-                {t.map((id) => item(id).emoji).join("")}
+                {trip.map((id) => item(id).emoji).join("")}
                 {i % 2 === 0 && " →"}
               </li>
             ))}

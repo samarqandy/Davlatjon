@@ -43,6 +43,8 @@ export function LangSync() {
     if (!hydrated) return;
     const h = document.documentElement;
     h.lang = lang;
+    // Отметка «страница уже на выбранном языке» — по ней ждут сквозные тесты.
+    h.dataset.lang = lang;
     h.classList.remove("i18n-wait");
     return watchTitle(lang);
   }, [lang, hydrated]);

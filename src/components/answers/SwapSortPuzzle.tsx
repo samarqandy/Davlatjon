@@ -3,12 +3,12 @@
 import { Fragment, useRef, useState } from "react";
 import { Button, cn } from "@/components/ui";
 import { askExplain, praise } from "@/lib/feedback";
-import { pluralize } from "@/lib/plural";
+import { countText, useLang, useT, type Lang } from "@/lib/i18n";
 import { addFound, recordCheck, saveTaskInput, useTask } from "@/lib/store";
 import { isSorted, swapAt } from "@/lib/swapSort";
 import { Feedback, type FeedbackState } from "./Feedback";
 
-const swapsWord = (n: number) => pluralize(n, "обмен", "обмена", "обменов");
+const swapsWord = (n: number, lang: Lang) => countText(lang, n, ["обмен", "обмена", "обменов"], "ta almashtirish");
 
 /** Ряд карточек с числами. */
 export function CardRow({ cards, print = false }: { cards: readonly number[]; print?: boolean }) {
@@ -32,6 +32,8 @@ export function CardRow({ cards, print = false }: { cards: readonly number[]; pr
 }
 
 export function SwapSortPuzzle({ taskId, cards, optimal }: { taskId: string; cards: number[]; optimal: number }) {
+  const t = useT();
+  const lang = useLang();
   const progress = useTask(taskId);
   const [order, setOrder] = useState<number[]>(() => {
     const saved = progress.input?.order;
@@ -66,13 +68,25 @@ export function SwapSortPuzzle({ taskId, cards, optimal }: { taskId: string; car
       count <= optimal
         ? {
             tone: "success",
-            text: `${praise(n)} По порядку — за ${swapsWord(count)}!`,
-            sub: `Быстрее не бывает. А можешь доказать, что меньше чем за ${swapsWord(optimal)} нельзя? ${askExplain(n)}`,
+            text: t(
+              `${praise(n, lang)} По порядку — за ${swapsWord(count, lang)}!`,
+              `${praise(n, lang)} ${swapsWord(count, lang)}da tartibga solding!`,
+            ),
+            sub: t(
+              `Быстрее не бывает. А можешь доказать, что меньше чем за ${swapsWord(optimal, lang)} нельзя? ${askExplain(n, lang)}`,
+              `Bundan tezroq boʻlmaydi. ${optimal} tadan kam almashtirish bilan boʻlmasligini isbotlay olasanmi? ${askExplain(n, lang)}`,
+            ),
           }
         : {
             tone: "success",
-            text: `Все карточки по порядку! Понадобилось ${swapsWord(count)}.`,
-            sub: "А можно обойтись меньшим числом обменов? Попробуй ещё раз.",
+            text: t(
+              `Все карточки по порядку! Понадобилось ${swapsWord(count, lang)}.`,
+              `Hamma kartochkalar tartibda! Buning uchun ${swapsWord(count, lang)} kerak boʻldi.`,
+            ),
+            sub: t(
+              "А можно обойтись меньшим числом обменов? Попробуй ещё раз.",
+              "Kamroq almashtirish bilan eplasa boʻlmaydimi? Yana urinib koʻr.",
+            ),
           },
     );
   };
@@ -85,7 +99,12 @@ export function SwapSortPuzzle({ taskId, cards, optimal }: { taskId: string; car
 
   return (
     <div className="space-y-4">
-      <p className="text-sm font-bold text-muted">Нажми на ⇄ между карточками, чтобы поменять их местами.</p>
+      <p className="text-sm font-bold text-muted">
+        {t(
+          "Нажми на ⇄ между карточками, чтобы поменять их местами.",
+          "Ikki kartochkaning oʻrnini almashtirish uchun ular orasidagi ⇄ belgisini bos.",
+        )}
+      </p>
       <div className="flex justify-center overflow-x-auto rounded-3xl bg-white p-4 shadow-card">
         <div className="flex items-center">
           {order.map((c, i) => (
@@ -107,7 +126,10 @@ export function SwapSortPuzzle({ taskId, cards, optimal }: { taskId: string; car
                   type="button"
                   onClick={() => swap(i)}
                   disabled={sorted}
-                  aria-label={`Поменять ${order[i]} и ${order[i + 1]}`}
+                  aria-label={t(
+                    `Поменять ${order[i]} и ${order[i + 1]}`,
+                    `${order[i]} bilan ${order[i + 1]} ni almashtirish`,
+                  )}
                   className="mx-0.5 flex h-11 w-7 items-center justify-center rounded-lg text-xl font-black text-brand transition hover:bg-brand-soft disabled:opacity-30 sm:mx-1 sm:w-10"
                 >
                   ⇄
@@ -118,9 +140,11 @@ export function SwapSortPuzzle({ taskId, cards, optimal }: { taskId: string; car
         </div>
       </div>
       <div className="flex flex-wrap items-center gap-3">
-        <span className="tabular rounded-2xl bg-white px-4 py-2 text-lg font-black shadow-card">Обменов: {swaps}</span>
+        <span className="tabular rounded-2xl bg-white px-4 py-2 text-lg font-black shadow-card">
+          {t(`Обменов: ${swaps}`, `Almashtirishlar: ${swaps}`)}
+        </span>
         <Button variant="ghost" onClick={restart} disabled={swaps === 0}>
-          ↺ Сначала
+          ↺ {t("Сначала", "Qaytadan boshlash")}
         </Button>
       </div>
       <Feedback state={feedback} />

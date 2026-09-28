@@ -5,10 +5,13 @@ import { Button, cn } from "@/components/ui";
 import type { Field } from "@/content/types";
 import { checkFields } from "@/lib/checks";
 import { askExplain, praise, retrySub, retryTitle } from "@/lib/feedback";
+import { useLang, useT } from "@/lib/i18n";
 import { recordCheck, saveTaskInput, useTask } from "@/lib/store";
 import { Feedback, type FeedbackState } from "./Feedback";
 
 export function FieldsAnswer({ taskId, fields, hintsLeft }: { taskId: string; fields: Field[]; hintsLeft: boolean }) {
+  const t = useT();
+  const lang = useLang();
   const progress = useTask(taskId);
   const [values, setValues] = useState<Record<string, string>>(
     () => (progress.input?.fields as Record<string, string>) ?? {},
@@ -32,13 +35,19 @@ export function FieldsAnswer({ taskId, fields, hintsLeft }: { taskId: string; fi
     setMarks(res.perField);
     recordCheck(taskId, res.allCorrect);
     if (res.allCorrect) {
-      setFeedback({ tone: "success", text: praise(n), sub: askExplain(n) });
+      setFeedback({ tone: "success", text: praise(n, lang), sub: askExplain(n, lang) });
     } else {
       const some = Object.values(res.perField).some((v) => v === true);
       setFeedback({
         tone: "retry",
-        text: some && fields.length > 1 ? "Часть ответа сходится ✓ — проверь остальное." : retryTitle(n),
-        sub: retrySub(n, hintsLeft),
+        text:
+          some && fields.length > 1
+            ? t(
+                "Часть ответа сходится ✓ — проверь остальное.",
+                "Javobning bir qismi toʻgʻri ✓ — qolganini tekshirib koʻr.",
+              )
+            : retryTitle(n, lang),
+        sub: retrySub(n, hintsLeft, lang),
       });
     }
   };
@@ -89,14 +98,14 @@ export function FieldsAnswer({ taskId, fields, hintsLeft }: { taskId: string; fi
                 onChange={(e) => set(f.id, e.target.value.toUpperCase().slice(0, 24))}
                 onKeyDown={(e) => e.key === "Enter" && allFilled && check()}
                 className="h-12 w-full max-w-64 rounded-xl border-2 border-line bg-paper px-3 text-2xl font-extrabold tracking-widest uppercase outline-none focus:border-brand"
-                placeholder="слово"
+                placeholder={t("слово", "soʻz")}
               />
             )}
           </div>
         ))}
       </div>
       <Button onClick={check} disabled={!allFilled} size="lg">
-        Проверить
+        {t("Проверить", "Tekshirish")}
       </Button>
       <Feedback state={feedback} />
     </div>
@@ -117,6 +126,7 @@ function isFilled(f: Field, v: string): boolean {
 }
 
 function TimeInput({ id, value, onChange }: { id: string; value: string; onChange: (v: string) => void }) {
+  const t = useT();
   const [h = "", m = ""] = value.split(":");
   const minutesRef = useRef<HTMLInputElement>(null);
   const cls =
@@ -126,8 +136,8 @@ function TimeInput({ id, value, onChange }: { id: string; value: string; onChang
       <input
         id={id}
         inputMode="numeric"
-        aria-label="часы"
-        placeholder="чч"
+        aria-label={t("часы", "soat")}
+        placeholder={t("чч", "ss")}
         value={h}
         className={cls}
         onChange={(e) => {
@@ -140,8 +150,8 @@ function TimeInput({ id, value, onChange }: { id: string; value: string; onChang
       <input
         ref={minutesRef}
         inputMode="numeric"
-        aria-label="минуты"
-        placeholder="мм"
+        aria-label={t("минуты", "daqiqa")}
+        placeholder={t("мм", "dd")}
         value={m}
         className={cls}
         onChange={(e) => onChange(`${h}:${e.target.value.replace(/\D/g, "").slice(0, 2)}`)}
@@ -161,6 +171,7 @@ function CoordInput({
   value: string;
   onChange: (v: string) => void;
 }) {
+  const t = useT();
   const col = cols.find((c) => value.startsWith(c)) ?? "";
   const row = value.slice(col.length);
   return (
@@ -171,7 +182,7 @@ function CoordInput({
           {row || "·"}
         </span>
       </div>
-      <div className="flex flex-wrap gap-1" role="group" aria-label="Буква столбца">
+      <div className="flex flex-wrap gap-1" role="group" aria-label={t("Буква столбца", "Ustun harfi")}>
         {cols.map((c) => (
           <button
             key={c}
@@ -186,7 +197,7 @@ function CoordInput({
           </button>
         ))}
       </div>
-      <div className="flex flex-wrap gap-1" role="group" aria-label="Номер строки">
+      <div className="flex flex-wrap gap-1" role="group" aria-label={t("Номер строки", "Qator raqami")}>
         {Array.from({ length: rows }, (_, i) => String(i + 1)).map((r) => (
           <button
             key={r}

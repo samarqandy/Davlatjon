@@ -1,18 +1,22 @@
 "use client";
 
 import { ButtonLink, Button, LevelBadge } from "@/components/ui";
-import { SECTIONS } from "@/content/meta";
+import { sectionsFor } from "@/content/meta";
 import { printHref } from "@/content/program";
 import type { Day } from "@/content/types";
+import { useLang, useT } from "@/lib/i18n";
 import { useHydrated, useStore } from "@/lib/store";
 import { useAgeProfile } from "@/lib/age";
 
 export function DayIntro({ day, onStart }: { day: Day; onStart: () => void }) {
   const hydrated = useHydrated();
+  const t = useT();
+  const lang = useLang();
+  const SECTIONS = sectionsFor(lang);
   const profile = useAgeProfile();
   const tasks = useStore((s) => s.tasks);
-  const solvedCount = hydrated ? day.tasks.filter((t) => tasks[t.id]?.status === "solved").length : 0;
-  const started = solvedCount > 0 || (hydrated && day.tasks.some((t) => tasks[t.id]?.status));
+  const solvedCount = hydrated ? day.tasks.filter((x) => tasks[x.id]?.status === "solved").length : 0;
+  const started = solvedCount > 0 || (hydrated && day.tasks.some((x) => tasks[x.id]?.status));
 
   return (
     <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
@@ -25,7 +29,9 @@ export function DayIntro({ day, onStart }: { day: Day; onStart: () => void }) {
             {day.emoji}
           </span>
           <div>
-            <p className="text-sm font-extrabold tracking-wide text-brand uppercase">День {day.day}</p>
+            <p className="text-sm font-extrabold tracking-wide text-brand uppercase">
+              {t(`День ${day.day}`, `${day.day}-kun`)}
+            </p>
             <h1 className="text-3xl font-black sm:text-4xl">{day.title}</h1>
           </div>
         </div>
@@ -36,52 +42,62 @@ export function DayIntro({ day, onStart }: { day: Day; onStart: () => void }) {
         </div>
         <div className="mt-5 inline-flex items-center gap-2 rounded-2xl bg-sun-soft px-4 py-2 font-extrabold text-[#7a4b00]">
           <span aria-hidden>{day.habit.emoji}</span>
-          Привычка дня: «{day.habit.name}»
+          {t(`Привычка дня: «${day.habit.name}»`, `Bugungi odat: «${day.habit.name}»`)}
         </div>
         <div className="mt-6 flex flex-wrap gap-3">
           <Button size="lg" onClick={onStart}>
-            {started ? "Продолжить ▶" : "Начать занятие ▶"}
+            {started ? t("Продолжить ▶", "Davom etish ▶") : t("Начать занятие ▶", "Mashgʻulotni boshlash ▶")}
           </Button>
           <ButtonLink href={printHref(day)} variant="secondary" size="lg">
-            🖨 Распечатать
+            🖨 {t("Распечатать", "Chop etish")}
           </ButtonLink>
         </div>
         <p className="mt-4 text-sm text-muted">
-          Около 20–30 минут. Не обязательно решить всё: лучше подольше подумать над одной задачей, чем быстро пролистать
-          все.
+          {t(
+            "Около 20–30 минут. Не обязательно решить всё: лучше подольше подумать над одной задачей, чем быстро пролистать все.",
+            "Taxminan 20–30 daqiqa. Hammasini yechish shart emas: hamma masalaga shoshib koʻz yugurtirgandan koʻra, bittasi ustida uzoqroq bosh qotirgan yaxshi.",
+          )}
         </p>
       </section>
 
       <section
         className="animate-fade-up rounded-[2rem] border border-line bg-white p-5 shadow-card sm:p-6"
-        aria-label="Задачи дня"
+        aria-label={t("Задачи дня", "Kun masalalari")}
       >
         <h2 className="mb-3 flex items-center justify-between text-lg font-extrabold">
-          Сегодня тебя ждут
+          {t("Сегодня тебя ждут", "Bugun seni kutayotgan masalalar")}
           {hydrated && solvedCount > 0 && (
             <span className="text-sm font-bold text-mint">
-              решено {solvedCount} из {day.tasks.length}
+              {t(
+                `решено ${solvedCount} из ${day.tasks.length}`,
+                `${day.tasks.length} tadan ${solvedCount} tasi yechildi`,
+              )}
             </span>
           )}
         </h2>
         {hydrated && profile.warmupBelow > 0 && (
           <p className="mb-3 text-sm text-muted">
-            Задания с пометкой «разминка» можно решить быстро или пропустить — главное для тебя дальше.
+            {t(
+              "Задания с пометкой «разминка» можно решить быстро или пропустить — главное для тебя дальше.",
+              "«Razminka» deb belgilangan topshiriqlarni tez yechib qoʻyishing yoki oʻtkazib yuborishing mumkin — sen uchun asosiylari keyinroq.",
+            )}
           </p>
         )}
         <ol className="space-y-2">
-          {day.tasks.map((t, i) => (
-            <li key={t.id} className="flex items-center gap-3 rounded-2xl bg-paper px-3 py-2">
+          {day.tasks.map((task, i) => (
+            <li key={task.id} className="flex items-center gap-3 rounded-2xl bg-paper px-3 py-2">
               <span className="w-5 text-right text-sm font-bold text-muted">{i + 1}</span>
               <span className="text-xl" aria-hidden>
-                {SECTIONS[t.section].emoji}
+                {SECTIONS[task.section].emoji}
               </span>
-              <span className="min-w-0 flex-1 truncate font-bold">{t.title}</span>
-              {hydrated && t.level <= profile.warmupBelow && (
-                <span className="rounded-full bg-black/5 px-2 py-0.5 text-xs font-bold text-muted">разминка</span>
+              <span className="min-w-0 flex-1 truncate font-bold">{task.title}</span>
+              {hydrated && task.level <= profile.warmupBelow && (
+                <span className="rounded-full bg-black/5 px-2 py-0.5 text-xs font-bold text-muted">
+                  {t("разминка", "razminka")}
+                </span>
               )}
-              <LevelBadge level={t.level} compact />
-              {hydrated && tasks[t.id]?.status === "solved" && <span className="font-black text-mint">✓</span>}
+              <LevelBadge level={task.level} compact lang={lang} />
+              {hydrated && tasks[task.id]?.status === "solved" && <span className="font-black text-mint">✓</span>}
             </li>
           ))}
         </ol>

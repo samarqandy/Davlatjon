@@ -4,6 +4,7 @@ import { useRef, useState, type MouseEvent } from "react";
 import { Button, cn } from "@/components/ui";
 import type { VennRegion } from "@/content/types";
 import { askExplain, praise, retrySub } from "@/lib/feedback";
+import { useLang, useT } from "@/lib/i18n";
 import { recordCheck, saveTaskInput, useTask } from "@/lib/store";
 import { checkVenn, regionAt, regionName, VENN, VENN_ORDER } from "@/lib/venn";
 import { Feedback, type FeedbackState } from "./Feedback";
@@ -58,6 +59,7 @@ export function VennDiagram({
   onRegion?: (region: VennRegion) => void;
   onChip?: (id: string) => void;
 }) {
+  const t = useT();
   const click = (e: MouseEvent<SVGSVGElement>) => {
     const ctm = e.currentTarget.getScreenCTM();
     if (!onRegion || !ctm) return;
@@ -71,7 +73,7 @@ export function VennDiagram({
       width="100%"
       className={cn("max-w-[520px]", onRegion && "cursor-pointer")}
       role="img"
-      aria-label={`Круги Эйлера: «${sets[0]}» и «${sets[1]}»`}
+      aria-label={t(`Круги Эйлера: «${sets[0]}» и «${sets[1]}»`, `Eyler doiralari: «${sets[0]}» va «${sets[1]}»`)}
       onClick={onRegion ? click : undefined}
     >
       <rect
@@ -136,7 +138,7 @@ export function VennDiagram({
               key={chip.id}
               role="button"
               tabIndex={0}
-              aria-label={`${chip.label}: переложить`}
+              aria-label={t(`${chip.label}: переложить`, `${chip.label}: boshqa joyga qoʻyish`)}
               className="cursor-pointer"
               onClick={(e) => {
                 e.stopPropagation();
@@ -170,6 +172,8 @@ export function VennPuzzle({
   given?: { label: string; region: VennRegion }[];
   hintsLeft: boolean;
 }) {
+  const t = useT();
+  const lang = useLang();
   const progress = useTask(taskId);
   const [placed, setPlaced] = useState<Record<string, VennRegion>>(
     () => (progress.input?.venn as Record<string, VennRegion>) ?? {},
@@ -191,8 +195,8 @@ export function VennPuzzle({
     if (!selected) {
       setFeedback({
         tone: "info",
-        text: "Сначала выбери, что положить.",
-        sub: "Нажми на число, а потом — на место в кругах.",
+        text: t("Сначала выбери, что положить.", "Avval nimani qoʻyishni tanla."),
+        sub: t("Нажми на число, а потом — на место в кругах.", "Avval sonni, keyin doiralardagi joyni bos."),
       });
       return;
     }
@@ -206,14 +210,20 @@ export function VennPuzzle({
     const res = checkVenn(correct, placed);
     recordCheck(taskId, res.wrong.length === 0 && res.missing.length === 0);
     if (res.wrong.length === 0) {
-      setFeedback({ tone: "success", text: praise(n), sub: askExplain(n) });
+      setFeedback({ tone: "success", text: praise(n, lang), sub: askExplain(n, lang) });
       return;
     }
     if (n >= 1) setWrong(res.wrong);
     setFeedback({
       tone: "retry",
-      text: `Сходится: ${res.right} из ${items.length}.`,
-      sub: n >= 1 ? "Проверь то, что выделено жёлтым: подходит ли оно к надписям кругов?" : retrySub(n, hintsLeft),
+      text: t(`Сходится: ${res.right} из ${items.length}.`, `${items.length} tadan ${res.right} tasi toʻgʻri.`),
+      sub:
+        n >= 1
+          ? t(
+              "Проверь то, что выделено жёлтым: подходит ли оно к надписям кругов?",
+              "Sariq bilan ajratilganlarni tekshir: ular doiralardagi yozuvlarga mos keladimi?",
+            )
+          : retrySub(n, hintsLeft, lang),
     });
   };
 
@@ -232,14 +242,19 @@ export function VennPuzzle({
   return (
     <div className="space-y-3">
       <p className="text-sm font-bold text-muted">
-        Нажми на число, а потом — на то место в кругах, где оно должно лежать.
+        {t(
+          "Нажми на число, а потом — на то место в кругах, где оно должно лежать.",
+          "Avval sonni bos, keyin doiralarda uning joyini bos.",
+        )}
       </p>
       <div
         className="flex min-h-12 flex-wrap items-center gap-2 rounded-2xl bg-white p-2 shadow-card"
-        aria-label="Что разложить"
+        aria-label={t("Что разложить", "Nimalarni joylash kerak")}
       >
         {pool.length === 0 ? (
-          <span className="px-2 text-sm font-bold text-muted">Всё разложено! Можно проверить.</span>
+          <span className="px-2 text-sm font-bold text-muted">
+            {t("Всё разложено! Можно проверить.", "Hammasi joyida! Endi tekshirsa boʻladi.")}
+          </span>
         ) : (
           pool.map((it) => (
             <button
@@ -265,20 +280,23 @@ export function VennPuzzle({
           onChip={(id) => setSelected(selected === id ? null : id)}
         />
       </div>
-      <div className="flex flex-wrap gap-1.5" role="group" aria-label="Куда положить">
+      <div className="flex flex-wrap gap-1.5" role="group" aria-label={t("Куда положить", "Qayerga qoʻyish")}>
         {VENN_ORDER.map((r) => (
           <Button key={r} size="sm" variant="secondary" onClick={() => place(r)} disabled={!selected}>
-            {regionName(r, sets)}
+            {regionName(r, sets, lang)}
           </Button>
         ))}
       </div>
       <Button onClick={check} size="lg" disabled={pool.length > 0}>
-        Проверить
+        {t("Проверить", "Tekshirish")}
       </Button>
       <Feedback state={feedback} />
       {selected && placed[selected] && (
         <p className="text-sm font-bold text-muted">
-          Выбрано «{label(selected)}». Нажми на новое место — или на кнопку ниже.
+          {t(
+            `Выбрано «${label(selected)}». Нажми на новое место — или на кнопку ниже.`,
+            `«${label(selected)}» tanlandi. Yangi joyni yoki joy tugmalaridan birini bos.`,
+          )}
         </p>
       )}
     </div>

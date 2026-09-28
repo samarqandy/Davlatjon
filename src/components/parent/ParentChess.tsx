@@ -4,80 +4,102 @@ import Link from "next/link";
 import { PieceIcon } from "@/components/chess/ChessBoard";
 import { RichText } from "@/components/RichText";
 import { Card, cn, ProgressBar } from "@/components/ui";
-import { CHESS_LEVELS, chessLevelHref } from "@/content/chess";
-import { FAMOUS_GAMES } from "@/content/chess/games";
-import { OPENINGS } from "@/content/chess/openings";
-import { PUZZLES, PUZZLE_THEMES } from "@/content/chess/puzzles";
+import { chessLevelHref } from "@/content/chess";
 import type { ChessExercise } from "@/content/chess/types";
-import { ROBOT_LEVELS, matingMovesIn } from "@/lib/engine/search";
-import { ENDGAMES } from "@/lib/play";
-import { matingMoves, ruSan, sanOf } from "@/lib/chess";
+import { matingMovesIn, robotLevels } from "@/lib/engine/search";
+import { ENDGAMES, endgameText } from "@/lib/play";
+import { matingMoves, sanOf } from "@/lib/chess";
 import { currentRank, levelStatuses } from "@/lib/chessProgress";
+import { sanFor, tFor, useLang, useT, type Lang } from "@/lib/i18n";
 import { pluralize } from "@/lib/plural";
-import { updateSettings, useHydrated, useStore, type ChessExerciseProgress } from "@/lib/store";
+import { isoDay, updateSettings, useHydrated, useStore, type ChessExerciseProgress } from "@/lib/store";
+import { useChess } from "@/lib/useChess";
 
-const KIND_LABEL: Record<ChessExercise["kind"], string> = {
-  squares: "Имена клеток",
-  moves: "Ходы фигуры",
-  stars: "Звёздочки",
-  move: "Найди ход",
-  pick: "Найди на доске",
-  quiz: "Вопросы",
-  queens: "Расстановка ферзей",
+const KIND_LABEL: Record<ChessExercise["kind"], { ru: string; uz: string }> = {
+  squares: { ru: "Имена клеток", uz: "Kataklar nomi" },
+  moves: { ru: "Ходы фигуры", uz: "Dona yurishlari" },
+  stars: { ru: "Звёздочки", uz: "Yulduzchalar" },
+  move: { ru: "Найди ход", uz: "Yurishni top" },
+  pick: { ru: "Найди на доске", uz: "Taxtadan top" },
+  quiz: { ru: "Вопросы", uz: "Savollar" },
+  queens: { ru: "Расстановка ферзей", uz: "Farzinlarni joylashtirish" },
 };
 
 /** Ключ ответа для родителя. */
-function answerOf(e: ChessExercise): string {
+function answerOf(e: ChessExercise, lang: Lang): string {
+  const t = tFor(lang);
   switch (e.kind) {
     case "squares":
-      return `Клетки по порядку: ${e.targets.join(", ")}.`;
+      return t(`Клетки по порядку: ${e.targets.join(", ")}.`, `Kataklar tartib bilan: ${e.targets.join(", ")}.`);
     case "moves":
-      return `${pluralize(e.answer.length, "клетка", "клетки", "клеток")}: ${e.answer.join(", ")}.`;
+      return t(
+        `${pluralize(e.answer.length, "клетка", "клетки", "клеток")}: ${e.answer.join(", ")}.`,
+        `${e.answer.length} ta katak: ${e.answer.join(", ")}.`,
+      );
     case "stars":
-      return `Меньше всего — ${pluralize(e.optimal, "ход", "хода", "ходов")}.`;
+      return t(`Меньше всего — ${pluralize(e.optimal, "ход", "хода", "ходов")}.`, `Eng kami — ${e.optimal} ta yurish.`);
     case "move": {
-      const moves = e.goal === "mate" ? matingMoves(e.fen) : e.solutions;
-      return `Ход: ${moves.map((u) => ruSan(sanOf(e.fen, u))).join(" или ")}.`;
+      const moves = (e.goal === "mate" ? matingMoves(e.fen) : e.solutions).map((u) => sanFor(lang, sanOf(e.fen, u)));
+      return t(`Ход: ${moves.join(" или ")}.`, `Yurish: ${moves.join(" yoki ")}.`);
     }
     case "pick":
-      return `Клетка ${e.answer.join(", ")}.`;
+      return t(`Клетка ${e.answer.join(", ")}.`, `Katak: ${e.answer.join(", ")}.`);
     case "quiz":
       return e.questions.map((q, i) => `${i + 1}) ${q.options[q.correct]}`).join("; ");
     case "queens":
-      return `Доска ${e.size} × ${e.size}: ферзи не должны стоять на одной линии.`;
+      return t(
+        `Доска ${e.size} × ${e.size}: ферзи не должны стоять на одной линии.`,
+        `${e.size} × ${e.size} taxta: hech bir ikki farzin bir chiziqda turmasligi kerak.`,
+      );
   }
 }
 
-function status(p: ChessExerciseProgress | undefined, e: ChessExercise): string {
-  if (!p) return "не начато";
-  const parts = [p.solvedAt ? "✅ решено" : "⏳ ещё не решено"];
-  if (p.misses) parts.push(`попыток не сошлось: ${p.misses}`);
-  if (e.kind === "stars" && p.best !== undefined)
+function status(p: ChessExerciseProgress | undefined, e: ChessExercise, lang: Lang): string {
+  const t = tFor(lang);
+  if (!p) return t("не начато", "boshlanmagan");
+  const parts = [p.solvedAt ? t("✅ решено", "✅ yechildi") : t("⏳ ещё не решено", "⏳ hali yechilmagan")];
+  if (p.misses) parts.push(t(`попыток не сошлось: ${p.misses}`, `${p.misses} ta urinish natija bermadi`));
+  if (e.kind === "stars" && p.best !== undefined) {
+    const perfect = p.best <= e.optimal;
     parts.push(
-      `лучший результат: ${pluralize(p.best, "ход", "хода", "ходов")}${p.best <= e.optimal ? " — лучше не бывает" : ""}`,
+      t(
+        `лучший результат: ${pluralize(p.best, "ход", "хода", "ходов")}${perfect ? " — лучше не бывает" : ""}`,
+        `eng yaxshi natija: ${p.best} ta yurish${perfect ? " — bundan yaxshisi boʻlmaydi" : ""}`,
+      ),
     );
-  if (e.kind === "queens" && p.found?.length) parts.push(`найдено решений: ${p.found.length}`);
+  }
+  if (e.kind === "queens" && p.found?.length)
+    parts.push(t(`найдено решений: ${p.found.length}`, `${p.found.length} ta yechim topildi`));
   return parts.join(" · ");
 }
 
 export function ParentChess() {
   const hydrated = useHydrated();
+  const t = useT();
+  const lang = useLang();
+  const levels = useChess().levels;
   const state = useStore((s) => s);
-  const statuses = levelStatuses(CHESS_LEVELS, state);
-  const rank = hydrated ? currentRank(CHESS_LEVELS, state) : null;
+  const statuses = levelStatuses(levels, state);
+  const rank = hydrated ? currentRank(levels, state) : null;
 
   return (
     <div className="space-y-6">
       <Card className="p-5 sm:p-6">
-        <p className="text-sm font-extrabold tracking-wide text-brand uppercase">Шахматная школа</p>
-        <h1 className="text-3xl font-black">Шахматы: прогресс и ответы</h1>
+        <p className="text-sm font-extrabold tracking-wide text-brand uppercase">
+          {t("Шахматная школа", "Shaxmat maktabi")}
+        </p>
+        <h1 className="text-3xl font-black">{t("Шахматы: прогресс и ответы", "Shaxmat: natijalar va javoblar")}</h1>
         <p className="mt-1 max-w-3xl text-muted">
-          Шесть уровней-званий: Пешка, Конь, Слон, Ладья, Ферзь, Король. На каждом уровне — урок, правила, словарик,
-          интересные факты и упражнения. Все позиции проверены шахматной библиотекой chess.js. Следующий уровень
-          открывается, когда решены все упражнения предыдущего.
+          {t(
+            "Шесть уровней-званий: Пешка, Конь, Слон, Ладья, Ферзь, Король. На каждом уровне — урок, правила, словарик, интересные факты и упражнения. Все позиции проверены шахматной библиотекой chess.js. Следующий уровень открывается, когда решены все упражнения предыдущего.",
+            "Oltita daraja-unvon: Piyoda, Ot, Fil, Rux, Farzin, Shoh. Har bir darajada dars, qoidalar, lugʻatcha, qiziqarli faktlar va mashqlar bor. Barcha pozitsiyalar chess.js shaxmat kutubxonasida tekshirilgan. Keyingi daraja oldingisidagi barcha mashqlar yechilgach ochiladi.",
+          )}
         </p>
         <div className="mt-4 flex flex-wrap items-center gap-4">
-          <p className="text-lg font-black">Звание: {rank ? `${rank.name} (${rank.uz})` : "пока нет"}</p>
+          <p className="text-lg font-black">
+            {t("Звание: ", "Unvon: ")}
+            {rank ? t(`${rank.name} (${rank.uz})`, rank.name) : t("пока нет", "hozircha yoʻq")}
+          </p>
           <label className="flex items-center gap-2 text-sm font-bold">
             <input
               type="checkbox"
@@ -85,34 +107,41 @@ export function ParentChess() {
               checked={state.settings.chessOpenAll === true}
               onChange={(e) => updateSettings({ chessOpenAll: e.target.checked })}
             />
-            Открыть все уровни сразу
+            {t("Открыть все уровни сразу", "Barcha darajalarni birdaniga ochish")}
           </label>
         </div>
       </Card>
 
       <ActivitySummary />
 
-      {CHESS_LEVELS.map((level, i) => {
+      {levels.map((level, i) => {
         const st = statuses[i];
+        const solved = hydrated ? st.solved : 0;
         return (
           <section key={level.id} className="space-y-3" aria-labelledby={`pc-${level.id}`}>
             <div className="flex flex-wrap items-center gap-3">
               <PieceIcon piece={level.piece} className="h-12 w-12 rounded-xl bg-[#f0d9b5] p-0.5" />
               <div className="min-w-0">
                 <h2 id={`pc-${level.id}`} className="text-xl font-black">
-                  Уровень {level.order}. {level.name}{" "}
-                  <span className="text-base font-bold text-muted">· {level.uz}</span>
+                  {lang === "uz" ? (
+                    `${level.order}-daraja. ${level.name}`
+                  ) : (
+                    <>
+                      Уровень {level.order}. {level.name}{" "}
+                      <span className="text-base font-bold text-muted">· {level.uz}</span>
+                    </>
+                  )}
                 </h2>
                 <p className="text-sm text-muted">{level.title}</p>
               </div>
               <div className="ml-auto flex min-w-48 items-center gap-2">
-                <ProgressBar value={hydrated ? st.solved : 0} max={st.total} className="flex-1" />
+                <ProgressBar value={solved} max={st.total} className="flex-1" />
                 <span className="text-sm font-extrabold whitespace-nowrap">
-                  {hydrated ? st.solved : 0} из {st.total}
+                  {t(`${solved} из ${st.total}`, `${st.total} tadan ${solved}`)}
                 </span>
               </div>
               <Link href={chessLevelHref(level.id)} className="text-sm font-extrabold text-brand hover:underline">
-                Открыть уровень →
+                {t("Открыть уровень →", "Darajani ochish →")}
               </Link>
             </div>
             <div className="grid gap-3 lg:grid-cols-2">
@@ -121,14 +150,14 @@ export function ParentChess() {
                 return (
                   <Card key={e.id} className={cn("space-y-1.5 p-4", !!p?.solvedAt && "border-2 border-mint/30")}>
                     <p className="text-xs font-extrabold tracking-wide text-muted uppercase">
-                      {n + 1}. {KIND_LABEL[e.kind]}
+                      {n + 1}. {t(KIND_LABEL[e.kind].ru, KIND_LABEL[e.kind].uz)}
                     </p>
                     <p className="text-lg font-black">{e.title}</p>
-                    <p className="font-bold text-brand-dark">{answerOf(e)}</p>
+                    <p className="font-bold text-brand-dark">{answerOf(e, lang)}</p>
                     <p className="text-[0.95rem]">
                       <RichText text={e.why} />
                     </p>
-                    <p className="text-sm font-bold text-muted">{status(p, e)}</p>
+                    <p className="text-sm font-bold text-muted">{status(p, e, lang)}</p>
                   </Card>
                 );
               })}
@@ -140,109 +169,156 @@ export function ParentChess() {
   );
 }
 
-const RESULT_LABEL = { win: "победа", loss: "поражение", draw: "ничья" } as const;
+const RESULT_LABEL = {
+  win: { ru: "победа", uz: "gʻalaba" },
+  loss: { ru: "поражение", uz: "magʻlubiyat" },
+  draw: { ru: "ничья", uz: "durang" },
+} as const;
+
+/** Дата партии: по-русски — как раньше, по-узбекски — привычное «28.09.2026». */
+const dateText = (ms: number, lang: Lang) =>
+  lang === "uz" ? isoDay(ms).split("-").reverse().join(".") : new Date(ms).toLocaleDateString("ru-RU");
 
 /** Игра с роботом, задачи, дебюты, партии и дневник — одним взглядом. */
 function ActivitySummary() {
   const hydrated = useHydrated();
+  const t = useT();
+  const lang = useLang();
+  const chess = useChess();
   const state = useStore((s) => s);
   if (!hydrated) return null;
+  const result = (r: keyof typeof RESULT_LABEL) => t(RESULT_LABEL[r].ru, RESULT_LABEL[r].uz);
   const games = state.chessGames;
-  const byLevel = ROBOT_LEVELS.map((l) => {
-    const list = games.filter((g) => g.mode === "robot" && g.level === l.id);
-    return { level: l, games: list.length, wins: list.filter((g) => g.result === "win").length };
-  }).filter((x) => x.games > 0);
+  const byLevel = robotLevels(lang)
+    .map((l) => {
+      const list = games.filter((g) => g.mode === "robot" && g.level === l.id);
+      return { level: l, games: list.length, wins: list.filter((g) => g.result === "win").length };
+    })
+    .filter((x) => x.games > 0);
   const endgames = ENDGAMES.map((v) => {
     const list = games.filter((g) => g.mode === "endgame" && g.variant === v.id);
     return {
       v,
+      name: endgameText(v, lang).name,
       games: list.length,
       wins: list.filter((g) => g.result === "win").length,
       best: Math.min(...list.filter((g) => g.result === "win").map((g) => g.moves)),
     };
   }).filter((x) => x.games > 0);
   const pawns = games.filter((g) => g.mode === "pawns");
-  const puzzleThemes = PUZZLE_THEMES.map((t) => {
-    const list = PUZZLES.filter((p) => p.theme === t.id);
+  const pawnWins = pawns.filter((g) => g.result === "win").length;
+  const puzzleThemes = chess.themes.map((theme) => {
+    const list = chess.puzzles.filter((p) => p.theme === theme.id);
     const solved = list.filter((p) => state.chessPuzzles[p.id]?.solvedAt).length;
     const misses = list.reduce((s, p) => s + (state.chessPuzzles[p.id]?.misses ?? 0), 0);
-    return { t, total: list.length, solved, misses };
+    return { theme, total: list.length, solved, misses };
   });
   const openingsLearned = Object.keys(state.chessOpenings).map((k) => {
     const [id, side] = k.split(":");
-    return `${OPENINGS.find((o) => o.id === id)?.name ?? id} (${side === "white" ? "белыми" : "чёрными"})`;
+    const name = chess.openings.find((o) => o.id === id)?.name ?? id;
+    return side === "white"
+      ? t(`${name} (белыми)`, `${name} (oqlar bilan)`)
+      : t(`${name} (чёрными)`, `${name} (qoralar bilan)`);
   });
-  const viewed = Object.keys(state.chessGamesViewed).map((id) => FAMOUS_GAMES.find((g) => g.id === id)?.title ?? id);
-  const puzzleAnswers = PUZZLES.map((p) => ({
+  const viewed = Object.keys(state.chessGamesViewed).map((id) => chess.games.find((g) => g.id === id)?.title ?? id);
+  const puzzleAnswers = chess.puzzles.map((p) => ({
     p,
     answer: p.mateIn
       ? matingMovesIn(p.fen, p.mateIn)
-          .map((u) => ruSan(sanOf(p.fen, u)))
+          .map((u) => sanFor(lang, sanOf(p.fen, u)))
           .join(" / ")
-      : (p.solution ?? []).map((u) => ruSan(sanOf(p.fen, u))).join(" / "),
+      : (p.solution ?? []).map((u) => sanFor(lang, sanOf(p.fen, u))).join(" / "),
   }));
+  const nothing = t("пока ничего", "hozircha hech narsa");
 
   return (
     <section className="space-y-3" aria-labelledby="pc-activity">
       <h2 id="pc-activity" className="text-xl font-black">
-        Игра, задачи, дебюты и партии
+        {t("Игра, задачи, дебюты и партии", "Oʻyin, masalalar, debyutlar va partiyalar")}
       </h2>
       <div className="grid gap-3 lg:grid-cols-2">
         <Card className="p-4">
-          <p className="text-sm font-extrabold text-muted">🤖 Партии с роботом</p>
-          {games.length === 0 && <p className="mt-1 text-muted">Ещё не играл.</p>}
+          <p className="text-sm font-extrabold text-muted">🤖 {t("Партии с роботом", "Robot bilan partiyalar")}</p>
+          {games.length === 0 && <p className="mt-1 text-muted">{t("Ещё не играл.", "Hali oʻynamagan.")}</p>}
           <ul className="mt-1 space-y-1 text-[0.95rem]">
             {byLevel.map((x) => (
               <li key={x.level.id}>
-                Робот «{x.level.name}»: сыграно {x.games}, побед {x.wins}
+                {t(
+                  `Робот «${x.level.name}»: сыграно ${x.games}, побед ${x.wins}`,
+                  `«${x.level.name}» robot: ${x.games} ta partiya, ${x.wins} ta gʻalaba`,
+                )}
               </li>
             ))}
             {pawns.length > 0 && (
               <li>
-                Пешечный бой: сыграно {pawns.length}, побед {pawns.filter((g) => g.result === "win").length}
+                {t(
+                  `Пешечный бой: сыграно ${pawns.length}, побед ${pawnWins}`,
+                  `Piyodalar jangi: ${pawns.length} ta partiya, ${pawnWins} ta gʻalaba`,
+                )}
               </li>
             )}
             {endgames.map((x) => (
               <li key={x.v.id}>
-                {x.v.name}: попыток {x.games}, поставлено матов {x.wins}
-                {x.wins > 0 && ` · быстрее всего — за ${pluralize(x.best, "ход", "хода", "ходов")}`}
+                {t(
+                  `${x.name}: попыток ${x.games}, поставлено матов ${x.wins}`,
+                  `${x.name}: ${x.games} ta urinish, ${x.wins} marta mot qildi`,
+                )}
+                {x.wins > 0 &&
+                  t(
+                    ` · быстрее всего — за ${pluralize(x.best, "ход", "хода", "ходов")}`,
+                    ` · eng tezi — ${x.best} ta yurishda`,
+                  )}
               </li>
             ))}
           </ul>
           {games.length > 0 && (
             <p className="mt-2 text-xs text-muted">
-              Последняя партия: {RESULT_LABEL[games[0].result]}, {games[0].moves} ходов,{" "}
-              {new Date(games[0].at).toLocaleDateString("ru-RU")}.
+              {t(
+                `Последняя партия: ${result(games[0].result)}, ${games[0].moves} ходов, ${dateText(games[0].at, lang)}.`,
+                `Oxirgi partiya: ${result(games[0].result)}, ${games[0].moves} ta yurish, ${dateText(games[0].at, lang)}.`,
+              )}
             </p>
           )}
         </Card>
         <Card className="p-4">
-          <p className="text-sm font-extrabold text-muted">🎯 Задачи · лучшая серия: {state.chessStreak}</p>
+          <p className="text-sm font-extrabold text-muted">
+            🎯 {t(`Задачи · лучшая серия: ${state.chessStreak}`, `Masalalar · eng uzun seriya: ${state.chessStreak}`)}
+          </p>
           <ul className="mt-1 space-y-1 text-[0.95rem]">
             {puzzleThemes.map((x) => (
-              <li key={x.t.id} className="flex flex-wrap gap-x-2">
-                <span className="font-bold">{x.t.name}:</span> решено {x.solved} из {x.total}
-                {x.misses > 0 && <span className="text-muted">· попыток не сошлось: {x.misses}</span>}
+              <li key={x.theme.id} className="flex flex-wrap gap-x-2">
+                <span className="font-bold">{x.theme.name}:</span>
+                {t(` решено ${x.solved} из ${x.total}`, ` ${x.total} tadan ${x.solved} tasi yechildi`)}
+                {x.misses > 0 && (
+                  <span className="text-muted">
+                    {t(`· попыток не сошлось: ${x.misses}`, `· ${x.misses} ta urinish natija bermadi`)}
+                  </span>
+                )}
               </li>
             ))}
           </ul>
         </Card>
         <Card className="p-4">
-          <p className="text-sm font-extrabold text-muted">📖 Дебюты и партии</p>
+          <p className="text-sm font-extrabold text-muted">📖 {t("Дебюты и партии", "Debyutlar va partiyalar")}</p>
           <p className="mt-1 text-[0.95rem]">
-            Выучено в тренажёре: {openingsLearned.length ? openingsLearned.join(", ") : "пока ничего"}.
+            {t("Выучено в тренажёре: ", "Trenajyorda oʻrganilgan: ")}
+            {openingsLearned.length ? openingsLearned.join(", ") : nothing}.
           </p>
           <p className="mt-1 text-[0.95rem]">
-            Разобрано до конца: {viewed.length ? viewed.join(", ") : "пока ничего"}.
+            {t("Разобрано до конца: ", "Oxirigacha koʻrib chiqilgan: ")}
+            {viewed.length ? viewed.join(", ") : nothing}.
           </p>
         </Card>
         <Card className="p-4">
-          <p className="text-sm font-extrabold text-muted">✍️ Дневник партий</p>
-          {state.chessDiary.length === 0 && <p className="mt-1 text-muted">Записей нет.</p>}
+          <p className="text-sm font-extrabold text-muted">✍️ {t("Дневник партий", "Partiyalar kundaligi")}</p>
+          {state.chessDiary.length === 0 && <p className="mt-1 text-muted">{t("Записей нет.", "Hali yozuv yoʻq.")}</p>}
           <ul className="mt-1 space-y-1 text-[0.95rem]">
             {state.chessDiary.slice(0, 6).map((e) => (
               <li key={e.id}>
-                {e.date} · с {e.opponent} · {RESULT_LABEL[e.result]}
+                {t(
+                  `${e.date} · с ${e.opponent} · ${result(e.result)}`,
+                  `${e.date} · ${e.opponent} bilan · ${result(e.result)}`,
+                )}
                 {e.notes && <span className="text-muted"> — {e.notes}</span>}
               </li>
             ))}
@@ -251,7 +327,10 @@ function ActivitySummary() {
       </div>
       <details className="rounded-2xl bg-white p-4 shadow-card">
         <summary className="cursor-pointer text-sm font-extrabold text-brand">
-          Ответы ко всем задачам тренажёра ({PUZZLES.length})
+          {t(
+            `Ответы ко всем задачам тренажёра (${chess.puzzles.length})`,
+            `Trenajyordagi barcha masalalar javoblari (${chess.puzzles.length})`,
+          )}
         </summary>
         <ul className="mt-2 grid gap-1 text-sm sm:grid-cols-2">
           {puzzleAnswers.map(({ p, answer }) => (

@@ -43,6 +43,8 @@ self.addEventListener("fetch", (event) => {
   if (request.method !== "GET") return;
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
+  // Вход и прогресс аккаунта — всегда из сети и никогда не в кэш.
+  if (url.pathname.startsWith("/api/")) return;
   // Звук браузер запрашивает кусками — его не кэшируем.
   if (url.pathname.endsWith(".mp3")) return;
   if (url.pathname.startsWith("/_next/static/") || /\.(webp|png|jpg|svg|ico|woff2?)$/.test(url.pathname)) {

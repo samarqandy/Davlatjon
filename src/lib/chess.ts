@@ -22,6 +22,16 @@ export const PIECE_NAME: Record<PieceType, string> = {
   k: "король",
 };
 
+/** Те же названия по-узбекски. */
+export const PIECE_NAME_UZ: Record<PieceType, string> = {
+  p: "piyoda",
+  n: "ot",
+  b: "fil",
+  r: "rux",
+  q: "farzin",
+  k: "shoh",
+};
+
 /** Клетка по номеру столбца (с 0) и горизонтали (с 1). */
 export function squareName(col: number, row: number): string {
   return `${FILES[col]}${row}`;

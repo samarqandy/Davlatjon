@@ -1,5 +1,8 @@
+"use client";
+
 import { Fragment } from "react";
 import { cn } from "@/components/ui";
+import { useT } from "@/lib/i18n";
 
 function Box({ value, print, wide }: { value: number | string | null; print?: boolean; wide?: boolean }) {
   const empty = value === null;
@@ -21,11 +24,13 @@ function Box({ value, print, wide }: { value: number | string | null; print?: bo
 }
 
 export function SequenceVisual({ items, print }: { items: (number | string | null)[]; print?: boolean }) {
+  const t = useT();
+  const gap = t("пропуск", "boʻsh joy");
   return (
     <div
       className="flex flex-wrap items-center gap-2"
       role="img"
-      aria-label={`Ряд: ${items.map((i) => (i === null ? "пропуск" : i)).join(", ")}`}
+      aria-label={`${t("Ряд", "Qator")}: ${items.map((i) => (i === null ? gap : i)).join(", ")}`}
     >
       {items.map((item, i) => (
         <Fragment key={i}>
@@ -77,14 +82,15 @@ export function MachineVisual({
   rows: { input: number | null; output: number | null }[];
   print?: boolean;
 }) {
+  const t = useT();
   return (
     <div className="inline-block overflow-hidden rounded-2xl border-2 border-line bg-white">
       <div className="grid grid-cols-[1fr_auto_1fr] items-center bg-brand-soft px-4 py-2 text-center text-sm font-extrabold tracking-wide text-brand-dark uppercase">
-        <span>Вход</span>
+        <span>{t("Вход", "Kiradi")}</span>
         <span className="px-3" aria-hidden>
           ⚙️
         </span>
-        <span>Выход</span>
+        <span>{t("Выход", "Chiqadi")}</span>
       </div>
       {rows.map((r, i) => (
         <div
@@ -112,11 +118,13 @@ function Blank({ print }: { print?: boolean }) {
 
 /** Числовая стенка: ряды сверху вниз, каждое число — сумма двух чисел под ним. */
 export function PyramidVisual({ rows, print }: { rows: (number | null)[][]; print?: boolean }) {
+  const t = useT();
+  const empty = t("пусто", "boʻsh");
   return (
     <div
       className="inline-flex flex-col items-center gap-1"
       role="img"
-      aria-label={`Числовая стенка: ${rows.map((r) => r.map((v) => v ?? "пусто").join(", ")).join("; ")}`}
+      aria-label={`${t("Числовая стенка", "Sonlar devori")}: ${rows.map((r) => r.map((v) => v ?? empty).join(", ")).join("; ")}`}
     >
       {rows.map((row, i) => (
         <div key={i} className="flex gap-1">
@@ -142,9 +150,12 @@ export function PyramidVisual({ rows, print }: { rows: (number | null)[][]; prin
 }
 
 export function ReceiptVisual({ lines, total }: { lines: { label: string; price: string }[]; total: string }) {
+  const t = useT();
   return (
     <div className="w-full max-w-xs rounded-md border border-dashed border-ink/30 bg-[#fffdf7] px-5 py-4 font-mono text-[15px] shadow-sm">
-      <div className="mb-2 text-center text-xs font-bold tracking-[0.2em] text-muted">МАГАЗИН «ПРОДУКТЫ»</div>
+      <div className="mb-2 text-center text-xs font-bold tracking-[0.2em] text-muted">
+        {t("МАГАЗИН «ПРОДУКТЫ»", "«OZIQ-OVQAT» DOʻKONI")}
+      </div>
       <div className="border-t border-dashed border-ink/25 pt-2">
         {lines.map((l) => (
           <div key={l.label} className="flex items-baseline gap-2">
@@ -155,7 +166,7 @@ export function ReceiptVisual({ lines, total }: { lines: { label: string; price:
         ))}
       </div>
       <div className="mt-2 flex items-baseline gap-2 border-t border-dashed border-ink/25 pt-2 font-bold">
-        <span>ИТОГО</span>
+        <span>{t("ИТОГО", "JAMI")}</span>
         <span className="flex-1" />
         <span className="tabular">{total}</span>
       </div>

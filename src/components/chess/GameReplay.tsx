@@ -5,11 +5,13 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { RichText } from "@/components/RichText";
 import { Button, cn } from "@/components/ui";
-import { FAMOUS_GAMES, type FamousGame } from "@/content/chess/games";
-import { type ChessImage, chessImages } from "@/content/chess/images";
-import { CHESS_LEVELS } from "@/content/chess";
-import { ruSan } from "@/lib/chess";
+import { chessImagesIn } from "@/content/chess/content";
+import type { FamousGame } from "@/content/chess/games";
+import type { ChessImage } from "@/content/chess/images";
+import { useTitleTranslation } from "@/lib/docTitle";
+import { useLang, useSan, useT } from "@/lib/i18n";
 import { chessGameViewed, useHydrated, useStore } from "@/lib/store";
+import { useChess, useChessImages } from "@/lib/useChess";
 import { ChessBoard, type SquareMark } from "./ChessBoard";
 import { PhotoStrip, Portrait } from "./Figure";
 import { GuessGame, guessHero } from "./GuessGame";
@@ -40,24 +42,33 @@ function Faces({ images, size }: { images: ChessImage[]; size: number }) {
 
 export function FamousGamesList() {
   const hydrated = useHydrated();
+  const t = useT();
+  const lang = useLang();
+  const { games, levels } = useChess();
   const viewed = useStore((s) => s.chessGamesViewed);
   return (
     <div className="space-y-6">
       <Link href="/chess" className="inline-flex items-center gap-1 text-sm font-extrabold text-brand hover:underline">
-        ← Шахматная школа
+        ← {t("Шахматная школа", "Shaxmat maktabi")}
       </Link>
       <header>
-        <p className="text-sm font-extrabold tracking-wide text-brand uppercase">Знаменитые партии</p>
-        <h1 className="text-3xl font-black">Партии, которые знает весь мир</h1>
+        <p className="text-sm font-extrabold tracking-wide text-brand uppercase">
+          {t("Знаменитые партии", "Mashhur partiyalar")}
+        </p>
+        <h1 className="text-3xl font-black">
+          {t("Партии, которые знает весь мир", "Butun dunyo biladigan partiyalar")}
+        </h1>
         <p className="mt-1 max-w-2xl text-muted">
-          Разбери партию ход за ходом: на каждом важном ходу — объяснение для ребёнка, а самые красивые позиции показаны
-          отдельно. Все ходы проверены шахматной программой.
+          {t(
+            "Разбери партию ход за ходом: на каждом важном ходу — объяснение для ребёнка, а самые красивые позиции показаны отдельно. Все ходы проверены шахматной программой.",
+            "Partiyani yurishma-yurish tahlil qil: har bir muhim yurishga sodda tushuntirish berilgan, eng chiroyli pozitsiyalar esa alohida koʻrsatilgan. Barcha yurishlarni shaxmat dasturi tekshirib chiqqan.",
+          )}
         </p>
       </header>
       <ol className="grid gap-4 md:grid-cols-2">
-        {FAMOUS_GAMES.map((g) => {
+        {games.map((g) => {
           const positions = replayPositions(g.moves);
-          const level = CHESS_LEVELS.find((l) => l.id === g.level);
+          const level = levels.find((l) => l.id === g.level);
           return (
             <li key={g.id}>
               <Link
@@ -77,15 +88,18 @@ export function FamousGamesList() {
                   </p>
                   <p className="text-xl font-black">{g.title}</p>
                   <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-bold">
-                    <Faces images={chessImages(g.pictures)} size={28} />
+                    <Faces images={chessImagesIn(lang, g.pictures)} size={28} />
                     <span>
                       {g.white} — {g.black} · {g.result}
                     </span>
                   </p>
                   <p className="mt-1 line-clamp-3 text-sm text-muted">{g.story[0]}</p>
                   <p className="mt-2 text-xs font-extrabold text-brand-dark">
-                    {Math.ceil(g.moves.length / 2)} ходов · уровень «{level?.name}»
-                    {hydrated && viewed[g.id] ? " · ✅ разобрана" : ""}
+                    {t(
+                      `${Math.ceil(g.moves.length / 2)} ходов · уровень «${level?.name ?? ""}»`,
+                      `${Math.ceil(g.moves.length / 2)} ta yurish · «${level?.name ?? ""}» darajasi`,
+                    )}
+                    {hydrated && viewed[g.id] ? t(" · ✅ разобрана", " · ✅ tahlil qilingan") : ""}
                   </p>
                 </div>
               </Link>
@@ -97,14 +111,20 @@ export function FamousGamesList() {
   );
 }
 
-export function GameReplay({ game }: { game: FamousGame }) {
+export function GameReplay({ game: ruGame }: { game: FamousGame }) {
+  const t = useT();
+  const san = useSan();
+  const { games, levels } = useChess();
+  // Страница передаёт партию по-русски (её собирает сервер); тексты берём на языке интерфейса.
+  const game = games.find((g) => g.id === ruGame.id) ?? ruGame;
+  useTitleTranslation(ruGame.title, game.title);
   const positions = useMemo(() => replayPositions(game.moves), [game.moves]);
   const [ply, setPly] = useState(0);
   const [playing, setPlaying] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const total = game.moves.length;
-  const level = CHESS_LEVELS.find((l) => l.id === game.level);
-  const pictures = chessImages(game.pictures);
+  const level = levels.find((l) => l.id === game.level);
+  const pictures = useChessImages(game.pictures);
   const [guess, setGuess] = useState(false);
   const hero = guessHero(game);
   const guessBest = useStore((s) => s.chessGuess[game.id]);
@@ -135,7 +155,10 @@ export function GameReplay({ game }: { game: FamousGame }) {
     marks[cur.to] = "last";
   }
   const comment = game.comments[ply];
-  const moveLabel = ply === 0 ? "Начальная позиция" : `${Math.ceil(ply / 2)}${ply % 2 ? "." : "…"} ${ruSan(cur.san)}`;
+  const moveLabel =
+    ply === 0
+      ? t("Начальная позиция", "Boshlangʻich pozitsiya")
+      : `${Math.ceil(ply / 2)}${ply % 2 ? "." : "…"} ${san(cur.san)}`;
 
   return (
     <div className="space-y-5">
@@ -143,7 +166,7 @@ export function GameReplay({ game }: { game: FamousGame }) {
         href="/chess/games"
         className="inline-flex items-center gap-1 text-sm font-extrabold text-brand hover:underline"
       >
-        ← Все партии
+        ← {t("Все партии", "Barcha partiyalar")}
       </Link>
       <header>
         <p className="text-sm font-extrabold tracking-wide text-brand uppercase">
@@ -171,7 +194,7 @@ export function GameReplay({ game }: { game: FamousGame }) {
       {pictures.length > 0 && (
         <section aria-labelledby="pictures">
           <h2 id="pictures" className="mb-3 text-2xl font-black">
-            📷 Кто играл и где
+            📷 {t("Кто играл и где", "Kim va qayerda oʻynagan")}
           </h2>
           <PhotoStrip images={pictures} />
         </section>
@@ -180,33 +203,51 @@ export function GameReplay({ game }: { game: FamousGame }) {
       <div className="flex flex-wrap items-center gap-3 rounded-3xl border-2 border-brand/30 bg-brand-soft/50 p-4">
         <p className="min-w-0 flex-1 font-bold">
           {guess
-            ? "Режим «Угадай ход»: делай ходы за победителя — ответы соперника появятся сами."
-            : `🎯 Сыграй как ${hero.name}: угадывай ходы победителя и получай очки.`}
+            ? t(
+                "Режим «Угадай ход»: делай ходы за победителя — ответы соперника появятся сами.",
+                "«Yurishni top» rejimi: gʻolib tomon uchun yur — raqibning javob yurishlari oʻzi paydo boʻladi.",
+              )
+            : t(
+                `🎯 Сыграй как ${hero.name}: угадывай ходы победителя и получай очки.`,
+                `🎯 ${hero.name} kabi oʻyna: gʻolibning yurishlarini topib, ochko yigʻ.`,
+              )}
           {guessBest && !guess && (
             <span className="ml-1 text-sm text-muted">
-              Рекорд: {guessBest.score} из {guessBest.max}.
+              {t(`Рекорд: ${guessBest.score} из ${guessBest.max}.`, `Rekord: ${guessBest.score} / ${guessBest.max}.`)}
             </span>
           )}
         </p>
         <Button size="sm" variant={guess ? "secondary" : "primary"} onClick={() => setGuess((g) => !g)}>
-          {guess ? "← К разбору партии" : "Играть «Угадай ход»"}
+          {guess ? t("← К разбору партии", "← Partiya tahliliga") : t("Играть «Угадай ход»", "«Yurishni top» oʻynash")}
         </Button>
       </div>
 
       {guess ? (
         <GuessGame game={game} onExit={() => setGuess(false)} />
       ) : (
-        <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]" aria-label="Разбор партии">
+        <section
+          className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]"
+          aria-label={t("Разбор партии", "Partiya tahlili")}
+        >
           <div className="space-y-3">
             <ChessBoard
               id={`game-${game.id}`}
               position={cur.fen}
               marks={marks}
               maxWidth={520}
-              label={`Позиция после хода ${moveLabel}`}
+              label={t(
+                `Позиция после хода ${moveLabel}`,
+                ply === 0 ? moveLabel : `${moveLabel} yurishidan keyingi pozitsiya`,
+              )}
             />
             <div className="flex flex-wrap items-center gap-1.5">
-              <Button variant="secondary" size="sm" onClick={() => go(0)} disabled={ply === 0} aria-label="В начало">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => go(0)}
+                disabled={ply === 0}
+                aria-label={t("В начало", "Boshiga")}
+              >
                 ⏮
               </Button>
               <Button
@@ -214,19 +255,24 @@ export function GameReplay({ game }: { game: FamousGame }) {
                 size="sm"
                 onClick={() => go(ply - 1)}
                 disabled={ply === 0}
-                aria-label="Ход назад"
+                aria-label={t("Ход назад", "Bir yurish orqaga")}
               >
                 ◀
               </Button>
-              <Button size="sm" onClick={() => go(ply + 1)} disabled={ply === total} aria-label="Ход вперёд">
-                Дальше ▶
+              <Button
+                size="sm"
+                onClick={() => go(ply + 1)}
+                disabled={ply === total}
+                aria-label={t("Ход вперёд", "Bir yurish oldinga")}
+              >
+                {t("Дальше ▶", "Oldinga ▶")}
               </Button>
               <Button
                 variant="secondary"
                 size="sm"
                 onClick={() => go(total)}
                 disabled={ply === total}
-                aria-label="В конец"
+                aria-label={t("В конец", "Oxiriga")}
               >
                 ⏭
               </Button>
@@ -241,7 +287,7 @@ export function GameReplay({ game }: { game: FamousGame }) {
                   }
                 }}
               >
-                {isPlaying ? "⏸ Пауза" : "▶ Смотреть"}
+                {isPlaying ? t("⏸ Пауза", "⏸ Pauza") : t("▶ Смотреть", "▶ Koʻrish")}
               </Button>
               <span className="ml-auto text-sm font-extrabold text-muted">
                 {ply} / {total}
@@ -258,13 +304,16 @@ export function GameReplay({ game }: { game: FamousGame }) {
               <p className="mt-1 text-lg font-semibold">
                 {comment ??
                   (ply === total
-                    ? `Партия окончена: ${game.result}.`
-                    : "Нажимай «Дальше» — на важных ходах появятся объяснения.")}
+                    ? t(`Партия окончена: ${game.result}.`, `Partiya tugadi: ${game.result}.`)
+                    : t(
+                        "Нажимай «Дальше» — на важных ходах появятся объяснения.",
+                        "«Oldinga» tugmasini bosib bor — muhim yurishlarda tushuntirishlar chiqadi.",
+                      ))}
               </p>
             </div>
           </div>
           <aside className="rounded-2xl bg-white p-3 shadow-card">
-            <p className="mb-2 text-sm font-extrabold text-muted">Ходы партии</p>
+            <p className="mb-2 text-sm font-extrabold text-muted">{t("Ходы партии", "Partiya yurishlari")}</p>
             <ol className="grid max-h-[420px] grid-cols-[auto_1fr_1fr] gap-x-2 gap-y-0.5 overflow-y-auto text-[0.95rem]">
               {Array.from({ length: Math.ceil(total / 2) }, (_, i) => (
                 <li key={i} className="contents">
@@ -281,7 +330,7 @@ export function GameReplay({ game }: { game: FamousGame }) {
                           game.comments[p] && p !== ply && "text-brand-dark underline decoration-dotted",
                         )}
                       >
-                        {ruSan(positions[p].san)}
+                        {san(positions[p].san)}
                       </button>
                     ) : (
                       <span key={p} />
@@ -296,7 +345,7 @@ export function GameReplay({ game }: { game: FamousGame }) {
 
       <section aria-labelledby="moments">
         <h2 id="moments" className="mb-3 text-2xl font-black">
-          🖼️ Главные моменты
+          🖼️ {t("Главные моменты", "Muhim lahzalar")}
         </h2>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {game.keyMoments.map((k) => (
@@ -315,7 +364,9 @@ export function GameReplay({ game }: { game: FamousGame }) {
                 maxWidth={220}
                 className="!mx-0"
               />
-              <p className="mt-2 text-xs font-extrabold text-muted">Ход {Math.ceil(k.ply / 2)}</p>
+              <p className="mt-2 text-xs font-extrabold text-muted">
+                {t(`Ход ${Math.ceil(k.ply / 2)}`, `${Math.ceil(k.ply / 2)}-yurish`)}
+              </p>
               <p className="text-sm font-bold">{k.caption}</p>
             </button>
           ))}
@@ -324,7 +375,7 @@ export function GameReplay({ game }: { game: FamousGame }) {
 
       <section className="grid gap-4 md:grid-cols-2">
         <div className="rounded-3xl bg-mint-soft/70 p-5">
-          <h2 className="text-lg font-black">🎓 Чему учит партия</h2>
+          <h2 className="text-lg font-black">🎓 {t("Чему учит партия", "Partiya nimaga oʻrgatadi")}</h2>
           <p className="mt-1 text-lg">
             <RichText text={game.lesson} />
           </p>
@@ -333,12 +384,12 @@ export function GameReplay({ game }: { game: FamousGame }) {
               href={`/chess/${level.id}`}
               className="mt-2 inline-block text-sm font-extrabold text-brand hover:underline"
             >
-              Уровень «{level.name}» →
+              {t(`Уровень «${level.name}» →`, `«${level.name}» darajasi →`)}
             </Link>
           )}
         </div>
         <div className="rounded-3xl bg-sun-soft/70 p-5">
-          <h2 className="text-lg font-black">💡 Интересно</h2>
+          <h2 className="text-lg font-black">💡 {t("Интересно", "Qiziqarli")}</h2>
           <ul className="mt-1 space-y-1.5">
             {game.facts.map((f) => (
               <li key={f} className="flex gap-2">

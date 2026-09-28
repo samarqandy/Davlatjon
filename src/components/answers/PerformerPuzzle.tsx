@@ -4,6 +4,7 @@ import { Fragment, useRef, useState } from "react";
 import { Button, cn } from "@/components/ui";
 import type { PerformerPuzzle as PerformerSpec } from "@/content/types";
 import { askExplain, praise } from "@/lib/feedback";
+import { countText, useLang, useT } from "@/lib/i18n";
 import {
   applyCommand,
   commandLabel,
@@ -13,7 +14,7 @@ import {
   performerBounds,
   runPerformer,
 } from "@/lib/performer";
-import { plural, pluralize } from "@/lib/plural";
+import { plural } from "@/lib/plural";
 import { addFound, recordCheck, saveTaskInput, useTask } from "@/lib/store";
 import { Feedback, type FeedbackState } from "./Feedback";
 
@@ -21,6 +22,7 @@ const MAX_COMMANDS = 30;
 
 /** Числовой луч с прыжками исполнителя. */
 export function NumberLine({ puzzle, values }: { puzzle: PerformerSpec; values: number[] }) {
+  const t = useT();
   const { min, max } = performerBounds(puzzle);
   const step = 26;
   const pad = 16;
@@ -35,7 +37,10 @@ export function NumberLine({ puzzle, values }: { puzzle: PerformerSpec; values: 
         height={96}
         viewBox={`0 0 ${W} 96`}
         role="img"
-        aria-label={`Числовой луч от ${min} до ${max}. ${puzzle.name} на числе ${current}`}
+        aria-label={t(
+          `Числовой луч от ${min} до ${max}. ${puzzle.name} на числе ${current}`,
+          `${min} dan ${max} gacha son nuri. ${puzzle.name} ${current} sonida turibdi`,
+        )}
       >
         <line x1={pad - 8} y1={baseY} x2={W - 4} y2={baseY} stroke="#1d2140" strokeWidth="2.5" />
         {Array.from({ length: max - min + 1 }, (_, i) => min + i).map((v) => (
@@ -88,6 +93,8 @@ export function PerformerPuzzle({
   puzzle: PerformerSpec;
   hintsLeft: boolean;
 }) {
+  const t = useT();
+  const lang = useLang();
   const progress = useTask(taskId);
   const [program, setProgram] = useState<number[]>(() => {
     const saved = progress.input?.program;
@@ -107,19 +114,29 @@ export function PerformerPuzzle({
   const evaluate = (prog: number[]) => {
     const n = attempts.current++;
     const len = prog.length;
+    const commands = countText(lang, len, ["команды", "команд", "команд"], "ta buyruq");
     recordCheck(taskId, true);
     addFound(taskId, `len:${len}`);
     setFeedback(
       len <= puzzle.optimal
         ? {
             tone: "success",
-            text: `${praise(n)} Получилось ${puzzle.target}!`,
-            sub: `Программа из ${pluralize(len, "команды", "команд", "команд")} — короче не бывает. ${askExplain(n)}`,
+            text: t(`${praise(n, lang)} Получилось ${puzzle.target}!`, `${praise(n, lang)} ${puzzle.target} chiqdi!`),
+            sub: t(
+              `Программа из ${commands} — короче не бывает. ${askExplain(n, lang)}`,
+              `${commands}dan iborat dastur — bundan qisqasi boʻlmaydi. ${askExplain(n, lang)}`,
+            ),
           }
         : {
             tone: "success",
-            text: `Получилось ${puzzle.target}! Программа из ${pluralize(len, "команды", "команд", "команд")}.`,
-            sub: "А можно короче? Попробуй найти программу покороче.",
+            text: t(
+              `Получилось ${puzzle.target}! Программа из ${commands}.`,
+              `${puzzle.target} chiqdi! Dasturda ${commands} bor.`,
+            ),
+            sub: t(
+              "А можно короче? Попробуй найти программу покороче.",
+              "Qisqaroq boʻlmaydimi? Qisqaroq dastur topib koʻr.",
+            ),
           },
     );
   };
@@ -128,8 +145,8 @@ export function PerformerPuzzle({
     if (program.length >= MAX_COMMANDS) {
       setFeedback({
         tone: "info",
-        text: "Программа получилась очень длинной.",
-        sub: "Начни сначала — и поищи путь короче.",
+        text: t("Программа получилась очень длинной.", "Dastur juda uzun boʻlib ketdi."),
+        sub: t("Начни сначала — и поищи путь короче.", "Qaytadan boshla — qisqaroq yoʻl izla."),
       });
       return;
     }
@@ -140,12 +157,18 @@ export function PerformerPuzzle({
         text:
           next < min
             ? puzzle.line
-              ? `${puzzle.name} не может прыгнуть левее ${min}.`
-              : `${puzzle.name} не работает с числами меньше ${min}.`
+              ? t(`${puzzle.name} не может прыгнуть левее ${min}.`, `${puzzle.name} ${min} dan chapga sakray olmaydi.`)
+              : t(
+                  `${puzzle.name} не работает с числами меньше ${min}.`,
+                  `${puzzle.name} ${min} dan kichik sonlar bilan ishlamaydi.`,
+                )
             : puzzle.line
-              ? `${puzzle.name} не может прыгнуть правее ${max}.`
-              : `${puzzle.name} не работает с числами больше ${max}.`,
-        sub: "Попробуй другую команду.",
+              ? t(`${puzzle.name} не может прыгнуть правее ${max}.`, `${puzzle.name} ${max} dan oʻngga sakray olmaydi.`)
+              : t(
+                  `${puzzle.name} не работает с числами больше ${max}.`,
+                  `${puzzle.name} ${max} dan katta sonlar bilan ishlamaydi.`,
+                ),
+        sub: t("Попробуй другую команду.", "Boshqa buyruqni sinab koʻr."),
       });
       return;
     }
@@ -156,10 +179,15 @@ export function PerformerPuzzle({
       const n = attempts.current++;
       setFeedback({
         tone: "retry",
-        text: `Уже ${next} — больше, чем ${puzzle.target}.`,
-        sub: `${puzzle.name} умеет только увеличивать число. Нажми «Отменить» и попробуй по-другому.${
-          n >= 2 && hintsLeft ? " Можно открыть подсказку 💡" : ""
-        }`,
+        text: t(`Уже ${next} — больше, чем ${puzzle.target}.`, `Son ${next} boʻldi — bu ${puzzle.target} dan katta.`),
+        sub: t(
+          `${puzzle.name} умеет только увеличивать число. Нажми «Отменить» и попробуй по-другому.${
+            n >= 2 && hintsLeft ? " Можно открыть подсказку 💡" : ""
+          }`,
+          `${puzzle.name} sonni faqat kattalashtira oladi. «Bekor qilish» tugmasini bos va boshqacha urinib koʻr.${
+            n >= 2 && hintsLeft ? " Maslahatni ochsang ham boʻladi 💡" : ""
+          }`,
+        ),
       });
     } else setFeedback(null);
   };
@@ -187,7 +215,7 @@ export function PerformerPuzzle({
             <div className="leading-tight">
               <p className="text-sm font-extrabold text-muted">{puzzle.name}</p>
               <p className="text-sm font-bold text-muted">
-                Начало: <b className="text-ink">{puzzle.start}</b> · Цель:{" "}
+                {t("Начало", "Boshlanish")}: <b className="text-ink">{puzzle.start}</b> · {t("Цель", "Maqsad")}:{" "}
                 <b className="text-[#b45309]">{puzzle.target}</b>
               </p>
             </div>
@@ -198,7 +226,7 @@ export function PerformerPuzzle({
               reached ? "border-mint bg-mint-soft text-[#047857]" : "border-brand/30 bg-paper text-ink",
             )}
             aria-live="polite"
-            aria-label={`Сейчас число ${current}`}
+            aria-label={t(`Сейчас число ${current}`, `Hozirgi son: ${current}`)}
           >
             {current}
           </div>
@@ -211,7 +239,7 @@ export function PerformerPuzzle({
         {program.length > 0 && (
           <p
             className="mt-3 flex flex-wrap items-center gap-x-1 gap-y-1.5 text-lg font-extrabold"
-            aria-label="Числа по дороге"
+            aria-label={t("Числа по дороге", "Yoʻldagi sonlar")}
           >
             {values.map((v, i) => (
               <Fragment key={i}>
@@ -230,37 +258,37 @@ export function PerformerPuzzle({
         )}
       </div>
 
-      <div className="flex flex-wrap items-stretch gap-2" role="group" aria-label="Команды">
+      <div className="flex flex-wrap items-stretch gap-2" role="group" aria-label={t("Команды", "Buyruqlar")}>
         {puzzle.commands.map((c, i) => (
           <button
             key={i}
             type="button"
             onClick={() => press(i)}
             className="flex min-w-28 flex-col items-center justify-center rounded-2xl bg-brand px-4 py-2 text-white shadow-[0_4px_0_0_#3730a3] transition active:translate-y-[2px] active:shadow-[0_2px_0_0_#3730a3]"
-            aria-label={`Команда: ${commandName(c)}`}
+            aria-label={t(`Команда: ${commandName(c, lang)}`, `Buyruq: ${commandName(c, lang)}`)}
           >
             <span className="text-3xl font-black">{commandLabel(c)}</span>
-            <span className="text-xs font-bold text-white/85">{commandName(c)}</span>
+            <span className="text-xs font-bold text-white/85">{commandName(c, lang)}</span>
           </button>
         ))}
         <div className="flex flex-col gap-1.5">
           <Button variant="secondary" size="sm" onClick={undo} disabled={program.length === 0}>
-            ⌫ Отменить
+            ⌫ {t("Отменить", "Bekor qilish")}
           </Button>
           <Button variant="ghost" size="sm" onClick={reset} disabled={program.length === 0}>
-            Сначала
+            {t("Сначала", "Qaytadan boshlash")}
           </Button>
         </div>
       </div>
 
       <p className="text-sm font-bold text-muted">
-        Программа:{" "}
+        {t("Программа:", "Dastur:")}{" "}
         {program.length === 0 ? (
-          "пока пусто — нажимай команды"
+          t("пока пусто — нажимай команды", "hozircha boʻsh — buyruqlarni bos")
         ) : (
           <>
             <span className="text-ink">{program.map((i) => commandLabel(puzzle.commands[i])).join("  ")}</span> ·{" "}
-            {program.length} {plural(program.length, "команда", "команды", "команд")}
+            {program.length} {t(plural(program.length, "команда", "команды", "команд"), "ta buyruq")}
           </>
         )}
       </p>

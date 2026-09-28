@@ -1,4 +1,5 @@
 import type { PerformerCommand, PerformerPuzzle } from "@/content/types";
+import type { Lang } from "./lang";
 
 /**
  * Исполнитель — «машина» с несколькими командами (Удвоитель, Кузнечик…).
@@ -12,8 +13,20 @@ export function commandLabel(c: PerformerCommand): string {
   return `×${c.value}`;
 }
 
-/** Как команду прочитать вслух: «прибавь 1», «отними 3», «удвой». */
-export function commandName(c: PerformerCommand): string {
+/**
+ * Как команду прочитать вслух: «прибавь 1», «отними 3», «удвой»; по-узбекски — «1 qoʻsh», «3 ayir»…
+ * Отдельная сигнатура без языка — чтобы функцию можно было передать в map (там вторым аргументом идёт индекс).
+ */
+export function commandName(c: PerformerCommand): string;
+export function commandName(c: PerformerCommand, lang: Lang): string;
+export function commandName(c: PerformerCommand, lang: Lang = "ru"): string {
+  if (lang === "uz") {
+    if (c.op === "add") return `${c.value} qoʻsh`;
+    if (c.op === "sub") return `${c.value} ayir`;
+    if (c.value === 2) return "ikki baravar oshir";
+    if (c.value === 3) return "uch baravar oshir";
+    return `${c.value} ga koʻpaytir`;
+  }
   if (c.op === "add") return `прибавь ${c.value}`;
   if (c.op === "sub") return `отними ${c.value}`;
   if (c.value === 2) return "удвой";

@@ -1,3 +1,5 @@
+"use client";
+
 import { CipherBoxes, ShiftTable } from "@/components/answers/CipherPuzzle";
 import { RiverScene } from "@/components/answers/CrossingPuzzle";
 import { GraphMap } from "@/components/answers/GraphPuzzle";
@@ -18,6 +20,7 @@ import { TableVisual } from "@/components/visuals/numbers";
 import { PolyominoVisual, ShapeIcon } from "@/components/visuals/shapes";
 import type { Option, RobotPuzzle, Task, VennRegion } from "@/content/types";
 import { hanoiStart } from "@/lib/hanoi";
+import { useLang, useT } from "@/lib/i18n";
 import { commandLabel, commandName } from "@/lib/performer";
 import { parseMap } from "@/lib/robot";
 
@@ -53,11 +56,12 @@ function OptionPrint({ option }: { option: Option }) {
 }
 
 function RobotPrint({ puzzle }: { puzzle: RobotPuzzle }) {
+  const t = useT();
   const map = parseMap(puzzle.map);
   if (puzzle.mode === "paths") {
     return (
       <div className="space-y-2">
-        <p>Нарисуй каждый путь на отдельном поле:</p>
+        <p>{t("Нарисуй каждый путь на отдельном поле:", "Har bir yoʻlni alohida maydonga chiz:")}</p>
         <div className="flex flex-wrap gap-3">
           {Array.from({ length: puzzle.pathsCount ?? 6 }, (_, i) => (
             <div key={i} className="w-[26mm]">
@@ -66,7 +70,7 @@ function RobotPrint({ puzzle }: { puzzle: RobotPuzzle }) {
           ))}
         </div>
         <p>
-          Всего коротких путей: <Line w={16} />
+          {t("Всего коротких путей:", "Jami qisqa yoʻllar:")} <Line w={16} />
         </p>
       </div>
     );
@@ -80,25 +84,25 @@ function RobotPrint({ puzzle }: { puzzle: RobotPuzzle }) {
       <div className="min-w-[70mm] flex-1 space-y-2.5">
         {(puzzle.mode === "build" || puzzle.mode === "collect") && (
           <>
-            <p>Моя программа:</p>
+            <p>{t("Моя программа:", "Mening dasturim:")}</p>
             <Boxes count={boxes} />
             <p>
-              Команд в программе: <Line w={14} />
+              {t("Команд в программе:", "Dasturdagi buyruqlar soni:")} <Line w={14} />
             </p>
           </>
         )}
         {puzzle.mode === "trace" && (
           <p>
-            Робот найдёт: <Line w={40} />
+            {t("Робот найдёт:", "Robot topadi:")} <Line w={40} />
           </p>
         )}
         {puzzle.mode === "debug" && (
           <>
             <p>
-              Робот врезается на шаге № <Line w={12} />
+              {t("Робот врезается на шаге №", "Robot nechanchi qadamda urilib qoladi: №")} <Line w={12} />
             </p>
             <p>
-              Исправленная программа: <Boxes count={puzzle.program?.length ?? 7} />
+              {t("Исправленная программа:", "Tuzatilgan dastur:")} <Boxes count={puzzle.program?.length ?? 7} />
             </p>
           </>
         )}
@@ -109,6 +113,8 @@ function RobotPrint({ puzzle }: { puzzle: RobotPuzzle }) {
 
 /** Место для ответа на бумаге — своё для каждого типа задачи. */
 export function PrintAnswerArea({ task }: { task: Task }) {
+  const t = useT();
+  const lang = useLang();
   const a = task.answer;
   switch (a.kind) {
     case "fields":
@@ -164,10 +170,10 @@ export function PrintAnswerArea({ task }: { task: Task }) {
             <GraphMap puzzle={a.puzzle} />
           </div>
           <p>
-            Самый быстрый путь: <Line w={80} />
+            {t("Самый быстрый путь:", "Eng tez yoʻl:")} <Line w={80} />
           </p>
           <p>
-            Время: <Line w={16} /> {a.puzzle.unit}
+            {t("Время:", "Vaqt:")} <Line w={16} /> {a.puzzle.unit}
           </p>
         </div>
       );
@@ -205,7 +211,7 @@ export function PrintAnswerArea({ task }: { task: Task }) {
     case "partition":
       return (
         <div className="space-y-1.5">
-          <p>Нарисуй разные разрезы:</p>
+          <p>{t("Нарисуй разные разрезы:", "Har xil usulda kesib koʻrsat:")}</p>
           <div className="flex flex-wrap gap-4">
             {Array.from({ length: 6 }, (_, i) => (
               <PartitionGridView
@@ -242,7 +248,8 @@ export function PrintAnswerArea({ task }: { task: Task }) {
         <div className="space-y-2.5">
           {[1, 2].map((i) => (
             <p key={i}>
-              Правило {i}: <Line w={70} /> Следующее число: <Line w={14} />
+              {t(`Правило ${i}:`, `${i}-qoida:`)} <Line w={70} /> {t("Следующее число:", "Keyingi son:")}{" "}
+              <Line w={14} />
             </p>
           ))}
         </div>
@@ -259,13 +266,13 @@ export function PrintAnswerArea({ task }: { task: Task }) {
       return (
         <div className="space-y-2">
           <p>
-            {p.emoji} {p.name} умеет:{" "}
+            {p.emoji} {p.name} {t("умеет:", "bajara oladi:")}{" "}
             {p.commands.map((c, i) => (
               <b key={i} className="mr-2">
-                {commandLabel(c)} ({commandName(c)})
+                {commandLabel(c)} ({commandName(c, lang)})
               </b>
             ))}
-            · начало — <b>{p.start}</b>, цель — <b>{p.target}</b>.
+            · {t("начало", "boshlanish")} — <b>{p.start}</b>, {t("цель", "maqsad")} — <b>{p.target}</b>.
           </p>
           {p.line && (
             <div className="max-w-[170mm]">
@@ -273,10 +280,10 @@ export function PrintAnswerArea({ task }: { task: Task }) {
             </div>
           )}
           <p>
-            Моя программа: <Boxes count={Math.min(p.optimal + 4, 16)} size={9} />
+            {t("Моя программа:", "Mening dasturim:")} <Boxes count={Math.min(p.optimal + 4, 16)} size={9} />
           </p>
           <p>
-            Числа по дороге: <Line w={110} />
+            {t("Числа по дороге:", "Yoʻldagi sonlar:")} <Line w={110} />
           </p>
         </div>
       );
@@ -287,7 +294,10 @@ export function PrintAnswerArea({ task }: { task: Task }) {
           <div className="w-[70mm] shrink-0">
             <HanoiBoard state={hanoiStart(a.disks)} disks={a.disks} compact />
           </div>
-          <TableVisual head={["Колец", "1", "2", "3", "4"]} rows={[["Ходов", "", "", "", ""]]} />
+          <TableVisual
+            head={[t("Колец", "Halqalar"), "1", "2", "3", "4"]}
+            rows={[[t("Ходов", "Yurishlar"), "", "", "", ""]]}
+          />
         </div>
       );
     case "crossing":
@@ -297,7 +307,7 @@ export function PrintAnswerArea({ task }: { task: Task }) {
             <RiverScene puzzle={a.puzzle} />
           </div>
           <TableVisual
-            head={["№", "Кто в лодке", "Куда: → или ←"]}
+            head={["№", t("Кто в лодке", "Qayiqda kim"), t("Куда: → или ←", "Qayoqqa: → yoki ←")]}
             rows={Array.from({ length: a.puzzle.optimal + 2 }, (_, i) => [String(i + 1), "", ""])}
           />
         </div>
@@ -309,12 +319,19 @@ export function PrintAnswerArea({ task }: { task: Task }) {
             {a.capacities.map((c, i) => (
               <div key={i} className="flex flex-col items-center">
                 <Bucket capacity={c} amount={0} maxCapacity={Math.max(...a.capacities)} showAmount={false} />
-                <span className="text-[9pt] font-bold">{c} л</span>
+                <span className="text-[9pt] font-bold">
+                  {c} {t("л", "l")}
+                </span>
               </div>
             ))}
           </div>
           <TableVisual
-            head={["№", "Что делаю", `Ведро на ${a.capacities[0]} л`, `Ведро на ${a.capacities[1]} л`]}
+            head={[
+              "№",
+              t("Что делаю", "Nima qilaman"),
+              t(`Ведро на ${a.capacities[0]} л`, `${a.capacities[0]} litrli chelak`),
+              t(`Ведро на ${a.capacities[1]} л`, `${a.capacities[1]} litrli chelak`),
+            ]}
             rows={Array.from({ length: a.optimal + 2 }, (_, i) => [String(i + 1), "", "", ""])}
           />
         </div>
@@ -337,7 +354,7 @@ export function PrintAnswerArea({ task }: { task: Task }) {
       return (
         <div className="space-y-1.5">
           <p>
-            Впиши в круги: <b>{a.items.map((i) => i.label).join(", ")}</b>
+            {t("Впиши в круги:", "Doiralarga yozib chiq:")} <b>{a.items.map((i) => i.label).join(", ")}</b>
           </p>
           <div className="w-[120mm]">
             <VennDiagram sets={a.sets} regions={regions} />
@@ -359,11 +376,16 @@ export function PrintAnswerArea({ task }: { task: Task }) {
             </div>
           </div>
           <TableVisual
-            head={["№", "Монеты слева", "Монеты справа", "Что показали весы"]}
+            head={[
+              "№",
+              t("Монеты слева", "Chapdagi tangalar"),
+              t("Монеты справа", "Oʻngdagi tangalar"),
+              t("Что показали весы", "Tarozi nimani koʻrsatdi"),
+            ]}
             rows={Array.from({ length: a.weighings + 1 }, (_, i) => [String(i + 1), "", "", ""])}
           />
           <p>
-            Фальшивая монета: № <Line w={14} />
+            {t("Фальшивая монета: №", "Qalbaki tanga: №")} <Line w={14} />
           </p>
         </div>
       );
@@ -371,7 +393,7 @@ export function PrintAnswerArea({ task }: { task: Task }) {
       return (
         <div className="space-y-2">
           <CardRow cards={a.cards} print />
-          <p>Записывай ряд после каждого обмена:</p>
+          <p>{t("Записывай ряд после каждого обмена:", "Har bir almashtirishdan keyin qatorni yozib bor:")}</p>
           <div className="grid grid-cols-2 gap-x-8 gap-y-2">
             {Array.from({ length: a.optimal + 1 }, (_, i) => (
               <span key={i} className="flex items-center gap-2">
@@ -380,7 +402,7 @@ export function PrintAnswerArea({ task }: { task: Task }) {
             ))}
           </div>
           <p>
-            Обменов: <Line w={14} />
+            {t("Обменов:", "Almashtirishlar soni:")} <Line w={14} />
           </p>
         </div>
       );
@@ -388,9 +410,19 @@ export function PrintAnswerArea({ task }: { task: Task }) {
       return (
         <div className="space-y-2">
           <Stones total={a.stones} left={a.stones} print />
-          <p>Сыграй со взрослым: зачёркивайте камешки по очереди и записывайте ходы.</p>
+          <p>
+            {t(
+              "Сыграй со взрослым: зачёркивайте камешки по очереди и записывайте ходы.",
+              "Kattalar bilan oʻynab koʻr: toshchalarni navbatma-navbat chizib, yurishlarni yozib boringlar.",
+            )}
+          </p>
           <TableVisual
-            head={["Ход", "Кто ходил", "Сколько взял", "Сколько осталось"]}
+            head={[
+              t("Ход", "Yurish"),
+              t("Кто ходил", "Kim yurdi"),
+              t("Сколько взял", "Nechta oldi"),
+              t("Сколько осталось", "Nechta qoldi"),
+            ]}
             rows={Array.from({ length: 8 }, (_, i) => [String(i + 1), "", "", ""])}
           />
         </div>
@@ -401,7 +433,7 @@ export function PrintAnswerArea({ task }: { task: Task }) {
           <CipherBoxes text={a.encoded} print />
           <ShiftTable alphabet={a.alphabet} shift={a.shift} print />
           <p className="flex flex-wrap items-center gap-2">
-            Расшифровка: <Boxes count={[...a.answer].length} size={9} />
+            {t("Расшифровка:", "Yashirin soʻz:")} <Boxes count={[...a.answer].length} size={9} />
           </p>
         </div>
       );
@@ -410,7 +442,13 @@ export function PrintAnswerArea({ task }: { task: Task }) {
         <div className="space-y-3">
           {a.sets.map((set, i) => (
             <div key={i} className="space-y-1">
-              <p className="font-bold">{setLabel(set)}. Обведи грузы, которые получилось уравновесить:</p>
+              <p className="font-bold">
+                {setLabel(set, lang)}.{" "}
+                {t(
+                  "Обведи грузы, которые получилось уравновесить:",
+                  "Muvozanatga keltira olgan yuklaringni doiraga ol:",
+                )}
+              </p>
               <div className="flex flex-wrap gap-[1.2mm]">
                 {Array.from({ length: set.max }, (_, l) => (
                   <span
@@ -424,7 +462,7 @@ export function PrintAnswerArea({ task }: { task: Task }) {
             </div>
           ))}
           <p>
-            Что я заметил: <Line w={130} />
+            {t("Что я заметил:", "Nimani payqadim:")} <Line w={130} />
           </p>
         </div>
       );

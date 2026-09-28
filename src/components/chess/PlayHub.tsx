@@ -3,9 +3,10 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Button, cn } from "@/components/ui";
-import { ROBOT_LEVELS } from "@/lib/engine/search";
-import { useAgeProfile } from "@/lib/age";
-import { CLOCKS, ENDGAMES, ODDS_PIECES, clockLabel } from "@/lib/play";
+import { robotLevels } from "@/lib/engine/search";
+import { profileText, useAgeProfile } from "@/lib/age";
+import { useLang, useT } from "@/lib/i18n";
+import { CLOCKS, ENDGAMES, ODDS_PIECES, clockLabel, endgameText, oddsPieceLabel } from "@/lib/play";
 import { useHydrated, useStore } from "@/lib/store";
 import { setHash, useHash } from "@/lib/useHash";
 import { PieceIcon } from "./ChessBoard";
@@ -56,7 +57,10 @@ export function PlayHub() {
 
 function ModeChooser() {
   const hydrated = useHydrated();
+  const t = useT();
+  const lang = useLang();
   const profile = useAgeProfile();
+  const robotName = profileText(profile, lang).robotName;
   const games = useStore((s) => s.chessGames);
   const robotGames = hydrated ? games.filter((g) => g.mode === "robot") : [];
   const wins = (level: number) => robotGames.filter((g) => g.level === level && g.result === "win").length;
@@ -75,38 +79,48 @@ function ModeChooser() {
   return (
     <div className="space-y-6">
       <Link href="/chess" className="inline-flex items-center gap-1 text-sm font-extrabold text-brand hover:underline">
-        ← Шахматная школа
+        ← {t("Шахматная школа", "Shaxmat maktabi")}
       </Link>
       <header>
-        <p className="text-sm font-extrabold tracking-wide text-brand uppercase">Играть</p>
-        <h1 className="text-3xl font-black">Шахматная доска</h1>
+        <p className="text-sm font-extrabold tracking-wide text-brand uppercase">{t("Играть", "Oʻynash")}</p>
+        <h1 className="text-3xl font-black">{t("Шахматная доска", "Shaxmat taxtasi")}</h1>
         <p className="mt-1 max-w-2xl text-muted">
-          Играй с роботом, вдвоём с мамой или папой на одном экране, устрой пешечный бой или потренируй мат одинокому
-          королю. Доска сама следит за правилами.
+          {t(
+            "Играй с роботом, вдвоём с мамой или папой на одном экране, устрой пешечный бой или потренируй мат одинокому королю. Доска сама следит за правилами.",
+            "Robot bilan oʻyna, onang yoki otang bilan bitta ekranda bellash, piyodalar jangini uyushtir yoki yolgʻiz shohga mot qilishni mashq qil. Qoidalarni taxtaning oʻzi kuzatib boradi.",
+          )}
         </p>
       </header>
 
       <section className="rounded-3xl bg-white p-5 shadow-card" aria-labelledby="robot">
         <h2 id="robot" className="text-xl font-black">
-          🤖 С роботом
+          🤖 {t("С роботом", "Robot bilan")}
         </h2>
         <p className="mt-1 text-sm text-muted">
-          Выбери силу робота. Тебе советуем начать с «{profile.robotName}» — и подниматься выше, когда начнёшь
-          побеждать.
+          {t(
+            `Выбери силу робота. Тебе советуем начать с «${robotName}» — и подниматься выше, когда начнёшь побеждать.`,
+            `Robotning kuchini tanla. Senga «${robotName}»dan boshlashni maslahat beramiz — yuta boshlaganingda esa yuqoriroqqa koʻtaril.`,
+          )}
         </p>
-        <div className="mt-3 flex flex-wrap items-center gap-1.5" role="group" aria-label="Фора от робота">
-          <span className="text-sm font-extrabold text-muted">Фора — робот играет:</span>
+        <div
+          className="mt-3 flex flex-wrap items-center gap-1.5"
+          role="group"
+          aria-label={t("Фора от робота", "Robotdan fora")}
+        >
+          <span className="text-sm font-extrabold text-muted">
+            {t("Фора — робот играет:", "Fora — robot oʻynaydi:")}
+          </span>
           <button type="button" className={chip(robotOdds === "")} onClick={() => setRobotOdds("")}>
-            со всеми фигурами
+            {t("со всеми фигурами", "barcha donalar bilan")}
           </button>
           {ODDS_PIECES.map((o) => (
             <button key={o.id} type="button" className={chip(robotOdds === o.id)} onClick={() => setRobotOdds(o.id)}>
-              {o.label}
+              {oddsPieceLabel(o.id, lang)}
             </button>
           ))}
         </div>
         <div className="mt-3 grid gap-2 sm:grid-cols-5">
-          {ROBOT_LEVELS.map((l) => (
+          {robotLevels(lang).map((l) => (
             <div
               key={l.id}
               className={cn(
@@ -118,19 +132,21 @@ function ModeChooser() {
                 <PieceIcon piece={l.piece} className="h-10 w-10 rounded-xl bg-[#f0d9b5] p-0.5" />
                 <div>
                   <p className="font-black">{l.name}</p>
-                  <p className="text-xs font-bold text-muted">уровень {l.id}</p>
+                  <p className="text-xs font-bold text-muted">{t(`уровень ${l.id}`, `${l.id}-daraja`)}</p>
                   {hydrated && l.id === profile.robotLevel && (
-                    <p className="text-xs font-extrabold text-brand">★ советуем тебе</p>
+                    <p className="text-xs font-extrabold text-brand">{t("★ советуем тебе", "★ senga tavsiya")}</p>
                   )}
                 </div>
               </div>
               <p className="mt-2 flex-1 text-xs text-muted">{l.about}</p>
               {hydrated && wins(l.id) > 0 && (
-                <p className="mt-1 text-xs font-extrabold text-[#065f46]">🏆 побед: {wins(l.id)}</p>
+                <p className="mt-1 text-xs font-extrabold text-[#065f46]">
+                  🏆 {t("побед", "gʻalabalar")}: {wins(l.id)}
+                </p>
               )}
               <div className="mt-2 flex gap-1">
                 <Button size="sm" className="flex-1" onClick={() => setHash(`#robot-${l.id}-w${robotQuery}`)}>
-                  Белыми
+                  {t("Белыми", "Oqlar bilan")}
                 </Button>
                 <Button
                   size="sm"
@@ -138,7 +154,7 @@ function ModeChooser() {
                   className="flex-1"
                   onClick={() => setHash(`#robot-${l.id}-b${robotQuery}`)}
                 >
-                  Чёрными
+                  {t("Чёрными", "Qoralar bilan")}
                 </Button>
               </div>
             </div>
@@ -149,54 +165,60 @@ function ModeChooser() {
       <div className="grid gap-4 md:grid-cols-3">
         <section className="rounded-3xl bg-white p-5 shadow-card" aria-labelledby="two">
           <h2 id="two" className="text-xl font-black">
-            👨‍👦 Вдвоём
+            👨‍👦 {t("Вдвоём", "Ikki kishilik oʻyin")}
           </h2>
           <p className="mt-1 text-sm text-muted">
-            Партия на одном экране: ты и мама, папа или друг. Доска подсвечивает ходы, объявляет шах и мат, считает
-            ходы.
+            {t(
+              "Партия на одном экране: ты и мама, папа или друг. Доска подсвечивает ходы, объявляет шах и мат, считает ходы.",
+              "Bitta ekranda partiya: sen va onang, otang yoki doʻsting. Taxta yurishlarni belgilab koʻrsatadi, shoh va motni eʼlon qiladi, yurishlarni sanaydi.",
+            )}
           </p>
-          <p className="mt-3 text-sm font-extrabold text-muted">⏱ Шахматные часы</p>
-          <div className="mt-1 flex flex-wrap gap-1.5" role="group" aria-label="Шахматные часы">
+          <p className="mt-3 text-sm font-extrabold text-muted">⏱ {t("Шахматные часы", "Shaxmat soati")}</p>
+          <div className="mt-1 flex flex-wrap gap-1.5" role="group" aria-label={t("Шахматные часы", "Shaxmat soati")}>
             <button type="button" className={chip(clock === "")} onClick={() => setClock("")}>
-              без часов
+              {t("без часов", "soatsiz")}
             </button>
             {CLOCKS.map((c) => (
               <button key={c.id} type="button" className={chip(clock === c.id)} onClick={() => setClock(c.id)}>
-                {clockLabel(c)}
+                {clockLabel(c, lang)}
               </button>
             ))}
           </div>
-          <p className="mt-3 text-sm font-extrabold text-muted">🎁 Фора — сильный играет без фигуры</p>
-          <div className="mt-1 flex flex-wrap gap-1.5" role="group" aria-label="Кто даёт фору">
+          <p className="mt-3 text-sm font-extrabold text-muted">
+            🎁 {t("Фора — сильный играет без фигуры", "Fora — kuchliroq oʻyinchi bitta donasiz oʻynaydi")}
+          </p>
+          <div className="mt-1 flex flex-wrap gap-1.5" role="group" aria-label={t("Кто даёт фору", "Kim fora beradi")}>
             <button type="button" className={chip(oddsSide === "w")} onClick={() => setOddsSide("w")}>
-              белые
+              {t("белые", "oqlar")}
             </button>
             <button type="button" className={chip(oddsSide === "b")} onClick={() => setOddsSide("b")}>
-              чёрные
+              {t("чёрные", "qoralar")}
             </button>
           </div>
-          <div className="mt-1.5 flex flex-wrap gap-1.5" role="group" aria-label="Фора">
+          <div className="mt-1.5 flex flex-wrap gap-1.5" role="group" aria-label={t("Фора", "Fora")}>
             <button type="button" className={chip(oddsPiece === "")} onClick={() => setOddsPiece("")}>
-              без форы
+              {t("без форы", "forasiz")}
             </button>
             {ODDS_PIECES.map((o) => (
               <button key={o.id} type="button" className={chip(oddsPiece === o.id)} onClick={() => setOddsPiece(o.id)}>
-                {o.label}
+                {oddsPieceLabel(o.id, lang)}
               </button>
             ))}
           </div>
           <Button className="mt-3" onClick={() => setHash(twoParams ? `#two?${twoParams}` : "#two")}>
-            Начать партию
+            {t("Начать партию", "Partiyani boshlash")}
           </Button>
         </section>
 
         <section className="rounded-3xl bg-white p-5 shadow-card" aria-labelledby="pawns">
           <h2 id="pawns" className="text-xl font-black">
-            ♟ Пешечный бой
+            ♟ {t("Пешечный бой", "Piyodalar jangi")}
           </h2>
           <p className="mt-1 text-sm text-muted">
-            Только пешки! Кто первым проведёт пешку до края — победил. Лучшая игра, чтобы понять, как ходят и бьют
-            пешки.
+            {t(
+              "Только пешки! Кто первым проведёт пешку до края — победил. Лучшая игра, чтобы понять, как ходят и бьют пешки.",
+              "Faqat piyodalar! Kim piyodasini birinchi boʻlib taxta chetiga olib borsa — oʻsha yutadi. Piyodalar qanday yurishi va urishini tushunish uchun eng yaxshi oʻyin.",
+            )}
           </p>
           <div className="mt-3 flex flex-wrap gap-1.5">
             {[1, 2, 3].map((lvl) => (
@@ -206,7 +228,7 @@ function ModeChooser() {
                 variant={lvl === 1 ? "primary" : "secondary"}
                 onClick={() => setHash(`#pawns-${lvl}-w`)}
               >
-                Робот {lvl === 1 ? "🐣" : lvl === 2 ? "🙂" : "😎"}
+                {t("Робот", "Robot")} {lvl === 1 ? "🐣" : lvl === 2 ? "🙂" : "😎"}
               </Button>
             ))}
           </div>
@@ -214,10 +236,13 @@ function ModeChooser() {
 
         <section className="rounded-3xl bg-white p-5 shadow-card" aria-labelledby="endgames">
           <h2 id="endgames" className="text-xl font-black">
-            🏁 Поставь мат
+            🏁 {t("Поставь мат", "Mot qil")}
           </h2>
           <p className="mt-1 text-sm text-muted">
-            Робот убегает королём, а ты ставишь мат. Позиция каждый раз новая. Главное — не поставить пат!
+            {t(
+              "Робот убегает королём, а ты ставишь мат. Позиция каждый раз новая. Главное — не поставить пат!",
+              "Robot shohi bilan qochadi, sen esa mot qilasan. Pozitsiya har safar yangi. Eng muhimi — pat qilib qoʻyma!",
+            )}
           </p>
           <div className="mt-3 flex flex-col gap-1.5">
             {ENDGAMES.map((v) => (
@@ -229,8 +254,8 @@ function ModeChooser() {
                   "flex items-center justify-between rounded-xl border-2 border-line px-3 py-2 text-left font-extrabold transition hover:border-brand/40 hover:bg-brand-soft/40",
                 )}
               >
-                {v.name}
-                <span className="text-xs text-muted">до {v.target} ходов</span>
+                {endgameText(v, lang).name}
+                <span className="text-xs text-muted">{t(`до ${v.target} ходов`, `${v.target} yurishgacha`)}</span>
               </button>
             ))}
           </div>
@@ -240,9 +265,10 @@ function ModeChooser() {
       {hydrated && games.length > 0 && (
         <section className="flex flex-wrap items-center justify-between gap-3 rounded-3xl bg-white p-5 shadow-card">
           <div>
-            <h2 className="text-lg font-black">Мои партии</h2>
+            <h2 className="text-lg font-black">{t("Мои партии", "Mening partiyalarim")}</h2>
             <p className="mt-1 text-sm font-bold text-muted">
-              С роботом: {robotGames.length} · побед: {robotGames.filter((g) => g.result === "win").length} · вдвоём:{" "}
+              {t("С роботом", "Robot bilan")}: {robotGames.length} · {t("побед", "gʻalabalar")}:{" "}
+              {robotGames.filter((g) => g.result === "win").length} · {t("вдвоём", "ikki kishilik")}:{" "}
               {games.filter((g) => g.mode === "two").length}
             </p>
           </div>
@@ -250,7 +276,7 @@ function ModeChooser() {
             href="/chess/review"
             className="rounded-2xl bg-brand-soft px-4 py-2 font-extrabold text-brand-dark hover:bg-[#e0e3ff]"
           >
-            🔎 Разбор моих партий →
+            🔎 {t("Разбор моих партий →", "Partiyalarim tahlili →")}
           </Link>
         </section>
       )}

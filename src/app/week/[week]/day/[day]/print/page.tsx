@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { PrintView } from "@/components/print/PrintView";
 import { allDays, dayHref, getDay } from "@/content/program";
+import { localizeDay } from "@/content/uz";
 
 type Props = { params: Promise<{ week: string; day: string }> };
 
@@ -21,5 +22,16 @@ export default async function DayPrintPage({ params }: Props) {
   const { week, day } = await params;
   const d = getDay(Number(week), Number(day));
   if (!d) notFound();
-  return <PrintView days={[d]} title={`Неделя ${d.week} · День ${d.day}. ${d.title}`} backHref={dayHref(d)} />;
+  // Лист для взрослого печатается с ответами, поэтому день передаётся целиком — на обоих языках.
+  const uz = localizeDay(d, "uz");
+  return (
+    <PrintView
+      days={{ ru: [d], uz: [uz] }}
+      title={{
+        ru: `Неделя ${d.week} · День ${d.day}. ${d.title}`,
+        uz: `${uz.week}-hafta · ${uz.day}-kun. ${uz.title}`,
+      }}
+      backHref={dayHref(d)}
+    />
+  );
 }

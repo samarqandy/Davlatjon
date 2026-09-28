@@ -4,16 +4,17 @@ import { useRef, useState } from "react";
 import { Button, cn } from "@/components/ui";
 import { askExplain, praise } from "@/lib/feedback";
 import { canMove, hanoiSolved, hanoiStart, moveDisk, topDisk, type HanoiState } from "@/lib/hanoi";
-import { plural, pluralize } from "@/lib/plural";
+import { countText, useLang, useT, type Lang } from "@/lib/i18n";
+import { plural } from "@/lib/plural";
 import { addFound, recordCheck, saveTaskInput, useTask } from "@/lib/store";
 import { Feedback, type FeedbackState } from "./Feedback";
 
 const DISK_COLORS = ["#f87171", "#fbbf24", "#34d399", "#60a5fa", "#a78bfa", "#f472b6"];
-const PEG_NAMES = ["левый", "средний", "правый"];
+const PEG_NAMES = { ru: ["левый", "средний", "правый"], uz: ["Chap", "Oʻrta", "Oʻng"] };
 const SIZES = [1, 2, 3, 4];
 
-const disksWord = (n: number) => pluralize(n, "кольцо", "кольца", "колец");
-const movesWord = (n: number) => pluralize(n, "ход", "хода", "ходов");
+const disksWord = (n: number, lang: Lang) => countText(lang, n, ["кольцо", "кольца", "колец"], "ta halqa");
+const movesWord = (n: number, lang: Lang) => countText(lang, n, ["ход", "хода", "ходов"], "ta yurish");
 
 /** Три стержня с кольцами. Если передан onPeg — по стержням можно нажимать. */
 export function HanoiBoard({
@@ -29,6 +30,8 @@ export function HanoiBoard({
   onPeg?: (peg: number) => void;
   compact?: boolean;
 }) {
+  const t = useT();
+  const lang = useLang();
   const diskH = compact ? 14 : 22;
   const height = (disks + 1.2) * (diskH + 3) + 14;
   return (
@@ -60,7 +63,10 @@ export function HanoiBoard({
             </span>
           </>
         );
-        const label = `${PEG_NAMES[p]} стержень: ${peg.length === 0 ? "пусто" : disksWord(peg.length)}`;
+        const label = t(
+          `${PEG_NAMES.ru[p]} стержень: ${peg.length === 0 ? "пусто" : disksWord(peg.length, lang)}`,
+          `${PEG_NAMES.uz[p]} sterjen: ${peg.length === 0 ? "boʻsh" : disksWord(peg.length, lang)}`,
+        );
         return onPeg ? (
           <button
             key={p}
@@ -83,9 +89,9 @@ export function HanoiBoard({
         );
       })}
       {!compact &&
-        PEG_NAMES.map((name, p) => (
+        PEG_NAMES.ru.map((name, p) => (
           <span key={name} className="text-center text-xs font-extrabold text-muted">
-            {p === 2 ? "🏁 сюда" : p === 0 ? "начало" : ""}
+            {p === 2 ? t("🏁 сюда", "🏁 bu yerga") : p === 0 ? t("начало", "boshlanish") : ""}
           </span>
         ))}
     </div>
@@ -104,6 +110,8 @@ function bestMoves(found: string[] | undefined): Map<number, number> {
 }
 
 export function HanoiPuzzle({ taskId, disks, optimal }: { taskId: string; disks: number; optimal: number }) {
+  const t = useT();
+  const lang = useLang();
   const progress = useTask(taskId);
   const [size, setSize] = useState(() => {
     const saved = Number(progress.input?.size);
@@ -132,8 +140,8 @@ export function HanoiPuzzle({ taskId, disks, optimal }: { taskId: string; disks:
       if (state[p].length === 0) {
         setFeedback({
           tone: "info",
-          text: "На этом стержне нет колец.",
-          sub: "Выбери стержень, с которого возьмёшь кольцо.",
+          text: t("На этом стержне нет колец.", "Bu sterjenda halqa yoʻq."),
+          sub: t("Выбери стержень, с которого возьмёшь кольцо.", "Halqa oladigan sterjenni tanla."),
         });
         return;
       }
@@ -148,8 +156,11 @@ export function HanoiPuzzle({ taskId, disks, optimal }: { taskId: string; disks:
     if (!canMove(state, selected, p)) {
       setFeedback({
         tone: "retry",
-        text: "Большое кольцо нельзя класть на маленькое!",
-        sub: `Кольцо ${topDisk(state[selected])} больше, чем кольцо ${topDisk(state[p])}. Выбери другой стержень.`,
+        text: t("Большое кольцо нельзя класть на маленькое!", "Katta halqani kichigining ustiga qoʻyib boʻlmaydi!"),
+        sub: t(
+          `Кольцо ${topDisk(state[selected])} больше, чем кольцо ${topDisk(state[p])}. Выбери другой стержень.`,
+          `${topDisk(state[selected])}-halqa ${topDisk(state[p])}-halqadan katta. Boshqa sterjenni tanla.`,
+        ),
       });
       setSelected(null);
       return;
@@ -172,23 +183,38 @@ export function HanoiPuzzle({ taskId, disks, optimal }: { taskId: string; disks:
         count <= optimal
           ? {
               tone: "success",
-              text: `${praise(n)} Башня перенесена за ${movesWord(count)}!`,
-              sub: `Быстрее не бывает. ${askExplain(n)}`,
+              text: t(
+                `${praise(n, lang)} Башня перенесена за ${movesWord(count, lang)}!`,
+                `${praise(n, lang)} Minorani ${movesWord(count, lang)}da koʻchirding!`,
+              ),
+              sub: t(`Быстрее не бывает. ${askExplain(n, lang)}`, `Bundan tezroq boʻlmaydi. ${askExplain(n, lang)}`),
             }
           : {
               tone: "success",
-              text: `Башня на месте! Ходов: ${count}.`,
-              sub: "А можно быстрее? Нажми «Сначала» и попробуй сократить путь.",
+              text: t(`Башня на месте! Ходов: ${count}.`, `Minora joyida! ${movesWord(count, lang)} qilding.`),
+              sub: t(
+                "А можно быстрее? Нажми «Сначала» и попробуй сократить путь.",
+                "Tezroq boʻlmaydimi? «Qaytadan boshlash» tugmasini bos va yurishlarni qisqartirib koʻr.",
+              ),
             },
       );
     } else {
       setFeedback({
         tone: "success",
-        text: `Башня из ${disksWord(size)} перенесена за ${movesWord(count)}!`,
+        text: t(
+          `Башня из ${disksWord(size, lang)} перенесена за ${movesWord(count, lang)}!`,
+          `${size} ta halqali minorani ${movesWord(count, lang)}da koʻchirding!`,
+        ),
         sub:
           size < disks
-            ? "Запомни, как ты это сделал, — и возьми башню побольше."
-            : "Сравни с башней поменьше: какая закономерность у ходов?",
+            ? t(
+                "Запомни, как ты это сделал, — и возьми башню побольше.",
+                "Buni qanday qilganingni eslab qol — endi kattaroq minorani ol.",
+              )
+            : t(
+                "Сравни с башней поменьше: какая закономерность у ходов?",
+                "Kichikroq minora bilan solishtir: yurishlar sonida qanday qonuniyat bor?",
+              ),
       });
     }
   };
@@ -196,7 +222,7 @@ export function HanoiPuzzle({ taskId, disks, optimal }: { taskId: string; disks:
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-sm font-extrabold text-muted">Башня из</span>
+        <span className="text-sm font-extrabold text-muted">{t("Башня из", "Minorada")}</span>
         {SIZES.map((n) => (
           <button
             key={n}
@@ -211,10 +237,12 @@ export function HanoiPuzzle({ taskId, disks, optimal }: { taskId: string; disks:
             {n}
           </button>
         ))}
-        <span className="text-sm font-extrabold text-muted">{plural(size, "кольца", "колец", "колец")}</span>
+        <span className="text-sm font-extrabold text-muted">
+          {t(plural(size, "кольца", "колец", "колец"), "ta halqa")}
+        </span>
         {size !== disks && (
           <span className="rounded-full bg-sun-soft px-2.5 py-0.5 text-xs font-extrabold text-[#7a4b00]">
-            тренировка
+            {t("тренировка", "mashq")}
           </span>
         )}
       </div>
@@ -224,19 +252,25 @@ export function HanoiPuzzle({ taskId, disks, optimal }: { taskId: string; disks:
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        <span className="tabular rounded-2xl bg-white px-4 py-2 text-lg font-black shadow-card">Ходов: {moves}</span>
+        <span className="tabular rounded-2xl bg-white px-4 py-2 text-lg font-black shadow-card">
+          {t(`Ходов: ${moves}`, `Yurishlar: ${moves}`)}
+        </span>
         <Button variant="secondary" onClick={() => restart(size)} disabled={moves === 0}>
-          ↺ Сначала
+          ↺ {t("Сначала", "Qaytadan boshlash")}
         </Button>
         <span className="text-sm font-bold text-muted">
-          {selected === null ? "Нажми на стержень, чтобы взять верхнее кольцо." : "Теперь нажми, куда его положить."}
+          {selected === null
+            ? t("Нажми на стержень, чтобы взять верхнее кольцо.", "Yuqoridagi halqani olish uchun sterjenni bos.")
+            : t("Теперь нажми, куда его положить.", "Endi uni qoʻyadigan sterjenni bos.")}
         </span>
       </div>
 
       <Feedback state={feedback} />
 
       <div className="rounded-2xl bg-white p-3 shadow-card">
-        <p className="mb-2 text-sm font-extrabold text-muted">Мои рекорды: сколько ходов понадобилось</p>
+        <p className="mb-2 text-sm font-extrabold text-muted">
+          {t("Мои рекорды: сколько ходов понадобилось", "Rekordlarim: necha yurish kerak boʻldi")}
+        </p>
         <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
           {SIZES.map((n) => (
             <div
@@ -246,7 +280,7 @@ export function HanoiPuzzle({ taskId, disks, optimal }: { taskId: string; disks:
                 records.has(n) ? "bg-mint-soft text-[#065f46]" : "border-2 border-dashed border-line text-muted",
               )}
             >
-              <div className="text-xs font-bold">{disksWord(n)}</div>
+              <div className="text-xs font-bold">{disksWord(n, lang)}</div>
               <div className="tabular text-xl font-black">{records.has(n) ? records.get(n) : "?"}</div>
             </div>
           ))}

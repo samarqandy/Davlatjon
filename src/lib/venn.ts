@@ -1,4 +1,5 @@
 import type { VennRegion } from "@/content/types";
+import type { Lang } from "./lang";
 
 /** Круги Эйлера: геометрия рисунка и проверка раскладки. */
 
@@ -11,16 +12,17 @@ export const VENN = {
 
 export const VENN_ORDER: VennRegion[] = ["a", "ab", "b", "none"];
 
-export function regionName(region: VennRegion, sets: readonly [string, string]): string {
+export function regionName(region: VennRegion, sets: readonly [string, string], lang: Lang = "ru"): string {
+  const uz = lang === "uz";
   switch (region) {
     case "a":
-      return `только «${sets[0]}»`;
+      return uz ? `faqat «${sets[0]}»` : `только «${sets[0]}»`;
     case "b":
-      return `только «${sets[1]}»`;
+      return uz ? `faqat «${sets[1]}»` : `только «${sets[1]}»`;
     case "ab":
-      return "в обоих кругах";
+      return uz ? "ikkala doirada" : "в обоих кругах";
     case "none":
-      return "вне кругов";
+      return uz ? "doiralardan tashqarida" : "вне кругов";
   }
 }
 

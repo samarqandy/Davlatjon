@@ -2,19 +2,23 @@
 
 import Link from "next/link";
 import { ProgressBar } from "@/components/ui";
-import { CHESS_LEVELS, CHESS_SCHOOL, chessLevelHref } from "@/content/chess";
+import { chessLevelHref } from "@/content/chess";
 import { currentRank, levelStatuses } from "@/lib/chessProgress";
+import { useT } from "@/lib/i18n";
 import { useHydrated, useStore } from "@/lib/store";
+import { useChess } from "@/lib/useChess";
 import { PieceIcon } from "./ChessBoard";
 
 /** Карточка шахматной школы на главной: звание и следующий уровень. */
 export function ChessHomeCard() {
   const hydrated = useHydrated();
+  const t = useT();
+  const { levels, school } = useChess();
   const state = useStore((s) => s);
-  const statuses = levelStatuses(CHESS_LEVELS, state);
-  const rank = hydrated ? currentRank(CHESS_LEVELS, state) : null;
+  const statuses = levelStatuses(levels, state);
+  const rank = hydrated ? currentRank(levels, state) : null;
   const nextIndex = hydrated ? statuses.findIndex((s) => !s.passed) : 0;
-  const next = nextIndex >= 0 ? CHESS_LEVELS[nextIndex] : null;
+  const next = nextIndex >= 0 ? levels[nextIndex] : null;
   const solved = hydrated ? statuses.reduce((s, x) => s + x.solved, 0) : 0;
   const total = statuses.reduce((s, x) => s + x.total, 0);
 
@@ -25,7 +29,7 @@ export function ChessHomeCard() {
     >
       <div className="flex items-center gap-4">
         <div className="flex -space-x-5" aria-hidden>
-          {CHESS_LEVELS.map((l) => (
+          {levels.map((l) => (
             <PieceIcon
               key={l.id}
               piece={l.piece}
@@ -36,20 +40,22 @@ export function ChessHomeCard() {
       </div>
       <div className="min-w-0 flex-1">
         <h2 id="chess-home" className="text-2xl font-black">
-          ♞ {CHESS_SCHOOL.title}
+          ♞ {school.title}
         </h2>
         <p className="text-white/85">
-          {rank ? `Твоё звание — «${rank.name}». ` : "Шесть званий: от Пешки до Короля. "}
+          {rank
+            ? t(`Твоё звание — «${rank.name}». `, `Sening unvoning — «${rank.name}». `)
+            : t("Шесть званий: от Пешки до Короля. ", "Oltita unvon: Piyodadan Shohgacha. ")}
           {!next
-            ? "Все звания получены! 👑"
+            ? t("Все звания получены! 👑", "Hamma unvonlarni olding! 👑")
             : rank
-              ? `Следующий уровень: «${next.name}».`
-              : `Начни с уровня «${next.name}»!`}
+              ? t(`Следующий уровень: «${next.name}».`, `Keyingi daraja: «${next.name}».`)
+              : t(`Начни с уровня «${next.name}»!`, `«${next.name}» darajasidan boshla!`)}
         </p>
         <div className="mt-2 flex items-center gap-2">
           <ProgressBar value={solved} max={total} className="flex-1 bg-white/20" />
           <span className="text-xs font-extrabold whitespace-nowrap text-white/80">
-            {solved} из {total}
+            {t(`${solved} из ${total}`, `${solved} / ${total}`)}
           </span>
         </div>
       </div>
@@ -57,7 +63,7 @@ export function ChessHomeCard() {
         href={next ? chessLevelHref(next.id) : "/chess"}
         className="inline-flex min-h-14 items-center justify-center rounded-2xl bg-sun px-6 py-2 text-lg font-bold text-ink shadow-[0_4px_0_0_#b45309] transition hover:bg-[#f7a81d]"
       >
-        {solved > 0 ? "Продолжить ▶" : "Начать ▶"}
+        {solved > 0 ? t("Продолжить ▶", "Davom etish ▶") : t("Начать ▶", "Boshlash ▶")}
       </Link>
     </section>
   );

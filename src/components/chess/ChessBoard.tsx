@@ -3,6 +3,7 @@
 import type { CSSProperties } from "react";
 import { Chessboard, defaultPieces, type PieceRenderObject, type PositionDataType } from "react-chessboard";
 import { cn } from "@/components/ui";
+import { useT } from "@/lib/i18n";
 
 /** Как подсветить клетку. */
 export type SquareMark =
@@ -92,6 +93,7 @@ export function ChessBoard({
   notation?: boolean;
   className?: string;
 }) {
+  const t = useT();
   const squareStyles: Record<string, CSSProperties> = {};
   for (const [sq, m] of Object.entries(marks)) if (m) squareStyles[sq] = MARK_STYLE[m];
   return (
@@ -102,7 +104,7 @@ export function ChessBoard({
       )}
       style={{ maxWidth }}
       role="group"
-      aria-label={label ?? "Шахматная доска"}
+      aria-label={label ?? t("Шахматная доска", "Shaxmat taxtasi")}
       data-board={id}
     >
       <Chessboard

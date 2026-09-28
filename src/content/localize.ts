@@ -20,7 +20,7 @@ export interface Replace<T> {
 export type Uz<T> = T extends string
   ? string
   : T extends readonly (infer U)[]
-    ? | (U extends { id: string }
+    ? | ([U] extends [{ id: string }]
           ? { readonly [id: string]: Uz<U> } | readonly (Uz<U> | null | undefined)[]
           : readonly (Uz<U> | null | undefined)[])
       | Replace<T>

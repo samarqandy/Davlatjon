@@ -23,6 +23,7 @@ import {
   type Position,
   type Side,
 } from "./board";
+import type { Lang } from "@/lib/lang";
 
 export const MATE = 100000;
 const VALUE = [0, 100, 320, 330, 500, 900, 0];
@@ -349,6 +350,22 @@ export const ROBOT_LEVELS: RobotLevel[] = [
   { id: 4, name: "Ладья", piece: "wR", about: "Считает на три хода вперёд. Уже соперник!" },
   { id: 5, name: "Ферзь", piece: "wQ", about: "Считает на четыре хода — сильнее многих взрослых любителей." },
 ];
+
+/** Те же роботы по-узбекски: имена — по фигурам, как в шахматной школе. */
+const ROBOT_TEXT_UZ: Record<number, { name: string; about: string }> = {
+  1: { name: "Piyoda", about: "Deyarli tavakkaliga yuradi, lekin baʼzan motni payqab qoladi." },
+  2: { name: "Ot", about: "Yomon turgan donalarni urib oladi, lekin bir yurishdan nariga hisoblamaydi." },
+  3: { name: "Fil", about: "Ikki yurish oldinga hisoblaydi va donalarni bekorga boy bermaydi." },
+  4: { name: "Rux", about: "Uch yurish oldinga hisoblaydi. Bu endi jiddiy raqib!" },
+  5: { name: "Farzin", about: "Toʻrt yurish oldinga hisoblaydi — koʻp havaskor kattalardan kuchliroq." },
+};
+
+const ROBOT_LEVELS_UZ: RobotLevel[] = ROBOT_LEVELS.map((l) => ({ ...l, ...ROBOT_TEXT_UZ[l.id] }));
+
+/** Уровни робота с именами и описаниями на нужном языке. */
+export function robotLevels(lang: Lang = "ru"): RobotLevel[] {
+  return lang === "uz" ? ROBOT_LEVELS_UZ : ROBOT_LEVELS;
+}
 
 /** Ход робота нужного уровня. */
 export function robotMove(fen: string, level: number, random = Math.random): string | null {

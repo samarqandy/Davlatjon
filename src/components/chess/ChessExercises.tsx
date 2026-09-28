@@ -12,10 +12,10 @@ import {
   playMove,
   queensInConflict,
   queensSolutions,
-  ruSan,
   type PieceType,
 } from "@/lib/chess";
 import { askExplain, praise } from "@/lib/feedback";
+import { useLang, useSan, useT, type T } from "@/lib/i18n";
 import { pluralize } from "@/lib/plural";
 import { chessFound, chessMiss, chessSolved, useChessExercise } from "@/lib/store";
 import { ChessBoard, type SquareMark } from "./ChessBoard";
@@ -36,6 +36,7 @@ function ExerciseShell({
   children: ReactNode;
   feedback: FeedbackState | null;
 }) {
+  const t = useT();
   const [hint, setHint] = useState(false);
   return (
     <div className="space-y-4">
@@ -44,7 +45,7 @@ function ExerciseShell({
           {ex.title}
           {solved && (
             <span className="rounded-full bg-mint-soft px-2.5 py-0.5 text-sm font-extrabold text-[#065f46]">
-              ✓ решено
+              {t("✓ решено", "✓ yechildi")}
             </span>
           )}
         </h3>
@@ -56,21 +57,21 @@ function ExerciseShell({
       <Feedback state={feedback} />
       {solved ? (
         <div className="rounded-2xl border-2 border-mint/40 bg-mint-soft/60 px-4 py-3">
-          <p className="text-sm font-extrabold text-[#065f46]">Почему так</p>
+          <p className="text-sm font-extrabold text-[#065f46]">{t("Почему так", "Nega shunday")}</p>
           <p className="mt-1 font-semibold">
             <RichText text={ex.why} />
           </p>
         </div>
       ) : hint ? (
         <div className="rounded-2xl border-2 border-sun/40 bg-sun-soft px-4 py-3">
-          <p className="text-sm font-extrabold text-[#7a4b00]">💡 Подсказка</p>
+          <p className="text-sm font-extrabold text-[#7a4b00]">{t("💡 Подсказка", "💡 Maslahat")}</p>
           <p className="mt-1 font-semibold text-[#7a4b00]">
             <RichText text={ex.hint} />
           </p>
         </div>
       ) : (
         <Button variant="ghost" size="sm" onClick={() => setHint(true)}>
-          💡 Подсказка
+          {t("💡 Подсказка", "💡 Maslahat")}
         </Button>
       )}
     </div>
@@ -82,6 +83,8 @@ function ExerciseShell({
 // ---------------------------------------------------------------------------
 
 function SquaresExercise({ ex }: { ex: Of<"squares"> }) {
+  const t = useT();
+  const lang = useLang();
   const progress = useChessExercise(ex.id);
   const [found, setFound] = useState<string[]>([]);
   const [miss, setMiss] = useState<string | null>(null);
@@ -99,11 +102,18 @@ function SquaresExercise({ ex }: { ex: Of<"squares"> }) {
         chessSolved(ex.id);
         setFeedback({
           tone: "success",
-          text: `${praise(0)} Все клетки найдены!`,
-          sub: "Ты знаешь имена клеток — как настоящий шахматист.",
+          text: t(`${praise(0, lang)} Все клетки найдены!`, `${praise(0, lang)} Hamma kataklarni topding!`),
+          sub: t(
+            "Ты знаешь имена клеток — как настоящий шахматист.",
+            "Kataklarning nomini bilasan — xuddi haqiqiy shaxmatchidek.",
+          ),
         });
       } else {
-        setFeedback({ tone: "info", text: `Верно, это ${sq}!`, sub: `Теперь найди ${ex.targets[next.length]}.` });
+        setFeedback({
+          tone: "info",
+          text: t(`Верно, это ${sq}!`, `Toʻgʻri, bu — ${sq}!`),
+          sub: t(`Теперь найди ${ex.targets[next.length]}.`, `Endi ${ex.targets[next.length]} ni top.`),
+        });
       }
       return;
     }
@@ -111,8 +121,11 @@ function SquaresExercise({ ex }: { ex: Of<"squares"> }) {
     setMiss(sq);
     setFeedback({
       tone: "retry",
-      text: `Это клетка ${sq}. А нужна ${target}.`,
-      sub: `Сначала найди вертикаль ${target[0]} (буква внизу), потом горизонталь ${target[1]} (цифра сбоку).`,
+      text: t(`Это клетка ${sq}. А нужна ${target}.`, `Bu — ${sq} katagi. Bizga esa ${target} kerak.`),
+      sub: t(
+        `Сначала найди вертикаль ${target[0]} (буква внизу), потом горизонталь ${target[1]} (цифра сбоку).`,
+        `Avval ${target[0]} vertikalini top (pastdagi harf), keyin ${target[1]}-gorizontalni (yondagi raqam).`,
+      ),
     });
   };
 
@@ -126,9 +139,9 @@ function SquaresExercise({ ex }: { ex: Of<"squares"> }) {
         className="rounded-2xl bg-brand-soft px-4 py-3 text-center text-xl font-black text-brand-dark"
         aria-live="polite"
       >
-        {done ? "Готово! ✨" : `Найди клетку ${target}`}
+        {done ? t("Готово! ✨", "Tayyor! ✨") : t(`Найди клетку ${target}`, `${target} katagini top`)}
         <span className="ml-2 text-sm font-bold text-muted">
-          ({found.length} из {ex.targets.length})
+          {t(`(${found.length} из ${ex.targets.length})`, `(${found.length} / ${ex.targets.length})`)}
         </span>
       </p>
       <ChessBoard id={`sq-${ex.id}`} position="8/8/8/8/8/8/8/8 w - - 0 1" marks={marks} onSquare={tap} />
@@ -140,7 +153,7 @@ function SquaresExercise({ ex }: { ex: Of<"squares"> }) {
             setFeedback(null);
           }}
         >
-          ↺ Ещё раз
+          {t("↺ Ещё раз", "↺ Yana bir marta")}
         </Button>
       )}
     </ExerciseShell>
@@ -152,6 +165,8 @@ function SquaresExercise({ ex }: { ex: Of<"squares"> }) {
 // ---------------------------------------------------------------------------
 
 function MovesExercise({ ex }: { ex: Of<"moves"> }) {
+  const t = useT();
+  const lang = useLang();
   const progress = useChessExercise(ex.id);
   const [marked, setMarked] = useState<string[]>([]);
   const [checked, setChecked] = useState(false);
@@ -175,8 +190,11 @@ function MovesExercise({ ex }: { ex: Of<"moves"> }) {
       chessSolved(ex.id);
       setFeedback({
         tone: "success",
-        text: `${praise(n)} Все ${pluralize(ex.answer.length, "клетка", "клетки", "клеток")} найдены.`,
-        sub: askExplain(n),
+        text: t(
+          `${praise(n, lang)} Все ${pluralize(ex.answer.length, "клетка", "клетки", "клеток")} найдены.`,
+          `${praise(n, lang)} ${ex.answer.length} ta katakning hammasini topding.`,
+        ),
+        sub: askExplain(n, lang),
       });
       return;
     }
@@ -185,10 +203,21 @@ function MovesExercise({ ex }: { ex: Of<"moves"> }) {
       tone: "retry",
       text:
         extra.length > 0
-          ? `Есть лишние клетки — они подсвечены. Сюда фигура пойти не может.`
-          : `Найдено ${right.length} из ${ex.answer.length}. Есть ещё клетки!`,
+          ? t(
+              `Есть лишние клетки — они подсвечены. Сюда фигура пойти не может.`,
+              "Ortiqcha kataklar bor — ular belgilab qoʻyildi. Dona u yerga bora olmaydi.",
+            )
+          : t(
+              `Найдено ${right.length} из ${ex.answer.length}. Есть ещё клетки!`,
+              `${ex.answer.length} tadan ${right.length} tasi topildi. Yana kataklar bor!`,
+            ),
       sub:
-        extra.length > 0 ? "Убери лишние отметки и проверь снова." : "Проверь все направления, в которые ходит фигура.",
+        extra.length > 0
+          ? t("Убери лишние отметки и проверь снова.", "Ortiqcha belgilarni olib tashla va yana tekshir.")
+          : t(
+              "Проверь все направления, в которые ходит фигура.",
+              "Dona yuradigan hamma yoʻnalishlarni tekshirib koʻr.",
+            ),
     });
   };
 
@@ -208,7 +237,7 @@ function MovesExercise({ ex }: { ex: Of<"moves"> }) {
       <ChessBoard id={`mv-${ex.id}`} position={ex.fen} marks={marks} onSquare={tap} />
       <div className="flex flex-wrap items-center gap-2">
         <Button onClick={check} disabled={marked.length === 0 || solvedNow}>
-          Проверить
+          {t("Проверить", "Tekshirish")}
         </Button>
         <Button
           variant="ghost"
@@ -219,9 +248,11 @@ function MovesExercise({ ex }: { ex: Of<"moves"> }) {
           }}
           disabled={marked.length === 0}
         >
-          Убрать отметки
+          {t("Убрать отметки", "Belgilarni tozalash")}
         </Button>
-        <span className="text-sm font-bold text-muted">Отмечено: {marked.length}</span>
+        <span className="text-sm font-bold text-muted">
+          {t("Отмечено", "Belgilandi")}: {marked.length}
+        </span>
       </div>
     </ExerciseShell>
   );
@@ -232,6 +263,8 @@ function MovesExercise({ ex }: { ex: Of<"moves"> }) {
 // ---------------------------------------------------------------------------
 
 function StarsExercise({ ex }: { ex: Of<"stars"> }) {
+  const t = useT();
+  const lang = useLang();
   const progress = useChessExercise(ex.id);
   const [pos, setPos] = useState(ex.start);
   const [left, setLeft] = useState<string[]>(ex.stars);
@@ -249,8 +282,11 @@ function StarsExercise({ ex }: { ex: Of<"stars"> }) {
       if (!done && sq !== pos)
         setFeedback({
           tone: "info",
-          text: "Так фигура не ходит.",
-          sub: "Точки на доске показывают, куда можно пойти.",
+          text: t("Так фигура не ходит.", "Bu dona bunday yurmaydi."),
+          sub: t(
+            "Точки на доске показывают, куда можно пойти.",
+            "Taxtadagi nuqtalar qayerga yurish mumkinligini koʻrsatadi.",
+          ),
         });
       return;
     }
@@ -269,13 +305,22 @@ function StarsExercise({ ex }: { ex: Of<"stars"> }) {
       count <= ex.optimal
         ? {
             tone: "success",
-            text: `${praise(n)} Все звёзды собраны за ${movesWord(count)}!`,
-            sub: "Быстрее не бывает.",
+            text: t(
+              `${praise(n, lang)} Все звёзды собраны за ${movesWord(count)}!`,
+              `${praise(n, lang)} Hamma yulduzlarni ${count} yurishda yigʻding!`,
+            ),
+            sub: t("Быстрее не бывает.", "Bundan tezroq boʻlmaydi."),
           }
         : {
             tone: "success",
-            text: `Все звёзды собраны! Понадобилось ${movesWord(count)}.`,
-            sub: `А можно за ${movesWord(ex.optimal)}. Попробуешь?`,
+            text: t(
+              `Все звёзды собраны! Понадобилось ${movesWord(count)}.`,
+              `Hamma yulduzlar yigʻildi! Buning uchun ${count} ta yurish kerak boʻldi.`,
+            ),
+            sub: t(
+              `А можно за ${movesWord(ex.optimal)}. Попробуешь?`,
+              `Aslida ${ex.optimal} yurishda ham boʻladi. Sinab koʻrasanmi?`,
+            ),
           },
     );
   };
@@ -291,19 +336,25 @@ function StarsExercise({ ex }: { ex: Of<"stars"> }) {
   left.forEach((s) => (pieces[s] = "star"));
   blocks.forEach((b) => (pieces[b] = "wP"));
   const marks: Record<string, SquareMark> = { [pos]: "selected" };
-  targets.forEach((t) => (marks[t] = "target"));
+  targets.forEach((sq) => (marks[sq] = "target"));
 
   return (
     <ExerciseShell ex={ex} solved={!!progress.solvedAt} feedback={feedback}>
       <ChessBoard id={`st-${ex.id}`} position={pieces} marks={marks} onSquare={tap} />
       <div className="flex flex-wrap items-center gap-3">
-        <span className="tabular rounded-2xl bg-white px-4 py-2 text-lg font-black shadow-card">Ходов: {moves}</span>
-        <span className="text-sm font-bold text-muted">Осталось звёзд: {left.length}</span>
+        <span className="tabular rounded-2xl bg-white px-4 py-2 text-lg font-black shadow-card">
+          {t("Ходов", "Yurishlar")}: {moves}
+        </span>
+        <span className="text-sm font-bold text-muted">
+          {t("Осталось звёзд", "Qolgan yulduzlar")}: {left.length}
+        </span>
         {progress.best !== undefined && (
-          <span className="text-sm font-bold text-muted">Рекорд: {movesWord(progress.best)}</span>
+          <span className="text-sm font-bold text-muted">
+            {t(`Рекорд: ${movesWord(progress.best)}`, `Rekord: ${progress.best} ta yurish`)}
+          </span>
         )}
         <Button variant="ghost" onClick={restart} disabled={moves === 0}>
-          ↺ Сначала
+          {t("↺ Сначала", "↺ Boshidan")}
         </Button>
       </div>
     </ExerciseShell>
@@ -314,44 +365,80 @@ function StarsExercise({ ex }: { ex: Of<"stars"> }) {
 // Найди ход
 // ---------------------------------------------------------------------------
 
-const GOAL_RETRY: Record<Of<"move">["goal"], (m: NonNullable<ReturnType<typeof playMove>>) => FeedbackState> = {
-  mate: (m) =>
+const GOAL_RETRY: Record<Of<"move">["goal"], (m: NonNullable<ReturnType<typeof playMove>>, t: T) => FeedbackState> = {
+  mate: (m, t) =>
     m.check
       ? {
           tone: "retry",
-          text: "Шах есть, но король может спастись.",
-          sub: "Ищи ход, после которого королю некуда деться.",
+          text: t("Шах есть, но король может спастись.", "Shoh berding, ammo raqib shohi hali qutula oladi."),
+          sub: t(
+            "Ищи ход, после которого королю некуда деться.",
+            "Shunday yurish izla: undan keyin shohning qochadigan joyi qolmasin.",
+          ),
         }
-      : { tone: "retry", text: "Это не шах.", sub: "Мат всегда начинается с шаха." },
-  capture: (m) =>
+      : {
+          tone: "retry",
+          text: t("Это не шах.", "Bu yurish shoh bermaydi."),
+          sub: t("Мат всегда начинается с шаха.", "Mot har doim shoh berishdan boshlanadi."),
+        },
+  capture: (m, t) =>
     m.captured
       ? {
           tone: "retry",
-          text: "Эту фигуру можно взять, но потом заберут твою.",
-          sub: "Проверь, кто защищает фигуру, которую ты берёшь.",
+          text: t(
+            "Эту фигуру можно взять, но потом заберут твою.",
+            "Bu donani urib olsa boʻladi, lekin keyin raqib seningkini urib oladi.",
+          ),
+          sub: t(
+            "Проверь, кто защищает фигуру, которую ты берёшь.",
+            "Tekshirib koʻr: sen urayotgan donani kim himoya qilyapti?",
+          ),
         }
-      : { tone: "retry", text: "Этот ход ничего не берёт.", sub: "Найди ход, который забирает фигуру соперника." },
-  promote: () => ({
+      : {
+          tone: "retry",
+          text: t("Этот ход ничего не берёт.", "Bu yurish hech narsani urmaydi."),
+          sub: t("Найди ход, который забирает фигуру соперника.", "Raqib donasini urib oladigan yurishni top."),
+        },
+  promote: (_m, t) => ({
     tone: "retry",
-    text: "Пешка пока не дошла до конца доски.",
-    sub: "Ей нужно встать на последнюю горизонталь.",
+    text: t("Пешка пока не дошла до конца доски.", "Piyoda hali taxtaning oxiriga yetib bormadi."),
+    sub: t("Ей нужно встать на последнюю горизонталь.", "U oxirgi gorizontalga chiqishi kerak."),
   }),
-  fork: (m) =>
+  fork: (m, t) =>
     m.check
       ? {
           tone: "retry",
-          text: "Шах есть, но второй фигуре ничего не грозит.",
-          sub: "Нужен ход, который нападает сразу на двоих.",
+          text: t(
+            "Шах есть, но второй фигуре ничего не грозит.",
+            "Shoh berding, lekin ikkinchi donaga hech qanday xavf yoʻq.",
+          ),
+          sub: t(
+            "Нужен ход, который нападает сразу на двоих.",
+            "Bir vaqtning oʻzida ikkita donaga hujum qiladigan yurish kerak.",
+          ),
         }
-      : { tone: "retry", text: "Это не шах.", sub: "Нужен шах — и одновременно нападение на вторую фигуру." },
-  castle: () => ({
+      : {
+          tone: "retry",
+          text: t("Это не шах.", "Bu yurish shoh bermaydi."),
+          sub: t(
+            "Нужен шах — и одновременно нападение на вторую фигуру.",
+            "Shoh berish kerak — va shu bilan birga ikkinchi donaga hujum qilish.",
+          ),
+        },
+  castle: (_m, t) => ({
     tone: "retry",
-    text: "Это обычный ход.",
-    sub: "При рокировке король шагает на две клетки в сторону ладьи.",
+    text: t("Это обычный ход.", "Bu oddiy yurish."),
+    sub: t(
+      "При рокировке король шагает на две клетки в сторону ладьи.",
+      "Rokirovkada shoh rux tomonga ikki katak yuradi.",
+    ),
   }),
 };
 
 function MoveExercise({ ex }: { ex: Of<"move"> }) {
+  const t = useT();
+  const lang = useLang();
+  const san = useSan();
   const progress = useChessExercise(ex.id);
   const [fen, setFen] = useState(ex.fen);
   const [selected, setSelected] = useState<string | null>(null);
@@ -380,13 +467,13 @@ function MoveExercise({ ex }: { ex: Of<"move"> }) {
       chessSolved(ex.id);
       setFeedback({
         tone: "success",
-        text: `${praise(n)} ${ruSan(played.san)}${played.mate ? " — мат!" : ""}`,
-        sub: askExplain(n),
+        text: `${praise(n, lang)} ${san(played.san)}${played.mate ? t(" — мат!", " — mot!") : ""}`,
+        sub: askExplain(n, lang),
       });
       return true;
     }
     chessMiss(ex.id);
-    setFeedback(GOAL_RETRY[ex.goal](played));
+    setFeedback(GOAL_RETRY[ex.goal](played, t));
     timer.current = setTimeout(() => {
       setFen(ex.fen);
       setLast(null);
@@ -414,13 +501,17 @@ function MoveExercise({ ex }: { ex: Of<"move"> }) {
   if (checkSq) marks[checkSq] = "check";
   if (selected) {
     marks[selected] = "selected";
-    for (const t of legalTargets(ex.fen, selected)) marks[t] = pieceAt(ex.fen, t) ? "capture" : "target";
+    for (const sq of legalTargets(ex.fen, selected)) marks[sq] = pieceAt(ex.fen, sq) ? "capture" : "target";
   }
 
   return (
     <ExerciseShell ex={ex} solved={!!progress.solvedAt} feedback={feedback}>
       <p className="text-sm font-bold text-muted">
-        {turn === "w" ? "Ходят белые." : "Ходят чёрные."} Нажми на фигуру, а потом на клетку — или перетащи фигуру.
+        {turn === "w" ? t("Ходят белые.", "Oqlar yuradi.") : t("Ходят чёрные.", "Qoralar yuradi.")}{" "}
+        {t(
+          "Нажми на фигуру, а потом на клетку — или перетащи фигуру.",
+          "Avval donani, keyin katakni bos — yoki donani sudrab olib bor.",
+        )}
       </p>
       <ChessBoard
         id={`mo-${ex.id}`}
@@ -445,7 +536,7 @@ function MoveExercise({ ex }: { ex: Of<"move"> }) {
             setFeedback(null);
           }}
         >
-          ↺ Решить ещё раз
+          {t("↺ Решить ещё раз", "↺ Yana bir bor yechish")}
         </Button>
       )}
     </ExerciseShell>
@@ -457,6 +548,8 @@ function MoveExercise({ ex }: { ex: Of<"move"> }) {
 // ---------------------------------------------------------------------------
 
 function PickExercise({ ex }: { ex: Of<"pick"> }) {
+  const t = useT();
+  const lang = useLang();
   const progress = useChessExercise(ex.id);
   const [picked, setPicked] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<FeedbackState | null>(null);
@@ -469,11 +562,15 @@ function PickExercise({ ex }: { ex: Of<"pick"> }) {
     setPicked(sq);
     if (ex.answer.includes(sq)) {
       chessSolved(ex.id);
-      setFeedback({ tone: "success", text: praise(n), sub: askExplain(n) });
+      setFeedback({ tone: "success", text: praise(n, lang), sub: askExplain(n, lang) });
       return;
     }
     chessMiss(ex.id);
-    setFeedback({ tone: "retry", text: `Клетка ${sq} — не то.`, sub: "Подумай ещё раз и нажми на другую клетку." });
+    setFeedback({
+      tone: "retry",
+      text: t(`Клетка ${sq} — не то.`, `${sq} katagi toʻgʻri kelmaydi.`),
+      sub: t("Подумай ещё раз и нажми на другую клетку.", "Yana bir oʻylab koʻr va boshqa katakni bos."),
+    });
   };
 
   return (
@@ -493,6 +590,8 @@ function PickExercise({ ex }: { ex: Of<"pick"> }) {
 // ---------------------------------------------------------------------------
 
 function QuizExercise({ ex }: { ex: Of<"quiz"> }) {
+  const t = useT();
+  const lang = useLang();
   const progress = useChessExercise(ex.id);
   const [index, setIndex] = useState(0);
   const [wrong, setWrong] = useState<number | null>(null);
@@ -510,15 +609,20 @@ function QuizExercise({ ex }: { ex: Of<"quiz"> }) {
         chessSolved(ex.id);
         setFeedback({
           tone: "success",
-          text: `${praise(0)} Все ответы верные.`,
-          sub: "Молодец, ты хорошо запомнил правила!",
+          text: t(`${praise(0, lang)} Все ответы верные.`, `${praise(0, lang)} Hamma savollarning javobini topding.`),
+          sub: t("Молодец, ты хорошо запомнил правила!", "Qoidalarni juda yaxshi eslab qolibsan!"),
         });
-      } else setFeedback({ tone: "info", text: "Верно!", sub: "Следующий вопрос." });
+      } else
+        setFeedback({ tone: "info", text: t("Верно!", "Toʻgʻri!"), sub: t("Следующий вопрос.", "Keyingi savol.") });
       return;
     }
     chessMiss(ex.id);
     setWrong(i);
-    setFeedback({ tone: "retry", text: "Подумай ещё.", sub: "Вспомни урок — ответ там есть." });
+    setFeedback({
+      tone: "retry",
+      text: t("Подумай ещё.", "Yana bir oʻylab koʻr."),
+      sub: t("Вспомни урок — ответ там есть.", "Darsni esla — javob oʻsha yerda bor."),
+    });
   };
 
   return (
@@ -526,7 +630,7 @@ function QuizExercise({ ex }: { ex: Of<"quiz"> }) {
       {!done ? (
         <div className="space-y-3 rounded-3xl bg-white p-4 shadow-card">
           <p className="text-sm font-extrabold text-muted">
-            Вопрос {index + 1} из {ex.questions.length}
+            {t(`Вопрос ${index + 1} из ${ex.questions.length}`, `${index + 1}-savol, jami ${ex.questions.length} ta`)}
           </p>
           <p className="text-lg font-bold">{q.text}</p>
           {q.fen && <ChessBoard id={`qz-${ex.id}-${index}`} position={q.fen} maxWidth={320} />}
@@ -546,7 +650,7 @@ function QuizExercise({ ex }: { ex: Of<"quiz"> }) {
             setFeedback(null);
           }}
         >
-          ↺ Пройти ещё раз
+          {t("↺ Пройти ещё раз", "↺ Qaytadan boshlash")}
         </Button>
       )}
     </ExerciseShell>
@@ -558,6 +662,8 @@ function QuizExercise({ ex }: { ex: Of<"quiz"> }) {
 // ---------------------------------------------------------------------------
 
 function QueensExercise({ ex }: { ex: Of<"queens"> }) {
+  const t = useT();
+  const lang = useLang();
   const progress = useChessExercise(ex.id);
   const [queens, setQueens] = useState<string[]>([]);
   const [feedback, setFeedback] = useState<FeedbackState | null>(null);
@@ -570,8 +676,11 @@ function QueensExercise({ ex }: { ex: Of<"queens"> }) {
     if (next.length > ex.size) {
       setFeedback({
         tone: "info",
-        text: `Ферзей должно быть ровно ${ex.size}.`,
-        sub: "Убери какого-нибудь ферзя, чтобы поставить нового.",
+        text: t(`Ферзей должно быть ровно ${ex.size}.`, `Farzinlar roppa-rosa ${ex.size} ta boʻlishi kerak.`),
+        sub: t(
+          "Убери какого-нибудь ферзя, чтобы поставить нового.",
+          "Yangisini qoʻyish uchun bitta farzinni olib tashla.",
+        ),
       });
       return;
     }
@@ -585,18 +694,33 @@ function QueensExercise({ ex }: { ex: Of<"queens"> }) {
       const count = found.length + (isNew ? 1 : 0);
       setFeedback({
         tone: "success",
-        text: isNew ? `${praise(count - 1)} Ни один ферзь не бьёт другого!` : "Это решение ты уже находил.",
+        text: isNew
+          ? t(
+              `${praise(count - 1, lang)} Ни один ферзь не бьёт другого!`,
+              `${praise(count - 1, lang)} Hech bir farzin boshqasini urmayapti!`,
+            )
+          : t("Это решение ты уже находил.", "Bu yechimni avval ham topgansan."),
         sub:
           count < total
-            ? `Найдено решений: ${count} из ${total}. Найдёшь другое?`
-            : `Ты нашёл все решения — их ${total}!`,
+            ? t(
+                `Найдено решений: ${count} из ${total}. Найдёшь другое?`,
+                `${total} ta yechimdan ${count} tasi topildi. Boshqasini ham topa olasanmi?`,
+              )
+            : t(`Ты нашёл все решения — их ${total}!`, `Hamma yechimlarni topding — ular ${total} ta!`),
       });
       return;
     }
     if (next.length === ex.size) chessMiss(ex.id);
     setFeedback(
       bad.length > 0
-        ? { tone: "retry", text: "Некоторые ферзи бьют друг друга — они подсвечены.", sub: "Переставь их." }
+        ? {
+            tone: "retry",
+            text: t(
+              "Некоторые ферзи бьют друг друга — они подсвечены.",
+              "Baʼzi farzinlar bir-birini urayapti — ular belgilab qoʻyildi.",
+            ),
+            sub: t("Переставь их.", "Ularning joyini oʻzgartir."),
+          }
         : null,
     );
   };
@@ -617,10 +741,10 @@ function QueensExercise({ ex }: { ex: Of<"queens"> }) {
       />
       <div className="flex flex-wrap items-center gap-3">
         <span className="tabular rounded-2xl bg-white px-4 py-2 text-lg font-black shadow-card">
-          Ферзей: {queens.length} из {ex.size}
+          {t(`Ферзей: ${queens.length} из ${ex.size}`, `Farzinlar: ${queens.length} / ${ex.size}`)}
         </span>
         <span className="text-sm font-bold text-muted">
-          Найдено решений: {found.length} из {total}
+          {t(`Найдено решений: ${found.length} из ${total}`, `Topilgan yechimlar: ${found.length} / ${total}`)}
         </span>
         <Button
           variant="ghost"
@@ -630,7 +754,7 @@ function QueensExercise({ ex }: { ex: Of<"queens"> }) {
           }}
           disabled={queens.length === 0}
         >
-          Убрать всех
+          {t("Убрать всех", "Hammasini olib tashlash")}
         </Button>
       </div>
     </ExerciseShell>

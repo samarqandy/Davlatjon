@@ -1,26 +1,31 @@
+"use client";
+
 import Image from "next/image";
 import { cn } from "@/components/ui";
 import { type ChessImage, imageCredit, isPublicDomain } from "@/content/chess/images";
+import { useLang, useT } from "@/lib/i18n";
 
-const KIND_PREFIX: Record<ChessImage["kind"], string> = {
-  person: "Фото: ",
-  place: "Фото: ",
-  object: "Фото: ",
-  art: "",
+const KIND_PREFIX: Record<ChessImage["kind"], { ru: string; uz: string }> = {
+  person: { ru: "Фото: ", uz: "Surat: " },
+  place: { ru: "Фото: ", uz: "Surat: " },
+  object: { ru: "Фото: ", uz: "Surat: " },
+  art: { ru: "", uz: "" },
 };
 
 /** Строка «откуда картинка»: автор, лицензия и ссылка на источник — так требуют свободные лицензии. */
 export function Credit({ image, className }: { image: ChessImage; className?: string }) {
-  const known = image.author && !/unknown|неизвест/i.test(image.author);
+  const t = useT();
+  const lang = useLang();
+  const known = image.author && !/unknown|неизвест|nomaʼlum/i.test(image.author);
   const link = "underline decoration-dotted underline-offset-2 hover:text-ink";
   return (
     <span className={cn("text-[11px] leading-tight text-muted", className)}>
-      {known ? `${KIND_PREFIX[image.kind]}${image.author} · ` : ""}
+      {known ? `${KIND_PREFIX[image.kind][lang]}${image.author} · ` : ""}
       {isPublicDomain(image) ? (
         image.licenseCode === "cc0" ? (
           "CC0"
         ) : (
-          "общественное достояние"
+          t("общественное достояние", "jamoat mulki")
         )
       ) : image.licenseUrl ? (
         <a href={image.licenseUrl} target="_blank" rel="noopener noreferrer" className={link}>
@@ -75,13 +80,14 @@ export function Figure({
 
 /** Круглая аватарка: портрет чемпиона или игрока. Подпись и авторство — во всплывающей подсказке. */
 export function Portrait({ image, size = 56, className }: { image: ChessImage; size?: number; className?: string }) {
+  const lang = useLang();
   return (
     <Image
       src={image.thumb}
       alt={image.alt}
       width={size}
       height={size}
-      title={`${image.caption}. ${imageCredit(image)}`}
+      title={`${image.caption}. ${imageCredit(image, lang)}`}
       className={cn("shrink-0 rounded-full bg-line/40 object-cover shadow-sm ring-2 ring-white", className)}
       style={{ width: size, height: size }}
     />

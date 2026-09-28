@@ -3,6 +3,7 @@ import { CHESS_LEVELS } from "@/content/chess";
 import { FAMOUS_GAMES } from "@/content/chess/games";
 import { PUZZLES } from "@/content/chess/puzzles";
 import { currentRank } from "./chessProgress";
+import { tFor, type Lang } from "./lang";
 import { isoDay, type AppState } from "./store";
 
 export interface Award {
@@ -19,7 +20,8 @@ export function earned(a: Award): boolean {
   return a.have >= a.need;
 }
 
-export function awards(s: AppState): Award[] {
+export function awards(s: AppState, lang: Lang = "ru"): Award[] {
+  const t = tFor(lang);
   const robotWins = (level: number) =>
     s.chessGames.filter((g) => g.mode === "robot" && (g.level ?? 0) >= level && g.result === "win").length;
   const solved = PUZZLES.filter((p) => s.chessPuzzles[p.id]?.solvedAt).length;
@@ -35,8 +37,8 @@ export function awards(s: AppState): Award[] {
   const rankIndex = rank ? CHESS_LEVELS.indexOf(rank) + 1 : 0;
   const days = Object.keys(activityDays(s)).length;
   const daysDone = Object.values(s.days).filter((d) => d.completedAt).length;
-  const tasksSolved = Object.values(s.tasks).filter((t) => t.status === "solved").length;
-  const explained = Object.values(s.tasks).filter((t) => t.marks.explained).length;
+  const tasksSolved = Object.values(s.tasks).filter((x) => x.status === "solved").length;
+  const explained = Object.values(s.tasks).filter((x) => x.marks.explained).length;
   const a = (id: string, emoji: string, title: string, text: string, have: number, need: number): Award => ({
     id,
     emoji,
@@ -46,29 +48,183 @@ export function awards(s: AppState): Award[] {
     need,
   });
   return [
-    a("day-1", "🌱", "Первый день", "Пройди первый день занятий.", daysDone, 1),
-    a("week-1", "📅", "Целая неделя", "Пройди семь дней занятий.", daysDone, 7),
-    a("tasks-50", "🧠", "Полсотни задач", "Реши 50 задач в занятиях.", tasksSolved, 50),
-    a("explain-10", "💬", "Объясняю!", "Отметь «объяснил» в десяти задачах.", explained, 10),
-    a("active-10", "🔥", "Десять дней с задачами", "Занимайся в десять разных дней.", days, 10),
-    a("rank-pawn", "♟", "Звание «Пешка»", "Пройди первый уровень шахматной школы.", rankIndex, 1),
-    a("rank-bishop", "♝", "Звание «Слон»", "Пройди три уровня шахматной школы.", rankIndex, 3),
-    a("rank-king", "👑", "Звание «Король»", "Пройди всю шахматную школу.", rankIndex, 6),
-    a("win-1", "🤖", "Первая победа", "Обыграй робота.", robotWins(1), 1),
-    a("win-bishop", "🏆", "Победитель «Слона»", "Обыграй робота «Слон» или сильнее.", robotWins(3), 1),
-    a("win-queen", "💎", "Победитель «Ферзя»", "Обыграй самого сильного робота.", robotWins(5), 1),
-    a("puzzles-10", "🎯", "Десять задач", "Реши 10 шахматных задач.", solved, 10),
-    a("puzzles-all", "🧩", "Все задачи", "Реши все задачи тренажёра.", solved, PUZZLES.length),
-    a("streak-10", "⛓", "Серия 10", "Реши 10 задач подряд в «Серии».", s.chessStreak, 10),
-    a("storm-10", "⚡", "Штормовой", "Реши 10 задач в «Шторме».", s.chessDrills.storm ?? 0, 10),
-    a("coords-20", "📍", "Зоркий глаз", "Найди 20 клеток за 30 секунд.", s.chessDrills.find ?? 0, 20),
-    a("openings-5", "📖", "Знаток дебютов", "Выучи 5 дебютов в тренажёре.", openings, 5),
-    a("famous-all", "🏛️", "Историк", "Разбери все знаменитые партии.", viewed, FAMOUS_GAMES.length),
-    a("guess-70", "🎩", "Как Морфи", "Набери 70% очков в «Угадай ход».", Math.round(bestGuess * 100), 70),
-    a("review-1", "🔎", "Робот-тренер", "Разбери свою партию.", analysed, 1),
-    a("accuracy-80", "🎯", "Точный игрок", "Сыграй партию с точностью 80% и выше.", bestAccuracy, 80),
-    a("own-5", "🪞", "Учусь на ошибках", "Реши 5 задач из своих партий.", Object.keys(s.chessOwnPuzzles).length, 5),
-    a("diary-3", "✍️", "Летописец", "Запиши три партии в дневник.", s.chessDiary.length, 3),
+    a(
+      "day-1",
+      "🌱",
+      t("Первый день", "Birinchi kun"),
+      t("Пройди первый день занятий.", "Mashgʻulotlarning birinchi kunini tugat."),
+      daysDone,
+      1,
+    ),
+    a(
+      "week-1",
+      "📅",
+      t("Целая неделя", "Butun bir hafta"),
+      t("Пройди семь дней занятий.", "Mashgʻulotlarning yetti kunini tugat."),
+      daysDone,
+      7,
+    ),
+    a(
+      "tasks-50",
+      "🧠",
+      t("Полсотни задач", "Ellikta masala"),
+      t("Реши 50 задач в занятиях.", "Mashgʻulotlarda 50 ta masala yech."),
+      tasksSolved,
+      50,
+    ),
+    a(
+      "explain-10",
+      "💬",
+      t("Объясняю!", "Tushuntiraman!"),
+      t("Отметь «объяснил» в десяти задачах.", "Oʻnta masalada «tushuntirdim» deb belgila."),
+      explained,
+      10,
+    ),
+    a(
+      "active-10",
+      "🔥",
+      t("Десять дней с задачами", "Masalalar bilan oʻn kun"),
+      t("Занимайся в десять разных дней.", "Oʻn xil kunda shugʻullan."),
+      days,
+      10,
+    ),
+    a(
+      "rank-pawn",
+      "♟",
+      t("Звание «Пешка»", "«Piyoda» unvoni"),
+      t("Пройди первый уровень шахматной школы.", "Shaxmat maktabining birinchi darajasini oʻt."),
+      rankIndex,
+      1,
+    ),
+    a(
+      "rank-bishop",
+      "♝",
+      t("Звание «Слон»", "«Fil» unvoni"),
+      t("Пройди три уровня шахматной школы.", "Shaxmat maktabining uchta darajasini oʻt."),
+      rankIndex,
+      3,
+    ),
+    a(
+      "rank-king",
+      "👑",
+      t("Звание «Король»", "«Shoh» unvoni"),
+      t("Пройди всю шахматную школу.", "Butun shaxmat maktabini oʻt."),
+      rankIndex,
+      6,
+    ),
+    a("win-1", "🤖", t("Первая победа", "Birinchi gʻalaba"), t("Обыграй робота.", "Robotni yut."), robotWins(1), 1),
+    a(
+      "win-bishop",
+      "🏆",
+      t("Победитель «Слона»", "«Fil» ustidan gʻalaba"),
+      t("Обыграй робота «Слон» или сильнее.", "«Fil» robotini yoki undan kuchlirogʻini yut."),
+      robotWins(3),
+      1,
+    ),
+    a(
+      "win-queen",
+      "💎",
+      t("Победитель «Ферзя»", "«Farzin» ustidan gʻalaba"),
+      t("Обыграй самого сильного робота.", "Eng kuchli robotni yut."),
+      robotWins(5),
+      1,
+    ),
+    a(
+      "puzzles-10",
+      "🎯",
+      t("Десять задач", "Oʻnta masala"),
+      t("Реши 10 шахматных задач.", "10 ta shaxmat masalasini yech."),
+      solved,
+      10,
+    ),
+    a(
+      "puzzles-all",
+      "🧩",
+      t("Все задачи", "Barcha masalalar"),
+      t("Реши все задачи тренажёра.", "Trenajyordagi barcha masalalarni yech."),
+      solved,
+      PUZZLES.length,
+    ),
+    a(
+      "streak-10",
+      "⛓",
+      t("Серия 10", "Ketma-ket 10"),
+      t("Реши 10 задач подряд в «Серии».", "«Ketma-ket» mashqida 10 ta masalani uzluksiz yech."),
+      s.chessStreak,
+      10,
+    ),
+    a(
+      "storm-10",
+      "⚡",
+      t("Штормовой", "Boʻron ustasi"),
+      t("Реши 10 задач в «Шторме».", "«Boʻron»da 10 ta masala yech."),
+      s.chessDrills.storm ?? 0,
+      10,
+    ),
+    a(
+      "coords-20",
+      "📍",
+      t("Зоркий глаз", "Oʻtkir koʻz"),
+      t("Найди 20 клеток за 30 секунд.", "30 soniyada 20 ta katakni top."),
+      s.chessDrills.find ?? 0,
+      20,
+    ),
+    a(
+      "openings-5",
+      "📖",
+      t("Знаток дебютов", "Debyut bilimdoni"),
+      t("Выучи 5 дебютов в тренажёре.", "Trenajyorda 5 ta debyutni oʻrgan."),
+      openings,
+      5,
+    ),
+    a(
+      "famous-all",
+      "🏛️",
+      t("Историк", "Tarixchi"),
+      t("Разбери все знаменитые партии.", "Barcha mashhur partiyalarni tahlil qil."),
+      viewed,
+      FAMOUS_GAMES.length,
+    ),
+    a(
+      "guess-70",
+      "🎩",
+      t("Как Морфи", "Morfi kabi"),
+      t("Набери 70% очков в «Угадай ход».", "«Yurishni top» oʻyinida 70% ochko toʻpla."),
+      Math.round(bestGuess * 100),
+      70,
+    ),
+    a(
+      "review-1",
+      "🔎",
+      t("Робот-тренер", "Robot-murabbiy"),
+      t("Разбери свою партию.", "Oʻz partiyangni tahlil qil."),
+      analysed,
+      1,
+    ),
+    a(
+      "accuracy-80",
+      "🎯",
+      t("Точный игрок", "Aniq oʻyinchi"),
+      t("Сыграй партию с точностью 80% и выше.", "Partiyani 80% va undan yuqori aniqlik bilan oʻyna."),
+      bestAccuracy,
+      80,
+    ),
+    a(
+      "own-5",
+      "🪞",
+      t("Учусь на ошибках", "Xatolardan saboq"),
+      t("Реши 5 задач из своих партий.", "Oʻz partiyalaringdan olingan 5 ta masalani yech."),
+      Object.keys(s.chessOwnPuzzles).length,
+      5,
+    ),
+    a(
+      "diary-3",
+      "✍️",
+      t("Летописец", "Solnomachi"),
+      t("Запиши три партии в дневник.", "Kundalikka uchta partiyani yozib qoʻy."),
+      s.chessDiary.length,
+      3,
+    ),
   ];
 }
 

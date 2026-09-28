@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button, cn } from "@/components/ui";
+import { useLang, useT, type Lang } from "@/lib/i18n";
 import { plural } from "@/lib/plural";
 import { addFound, markSolved, useTask } from "@/lib/store";
 import { balanceOf, waysToBalance, type WeightPlace } from "@/lib/weights";
@@ -15,6 +16,7 @@ const TO_SOLVE = 6;
 
 /** Весы с грузом и гирями. tilt — какая чаша тяжелее. */
 export function WeightScale({ left, right, tilt }: { left: Item[]; right: Item[]; tilt: "left" | "right" | "equal" }) {
+  const t = useT();
   const w = 340;
   const pivot = { x: w / 2, y: 40 };
   const arm = 118;
@@ -75,16 +77,21 @@ export function WeightScale({ left, right, tilt }: { left: Item[]; right: Item[]
       </g>
     );
   };
-  const text = (items: Item[]) => items.map((i) => i.label).join(" и ") || "ничего";
+  const text = (items: Item[]) => items.map((i) => i.label).join(t(" и ", " va ")) || t("ничего", "hech narsa");
   return (
     <svg
       width="100%"
       viewBox={`0 0 ${w} 200`}
       className="max-w-[380px]"
       role="img"
-      aria-label={`Весы: слева ${text(left)}, справа ${text(right)} — ${
-        tilt === "equal" ? "равновесие" : tilt === "left" ? "перевесила левая чаша" : "перевесила правая чаша"
-      }`}
+      aria-label={t(
+        `Весы: слева ${text(left)}, справа ${text(right)} — ${
+          tilt === "equal" ? "равновесие" : tilt === "left" ? "перевесила левая чаша" : "перевесила правая чаша"
+        }`,
+        `Tarozi: chapda ${text(left)}, oʻngda ${text(right)} — ${
+          tilt === "equal" ? "muvozanat" : tilt === "left" ? "chap palla ogʻir keldi" : "oʻng palla ogʻir keldi"
+        }`,
+      )}
     >
       <polygon points={`${w / 2 - 40},194 ${w / 2 + 40},194 ${w / 2},166`} fill="#9ca3af" />
       <rect x={w / 2 - 4} y={36} width={8} height={136} rx={3} fill="#6b7280" />
@@ -104,7 +111,8 @@ export function WeightScale({ left, right, tilt }: { left: Item[]; right: Item[]
   );
 }
 
-export function setLabel(s: WeightSet): string {
+export function setLabel(s: WeightSet, lang: Lang = "ru"): string {
+  if (lang === "uz") return `Toshlar ${s.weights.join(", ")}${s.bothPans ? " — ikkala pallaga" : ""}`;
   return `Гири ${s.weights.join(", ")}${s.bothPans ? " — на обе чаши" : ""}`;
 }
 
@@ -114,6 +122,8 @@ export function impossibleLoads(s: WeightSet): number[] {
 }
 
 export function WeightsLab({ taskId, sets }: { taskId: string; sets: WeightSet[] }) {
+  const t = useT();
+  const lang = useLang();
   const progress = useTask(taskId);
   const [active, setActive] = useState(0);
   const [load, setLoad] = useState(1);
@@ -146,14 +156,29 @@ export function WeightsLab({ taskId, sets }: { taskId: string; sets: WeightSet[]
     const complete = set.max - impossible.length === now.size;
     setFeedback({
       tone: "success",
-      text: `Равновесие! ${equation}${isNew ? " — новое открытие 🔬" : ""}`,
+      text: t(
+        `Равновесие! ${equation}${isNew ? " — новое открытие 🔬" : ""}`,
+        `Muvozanat! ${equation}${isNew ? " — yangi kashfiyot 🔬" : ""}`,
+      ),
       sub: complete
         ? impossible.length === 0
-          ? `Все грузы от 1 до ${set.max} уравновешены! Как ты думаешь, почему это получилось?`
-          : `Все возможные грузы найдены. Не получаются: ${impossible.join(", ")}. Почему?`
+          ? t(
+              `Все грузы от 1 до ${set.max} уравновешены! Как ты думаешь, почему это получилось?`,
+              `1 dan ${set.max} gacha hamma yuklar muvozanatlandi! Sencha, nega shunday boʻldi?`,
+            )
+          : t(
+              `Все возможные грузы найдены. Не получаются: ${impossible.join(", ")}. Почему?`,
+              `Mumkin boʻlgan hamma yuklar topildi. Muvozanatlab boʻlmaydiganlari: ${impossible.join(", ")}. Nega?`,
+            )
         : isNew
-          ? "Груз отмечен в дневнике. Какой попробуешь дальше?"
-          : "Этот груз уже есть в дневнике. Может быть, найдёшь другой способ?",
+          ? t(
+              "Груз отмечен в дневнике. Какой попробуешь дальше?",
+              "Yuk kundalikka belgilandi. Endi qaysi birini sinab koʻrasan?",
+            )
+          : t(
+              "Этот груз уже есть в дневнике. Может быть, найдёшь другой способ?",
+              "Bu yuk kundalikda allaqachon bor. Balki uni boshqacha usulda muvozanatlarsan?",
+            ),
     });
   };
 
@@ -187,7 +212,11 @@ export function WeightsLab({ taskId, sets }: { taskId: string; sets: WeightSet[]
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap gap-1.5" role="tablist" aria-label="Наборы гирь">
+      <div
+        className="flex flex-wrap gap-1.5"
+        role="tablist"
+        aria-label={t("Наборы гирь", "Tarozi toshlari toʻplamlari")}
+      >
         {sets.map((s, i) => (
           <button
             key={i}
@@ -200,24 +229,34 @@ export function WeightsLab({ taskId, sets }: { taskId: string; sets: WeightSet[]
               i === active ? "border-brand bg-brand text-white" : "border-line bg-white hover:border-brand/40",
             )}
           >
-            {setLabel(s)}
+            {setLabel(s, lang)}
           </button>
         ))}
       </div>
 
       <div className="flex flex-col items-center gap-3 rounded-3xl bg-white p-3 shadow-card">
         <WeightScale left={leftItems} right={rightItems} tilt={tilt} />
-        <p className="text-sm font-bold text-muted">
-          Слева — груз <b className="text-[#6b21a8]">{load} кг</b>. Нажимай на гири:{" "}
-          {set.bothPans ? "на правую чашу, на левую, снять." : "поставить на правую чашу или снять."}
-        </p>
-        <div className="flex flex-wrap justify-center gap-2" role="group" aria-label="Гири">
+        {lang === "uz" ? (
+          <p className="text-sm font-bold text-muted">
+            Chapda — <b className="text-[#6b21a8]">{load} kg</b> yuk. Toshlarni bos:{" "}
+            {set.bothPans ? "oʻng pallaga, chap pallaga, olib qoʻyish." : "oʻng pallaga qoʻyish yoki olib qoʻyish."}
+          </p>
+        ) : (
+          <p className="text-sm font-bold text-muted">
+            Слева — груз <b className="text-[#6b21a8]">{load} кг</b>. Нажимай на гири:{" "}
+            {set.bothPans ? "на правую чашу, на левую, снять." : "поставить на правую чашу или снять."}
+          </p>
+        )}
+        <div className="flex flex-wrap justify-center gap-2" role="group" aria-label={t("Гири", "Tarozi toshlari")}>
           {set.weights.map((wt, i) => (
             <button
               key={i}
               type="button"
               onClick={() => toggle(i)}
-              aria-label={`Гиря ${wt} кг: ${places[i] === "left" ? "на левой чаше" : places[i] === "right" ? "на правой чаше" : "не на весах"}`}
+              aria-label={t(
+                `Гиря ${wt} кг: ${places[i] === "left" ? "на левой чаше" : places[i] === "right" ? "на правой чаше" : "не на весах"}`,
+                `${wt} kg tosh: ${places[i] === "left" ? "chap pallada" : places[i] === "right" ? "oʻng pallada" : "tarozida emas"}`,
+              )}
               className={cn(
                 "flex h-16 min-w-16 flex-col items-center justify-center rounded-2xl border-2 px-2 transition",
                 places[i] === "right"
@@ -227,9 +266,15 @@ export function WeightsLab({ taskId, sets }: { taskId: string; sets: WeightSet[]
                     : "border-line bg-white hover:border-brand/40",
               )}
             >
-              <span className="text-xl font-black">{wt} кг</span>
+              <span className="text-xl font-black">
+                {wt} {t("кг", "kg")}
+              </span>
               <span className="text-[0.65rem] font-extrabold text-muted">
-                {places[i] === "right" ? "справа" : places[i] === "left" ? "слева" : "не на весах"}
+                {places[i] === "right"
+                  ? t("справа", "oʻngda")
+                  : places[i] === "left"
+                    ? t("слева", "chapda")
+                    : t("не на весах", "tarozida emas")}
               </span>
             </button>
           ))}
@@ -243,7 +288,7 @@ export function WeightsLab({ taskId, sets }: { taskId: string; sets: WeightSet[]
           }}
           disabled={places.every((p) => p === null)}
         >
-          Снять все гири
+          {t("Снять все гири", "Hamma toshlarni olish")}
         </Button>
       </div>
 
@@ -251,7 +296,10 @@ export function WeightsLab({ taskId, sets }: { taskId: string; sets: WeightSet[]
 
       <div className="rounded-2xl bg-white p-3 shadow-card">
         <p className="mb-2 text-sm font-extrabold text-muted">
-          Дневник исследователя: какие грузы уравновешены? Нажми на число, чтобы положить такой груз.
+          {t(
+            "Дневник исследователя: какие грузы уравновешены? Нажми на число, чтобы положить такой груз.",
+            "Tadqiqotchi kundaligi: qaysi yuklar muvozanatlandi? Shunday yukni qoʻyish uchun sonni bos.",
+          )}
         </p>
         <div className="flex max-w-md flex-wrap gap-1.5">
           {Array.from({ length: set.max }, (_, i) => i + 1).map((l) => (
@@ -273,7 +321,10 @@ export function WeightsLab({ taskId, sets }: { taskId: string; sets: WeightSet[]
           ))}
         </div>
         <p className="mt-2 text-sm font-bold text-muted">
-          Уравновешено: {found.length} {plural(found.length, "груз", "груза", "грузов")} из {set.max}
+          {t(
+            `Уравновешено: ${found.length} ${plural(found.length, "груз", "груза", "грузов")} из ${set.max}`,
+            `Muvozanatlangan yuklar: ${set.max} tadan ${found.length} tasi`,
+          )}
         </p>
       </div>
     </div>

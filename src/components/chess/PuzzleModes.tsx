@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Button, cn } from "@/components/ui";
 import { PUZZLES, getPuzzle } from "@/content/chess/puzzles";
+import { useT } from "@/lib/i18n";
 import { pluralize } from "@/lib/plural";
 import { random } from "@/lib/random";
 import { chessDrillRecord, duePuzzles, useStore } from "@/lib/store";
@@ -14,9 +15,10 @@ export const STORM_SECONDS = 180;
 export const STORM_PENALTY = 10;
 
 function Back() {
+  const t = useT();
   return (
     <button type="button" onClick={() => setHash("#all")} className="text-sm font-extrabold text-brand hover:underline">
-      ← Все задачи
+      ← {t("Все задачи", "Barcha masalalar")}
     </button>
   );
 }
@@ -30,6 +32,7 @@ export function stormOrder(rnd: () => number): string[] {
 
 /** «Шторм»: три минуты, решай сколько успеешь. Ошибка — минус 10 секунд и следующая задача. */
 export function StormView() {
+  const t = useT();
   const best = useStore((s) => s.chessDrills.storm ?? 0);
   const [order, setOrder] = useState<string[]>(() => stormOrder(random));
   const [index, setIndex] = useState(0);
@@ -51,12 +54,12 @@ export function StormView() {
   }, [over, score]);
 
   const start = () => {
-    const t = Date.now();
+    const at = Date.now();
     setOrder(stormOrder(random));
     setIndex(0);
     setScore(0);
-    setNow(t);
-    setEndsAt(t + STORM_SECONDS * 1000);
+    setNow(at);
+    setEndsAt(at + STORM_SECONDS * 1000);
   };
 
   const puzzle = getPuzzle(order[Math.min(index, order.length - 1)])!;
@@ -72,7 +75,7 @@ export function StormView() {
           </span>
         </p>
       </div>
-      <h1 className="text-2xl font-black">⚡ Шторм</h1>
+      <h1 className="text-2xl font-black">⚡ {t("Шторм", "Boʻron")}</h1>
       {!running && (
         <div className="rounded-3xl bg-white p-6 text-center shadow-card">
           {over ? (
@@ -81,22 +84,35 @@ export function StormView() {
                 {score >= 15 ? "🏆" : score >= 8 ? "🔥" : "💪"}
               </p>
               <p className="mt-2 text-2xl font-black">
-                Решено {pluralize(score, "задача", "задачи", "задач")} за 3 минуты!
+                {t(
+                  `Решено ${pluralize(score, "задача", "задачи", "задач")} за 3 минуты!`,
+                  `3 daqiqada ${score} ta masala yechding!`,
+                )}
               </p>
-              <p className="mt-1 text-muted">{score > 0 && score >= best ? "Это твой рекорд!" : `Рекорд: ${best}.`}</p>
+              <p className="mt-1 text-muted">
+                {score > 0 && score >= best
+                  ? t("Это твой рекорд!", "Bu sening rekording!")
+                  : t(`Рекорд: ${best}.`, `Rekord: ${best}.`)}
+              </p>
             </>
           ) : (
             <>
               <p className="text-lg font-bold">
-                Три минуты — решай столько задач, сколько успеешь. Сначала лёгкие, потом всё труднее.
+                {t(
+                  "Три минуты — решай столько задач, сколько успеешь. Сначала лёгкие, потом всё труднее.",
+                  "Uch daqiqa ichida ulgurganingcha koʻproq masala yech. Avval osonlari, keyin tobora qiyinroqlari.",
+                )}
               </p>
               <p className="mt-1 text-sm text-muted">
-                Ошибка — минус {STORM_PENALTY} секунд и следующая задача. Рекорд: {best}.
+                {t(
+                  `Ошибка — минус ${STORM_PENALTY} секунд и следующая задача. Рекорд: ${best}.`,
+                  `Xato qilsang — ${STORM_PENALTY} soniya ayriladi va keyingi masala keladi. Rekord: ${best}.`,
+                )}
               </p>
             </>
           )}
           <Button size="lg" className="mt-4" onClick={start}>
-            {over ? "↺ Ещё раз" : "▶ Старт"}
+            {over ? t("↺ Ещё раз", "↺ Yana bir bor") : t("▶ Старт", "▶ Boshlash")}
           </Button>
         </div>
       )}
@@ -120,6 +136,7 @@ export function StormView() {
 
 /** Повторение: задачи с ошибками возвращаются через 1, 3, 7 и 21 день. */
 export function RepeatView() {
+  const t = useT();
   const today = useToday();
   const progress = useStore((s) => s.chessPuzzles);
   const [queue, setQueue] = useState<string[] | null>(null);
@@ -134,26 +151,31 @@ export function RepeatView() {
     <div className="space-y-4">
       <Back />
       <header>
-        <h1 className="text-2xl font-black">🔁 Повторение</h1>
+        <h1 className="text-2xl font-black">🔁 {t("Повторение", "Takrorlash")}</h1>
         <p className="text-muted">
-          Задачи, в которых были ошибки, возвращаются через день, потом через 3, 7 и 21 день. Реши без ошибки — и задача
-          уйдёт дальше. Так трудное запоминается навсегда.
+          {t(
+            "Задачи, в которых были ошибки, возвращаются через день, потом через 3, 7 и 21 день. Реши без ошибки — и задача уйдёт дальше. Так трудное запоминается навсегда.",
+            "Xato qilingan masalalar bir kundan keyin, soʻng 3, 7 va 21 kundan keyin yana qaytib keladi. Xatosiz yechsang — masala keyingi bosqichga oʻtadi. Shunda qiyin narsalar bir umr esda qoladi.",
+          )}
         </p>
       </header>
       {queue === null ? (
         <div className="rounded-3xl bg-white p-6 text-center shadow-card">
           <p className="text-xl font-black">
             {due.length
-              ? `На сегодня: ${pluralize(due.length, "задача", "задачи", "задач")}`
-              : "На сегодня повторять нечего."}
+              ? t(
+                  `На сегодня: ${pluralize(due.length, "задача", "задачи", "задач")}`,
+                  `Bugunga: ${due.length} ta masala`,
+                )
+              : t("На сегодня повторять нечего.", "Bugun takrorlaydigan masala yoʻq.")}
           </p>
           {due.length > 0 ? (
             <Button className="mt-3" onClick={() => setQueue(due)}>
-              Начать повторение
+              {t("Начать повторение", "Takrorlashni boshlash")}
             </Button>
           ) : (
             <Button className="mt-3" onClick={() => setHash("#all")}>
-              К задачам
+              {t("К задачам", "Masalalarga")}
             </Button>
           )}
         </div>
@@ -163,22 +185,24 @@ export function RepeatView() {
             ✅
           </p>
           <p className="mt-2 text-xl font-black">
-            {done ? `Повторено: ${done}. На сегодня всё!` : "На сегодня повторять нечего."}
+            {done
+              ? t(`Повторено: ${done}. На сегодня всё!`, `${done} ta masala takrorlandi. Bugunga shu!`)
+              : t("На сегодня повторять нечего.", "Bugun takrorlaydigan masala yoʻq.")}
           </p>
           <Button className="mt-3" onClick={() => setHash("#all")}>
-            К задачам
+            {t("К задачам", "Masalalarga")}
           </Button>
         </div>
       ) : (
         <>
           <p className="font-bold text-muted">
-            Задача {index + 1} из {list.length}
+            {t(`Задача ${index + 1} из ${list.length}`, `${index + 1}-masala (jami ${list.length} ta)`)}
           </p>
           <PuzzlePlayer
             key={puzzle.id}
             puzzle={puzzle}
             onSolved={() => setDone((d) => d + 1)}
-            next={{ label: "Следующая →", onClick: () => setIndex((i) => i + 1) }}
+            next={{ label: t("Следующая →", "Keyingisi →"), onClick: () => setIndex((i) => i + 1) }}
           />
         </>
       )}

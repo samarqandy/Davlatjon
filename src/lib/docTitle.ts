@@ -36,6 +36,8 @@ const TITLE_UZ: Record<string, string> = {
   "День не найден": "Kun topilmadi",
   "Страница не найдена": "Sahifa topilmadi",
   Печать: "Chop etish",
+  Эндшпиль: "Endshpil",
+  "Доска анализа": "Tahlil taxtasi",
 };
 
 /** Части заголовка, которые знает только сама страница (название дня, партии), — страница сообщает их сюда. */
