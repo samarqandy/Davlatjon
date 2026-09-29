@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { ChessHomeCard } from "@/components/chess/ChessHomeCard";
 import { Button, ButtonLink, Card, cn, ProgressBar } from "@/components/ui";
 import { sectionsFor } from "@/content/meta";
@@ -13,6 +13,7 @@ import { cleanChildName } from "@/lib/childName";
 import { AGE_MAX, AGE_MIN, PROFILES, ageProfile, profileMeta, profileText } from "@/lib/age";
 import { LANGS, setLang, useBoth, useLang, useT, type Both, type T } from "@/lib/i18n";
 import { setChildName, setWelcomed, updateSettings, useHydrated, useStore, type AppState } from "@/lib/store";
+import { VOICE_CLIPS } from "@/lib/voice";
 
 type Status = "done" | "active" | "next" | "later";
 
@@ -322,7 +323,6 @@ function Welcome() {
   const lang = useLang();
   const [name, setName] = useState("");
   const [age, setAge] = useState<number | null>(null);
-  const text = useRef<HTMLDivElement>(null);
   const ready = !!cleanChildName(name) && !!age;
   const start = () => {
     if (!ready) return;
@@ -361,7 +361,7 @@ function Welcome() {
             ))}
           </div>
         </div>
-        <div ref={text}>
+        <div>
           <h2 id="welcome-title" className="text-2xl font-black">
             {t("Привет! Добро пожаловать в лабораторию!", "Salom! Laboratoriyaga xush kelibsan!")}
           </h2>
@@ -395,7 +395,11 @@ function Welcome() {
             </li>
           </ol>
         </div>
-        <ListenButton from={text} label={t("Послушать приветствие", "Salomlashuvni tinglash")} className="mt-3" />
+        <ListenButton
+          src={VOICE_CLIPS.welcome(lang)}
+          label={t("Послушать приветствие", "Salomlashuvni tinglash")}
+          className="mt-3"
+        />
         <div className="mt-5">
           <ChildNameField
             value={name}

@@ -6,7 +6,6 @@ import { Button, cn } from "@/components/ui";
 import { useT } from "@/lib/i18n";
 import { useChess } from "@/lib/useChess";
 import { useToday } from "@/lib/useToday";
-import { ListenButton } from "@/components/ListenButton";
 
 /** «Знаешь ли ты?» — вопрос дня с ответом по нажатию; «Ещё вопрос» листает дальше. */
 export function DidYouKnow({ className }: { className?: string }) {
@@ -23,7 +22,6 @@ export function DidYouKnow({ className }: { className?: string }) {
         {t("🤔 Знаешь ли ты?", "🤔 Bilasanmi?")}
       </p>
       <p className="mt-1 text-lg leading-snug font-black">{item.q}</p>
-      <ListenButton key={item.q} text={open ? `${item.q} ${item.a}` : item.q} className="mt-1" />
       {open ? (
         <p className="mt-2 rounded-2xl bg-mint-soft/70 px-3 py-2 font-semibold" aria-live="polite">
           {item.a}

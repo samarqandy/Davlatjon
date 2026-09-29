@@ -1,19 +1,20 @@
-/** Озвучка: записи диктора на месте, текст для чтения вслух очищен от разметки. */
+/** Озвучка: только записи диктора, и все они на месте; голоса браузера нет. */
 import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { CHESS_LEVELS } from "@/content/chess";
 import { SECRETS } from "@/content/chess/secrets";
 import { sanitize } from "@/lib/store";
-import { LEGEND_LEVELS, SECRET_IDS, UZ_CLIPS, VOICE_CLIPS, speakable } from "@/lib/voice";
+import { LEGEND_LEVELS, SECRET_IDS, UZ_CLIPS, VOICE_CLIPS } from "@/lib/voice";
 
 const file = (src: string) => path.join(process.cwd(), "public", src);
 
 describe("озвучка", () => {
-  it("у каждого уровня и каждой тайны есть запись, у похвалы — файлы", () => {
+  it("у приветствия, каждого уровня и каждой тайны есть запись, у похвалы — файлы", () => {
     expect([...LEGEND_LEVELS].sort()).toEqual(CHESS_LEVELS.map((l) => l.id).sort());
     expect([...SECRET_IDS].sort()).toEqual(SECRETS.map((s) => s.id).sort());
     const all = [
+      VOICE_CLIPS.welcome("ru"),
       ...VOICE_CLIPS.mate("ru"),
       ...VOICE_CLIPS.praise("ru"),
       ...VOICE_CLIPS.retry("ru"),
@@ -29,19 +30,9 @@ describe("озвучка", () => {
     }
   });
 
-  it("текст для чтения: без разметки, рокировка словами", () => {
-    expect(speakable("**Шах** и `мат`")).toBe("Шах и мат");
-    expect(speakable("Белые сделали 0-0, а чёрные 0-0-0.")).toBe(
-      "Белые сделали короткая рокировка, а чёрные длинная рокировка.",
-    );
-    expect(speakable("Крg8")).toBe("король g8");
-    expect(speakable("♘f3 и 0-0", "ru")).toBe("конь f3 и короткая рокировка");
-    expect(speakable("♕xf7# — mot!", "uz")).toBe("farzin xf7# — mot!");
-    expect(speakable("0-0-0", "uz")).toBe("uzun rokirovka");
-  });
-
   it("по-узбекски звучат только готовые узбекские записи, русский диктор не подменяет их", () => {
     const uz = [
+      VOICE_CLIPS.welcome("uz"),
       ...VOICE_CLIPS.praise("uz"),
       ...VOICE_CLIPS.retry("uz"),
       ...VOICE_CLIPS.mate("uz"),
@@ -50,6 +41,18 @@ describe("озвучка", () => {
     ].filter(Boolean);
     expect(uz.length).toBe(UZ_CLIPS.size);
     for (const src of uz) expect(src).toMatch(/^\/audio\/uz\//);
+  });
+
+  it("голос браузера не используется: только записи ElevenLabs", () => {
+    const files = (dir: string): string[] =>
+      fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
+        const p = path.join(dir, e.name);
+        return e.isDirectory() ? files(p) : /\.(ts|tsx)$/.test(e.name) ? [p] : [];
+      });
+    const found = files(path.join(process.cwd(), "src")).filter((f) =>
+      /speechSynthesis|SpeechSynthesisUtterance/.test(fs.readFileSync(f, "utf8")),
+    );
+    expect(found).toEqual([]);
   });
 
   it("звук по умолчанию включён, выключение сохраняется", () => {
