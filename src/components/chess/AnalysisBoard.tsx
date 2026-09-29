@@ -4,12 +4,13 @@ import { Chess } from "chess.js";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Button, cn } from "@/components/ui";
-import { legalTargets, pieceAt, playMove } from "@/lib/chess";
+import { illegalReason, isPromotionMove, legalTargets, pieceAt, playMove, type PieceType } from "@/lib/chess";
 import { evaluatePosition, winChance, type PositionEval } from "@/lib/engine/analysis";
 import { MATE } from "@/lib/engine/search";
 import { useSan, useT, type T } from "@/lib/i18n";
 import { useHash } from "@/lib/useHash";
-import { ChessBoard, type SquareMark } from "./ChessBoard";
+import { ChessBoard, type PromotionPiece, type SquareMark } from "./ChessBoard";
+import { illegalText, usePromotion } from "./useMoveInput";
 
 const START = new Chess().fen();
 
@@ -99,6 +100,8 @@ export function AnalysisBoard() {
   const fen = cursor === 0 ? start : plies[cursor - 1].fen;
   const game = new Chess(fen);
   const turn = game.turn();
+  const promo = usePromotion(fen);
+  const [illegal, setIllegal] = useState<string | null>(null);
   const current = evals[fen];
   const isOver = game.isGameOver();
 
@@ -123,9 +126,18 @@ export function AnalysisBoard() {
     return () => window.removeEventListener("keydown", onKey);
   }, [plies.length]);
 
-  const tryMove = (from: string, to: string): boolean => {
-    const played = playMove(fen, from, to, "q");
-    if (!played) return false;
+  const tryMove = (from: string, to: string, promotion?: PromotionPiece): boolean => {
+    if (!promotion && isPromotionMove(fen, from, to)) {
+      promo.ask(to, turn, (piece) => tryMove(from, to, piece));
+      return true;
+    }
+    const played = playMove(fen, from, to, promotion ?? "q");
+    if (!played) {
+      const reason = illegalReason(fen, from, to);
+      setIllegal(reason ? illegalText(reason, t) : null);
+      return false;
+    }
+    setIllegal(null);
     setSelected(null);
     // Тот же ход, что дальше в партии, — просто идём вперёд; другой — новая ветка вместо старой.
     if (plies[cursor]?.uci === played.uci) {
@@ -137,13 +149,15 @@ export function AnalysisBoard() {
     return true;
   };
 
-  const tap = (sq: string) => {
+  const tap = (sq: string): boolean | void => {
     const p = pieceAt(fen, sq);
     if (p && p.color === turn) {
       setSelected(sq === selected ? null : sq);
       return;
     }
-    if (selected) tryMove(selected, sq);
+    if (!selected || tryMove(selected, sq)) return;
+    setSelected(null);
+    if (illegalReason(fen, selected, sq)) return false;
   };
 
   const load = (next: { start: string; plies: Ply[] }, at = 0) => {
@@ -197,7 +211,12 @@ export function AnalysisBoard() {
       : [];
   const whiteChance = current ? winChance(current.score) : 50;
   const bestSan = current?.best
-    ? (playMove(fen, current.best.slice(0, 2), current.best.slice(2, 4), "q")?.san ?? null)
+    ? (playMove(
+        fen,
+        current.best.slice(0, 2),
+        current.best.slice(2, 4),
+        (current.best[4] as PieceType | undefined) ?? "q",
+      )?.san ?? null)
     : null;
 
   const over = game.isCheckmate()
@@ -252,10 +271,20 @@ export function AnalysisBoard() {
               onSquare={tap}
               onDrop={tryMove}
               draggable
+              promotion={promo.request}
               orientation={flipped ? "black" : "white"}
               maxWidth={500}
               label={t("Доска анализа", "Tahlil taxtasi")}
             />
+            {illegal && (
+              <p
+                role="status"
+                data-illegal
+                className="mt-2 rounded-2xl bg-rose/10 px-4 py-2 text-sm font-bold text-rose"
+              >
+                {illegal}
+              </p>
+            )}
           </div>
         </div>
 

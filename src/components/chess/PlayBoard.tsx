@@ -2,7 +2,16 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Button, ButtonLink, cn } from "@/components/ui";
-import { isInCheck, legalTargets, pieceAt, playMove, type Color } from "@/lib/chess";
+import {
+  illegalReason,
+  isInCheck,
+  isPromotionMove,
+  legalTargets,
+  pieceAt,
+  playMove,
+  type Color,
+  type PieceType,
+} from "@/lib/chess";
 import { pawnBattleBest, robotLevels, robotMove, searchBest } from "@/lib/engine/search";
 import { useLang, useSan, useT } from "@/lib/i18n";
 import {
@@ -25,7 +34,8 @@ import { pluralize } from "@/lib/plural";
 import { random } from "@/lib/random";
 import { cheer } from "@/lib/voice";
 import { recordChessGame } from "@/lib/store";
-import { ChessBoard, PieceIcon, type SquareMark } from "./ChessBoard";
+import { ChessBoard, PieceIcon, type PromotionPiece, type SquareMark } from "./ChessBoard";
+import { illegalText, usePromotion } from "./useMoveInput";
 
 export interface PlayConfig {
   mode: PlayMode;
@@ -123,7 +133,9 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
   }, [clockRunning, turn]);
   const last = plies[plies.length - 1];
   const inCheck = !status.over && isInCheck(fen);
-  const captured = capturedPieces(fen);
+  const captured = capturedPieces(fen, start);
+  const promo = usePromotion(fen);
+  const [illegal, setIllegal] = useState<string | null>(null);
   const myMoves = withRobot ? Math.ceil(plies.length / 2) : plies.length;
 
   // Ход робота — чуть погодя, чтобы ребёнок увидел свой ход.
@@ -133,7 +145,7 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
       const uci = computerMove(config, fen);
       setThinking(false);
       if (!uci) return;
-      const played = playMove(fen, uci.slice(0, 2), uci.slice(2, 4), "q");
+      const played = playMove(fen, uci.slice(0, 2), uci.slice(2, 4), (uci[4] as PieceType | undefined) ?? "q");
       if (played) setPlies((p) => [...p, { san: played.san, uci: played.uci, fen: played.fen }]);
     }, 500);
     return () => {
@@ -163,10 +175,19 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
     });
   }, [status.over, status.winner, status.mate, withRobot, config, myMoves, gameId, start, plies]);
 
-  const tryMove = (from: string, to: string): boolean => {
+  const tryMove = (from: string, to: string, promotion?: PromotionPiece): boolean => {
     if (!myTurn || status.over || thinking) return false;
-    const played = playMove(fen, from, to, "q");
-    if (!played) return false;
+    if (!promotion && isPromotionMove(fen, from, to)) {
+      promo.ask(to, turn, (piece) => tryMove(from, to, piece));
+      return true;
+    }
+    const played = playMove(fen, from, to, promotion ?? "q");
+    if (!played) {
+      const reason = illegalReason(fen, from, to);
+      setIllegal(reason ? illegalText(reason, t) : null);
+      return false;
+    }
+    setIllegal(null);
     setPlies((p) => [...p, { san: played.san, uci: played.uci, fen: played.fen }]);
     if (config.clock && plies.length > 0) setClock((c) => ({ ...c, [turn]: c[turn] + config.clock!.inc * 1000 }));
     setSelected(null);
@@ -175,14 +196,17 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
     return true;
   };
 
-  const tap = (sq: string) => {
+  const tap = (sq: string): boolean | void => {
     if (!myTurn || status.over || thinking) return;
     const piece = pieceAt(fen, sq);
     if (piece && piece.color === turn) {
       setSelected(sq === selected ? null : sq);
       return;
     }
-    if (selected) tryMove(selected, sq);
+    if (!selected || tryMove(selected, sq)) return;
+    setSelected(null);
+    // Ход нельзя сделать из-за короля — подсказываем почему; просто мимо — тихо снимаем выбор.
+    if (illegalReason(fen, selected, sq)) return false;
   };
 
   const undo = () => {
@@ -231,6 +255,9 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
     for (const sq of legalTargets(fen, selected)) marks[sq] = pieceAt(fen, sq) ? "capture" : "target";
   }
   const orientation = (config.color === "b") !== flipped ? "black" : "white";
+  // Трофеи игрока сверху — съеденные фигуры того, кто снизу, и наоборот.
+  const topTrophies = orientation === "white" ? captured.w : captured.b;
+  const bottomTrophies = orientation === "white" ? captured.b : captured.w;
 
   const robot = robotLevels(lang)[config.level - 1];
   const variant = config.variant ? endgameText(config.variant, lang) : undefined;
@@ -296,7 +323,8 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
         )}
         <div className="flex items-center gap-2">
           <CapturedRow
-            pieces={orientation === "white" ? captured.w : captured.b}
+            pieces={topTrophies}
+            lead={worth(topTrophies) - worth(bottomTrophies)}
             label={t("Взято у соперника сверху", "Raqibdan olingan donalar (yuqorida)")}
           />
           {clockBox(topSide)}
@@ -309,12 +337,15 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
           onSquare={tap}
           draggable={myTurn && !status.over && !thinking}
           onDrop={(from, to) => tryMove(from, to)}
+          canDrag={(_, piece) => piece[0] === turn}
+          promotion={promo.request}
           arrows={hint ? [{ from: hint.slice(0, 2), to: hint.slice(2, 4), color: "#10b981" }] : []}
           maxWidth={520}
         />
         <div className="flex items-center gap-2">
           <CapturedRow
-            pieces={orientation === "white" ? captured.b : captured.w}
+            pieces={bottomTrophies}
+            lead={worth(bottomTrophies) - worth(topTrophies)}
             label={t("Взято у соперника снизу", "Raqibdan olingan donalar (pastda)")}
           />
           {clockBox(topSide === "w" ? "b" : "w")}
@@ -328,6 +359,11 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
         >
           {statusText}
         </p>
+        {illegal && (
+          <p role="status" data-illegal className="rounded-2xl bg-rose/10 px-4 py-2 text-sm font-bold text-rose">
+            {illegal}
+          </p>
+        )}
         {status.over && (config.mode === "robot" || config.mode === "two") && plies.length > 1 && (
           <ButtonLink href={`/chess/review#${gameId}`} variant="sun">
             🔎{" "}
@@ -406,12 +442,31 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
   );
 }
 
-function CapturedRow({ pieces, label }: { pieces: string[]; label: string }) {
+const VALUE: Record<string, number> = { Q: 9, R: 5, B: 3, N: 3, P: 1 };
+
+/** Съеденные фигуры: одинаковые — стопкой (×N), справа — перевес в очках (+3). */
+function CapturedRow({ pieces, label, lead }: { pieces: string[]; label: string; lead: number }) {
+  const groups: [string, number][] = [];
+  for (const p of pieces) {
+    const g = groups.find(([q]) => q === p);
+    if (g) g[1]++;
+    else groups.push([p, 1]);
+  }
   return (
-    <div className="flex h-7 items-center gap-0.5" aria-label={`${label}: ${pieces.length}`}>
-      {pieces.map((p, i) => (
-        <PieceIcon key={i} piece={p} className="h-6 w-6 opacity-80" />
+    <div
+      className="flex h-7 min-w-0 flex-1 items-center gap-1.5 overflow-hidden"
+      aria-label={`${label}: ${pieces.length}`}
+    >
+      {groups.map(([p, n]) => (
+        <span key={p} className="flex shrink-0 items-center">
+          <PieceIcon piece={p} className="h-6 w-6 opacity-80" />
+          {n > 1 && <span className="text-xs font-black text-muted">×{n}</span>}
+        </span>
       ))}
+      {lead > 0 && <span className="shrink-0 text-sm font-black text-muted">+{lead}</span>}
     </div>
   );
 }
+
+/** Сумма очков съеденных фигур. */
+const worth = (pieces: string[]) => pieces.reduce((s, p) => s + (VALUE[p[1]] ?? 0), 0);

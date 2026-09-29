@@ -68,7 +68,9 @@ export function ChessPrint() {
                   position={p.fen}
                   orientation={white ? "white" : "black"}
                   maxWidth={230}
-                  className="!mx-0 !rounded-md !border-2 !shadow-none"
+                  frame="print"
+                  notation
+                  className="!mx-0"
                 />
                 <p className="mt-1 text-sm">{t("Ответ: ______________", "Javob: ______________")}</p>
               </li>

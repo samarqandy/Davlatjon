@@ -183,7 +183,7 @@ function SquareDrill({ drill, solved }: { drill: EndgameDrill; solved: boolean }
   };
   return (
     <DrillFrame solved={solved} title={drill.prompt}>
-      <ChessBoard id={drill.id} position={drill.fen} marks={marks} maxWidth={300} label={drill.prompt} />
+      <ChessBoard id={drill.id} position={drill.fen} marks={marks} maxWidth={360} label={drill.prompt} />
       {answer === null ? (
         <div className="flex flex-wrap gap-2">
           <Button variant="secondary" onClick={() => choose(true)}>
@@ -267,7 +267,8 @@ function FindDrill({ drill, solved }: { drill: EndgameDrill; solved: boolean }) 
         onSquare={tap}
         onDrop={tryMove}
         draggable={!result?.ok}
-        maxWidth={300}
+        orientation={turn === "w" ? "white" : "black"}
+        maxWidth={440}
         label={drill.prompt}
       />
       {result?.ok ? (
@@ -439,7 +440,8 @@ function PlayDrill({ drill, solved }: { drill: EndgameDrill; solved: boolean }) 
         onSquare={tap}
         onDrop={tryMove}
         draggable={state === "playing" && turn === me}
-        maxWidth={300}
+        orientation={me === "w" ? "white" : "black"}
+        maxWidth={440}
         label={drill.prompt}
       />
       <p

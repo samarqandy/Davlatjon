@@ -62,6 +62,8 @@ export interface Settings {
   age?: number;
   /** Озвучка: голос диктора, похвала и чтение вслух. По умолчанию включена. */
   sound?: boolean;
+  /** Звуки ходов на доске. Настройка устройства, по умолчанию включена. */
+  boardSounds?: boolean;
   /** Язык платформы: русский или узбекский. */
   lang?: "ru" | "uz";
 }
@@ -231,6 +233,7 @@ export function sanitize(raw: unknown): AppState {
           ? (settings.age as number)
           : undefined,
       sound: settings.sound !== false,
+      boardSounds: settings.boardSounds !== false,
       lang: settings.lang === "uz" ? "uz" : "ru",
     },
     chess: isObject(raw.chess) ? (raw.chess as AppState["chess"]) : {},

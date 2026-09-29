@@ -68,6 +68,15 @@ export function SettingsPanel() {
           onChange={(v) => updateSettings({ sound: v })}
         />
         <Toggle
+          title={t("Звуки ходов на доске", "Taxtadagi yurish ovozlari")}
+          text={t(
+            "Тихий стук при ходе, взятии и рокировке, сигнал при шахе. Работает и без интернета, диктору не мешает.",
+            "Yurish, olish va rokirovkada yengil taqillash, shaxda signal. Internetsiz ham ishlaydi, diktorga xalaqit bermaydi.",
+          )}
+          value={settings.boardSounds !== false}
+          onChange={(v) => updateSettings({ boardSounds: v })}
+        />
+        <Toggle
           title={t("Пауза перед следующей подсказкой", "Keyingi maslahatdan oldin pauza")}
           text={t(
             "После каждой подсказки следующая откроется через 15 секунд — чтобы ребёнок успел подумать.",

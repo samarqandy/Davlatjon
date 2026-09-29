@@ -4,14 +4,15 @@ import { useEffect, useRef, useState } from "react";
 import { Feedback, type FeedbackState } from "@/components/answers/Feedback";
 import { Button } from "@/components/ui";
 import type { ChessPuzzle } from "@/content/chess/puzzles";
-import { isInCheck, legalTargets, pieceAt, playMove, type Color } from "@/lib/chess";
+import { isInCheck, isPromotionMove, legalTargets, pieceAt, playMove, type Color, type PieceType } from "@/lib/chess";
 import { matingMovesIn, searchBest } from "@/lib/engine/search";
 import { useSan, useT } from "@/lib/i18n";
 import { kingOf } from "@/lib/play";
 import { pluralize } from "@/lib/plural";
 import { chessPuzzleMiss, chessPuzzleSolved } from "@/lib/store";
 import { useChess } from "@/lib/useChess";
-import { ChessBoard, type SquareMark } from "./ChessBoard";
+import { ChessBoard, type PromotionPiece, type SquareMark } from "./ChessBoard";
+import { usePromotion } from "./useMoveInput";
 
 const STARS = (n: number) => "⭐".repeat(n);
 
@@ -58,12 +59,17 @@ export function PuzzlePlayer({
   useEffect(() => () => void (timer.current && clearTimeout(timer.current)), []);
 
   const accepted = acceptedMoves(puzzle, step);
+  const promo = usePromotion(shown);
   const hintFrom = misses >= 3 && accepted[0] ? accepted[0].slice(0, 2) : null;
   const hintTo = misses >= 4 && accepted[0] ? accepted[0].slice(2, 4) : null;
 
-  const attempt = (from: string, to: string): boolean => {
+  const attempt = (from: string, to: string, promotion?: PromotionPiece): boolean => {
     if (done || busy || shown !== step.fen) return false;
-    const played = playMove(step.fen, from, to, "q");
+    if (!promotion && isPromotionMove(step.fen, from, to)) {
+      promo.ask(to, solver, (piece) => attempt(from, to, piece));
+      return true;
+    }
+    const played = playMove(step.fen, from, to, promotion ?? "q");
     if (!played) return false;
     setSelected(null);
     setShown(played.fen);
@@ -95,7 +101,9 @@ export function PuzzlePlayer({
       });
       timer.current = setTimeout(() => {
         const reply = searchBest(played.fen, { depth: 2, timeMs: 400 }).uci;
-        const after = reply ? playMove(played.fen, reply.slice(0, 2), reply.slice(2, 4), "q") : null;
+        const after = reply
+          ? playMove(played.fen, reply.slice(0, 2), reply.slice(2, 4), (reply[4] as PieceType | undefined) ?? "q")
+          : null;
         const fen = after?.fen ?? played.fen;
         setStep({ fen, matesLeft: left });
         setShown(fen);
@@ -198,6 +206,7 @@ export function PuzzlePlayer({
           onSquare={tap}
           draggable={!done && !busy}
           onDrop={(from, to) => attempt(from, to)}
+          promotion={promo.request}
           arrows={hintTo && hintFrom && !done ? [{ from: hintFrom, to: hintTo, color: "#10b981" }] : []}
           maxWidth={480}
         />

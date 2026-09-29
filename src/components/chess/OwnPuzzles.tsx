@@ -4,13 +4,15 @@ import Link from "next/link";
 import { useState } from "react";
 import { Feedback, type FeedbackState } from "@/components/answers/Feedback";
 import { Button, ButtonLink, cn } from "@/components/ui";
-import { legalTargets, pieceAt, playMove, type Color } from "@/lib/chess";
+import { isInCheck, isPromotionMove, legalTargets, pieceAt, playMove, type Color } from "@/lib/chess";
 import { isAlmostBest } from "@/lib/engine/analysis";
 import { sanFor, tFor, useLang, useSan, useT, type Lang } from "@/lib/i18n";
 import { chessOwnPuzzleSolved, useHydrated, useStore, type ChessGameRecord } from "@/lib/store";
 import { setHash } from "@/lib/useHash";
-import { ChessBoard, type SquareMark } from "./ChessBoard";
+import { kingOf } from "@/lib/play";
+import { ChessBoard, type PromotionPiece, type SquareMark } from "./ChessBoard";
 import { gameTitle } from "./GameReview";
+import { usePromotion } from "./useMoveInput";
 
 export interface OwnPuzzle {
   key: string;
@@ -151,13 +153,20 @@ function OwnPuzzleBoard({ puzzle, onNext }: { puzzle: OwnPuzzle; onNext?: () => 
   const [shown, setShown] = useState(puzzle.fen);
   const [done, setDone] = useState(false);
   const [feedback, setFeedback] = useState<FeedbackState | null>(null);
+  const [last, setLast] = useState<[string, string] | null>(null);
+  const promo = usePromotion(shown);
 
-  const attempt = (from: string, to: string): boolean => {
+  const attempt = (from: string, to: string, promotion?: PromotionPiece): boolean => {
     if (done) return false;
-    const played = playMove(puzzle.fen, from, to, "q");
+    if (!promotion && isPromotionMove(puzzle.fen, from, to)) {
+      promo.ask(to, puzzle.side, (piece) => attempt(from, to, piece));
+      return true;
+    }
+    const played = playMove(puzzle.fen, from, to, promotion ?? "q");
     if (!played) return false;
     setSelected(null);
     setShown(played.fen);
+    setLast([from, to]);
     if (isAlmostBest(puzzle.fen, played.uci, puzzle.best)) {
       setDone(true);
       chessOwnPuzzleSolved(puzzle.key);
@@ -197,7 +206,10 @@ function OwnPuzzleBoard({ puzzle, onNext }: { puzzle: OwnPuzzle; onNext?: () => 
               )
             : undefined,
       });
-      setTimeout(() => setShown(puzzle.fen), 700);
+      setTimeout(() => {
+        setShown(puzzle.fen);
+        setLast(null);
+      }, 700);
     }
     return true;
   };
@@ -213,6 +225,14 @@ function OwnPuzzleBoard({ puzzle, onNext }: { puzzle: OwnPuzzle; onNext?: () => 
   };
 
   const marks: Record<string, SquareMark> = {};
+  if (last) {
+    marks[last[0]] = "last";
+    marks[last[1]] = "last";
+  }
+  if (isInCheck(shown)) {
+    const k = kingOf(shown, shown.split(" ")[1] as Color);
+    if (k) marks[k] = "check";
+  }
   if (misses >= 2 && !done) marks[puzzle.best.slice(0, 2)] = "hint";
   if (selected) {
     marks[selected] = "selected";
@@ -229,7 +249,8 @@ function OwnPuzzleBoard({ puzzle, onNext }: { puzzle: OwnPuzzle; onNext?: () => 
           orientation={puzzle.side === "w" ? "white" : "black"}
           onSquare={tap}
           draggable={!done}
-          onDrop={attempt}
+          onDrop={(from, to) => attempt(from, to)}
+          promotion={promo.request}
           arrows={
             misses >= 3 && !done
               ? [{ from: puzzle.best.slice(0, 2), to: puzzle.best.slice(2, 4), color: "#10b981" }]
