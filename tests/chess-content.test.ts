@@ -20,6 +20,7 @@ import { OPENINGS, OPENING_CATEGORIES, OPENING_PRINCIPLES } from "@/content/ches
 import { PUZZLES, PUZZLE_THEMES, dailyPuzzle, puzzlesByTheme } from "@/content/chess/puzzles";
 import { inCheck, legalMoves, makeMove, parseFen } from "@/lib/engine/board";
 import { matingMovesIn, scoreMoves } from "@/lib/engine/search";
+import { bankCount } from "@/lib/puzzleBank";
 
 /** Позиция возможна в партии: оба короля есть, сторона не на ходу не под шахом. */
 function isLegalPosition(fen: string): boolean {
@@ -116,7 +117,8 @@ describe("задачи", () => {
       ).toBe(true);
       expect(p.mateIn !== undefined || (p.solution?.length ?? 0) > 0, p.id).toBe(true);
     }
-    for (const t of PUZZLE_THEMES) expect(puzzlesByTheme(t.id).length, t.id).toBeGreaterThan(0);
+    // В каждой теме есть задачи: школы или из базы Lichess (у новых тем — только из базы).
+    for (const t of PUZZLE_THEMES) expect(puzzlesByTheme(t.id).length + bankCount(t.id), t.id).toBeGreaterThan(0);
     expect(PUZZLES.filter((p) => p.stars === 1).length).toBeGreaterThanOrEqual(8);
     expect(PUZZLES.filter((p) => p.stars >= 4).length).toBeGreaterThanOrEqual(3);
   });

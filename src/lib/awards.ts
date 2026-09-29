@@ -2,6 +2,8 @@
 import { CHESS_LEVELS } from "@/content/chess";
 import { FAMOUS_GAMES } from "@/content/chess/games";
 import { PUZZLES } from "@/content/chess/puzzles";
+import { pluralize } from "./plural";
+import { solvedCount } from "./puzzleStats";
 import { currentRank } from "./chessProgress";
 import { tFor, type Lang } from "./lang";
 import { isoDay, type AppState } from "./store";
@@ -24,7 +26,9 @@ export function awards(s: AppState, lang: Lang = "ru"): Award[] {
   const t = tFor(lang);
   const robotWins = (level: number) =>
     s.chessGames.filter((g) => g.mode === "robot" && (g.level ?? 0) >= level && g.result === "win").length;
-  const solved = PUZZLES.filter((p) => s.chessPuzzles[p.id]?.solvedAt).length;
+  // Решённые задачи: школы и из базы Lichess; «все задачи школы» — отдельно.
+  const solved = solvedCount(s.chessPuzzles);
+  const classicSolved = PUZZLES.filter((p) => s.chessPuzzles[p.id]?.solvedAt).length;
   const openings = new Set(Object.keys(s.chessOpenings).map((k) => k.split(":")[0])).size;
   const viewed = FAMOUS_GAMES.filter((g) => s.chessGamesViewed[g.id]).length;
   const analysed = s.chessGames.filter((g) => g.analysis).length;
@@ -138,11 +142,22 @@ export function awards(s: AppState, lang: Lang = "ru"): Award[] {
       10,
     ),
     a(
+      "puzzles-100",
+      "💯",
+      t("Сто задач", "Yuzta masala"),
+      t("Реши 100 шахматных задач.", "100 ta shaxmat masalasini yech."),
+      solved,
+      100,
+    ),
+    a(
       "puzzles-all",
       "🧩",
-      t("Все задачи", "Barcha masalalar"),
-      t("Реши все задачи тренажёра.", "Trenajyordagi barcha masalalarni yech."),
-      solved,
+      t("Все задачи школы", "Maktabning barcha masalalari"),
+      t(
+        `Реши все ${pluralize(PUZZLES.length, "задачу", "задачи", "задач")} школы — с объяснениями.`,
+        `Maktabning izohli ${PUZZLES.length} ta masalasini yech.`,
+      ),
+      classicSolved,
       PUZZLES.length,
     ),
     a(

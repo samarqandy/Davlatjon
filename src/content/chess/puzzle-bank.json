@@ -1,0 +1,99 @@
+{
+  "source": "https://database.lichess.org/#puzzles",
+  "license": "CC0",
+  "total": 4950,
+  "themes": {
+    "smothered": {
+      "count": 310,
+      "min": 507,
+      "max": 1876
+    },
+    "backrank": {
+      "count": 310,
+      "min": 410,
+      "max": 1870
+    },
+    "doublecheck": {
+      "count": 254,
+      "min": 582,
+      "max": 1888
+    },
+    "discovered": {
+      "count": 240,
+      "min": 635,
+      "max": 1839
+    },
+    "promotion": {
+      "count": 310,
+      "min": 453,
+      "max": 1873
+    },
+    "mate1": {
+      "count": 310,
+      "min": 426,
+      "max": 1830
+    },
+    "mate2": {
+      "count": 310,
+      "min": 422,
+      "max": 1891
+    },
+    "mate3": {
+      "count": 310,
+      "min": 487,
+      "max": 1881
+    },
+    "fork": {
+      "count": 310,
+      "min": 511,
+      "max": 1782
+    },
+    "skewer": {
+      "count": 310,
+      "min": 558,
+      "max": 1840
+    },
+    "pin": {
+      "count": 254,
+      "min": 522,
+      "max": 1812
+    },
+    "trapped": {
+      "count": 231,
+      "min": 645,
+      "max": 1840
+    },
+    "defender": {
+      "count": 230,
+      "min": 715,
+      "max": 1894
+    },
+    "deflection": {
+      "count": 240,
+      "min": 619,
+      "max": 1869
+    },
+    "attraction": {
+      "count": 230,
+      "min": 725,
+      "max": 1869
+    },
+    "hanging": {
+      "count": 273,
+      "min": 510,
+      "max": 1815
+    },
+    "defense": {
+      "count": 238,
+      "min": 588,
+      "max": 1837
+    },
+    "pawnend": {
+      "count": 280,
+      "min": 516,
+      "max": 1869
+    }
+  },
+  "mix": 697,
+  "version": "701d9d9262"
+}

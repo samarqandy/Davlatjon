@@ -12,6 +12,8 @@ import { matingMoves, sanOf } from "@/lib/chess";
 import { currentRank, levelStatuses } from "@/lib/chessProgress";
 import { sanFor, tFor, useLang, useT, type Lang } from "@/lib/i18n";
 import { pluralize } from "@/lib/plural";
+import { bankCount } from "@/lib/puzzleBank";
+import { accuracy, solvedCount, themeStats } from "@/lib/puzzleStats";
 import { isoDay, updateSettings, useHydrated, useStore, type ChessExerciseProgress } from "@/lib/store";
 import { useChess } from "@/lib/useChess";
 
@@ -207,12 +209,14 @@ function ActivitySummary() {
   }).filter((x) => x.games > 0);
   const pawns = games.filter((g) => g.mode === "pawns");
   const pawnWins = pawns.filter((g) => g.result === "win").length;
-  const puzzleThemes = chess.themes.map((theme) => {
-    const list = chess.puzzles.filter((p) => p.theme === theme.id);
-    const solved = list.filter((p) => state.chessPuzzles[p.id]?.solvedAt).length;
-    const misses = list.reduce((s, p) => s + (state.chessPuzzles[p.id]?.misses ?? 0), 0);
-    return { theme, total: list.length, solved, misses };
+  // Задачи школы и задачи из базы Lichess — вместе, по темам; только темы, которые уже пробовали.
+  const stats = themeStats(state.chessPuzzles);
+  const puzzleThemes = chess.themes.flatMap((theme) => {
+    const stat = stats.get(theme.id);
+    const total = chess.puzzles.filter((p) => p.theme === theme.id).length + bankCount(theme.id);
+    return stat ? [{ theme, total, stat }] : [];
   });
+  const rating = state.chessRating;
   const openingsLearned = Object.keys(state.chessOpenings).map((k) => {
     const [id, side] = k.split(":");
     const name = chess.openings.find((o) => o.id === id)?.name ?? id;
@@ -282,18 +286,34 @@ function ActivitySummary() {
         </Card>
         <Card className="p-4">
           <p className="text-sm font-extrabold text-muted">
-            🎯 {t(`Задачи · лучшая серия: ${state.chessStreak}`, `Masalalar · eng uzun seriya: ${state.chessStreak}`)}
+            🎯{" "}
+            {t(
+              `Задачи · решено ${solvedCount(state.chessPuzzles)} · лучшая серия: ${state.chessStreak}`,
+              `Masalalar · ${solvedCount(state.chessPuzzles)} ta yechildi · eng uzun seriya: ${state.chessStreak}`,
+            )}
           </p>
+          {rating && (
+            <p className="mt-1 text-sm" data-parent-rating>
+              {t(
+                `Рейтинг в задачах: ${rating.r} (учтено задач: ${rating.n}). Ребёнку до 10 лет число не показываем — только звёзды.`,
+                `Masalalardagi reyting: ${rating.r} (hisobga olingan masalalar: ${rating.n}). 10 yoshgacha bolaga raqam koʻrsatilmaydi — faqat yulduzlar.`,
+              )}
+            </p>
+          )}
           <ul className="mt-1 space-y-1 text-[0.95rem]">
+            {puzzleThemes.length === 0 && <li className="text-muted">{nothing}</li>}
             {puzzleThemes.map((x) => (
               <li key={x.theme.id} className="flex flex-wrap gap-x-2">
-                <span className="font-bold">{x.theme.name}:</span>
-                {t(` решено ${x.solved} из ${x.total}`, ` ${x.total} tadan ${x.solved} tasi yechildi`)}
-                {x.misses > 0 && (
-                  <span className="text-muted">
-                    {t(`· попыток не сошлось: ${x.misses}`, `· ${x.misses} ta urinish natija bermadi`)}
-                  </span>
-                )}
+                <span className="font-bold">
+                  {x.theme.emoji} {x.theme.name}:
+                </span>
+                {t(` решено ${x.stat.solved} из ${x.total}`, ` ${x.total} tadan ${x.stat.solved} tasi yechildi`)}
+                <span className="text-muted">
+                  {t(
+                    `· с первой попытки ${Math.round(accuracy(x.stat) * 100)}%`,
+                    `· birinchi urinishda ${Math.round(accuracy(x.stat) * 100)}%`,
+                  )}
+                </span>
               </li>
             ))}
           </ul>

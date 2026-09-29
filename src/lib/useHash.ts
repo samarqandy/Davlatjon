@@ -20,3 +20,10 @@ export function setHash(hash: string) {
   if (window.location.hash === hash) return;
   window.location.hash = hash;
 }
+
+/** Заменить якорь, не добавляя шаг в историю: кнопка «Назад» не должна возвращать на промежуточный адрес. */
+export function replaceHash(hash: string) {
+  if (window.location.hash === hash) return;
+  history.replaceState(history.state, "", hash);
+  window.dispatchEvent(new HashChangeEvent("hashchange"));
+}

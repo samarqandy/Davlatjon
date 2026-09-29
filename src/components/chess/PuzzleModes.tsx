@@ -5,11 +5,14 @@ import { Button, cn } from "@/components/ui";
 import { PUZZLES, getPuzzle } from "@/content/chess/puzzles";
 import { useT } from "@/lib/i18n";
 import { pluralize } from "@/lib/plural";
+import { ladderOrder, useBank } from "@/lib/puzzleBank";
+import { targetRating } from "@/lib/puzzleRating";
 import { random } from "@/lib/random";
-import { chessDrillRecord, duePuzzles, useStore } from "@/lib/store";
+import { chessDrillRecord, duePuzzles, usePuzzleRating, useStore } from "@/lib/store";
 import { setHash } from "@/lib/useHash";
 import { useToday } from "@/lib/useToday";
-import { PuzzlePlayer } from "./PuzzleTrainer";
+import { Loading, usePuzzleByKey } from "./PuzzleBankViews";
+import { PuzzlePlayer, puzzleKey, type AnyPuzzle } from "./PuzzleTrainer";
 
 export const STORM_SECONDS = 180;
 export const STORM_PENALTY = 10;
@@ -30,11 +33,16 @@ export function stormOrder(rnd: () => number): string[] {
     .map((x) => x.id);
 }
 
-/** «Шторм»: три минуты, решай сколько успеешь. Ошибка — минус 10 секунд и следующая задача. */
+/**
+ * «Шторм»: три минуты, решай сколько успеешь. Ошибка — минус 10 секунд и следующая задача.
+ * Задачи — лесенкой из общего набора базы, начиная с лёгких; без него — задачи школы.
+ */
 export function StormView() {
   const t = useT();
   const best = useStore((s) => s.chessDrills.storm ?? 0);
-  const [order, setOrder] = useState<string[]>(() => stormOrder(random));
+  const mix = useBank("mix");
+  const rating = usePuzzleRating();
+  const [order, setOrder] = useState<AnyPuzzle[]>([]);
   const [index, setIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [endsAt, setEndsAt] = useState<number | null>(null);
@@ -55,14 +63,18 @@ export function StormView() {
 
   const start = () => {
     const at = Date.now();
-    setOrder(stormOrder(random));
+    setOrder(
+      Array.isArray(mix)
+        ? ladderOrder(mix, Math.max(400, targetRating(rating) - 400), random, 6, 120)
+        : stormOrder(random).map((id) => getPuzzle(id)!),
+    );
     setIndex(0);
     setScore(0);
     setNow(at);
     setEndsAt(at + STORM_SECONDS * 1000);
   };
 
-  const puzzle = getPuzzle(order[Math.min(index, order.length - 1)])!;
+  const puzzle = order[Math.min(index, order.length - 1)];
 
   return (
     <div className="space-y-4">
@@ -111,15 +123,16 @@ export function StormView() {
               </p>
             </>
           )}
-          <Button size="lg" className="mt-4" onClick={start}>
+          <Button size="lg" className="mt-4" onClick={start} disabled={mix === null}>
             {over ? t("↺ Ещё раз", "↺ Yana bir bor") : t("▶ Старт", "▶ Boshlash")}
           </Button>
         </div>
       )}
-      {running && (
+      {running && puzzle && (
         <PuzzlePlayer
-          key={`${puzzle.id}-${index}`}
+          key={`${puzzleKey(puzzle)}-${index}`}
           puzzle={puzzle}
+          rated={false}
           onSolved={(misses) => {
             if (misses === 0) setScore((s) => s + 1);
             setTimeout(() => setIndex((i) => i + 1), 600);
@@ -144,8 +157,9 @@ export function RepeatView() {
   const list = queue ?? [];
   const [index, setIndex] = useState(0);
   const [done, setDone] = useState(0);
-  const id = list[Math.min(index, list.length - 1)];
-  const puzzle = id ? getPuzzle(id) : undefined;
+  const id = index < list.length ? list[index] : undefined;
+  const found = usePuzzleByKey(id);
+  const puzzle = typeof found === "object" ? found : undefined;
 
   return (
     <div className="space-y-4">
@@ -179,6 +193,17 @@ export function RepeatView() {
             </Button>
           )}
         </div>
+      ) : found === "loading" ? (
+        <Loading />
+      ) : found === "missing" && index < list.length ? (
+        <div className="rounded-3xl bg-sun-soft p-6 text-center">
+          <p className="font-bold text-[#7a4b00]">
+            {t("Эту задачу не удалось загрузить.", "Bu masalani yuklab boʻlmadi.")}
+          </p>
+          <Button className="mt-3" onClick={() => setIndex((i) => i + 1)}>
+            {t("Следующая →", "Keyingisi →")}
+          </Button>
+        </div>
       ) : !puzzle || index >= list.length ? (
         <div className="rounded-3xl bg-mint-soft p-6 text-center">
           <p className="text-5xl" aria-hidden>
@@ -199,7 +224,7 @@ export function RepeatView() {
             {t(`Задача ${index + 1} из ${list.length}`, `${index + 1}-masala (jami ${list.length} ta)`)}
           </p>
           <PuzzlePlayer
-            key={puzzle.id}
+            key={puzzleKey(puzzle)}
             puzzle={puzzle}
             onSolved={() => setDone((d) => d + 1)}
             next={{ label: t("Следующая →", "Keyingisi →"), onClick: () => setIndex((i) => i + 1) }}

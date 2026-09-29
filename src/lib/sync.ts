@@ -108,6 +108,9 @@ function mergePuzzle(a: ChessPuzzleProgress, b: ChessPuzzleProgress): ChessPuzzl
   };
 }
 
+const later = <T extends { at: number }>(x: T | undefined, y: T | undefined): T | undefined =>
+  !x ? y : !y ? x : y.at > x.at ? y : x;
+
 const earliest = (x: number, y: number) => Math.min(x, y);
 const largest = (x: number, y: number) => Math.max(x, y);
 
@@ -140,6 +143,9 @@ export function mergeStates(localRaw: unknown, remoteRaw: unknown): AppState {
       .sort((x, y) => y.at - x.at)
       .slice(0, 200),
     chessPuzzles: mergeRecords(a.chessPuzzles, b.chessPuzzles, mergePuzzle),
+    // Рейтинг и «Дятел» — с того устройства, где их обновляли позже.
+    chessRating: later(a.chessRating, b.chessRating),
+    chessWoodpecker: later(a.chessWoodpecker, b.chessWoodpecker),
     chessStreak: Math.max(a.chessStreak, b.chessStreak),
     chessOpenings: mergeRecords(a.chessOpenings, b.chessOpenings, earliest),
     chessGamesViewed: mergeRecords(a.chessGamesViewed, b.chessGamesViewed, earliest),
