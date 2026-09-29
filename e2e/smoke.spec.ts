@@ -513,6 +513,25 @@ test("озвучка: кнопки «Послушать», выключение 
   await expect(page.getByRole("button", { name: /Послушать историю/ })).toHaveCount(0);
 });
 
+test("озвучка задач и уроков: кнопка «Прочитать» по-русски и «Oʻqib berish» по-узбекски", async ({ page }) => {
+  await page.goto("/week/1/day/1#task-1");
+  await expect(page.getByRole("button", { name: /Прочитать/ })).toBeVisible();
+  const clip = await page.request.get("/audio/tasks/w1d1t1.mp3");
+  expect(clip.ok()).toBe(true);
+  expect(clip.headers()["content-type"]).toContain("audio/mpeg");
+  await page.goto("/chess/pawn");
+  await expect(page.getByRole("button", { name: "Послушать", exact: true })).toBeVisible();
+  await page.evaluate(() => {
+    const key = "davlatjon-lab:v1";
+    const s = JSON.parse(localStorage.getItem(key) ?? "{}");
+    s.settings = { ...s.settings, lang: "uz" };
+    localStorage.setItem(key, JSON.stringify(s));
+  });
+  await page.goto("/week/1/day/1#task-1");
+  await expect(page.getByRole("button", { name: /Oʻqib berish/ })).toBeVisible();
+  expect((await page.request.get("/audio/uz/tasks/w1d1t1.mp3")).ok()).toBe(true);
+});
+
 test("шторм, повторение, награды и PGN", async ({ page }) => {
   await page.addInitScript(() => {
     localStorage.setItem(
