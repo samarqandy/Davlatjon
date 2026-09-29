@@ -5,6 +5,7 @@
  * (public/audio), по-узбекски — голос «Uzbekcha» (public/audio/uz). Голос браузера не используется:
  * где записи нет, там нет и кнопки «Послушать». Звук выключается в настройках родителя.
  */
+import recorded from "@/content/voice-clips.json";
 import type { Lang } from "./lang";
 import { random } from "./random";
 import { getState } from "./store";
@@ -30,8 +31,8 @@ export const SECRET_IDS = [
 ] as const;
 
 /**
- * Какие записи уже есть по-узбекски. Пока записи нет, по-узбекски ничего не звучит —
- * русский диктор в узбекском интерфейсе был бы некстати.
+ * Какие записи есть по-узбекски: приветствие, похвала, легенды всех уровней и все тайны.
+ * Пока записи нет, по-узбекски ничего не звучит — русский диктор в узбекском интерфейсе был бы некстати.
  */
 export const UZ_CLIPS: ReadonlySet<string> = new Set<string>([
   "welcome",
@@ -41,8 +42,8 @@ export const UZ_CLIPS: ReadonlySet<string> = new Set<string>([
   "retry-1",
   "retry-2",
   "mate",
-  "legend-pawn",
-  "legend-knight",
+  ...LEGEND_LEVELS.map((id) => `legend-${id}`),
+  ...SECRET_IDS.map((id) => `secret-${id}`),
 ]);
 
 function clip(lang: Lang, name: string): string | undefined {
@@ -54,7 +55,23 @@ function clips(lang: Lang, names: string[]): string[] {
   return names.map((n) => clip(lang, n)).filter((x): x is string => !!x);
 }
 
+/**
+ * Записанные условия задач, карточки уроков и вопросы «Знаешь ли ты?»: «вид:id» → отпечаток текста
+ * (см. voiceText.ts). Записи нет — нет и кнопки.
+ */
+const RECORDED = recorded as Record<Lang, Record<string, string>>;
+
+function recordedClip(lang: Lang, kind: "tasks" | "lessons" | "dyk", key: string, id: string): string | undefined {
+  return RECORDED[lang][key] ? `/audio/${lang === "uz" ? "uz/" : ""}${kind}/${id}.mp3` : undefined;
+}
+
 export const VOICE_CLIPS = {
+  task: (id: string, lang: Lang) => recordedClip(lang, "tasks", `task:${id}`, id),
+  lesson: (levelId: string, index: number, lang: Lang) =>
+    recordedClip(lang, "lessons", `lesson:${levelId}-${index}`, `${levelId}-${index}`),
+  /** «Знаешь ли ты?»: part — вопрос (q) или ответ (a). */
+  dyk: (index: number, part: "q" | "a", lang: Lang) =>
+    recordedClip(lang, "dyk", `dyk:${index}-${part}`, `${index}-${part}`),
   welcome: (lang: Lang) => clip(lang, "welcome"),
   mate: (lang: Lang) => clips(lang, ["mate"]),
   praise: (lang: Lang) => clips(lang, ["praise-1", "praise-2", "praise-3"]),

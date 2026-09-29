@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { ListenButton } from "@/components/ListenButton";
 import { RichText } from "@/components/RichText";
 import { Button, cn } from "@/components/ui";
 import type { ChessDemo, ChessLessonCard } from "@/content/chess/types";
 import { legalTargets, pieceAt } from "@/lib/chess";
-import { useT } from "@/lib/i18n";
+import { useLang, useT } from "@/lib/i18n";
+import { VOICE_CLIPS } from "@/lib/voice";
 import { ChessBoard, type SquareMark } from "./ChessBoard";
 
 /** Доска урока: подсветка, стрелки, а в интерактивной — ходы фигуры по нажатию. */
@@ -54,6 +56,7 @@ export function ChessLesson({
   onDone: () => void;
 }) {
   const t = useT();
+  const lang = useLang();
   const [step, setStep] = useState(0);
   const card = cards[step];
   const last = step === cards.length - 1;
@@ -76,7 +79,10 @@ export function ChessLesson({
           <p className="text-sm font-extrabold text-muted">
             {t(`Шаг ${step + 1} из ${cards.length}`, `${step + 1}-qadam, jami ${cards.length} ta`)}
           </p>
-          <h3 className="text-2xl font-black">{card.title}</h3>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h3 className="text-2xl font-black">{card.title}</h3>
+            <ListenButton key={step} src={VOICE_CLIPS.lesson(levelId, step, lang)} />
+          </div>
           {card.text.map((text, i) => (
             <p key={i} className="text-lg leading-relaxed">
               <RichText text={text} />

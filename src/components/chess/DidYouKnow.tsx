@@ -3,25 +3,31 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Button, cn } from "@/components/ui";
-import { useT } from "@/lib/i18n";
+import { ListenButton } from "@/components/ListenButton";
+import { useLang, useT } from "@/lib/i18n";
+import { VOICE_CLIPS } from "@/lib/voice";
 import { useChess } from "@/lib/useChess";
 import { useToday } from "@/lib/useToday";
 
 /** «Знаешь ли ты?» — вопрос дня с ответом по нажатию; «Ещё вопрос» листает дальше. */
 export function DidYouKnow({ className }: { className?: string }) {
   const t = useT();
+  const lang = useLang();
   const { didYouKnow } = useChess();
   const today = useToday();
   const [offset, setOffset] = useState(0);
   const [open, setOpen] = useState(false);
   const seed = today ? Number(today.replace(/-/g, "")) : 0;
-  const item = didYouKnow[(seed + offset) % didYouKnow.length];
+  const index = (seed + offset) % didYouKnow.length;
+  const item = didYouKnow[index];
   return (
     <div className={cn("rounded-3xl bg-white p-4 shadow-card", className)}>
       <p className="text-xs font-extrabold tracking-wide text-muted uppercase">
         {t("🤔 Знаешь ли ты?", "🤔 Bilasanmi?")}
       </p>
       <p className="mt-1 text-lg leading-snug font-black">{item.q}</p>
+      {/* Закрыт — вопрос, открыт — ответ. */}
+      <ListenButton key={`${index}-${open}`} src={VOICE_CLIPS.dyk(index, open ? "a" : "q", lang)} className="mt-1" />
       {open ? (
         <p className="mt-2 rounded-2xl bg-mint-soft/70 px-3 py-2 font-semibold" aria-live="polite">
           {item.a}
