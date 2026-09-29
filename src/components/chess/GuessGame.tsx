@@ -4,12 +4,14 @@ import { useEffect, useMemo, useState } from "react";
 import { Feedback, type FeedbackState } from "@/components/answers/Feedback";
 import { Button } from "@/components/ui";
 import type { FamousGame } from "@/content/chess/games";
-import { legalTargets, pieceAt, playMove, type Color } from "@/lib/chess";
+import { type Color, isInCheck, isPromotionMove, legalTargets, pieceAt, playMove } from "@/lib/chess";
 import { isAlmostBest } from "@/lib/engine/analysis";
 import { useSan, useT } from "@/lib/i18n";
 import { pluralize } from "@/lib/plural";
 import { chessGuessScored, useStore } from "@/lib/store";
-import { ChessBoard, type SquareMark } from "./ChessBoard";
+import { kingOf } from "@/lib/play";
+import { ChessBoard, type PromotionPiece, type SquareMark } from "./ChessBoard";
+import { usePromotion } from "./useMoveInput";
 import { replayPositions } from "./GameReplay";
 
 /** За кого играет ребёнок: за победителя, при ничьей — за белых. */
@@ -55,9 +57,14 @@ export function GuessGame({ game, onExit }: { game: FamousGame; onExit: () => vo
     if (done) chessGuessScored(game.id, score, max);
   }, [done, game.id, score, max]);
 
-  const attempt = (from: string, to: string): boolean => {
+  const promo = usePromotion(fen);
+  const attempt = (from: string, to: string, promotion?: PromotionPiece): boolean => {
     if (!heroTurn) return false;
-    const played = playMove(fen, from, to, "q");
+    if (!promotion && isPromotionMove(fen, from, to)) {
+      promo.ask(to, hero.color, (piece) => attempt(from, to, piece));
+      return true;
+    }
+    const played = playMove(fen, from, to, promotion ?? "q");
     if (!played) return false;
     const next = positions[ply + 1];
     const histUci = `${next.from}${next.to}`;
@@ -103,6 +110,10 @@ export function GuessGame({ game, onExit }: { game: FamousGame; onExit: () => vo
     marks[positions[ply].from] = "last";
     marks[positions[ply].to] = "last";
   }
+  if (isInCheck(fen)) {
+    const k = kingOf(fen, turn);
+    if (k) marks[k] = "check";
+  }
   if (hint && heroTurn) marks[positions[ply + 1].from] = "hint";
   if (selected) {
     marks[selected] = "selected";
@@ -128,7 +139,8 @@ export function GuessGame({ game, onExit }: { game: FamousGame; onExit: () => vo
           orientation={hero.color === "w" ? "white" : "black"}
           onSquare={tap}
           draggable={heroTurn}
-          onDrop={attempt}
+          onDrop={(from, to) => attempt(from, to)}
+          promotion={promo.request}
           maxWidth={520}
         />
         <Feedback state={feedback} />

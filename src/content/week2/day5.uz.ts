@@ -70,7 +70,7 @@ export const day5Uz: Uz<Day> = {
       },
       followUps: [
         "Xuddi shunday hisoblab koʻr: `49 + 26` va `72 − 19`.",
-        "Ikkala sonni bir xil oshirsang, nega ayirma oʻzgarmaydi? Dada bilan Davlatjonning yoshlarini eslab koʻr.",
+        "Ikkala sonni bir xil oshirsang, nega ayirma oʻzgarmaydi? Dadangning yoshi haqidagi masalani eslab koʻr.",
       ],
       hints: [
         "Ramkadagi maslahatni yana bir oʻqib chiq: yigʻindi bilan ayirma qachon oʻzgarmaydi?",
@@ -86,7 +86,7 @@ export const day5Uz: Uz<Day> = {
           "b) Ikkala sonni 2 ga oshiramiz: `63 − 28 = 65 − 30 = 35`.",
         ],
         discuss: [
-          "Ayirma — xuddi yoshlar farqiga oʻxshaydi: 2 yildan keyin ota ham, oʻgʻil ham 2 yoshga kattaroq boʻladi, farq esa avvalgidek qoladi.",
+          "Ayirma — xuddi yoshlar farqiga oʻxshaydi: 2 yildan keyin dada ham, farzand ham 2 yoshga kattaroq boʻladi, farq esa avvalgidek qoladi.",
           null,
         ],
       },
@@ -241,7 +241,7 @@ export const day5Uz: Uz<Day> = {
     w2d5t7: {
       title: "Markalar tenglashadi",
       body: [
-        { text: "Davlatjonda 30 ta marka bor, Alida esa 10 ta. Davlatjon har kuni Aliga 2 ta marka sovgʻa qiladi." },
+        { text: "{name:da} 30 ta marka bor, Alida esa 10 ta. {name} har kuni Aliga 2 ta marka sovgʻa qiladi." },
         { label: "a)", text: "Necha kundan keyin ikkala bolaning markalari teng boʻladi?" },
         { label: "b)", text: "Oʻshanda har birida nechta marka boʻladi?" },
       ],
@@ -253,25 +253,25 @@ export const day5Uz: Uz<Day> = {
       },
       followUps: [
         "Ikkala bolada jami nechta marka bor? Bu son oʻzgaradimi?",
-        "Necha kundan keyin Alining markalari Davlatjonnikidan 4 ta koʻp boʻladi?",
+        "Necha kundan keyin farq yana 4 ta marka boʻladi — lekin endi Alining foydasiga?",
       ],
       hints: [
         "Shartni yana oʻqib chiq: kim kimga marka sovgʻa qilyapti va har kuni nechtadan?",
         "Nima maʼlum: markalar bir boladan ikkinchisiga oʻtadi, xolos. Markalarning umumiy soni oʻzgaradimi?",
-        "Jadval tuz: kun — Davlatjonning markalari — Alining markalari — jami.",
+        "Jadval tuz: kun — {name:ning} markalari — Alining markalari — jami.",
         "Kichikroq masalani yech: birida 6 ta marka, ikkinchisida 2 ta, birinchisi har kuni ikkinchisiga 1 ta marka beradi. Qachon teng boʻladi?",
-        "Jami markalar doim 40 ta. Teng boʻlsa, har birida nechta boʻladi? Shuncha qolishi uchun Davlatjon nechta marka berishi kerak?",
+        "Jami markalar doim 40 ta. Teng boʻlsa, har birida nechta boʻladi? Shuncha qolishi uchun {name} nechta marka berishi kerak?",
       ],
       solution: {
         answer: "a) 5 kundan keyin; b) har birida 20 tadan marka.",
         explanation: [
           "Jami markalar `30 + 10 = 40` ta va bu son oʻzgarmaydi: markalar faqat bir boladan ikkinchisiga oʻtadi.",
-          "Teng — demak, har birida 20 tadan. Davlatjon `30 − 20 = 10` ta marka berishi kerak, kuniga 2 tadan — bu 5 kun.",
+          "Teng — demak, har birida 20 tadan. {name} `30 − 20 = 10` ta marka berishi kerak, kuniga 2 tadan — bu 5 kun.",
           "Jadval bilan tekshiramiz: 30 va 10, 28 va 12, 26 va 14, 24 va 16, 22 va 18, 20 va 20.",
         ],
         discuss: [
           "Koʻp uchraydigan xato — farq kuniga 2 taga kamayadi deb oʻylash. Aslida 4 taga: birida 2 ta kamayadi, ikkinchisida 2 ta koʻpayadi.",
-          "6 kundan keyin Alida 22 ta marka boʻladi, Davlatjonda esa 18 ta: 4 ta koʻp.",
+          "6 kundan keyin Alida 22 ta marka boʻladi, {name:da} esa 18 ta: 4 ta koʻp.",
         ],
       },
     },

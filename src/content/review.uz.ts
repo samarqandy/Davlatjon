@@ -4,7 +4,7 @@ import type { REVIEW_QUESTIONS } from "./review";
 /** Вопросы еженедельного наблюдения по-узбекски — по id вопроса. */
 export const reviewUz: Uz<typeof REVIEW_QUESTIONS> = {
   fast: {
-    text: "Davlatjon nimani tez va ishonch bilan yechadi?",
+    text: "{child} nimani tez va ishonch bilan yechadi?",
     hint: "Maslahatsiz va birinchi urinishda yechilgan masalalar.",
   },
   mistakes: {

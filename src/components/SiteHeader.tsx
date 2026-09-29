@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useT } from "@/lib/i18n";
+import { BRAND, BRAND_TAGLINE } from "@/lib/brand";
 import { LangSwitch } from "./LangSwitch";
 import { LogoMark } from "./Logo";
 
@@ -28,15 +29,13 @@ export function SiteHeader({ active }: { active?: "home" | "chess" | "problems" 
         <Link
           href="/"
           className="mr-auto flex items-center gap-2.5 rounded-xl pr-2"
-          aria-label={t("Лаборатория Давлатжона — на главную", "Davlatjon laboratoriyasi — bosh sahifaga")}
+          aria-label={t(`${BRAND} — на главную`, `${BRAND} — bosh sahifaga`)}
         >
           <LogoMark size={40} />
           <span className="leading-tight">
-            <span className="block text-[15px] font-black sm:text-lg">
-              {t("Лаборатория Давлатжона", "Davlatjon laboratoriyasi")}
-            </span>
+            <span className="block text-[15px] font-black sm:text-lg">{BRAND}</span>
             <span className="hidden text-xs font-bold text-muted sm:block">
-              {t("математика · логика · алгоритмы", "matematika · mantiq · algoritmlar")}
+              {t(BRAND_TAGLINE.ru, BRAND_TAGLINE.uz)}
             </span>
           </span>
         </Link>

@@ -73,7 +73,7 @@ export const day3Uz: Uz<Day> = {
     w2d3t3: {
       title: "Sahifalardagi raqamlar",
       body: [
-        { text: "Davlatjon daftarining sahifalarini raqamlab chiqdi: 1, 2, 3 va shu tariqa 20 gacha." },
+        { text: "{name} daftarining sahifalarini raqamlab chiqdi: 1, 2, 3 va shu tariqa 20 gacha." },
         { label: "a)", text: "U jami nechta raqam yozdi?" },
         { label: "b)", text: "U 1 raqamini necha marta yozdi?" },
         { text: "15 sonida ikkita raqam bor: 1 va 5." },
@@ -86,7 +86,7 @@ export const day3Uz: Uz<Day> = {
       },
       followUps: [
         "1 dan 30 gacha sahifalarni raqamlash uchun nechta raqam kerak boʻladi?",
-        "Davlatjon 2 raqamini necha marta yozgan?",
+        "{name} 2 raqamini necha marta yozgan?",
       ],
       hints: [
         "Shartni yana bir bor oʻqib chiq: sonlarni emas, raqamlarni sanaymiz. 15 sonida — ikkita raqam.",
@@ -103,14 +103,14 @@ export const day3Uz: Uz<Day> = {
         ],
         discuss: [
           "b) savoldagi koʻp uchraydigan xato — 11 degan javob: 11 sonidagi 1 raqami bir marta sanalgan. Barcha sonlarni tartib bilan yozib, tagiga chizish yordam beradi.",
-          "1 dan 30 gacha — `9 + 42 = 51` ta raqam. 2 raqamini Davlatjon 3 marta yozgan: 2, 12 va 20 sonlarida.",
+          "1 dan 30 gacha — `9 + 42 = 51` ta raqam. 2 raqamini {name} 3 marta yozgan: 2, 12 va 20 sonlarida.",
         ],
       },
     },
     w2d3t4: {
       title: "Kvadratlar yoʻlakchasi",
       body: [
-        { text: "Davlatjon gugurt choʻplaridan kvadratlar yoʻlakchasini teryapti." },
+        { text: "{name} gugurt choʻplaridan kvadratlar yoʻlakchasini teryapti." },
         null,
         { label: "a)", text: "5 ta kvadratli yoʻlakcha uchun nechta choʻp kerak?" },
         { label: "b)", text: "10 ta kvadratli yoʻlakcha uchun nechta choʻp kerak?" },

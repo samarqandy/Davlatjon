@@ -36,7 +36,7 @@ export const day5Uz: Uz<Day> = {
     w1d5t2: {
       title: "Teskari zanjir",
       body: [
-        { text: "Davlatjon bir son oʻyladi. Unga 6 ni qoʻshdi, keyin 10 ni ayirdi — 15 chiqdi." },
+        { text: "{name} bir son oʻyladi. Unga 6 ni qoʻshdi, keyin 10 ni ayirdi — 15 chiqdi." },
         null,
         { text: "U qaysi sonni oʻylagan?" },
       ],

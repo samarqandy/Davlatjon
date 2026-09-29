@@ -42,7 +42,7 @@ export function MyProblems() {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="text-sm font-extrabold tracking-wide text-brand uppercase">
-            {t("Задачник Давлатжона", "Davlatjonning masalalar toʻplami")}
+            {t("{name} — автор задач", "{name:ning} masalalar toʻplami")}
           </p>
           <h1 className="text-3xl font-black">✍️ {t("Мои задачи", "Masalalarim")}</h1>
           <p className="mt-1 max-w-2xl text-lg text-muted">

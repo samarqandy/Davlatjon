@@ -244,3 +244,61 @@
 html.i18n-wait body {
   opacity: 0;
 }
+
+/*
+ * Рамка шахматной доски: буквы снизу, цифры слева (как в уроках: «буква внизу, цифра сбоку»).
+ * Размер рамки и подписей растёт вместе с доской; без container-единиц — постоянный.
+ */
+.board-frame {
+  container-type: inline-size;
+}
+.board-grid {
+  --edge: 5px;
+  --g: 18px;
+  --f: 12px;
+  display: grid;
+  grid-template-columns: var(--g) minmax(0, 1fr) var(--edge);
+  grid-template-rows: var(--edge) auto var(--g);
+}
+@supports (width: 1cqi) {
+  .board-grid {
+    --g: clamp(14px, 5cqi, 22px);
+    --f: clamp(10px, 3.4cqi, 15px);
+  }
+}
+.board-grid[data-frame="print"] {
+  --edge: 2px;
+  --g: 13px;
+  --f: 9px;
+}
+.board-grid[data-coords-off] {
+  --g: var(--edge);
+}
+.board-cell {
+  grid-row: 2;
+  grid-column: 2;
+  position: relative;
+}
+.board-ranks,
+.board-files {
+  display: grid;
+  place-items: center;
+  font-size: var(--f);
+  font-weight: 800;
+  line-height: 1;
+  color: #fdf1dc;
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+}
+.board-ranks {
+  grid-row: 2;
+  grid-column: 1;
+}
+.board-files {
+  grid-row: 3;
+  grid-column: 2;
+}
+.board-grid[data-frame="print"] .board-ranks,
+.board-grid[data-frame="print"] .board-files {
+  color: #111827;
+}

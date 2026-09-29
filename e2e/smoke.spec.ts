@@ -60,7 +60,7 @@ test("робот доходит до флажка по программе", asyn
 
 test("печать: лист заданий без ответов, ответы — только после PIN-кода", async ({ page }) => {
   await page.goto("/week/1/day/1/print");
-  await expect(page.getByText("Лаборатория Давлатжона · задания")).toBeVisible();
+  await expect(page.getByText("Davlatjon · задания")).toBeVisible();
   await expect(page.getByText("Ответ:")).toHaveCount(0);
   await page.getByRole("tab", { name: /Ответы/ }).click();
   await expect(page.getByRole("heading", { name: "Раздел для взрослых" })).toBeVisible();
@@ -352,7 +352,9 @@ test("шахматы: тренажёр дебюта принимает верн�
   await expect(page.getByText(/Дебют сыгран до конца/)).toBeVisible({ timeout: 5000 });
 });
 
-test("первый запуск: ребёнок выбирает возраст, от него зависят открытые уровни шахмат", async ({ page }) => {
+test("первый запуск: ребёнок называет имя и выбирает возраст, от него зависят открытые уровни шахмат", async ({
+  page,
+}) => {
   await page.addInitScript(() => localStorage.setItem("davlatjon-lab:v1", JSON.stringify({ version: 1 })));
   await page.goto("/");
   const dialog = page.getByRole("dialog");
@@ -360,8 +362,13 @@ test("первый запуск: ребёнок выбирает возраст,
   await expect(dialog.getByRole("button", { name: "Поехали! 🚀" })).toBeDisabled();
   await dialog.getByRole("button", { name: "10", exact: true }).click();
   await expect(dialog.getByText(/Средний профиль/)).toBeVisible();
+  // Без имени — ещё рано.
+  await expect(dialog.getByRole("button", { name: "Поехали! 🚀" })).toBeDisabled();
+  await dialog.getByLabel("Как тебя зовут?").fill("анна");
+  await expect(dialog.getByText("Привет, Анна! 👋")).toBeVisible();
   await dialog.getByRole("button", { name: "Поехали! 🚀" }).click();
   await expect(dialog).toBeHidden();
+  await expect(page.getByText("Привет, Анна! 👋")).toBeVisible();
   await expect(page.getByText(/Режим занятий: 9–10 лет/)).toBeVisible();
   // Переходим по ссылке, а не через goto: при новой загрузке init-скрипты заново запишут localStorage.
   await page.getByRole("navigation", { name: "Разделы" }).getByRole("link", { name: "Шахматы" }).click();

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { ChildNameBanner } from "@/components/home/ChildNameBanner";
 import { cn, ProgressBar } from "@/components/ui";
 import { chessLevelHref } from "@/content/chess";
 import { dailyPuzzleFor } from "@/content/chess/puzzles";
@@ -192,11 +193,16 @@ export function ChessSchool() {
 
   return (
     <div className="space-y-8">
+      <ChildNameBanner />
       <section className="relative overflow-hidden rounded-[2rem] bg-linear-to-br from-[#3b2f23] via-[#5b4632] to-[#7c5a33] p-6 text-white shadow-lift sm:p-8">
         <div className="absolute -top-6 -right-4 flex gap-2 opacity-20" aria-hidden>
           <PieceIcon piece="bN" className="h-40 w-40" />
         </div>
-        <p className="text-lg font-bold text-white/80">{t("♞ Для Давлатжона", "♞ Davlatjon uchun")}</p>
+        <p className="text-lg font-bold text-white/80">
+          {hydrated && state.settings.childName
+            ? t("♞ Привет, {name}!", "♞ Salom, {name}!")
+            : t("♞ Привет!", "♞ Salom!")}
+        </p>
         <h1 className="mt-1 text-3xl leading-tight font-black sm:text-4xl">{school.title}</h1>
         <p className="mt-1 text-xl font-bold text-white/85">{school.subtitle}</p>
         <p className="mt-3 max-w-2xl text-white/85">{school.about}</p>

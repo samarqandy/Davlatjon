@@ -6,7 +6,7 @@ export const day1Uz: Uz<Day> = {
   title: "Masalani chizib koʻr",
   habit: { name: "Men masalani chizaman" },
   intro: [
-    "Salom, Davlatjon! 👋 Ikkinchi hafta boshlandi. Bu — asboblar haftasi 🧰.",
+    "Salom, {name}! 👋 Ikkinchi hafta boshlandi. Bu — asboblar haftasi 🧰.",
     "Ustaning qutisida bolgʻa, arra va ombur bor. Mutafakkirning ham oʻz asboblari bor — bular qiyin masalalarni yechish usullari. Har kuni sen bittadan yangi asbob olasan.",
     "Birinchi asbob — rasm ✏️. Masala chigal boʻlib qolsa, uni chizib ol: nuqtalar, tayoqchalar, tasmachalar, strelkalar. Rasm sen bilan birga oʻylaydi!",
   ],
@@ -89,7 +89,7 @@ export const day1Uz: Uz<Day> = {
     w2d1t3: {
       title: "Navbat",
       body: [
-        { text: "Davlatjon muzqaymoq olish uchun navbatda turibdi 🍦." },
+        { text: "{name} muzqaymoq olish uchun navbatda turibdi 🍦." },
         {
           label: "a)",
           text: "Uning oldida 4 kishi, orqasida esa 5 kishi bor. Navbatda jami necha kishi turibdi?",
@@ -106,32 +106,32 @@ export const day1Uz: Uz<Day> = {
         },
       },
       followUps: [
-        "Agar Davlatjon oldindan ham, orqadan ham uchinchi boʻlsa, navbatda necha kishi boʻladi?",
+        "Agar {name} oldindan ham, orqadan ham uchinchi boʻlsa, navbatda necha kishi boʻladi?",
         "Oʻzing bir navbat chizib, oyingga yoki dadangga shunday topishmoq ayt.",
       ],
       hints: [
-        "Shartni yana bir bor oʻqib chiq. Davlatjonning oʻzini unutma — u ham navbatda turibdi-ku!",
+        "Shartni yana bir bor oʻqib chiq. {name:ning} oʻzini unutma — u ham navbatda turibdi-ku!",
         "Oldinda necha kishi va orqada necha kishi borligi maʼlum. Ularning oʻrtasida kim turibdi?",
-        "Navbatni chiz: har bir odam — bitta doiracha. Davlatjonning doirachasini boʻyab qoʻy.",
+        "Navbatni chiz: har bir odam — bitta doiracha. {name:ning} doirachasini boʻyab qoʻy.",
         "Kichikroq masalani yechib koʻr: oldinda 1 kishi, orqada 1 kishi. Jami necha kishi? Chizib koʻr!",
         "b) savolda Ali oldindan beshinchi: demak, uning oldida 4 kishi bor. Orqasida necha kishi turibdi?",
       ],
       solution: {
         answer: "a) 10; b) 9.",
         explanation: [
-          "a) Oldinda 4 kishi, Davlatjonning oʻzi va orqada 5 kishi: `4 + 1 + 5 = 10`.",
+          "a) Oldinda 4 kishi, {name:ning} oʻzi va orqada 5 kishi: `4 + 1 + 5 = 10`.",
           "b) Oldindan beshinchi — demak, Alining oldida 4 kishi. Orqadan beshinchi — orqasida ham 4 kishi: `4 + 1 + 4 = 9`.",
         ],
         discuss: [
-          "Koʻp uchraydigan xatolar: a) savolda 9 degan javob (Davlatjonning oʻzi unutilgan), b) savolda — 10 («5 + 5»: Ali ikki marta sanalgan). Qogʻozdagi doirachalar hammasini darhol oydinlashtiradi.",
-          "Agar Davlatjon ikkala tomondan ham uchinchi boʻlsa, navbatda `2 + 1 + 2 = 5` kishi boʻladi.",
+          "Koʻp uchraydigan xatolar: a) savolda 9 degan javob ({name:ning} oʻzi unutilgan), b) savolda — 10 («5 + 5»: Ali ikki marta sanalgan). Qogʻozdagi doirachalar hammasini darhol oydinlashtiradi.",
+          "Agar {name} ikkala tomondan ham uchinchi boʻlsa, navbatda `2 + 1 + 2 = 5` kishi boʻladi.",
         ],
       },
     },
     w2d1t4: {
       title: "Toshchalardan kvadratlar",
       body: [
-        { text: "Davlatjon toshchalarni terib, kvadratlar yasayapti." },
+        { text: "{name} toshchalarni terib, kvadratlar yasayapti." },
         null,
         { label: "a)", text: "Beshinchi kvadratda nechta toshcha boʻladi?" },
         {
@@ -203,7 +203,7 @@ export const day1Uz: Uz<Day> = {
       title: "Yashiringan kubiklar",
       body: [
         {
-          text: "Davlatjon kubiklardan shakl yasadi. Kubiklar havoda osilib turmaydi: yuqoridagi har bir kubikning tagida boshqa kubiklar bor.",
+          text: "{name} kubiklardan shakl yasadi. Kubiklar havoda osilib turmaydi: yuqoridagi har bir kubikning tagida boshqa kubiklar bor.",
         },
         null,
         { label: "a)", text: "Shaklda nechta kubik bor?" },
@@ -245,9 +245,9 @@ export const day1Uz: Uz<Day> = {
       title: "Zinapoya",
       body: [
         {
-          text: "Davlatjon 4-qavatda yashaydi. 1-qavatdan 2-qavatga chiqish uchun 12 ta pogʻonani bosib oʻtish kerak.",
+          text: "{name} 4-qavatda yashaydi. 1-qavatdan 2-qavatga chiqish uchun 12 ta pogʻonani bosib oʻtish kerak.",
         },
-        { label: "a)", text: "1-qavatdan uyigacha Davlatjon nechta pogʻonani bosib oʻtadi?" },
+        { label: "a)", text: "1-qavatdan uyigacha {name} nechta pogʻonani bosib oʻtadi?" },
         {
           label: "b)",
           text: "Uning doʻsti Ali 1-qavatdan uyiga chiqquncha 24 ta pogʻonani bosib oʻtdi. Ali nechanchi qavatda yashaydi?",
@@ -264,7 +264,7 @@ export const day1Uz: Uz<Day> = {
         "Oraliqlar bittaga kam boʻladigan bunday hiyla yana qayerda uchraydi?",
       ],
       hints: [
-        "Shartga yana bir qara: Davlatjon qaysi qavatdan qaysi qavatga chiqadi?",
+        "Shartga yana bir qara: {name} qaysi qavatdan qaysi qavatga chiqadi?",
         "12 ta pogʻona — bu bitta zinapoya: bir qavatdan keyingi qavatgacha. 1-qavatdan 4-qavatgacha nechta shunday zinapoya bor?",
         "4 qavatli uyni va qavatlar orasidagi zinapoyalarni chiz. Nechta zinapoya chiqdi?",
         "Kichikroq masalani yechib koʻr: 1-qavatdan 2-qavatgacha nechta pogʻona bor? 3-qavatgacha nechta?",
@@ -331,7 +331,7 @@ export const day1Uz: Uz<Day> = {
       "Rasm unga yordam beryaptimi: u rasmga qarab mulohaza yuritadimi yoki «chiroyli boʻlsin» deb chizadimi.",
     ],
     mistakes: [
-      "Navbat: Davlatjonning oʻzini sanashni unutish yoki Alini ikki marta sanash.",
+      "Navbat: {name:ning} oʻzini sanashni unutish yoki Alini ikki marta sanash.",
       "Zinapoya: 36 oʻrniga 48 ta pogʻona; soat: tanaffuslar oʻrniga bonglarni sanash.",
     ],
     question: "Bugun qaysi rasm senga eng koʻp yordam berdi — nega?",

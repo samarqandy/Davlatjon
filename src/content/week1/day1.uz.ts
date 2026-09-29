@@ -6,7 +6,7 @@ export const day1Uz: Uz<Day> = {
   title: "Diqqat bilan qara",
   habit: { name: "Men payqayman" },
   intro: [
-    "Salom, Davlatjon! 👋",
+    "Salom, {name}! 👋",
     "Matematiklar boshqalar koʻrmagan narsani payqay oladi: qulay sonlarni, yashirin qoidalarni, koʻzdan qochadigan mayda-chuydalarni.",
     "Bugun ziyraklikni mashq qilamiz. Shoshilma: tez javob bergandan koʻra, sal uzoqroq oʻylagan yaxshi.",
   ],
@@ -224,7 +224,7 @@ export const day1Uz: Uz<Day> = {
     w1d1t7: {
       title: "Stikerlar",
       body: [
-        { text: "Bitta stiker 5 tanga turadi. Davlatjonda 23 ta tanga bor." },
+        { text: "Bitta stiker 5 tanga turadi. {name:da} 23 ta tanga bor." },
         { label: "a)", text: "U nechta stiker sotib olishi mumkin?" },
         { label: "b)", text: "Unda nechta tanga qoladi?" },
       ],
@@ -234,10 +234,7 @@ export const day1Uz: Uz<Day> = {
           left: { label: "b) necha tanga qoladi" },
         },
       },
-      followUps: [
-        "Agar Davlatjonda 25 ta tanga boʻlganida-chi?",
-        "5 ta stiker sotib olish uchun necha tanga yetmaydi?",
-      ],
+      followUps: ["Agar {name:da} 25 ta tanga boʻlganida-chi?", "5 ta stiker sotib olish uchun necha tanga yetmaydi?"],
       hints: [
         "Masalani yana bir bor oʻqi. Bitta stiker necha tanga turadi? Jami nechta tanga bor?",
         "Nimani bilish kerak: 23 ta tangadan 5 tadan nechta guruh tuzish mumkin.",
@@ -249,7 +246,7 @@ export const day1Uz: Uz<Day> = {
         answer: "a) 4 ta stiker; b) 3 ta tanga.",
         explanation: [
           "4 ta stiker `5 + 5 + 5 + 5 = 20` tanga turadi. `23 − 20 = 3` ta tanga qoladi.",
-          "5 ta stikerga 25 ta tanga kerak, Davlatjonda esa bor-yoʻgʻi 23 ta.",
+          "5 ta stikerga 25 ta tanga kerak, {name:da} esa bor-yoʻgʻi 23 ta.",
         ],
         discuss: [
           "25 ta tanga bilan — 5 ta stiker olinadi va hech narsa qolmaydi. Beshinchi stikerga 2 ta tanga yetmaydi.",

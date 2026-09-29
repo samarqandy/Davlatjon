@@ -218,14 +218,14 @@ export const day7Uz: Uz<Day> = {
     w3d7t6: {
       title: "Doʻkonga xatcha",
       body: [
-        { text: "Onasi Davlatjonga xatcha yozib berdi:" },
+        { text: "Onasi {name:ga} xatcha yozib berdi:" },
         {
           text: "Agar doʻkonda banan boʻlsa, 2 kg banan ol. Agar banan boʻlmasa, 3 kg olma ol. Albatta non ham ol.",
         },
         {
           text: "Narxlar: banan — kilosi 16 ming soʻm, olma — kilosi 12 ming soʻm, non — 5 ming soʻm.",
         },
-        { label: "a)", text: "Doʻkonda banan yoʻq ekan. Davlatjon qancha pul toʻladi?" },
+        { label: "a)", text: "Doʻkonda banan yoʻq ekan. {name} qancha pul toʻladi?" },
         { label: "b)", text: "Banan boʻlganida-chi, u qancha toʻlagan boʻlardi?" },
       ],
       answer: {
@@ -240,7 +240,7 @@ export const day7Uz: Uz<Day> = {
       ],
       hints: [
         "Xatchani qayta oʻqi: banan boʻlsa nima olish kerak, boʻlmasa-chi? Nimani har qanday holatda olish kerak?",
-        "Nima maʼlum: a) savolda banan yoʻq edi — demak, Davlatjon 3 kg olma va non oldi.",
+        "Nima maʼlum: a) savolda banan yoʻq edi — demak, {name} 3 kg olma va non oldi.",
         "«Ayri yoʻl» chiz: banan bor → …, banan yoʻq → … Ikkala yoʻlga ham nonni qoʻsh.",
         "3 kg olma — bu `12 + 12 + 12`. Bu qancha boʻladi? Nonni unutma!",
         "b) 2 kg banan — `16 + 16`, yana non.",

@@ -16,7 +16,7 @@ import {
   type PositionEval,
 } from "@/lib/engine/analysis";
 import { robotLevels } from "@/lib/engine/search";
-import { tFor, useLang, useSan, useT, type Lang, type T } from "@/lib/i18n";
+import { tFor, useChildName, useLang, useSan, useT, type Lang, type T } from "@/lib/i18n";
 import { ODDS_PIECES, CLOCKS, clockLabel, oddsPieceLabel } from "@/lib/play";
 import { gamePgn } from "@/lib/pgn";
 import { pluralize } from "@/lib/plural";
@@ -675,8 +675,9 @@ function AdvantageChart({
 function PgnButtons({ game }: { game: ChessGameRecord }) {
   const t = useT();
   const lang = useLang();
+  const childName = useChildName();
   const [copied, setCopied] = useState(false);
-  const pgn = () => gamePgn(game, lang);
+  const pgn = () => gamePgn(game, lang, childName);
   return (
     <div className="flex flex-wrap items-center gap-2">
       <Button

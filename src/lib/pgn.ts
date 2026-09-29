@@ -1,5 +1,7 @@
 /** Запись партии в формате PGN — его открывают Lichess, Chess.com и любые шахматные программы. */
 import { Chess } from "chess.js";
+import { BRAND } from "./brand";
+import { NAME_FALLBACK } from "./childName";
 import { tFor, type Lang } from "./lang";
 import type { ChessGameRecord } from "./store";
 
@@ -14,13 +16,9 @@ function pgnDate(ms: number): string {
 
 /**
  * Запись партии. Теги PGN и ходы — стандартные (их читают программы), по-узбекски пишутся только
- * имена игроков, турнир и место — то, что видит ребёнок.
+ * имена игроков и турнир — то, что видит ребёнок. child — имя ребёнка.
  */
-export function gamePgn(
-  g: ChessGameRecord,
-  lang: Lang = "ru",
-  child = lang === "uz" ? "Davlatjon" : "Давлатжон",
-): string {
+export function gamePgn(g: ChessGameRecord, lang: Lang = "ru", child = NAME_FALLBACK[lang]): string {
   const t = tFor(lang);
   const start = g.start ?? STANDARD;
   const chess = new Chess(start);
@@ -40,7 +38,7 @@ export function gamePgn(
     "Event",
     g.mode === "robot" ? t("Партия с роботом", "Robot bilan partiya") : t("Партия вдвоём", "Ikki kishilik partiya"),
   );
-  chess.setHeader("Site", t("Лаборатория Давлатжона", "Davlatjon laboratoriyasi"));
+  chess.setHeader("Site", BRAND);
   chess.setHeader("Date", pgnDate(g.at));
   chess.setHeader("White", white);
   chess.setHeader("Black", black);

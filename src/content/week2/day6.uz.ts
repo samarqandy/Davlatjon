@@ -71,7 +71,7 @@ export const day6Uz: Uz<Day> = {
       title: "Harflardan soʻzlar",
       body: [
         {
-          text: "Davlatjon ikkita A va ikkita B harfidan «soʻz» tuzyapti — masalan, AABB yoki ABAB. Soʻzlarning maʼnosi boʻlmasa ham mayli.",
+          text: "{name} ikkita A va ikkita B harfidan «soʻz» tuzyapti — masalan, AABB yoki ABAB. Soʻzlarning maʼnosi boʻlmasa ham mayli.",
         },
         { text: "Shu toʻrtta harfdan u nechta har xil soʻz tuza oladi?" },
       ],
@@ -101,7 +101,7 @@ export const day6Uz: Uz<Day> = {
     w2d6t4: {
       title: "Choʻplardan uchburchaklar",
       body: [
-        { text: "Endi Davlatjon gugurt choʻplaridan uchburchaklar yoʻlakchasini teryapti." },
+        { text: "Endi {name} gugurt choʻplaridan uchburchaklar yoʻlakchasini teryapti." },
         null,
         { label: "a)", text: "10 ta uchburchakli yoʻlakcha uchun nechta choʻp kerak?" },
         { label: "b)", text: "31 ta choʻpdan nechta uchburchak chiqadi?" },
@@ -140,7 +140,7 @@ export const day6Uz: Uz<Day> = {
       title: "Zooparkka yoʻl",
       body: [
         {
-          text: "Davlatjon uydan zooparkka velosipedda 🚲 ketyapti. Xaritada har bir yoʻl necha daqiqa olishi yozilgan.",
+          text: "{name} uydan zooparkka velosipedda 🚲 ketyapti. Xaritada har bir yoʻl necha daqiqa olishi yozilgan.",
         },
         { label: "a)", text: "Qaysi yoʻl eng tez? U necha daqiqa oladi?" },
         {

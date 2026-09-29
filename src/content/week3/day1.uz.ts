@@ -7,7 +7,7 @@ export const day1Uz: Uz<Day> = {
   habit: { name: "Men fikr yuritaman: «agar…, unda…»" },
   intro: [
     "Mantiq haftasi boshlandi! Mantiq — aniq fikrlay olish degani: xatoga oʻrin qoldirmaydigan xulosalar chiqarish.",
-    "Bugungi asosiy soʻzlar — «agar…, unda…». Masalan: «Agar yomgʻir yogʻsa, Davlatjon soyabon olib chiqadi». Bundan nima aniq kelib chiqadi-yu, nima kelib chiqmaydi? Qani, haqiqiy olimlardek birga koʻrib chiqamiz ➡️.",
+    "Bugungi asosiy soʻzlar — «agar…, unda…». Masalan: «Agar yomgʻir yogʻsa, {name} soyabon olib chiqadi». Bundan nima aniq kelib chiqadi-yu, nima kelib chiqmaydi? Qani, haqiqiy olimlardek birga koʻrib chiqamiz ➡️.",
   ],
   tasks: {
     w3d1t1: {
@@ -98,17 +98,17 @@ export const day1Uz: Uz<Day> = {
       title: "Soyabon",
       body: [
         {
-          text: "Davlatjonning hech qachon buzmaydigan bir qoidasi bor: **agar yomgʻir yogʻsa, u soyabon olib chiqadi** ☂️.",
+          text: "{name:ning} hech qachon buzmaydigan bir qoidasi bor: **agar yomgʻir yogʻsa, u soyabon olib chiqadi** ☂️.",
         },
         { text: "Nimani aniq aytish mumkin-u, nimani — yoʻq? Har bir holat uchun javobni tanla." },
       ],
       answer: {
         prompt: "Nimani aniq aytish mumkin?",
         items: {
-          a: { label: "a) Yomgʻir yogʻyapti. Davlatjon soyabon olib chiqdimi?" },
-          b: { label: "b) Davlatjon soyabon olib chiqdi. Yomgʻir yogʻyaptimi?" },
-          c: { label: "c) Davlatjon soyabon olib chiqmadi. Yomgʻir yogʻyaptimi?" },
-          d: { label: "d) Yomgʻir yogʻmayapti. Davlatjon soyabon olib chiqdimi?" },
+          a: { label: "a) Yomgʻir yogʻyapti. {name} soyabon olib chiqdimi?" },
+          b: { label: "b) {name} soyabon olib chiqdi. Yomgʻir yogʻyaptimi?" },
+          c: { label: "c) {name} soyabon olib chiqmadi. Yomgʻir yogʻyaptimi?" },
+          d: { label: "d) Yomgʻir yogʻmayapti. {name} soyabon olib chiqdimi?" },
         },
         options: {
           yes: { label: "Aniq ha" },
@@ -117,11 +117,11 @@ export const day1Uz: Uz<Day> = {
         },
       },
       followUps: [
-        "Yomgʻir yogʻmayotgan boʻlsa ham, Davlatjon nega soyabon olib chiqqan boʻlishi mumkin? Oʻylab top.",
+        "Yomgʻir yogʻmayotgan boʻlsa ham, {name} nega soyabon olib chiqqan boʻlishi mumkin? Oʻylab top.",
         "Oʻzingning «agar…, unda…» qoidangni oʻylab top va kattalarga xuddi shunday toʻrtta savol ber.",
       ],
       hints: [
-        "Qoidani yana bir oʻqi. U nimani vaʼda qiladi? Davlatjon qachon albatta soyabon olib chiqadi?",
+        "Qoidani yana bir oʻqi. U nimani vaʼda qiladi? {name} qachon albatta soyabon olib chiqadi?",
         "Aniq bilganimiz shu: yomgʻirli kunda soyabon doim uning yonida boʻladi. Quyoshli kun haqida esa qoida hech narsa demaydi.",
         "Toʻrtta rasm chiz: yomgʻir va soyabon; yomgʻir, lekin soyabon yoʻq; quyosh va soyabon; quyosh, lekin soyabon yoʻq. Qaysi rasmdagi holat boʻlishi mumkin emas?",
         "Qoidaga koʻra «yomgʻir bor, soyabon yoʻq» holati boʻlishi mumkin emas. Uni oʻchirib tashla va har bir savol uchun nima qolganiga qara.",
@@ -130,7 +130,7 @@ export const day1Uz: Uz<Day> = {
       solution: {
         answer: "a) Aniq ha; b) nomaʼlum; c) aniq yoʻq; d) nomaʼlum.",
         explanation: [
-          "a) Yomgʻirda Davlatjon doim soyabon olib chiqadi — demak, olib chiqqan.",
+          "a) Yomgʻirda {name} doim soyabon olib chiqadi — demak, olib chiqqan.",
           "b) U soyabonni yomgʻir uchun ham, shunchaki (masalan, quyoshdan saqlanish uchun) ham olib chiqqan boʻlishi mumkin. Aniq aytib boʻlmaydi.",
           "c) Agar yomgʻir yogʻayotgan boʻlsa edi, soyabon uning yonida boʻlardi. Soyabon yoʻq — demak, yomgʻir ham yoʻq. Bu eng qiziq xulosa!",
           "d) Qoida yomgʻirsiz kun haqida hech narsa demaydi: soyabon boʻlishi ham, boʻlmasligi ham mumkin.",
@@ -189,7 +189,7 @@ export const day1Uz: Uz<Day> = {
       title: "1 ga yetguncha",
       body: [
         {
-          text: "Davlatjon algoritm-oʻyin oʻylab topdi. Istalgan sonni olasan va 1 hosil boʻlguncha quyidagi qadamni takrorlayverasan:",
+          text: "{name} algoritm-oʻyin oʻylab topdi. Istalgan sonni olasan va 1 hosil boʻlguncha quyidagi qadamni takrorlayverasan:",
         },
         { items: ["**agar son juft boʻlsa** — uni teng ikkiga boʻl;", "**agar toq boʻlsa** — unga 1 ni qoʻsh."] },
         { text: "Masalan: `6 → 3 → 4 → 2 → 1`. 6 dan 1 gacha — toʻrt qadam." },
@@ -226,7 +226,7 @@ export const day1Uz: Uz<Day> = {
       title: "Oynadagi soat",
       body: [
         {
-          text: "Davlatjon soatni oynada koʻryapti 🪞. Oynada hammasi teskari: oʻngdagi narsa chapda, chapdagisi esa oʻngda koʻrinadi.",
+          text: "{name} soatni oynada koʻryapti 🪞. Oynada hammasi teskari: oʻngdagi narsa chapda, chapdagisi esa oʻngda koʻrinadi.",
         },
         { label: "a)", text: "Aslida soat necha?", visual: { caption: "Oynadagi soat" } },
         { label: "b)", text: "Bu yerda-chi?", visual: { caption: "Oynadagi soat" } },

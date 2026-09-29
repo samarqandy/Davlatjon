@@ -281,7 +281,7 @@ export const day5Uz: Uz<Day> = {
       title: "1, 3 va 5 lik tangalar",
       body: [
         {
-          text: "Oʻyinda 1, 3 va 5 lik tangalar bor — har biridan istalgancha. Davlatjon roppa-rosa 25 yigʻishi kerak.",
+          text: "Oʻyinda 1, 3 va 5 lik tangalar bor — har biridan istalgancha. {name} roppa-rosa 25 yigʻishi kerak.",
         },
         { text: "Roppa-rosa 9 ta tanga olsa, bu uddalanadimi? 10 ta olsa-chi? 11 ta? 12 ta?" },
       ],

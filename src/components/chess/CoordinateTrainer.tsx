@@ -229,6 +229,7 @@ function Drill({ mode, onExit }: { mode: DrillMode; onExit: () => void }) {
                     }
                   : undefined
               }
+              rejectFeedback={false}
               maxWidth={480}
             />
           )}

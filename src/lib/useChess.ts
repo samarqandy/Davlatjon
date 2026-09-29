@@ -2,11 +2,15 @@
 
 import { chessContent, chessImageIn, chessImagesIn, type ChessContent } from "@/content/chess/content";
 import type { ChessImage } from "@/content/chess/images";
-import { useLang } from "./i18n";
+import { useMemo } from "react";
+import { personalize } from "./childName";
+import { useLang, useNames } from "./i18n";
 
 /** Шахматный контент на языке интерфейса: уровни, задачи, дебюты, партии, тайны, энциклопедия, картинки. */
 export function useChess(): ChessContent {
-  return chessContent(useLang());
+  const lang = useLang();
+  const names = useNames();
+  return useMemo(() => personalize(chessContent(lang), lang, names), [lang, names]);
 }
 
 /** Картинка (или список картинок) с подписью на языке интерфейса. */

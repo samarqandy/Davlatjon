@@ -344,7 +344,7 @@ function TaskAnswerCard({ task, number, p }: { task: Task; number: number; p: Ta
         <div className="space-y-3">
           <div className="rounded-2xl bg-paper p-4">
             <h3 className="mb-1.5 text-sm font-extrabold text-muted uppercase">
-              {t("Как решал Давлатжон", "Davlatjon qanday yechdi")}
+              {t("Как решает {child}", "{child} qanday yechdi")}
             </h3>
             <Activity task={task} p={p} t={t} lang={lang} />
           </div>

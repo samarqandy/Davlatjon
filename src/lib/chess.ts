@@ -104,6 +104,45 @@ export function playMove(fen: string, from: string, to: string, promotion: Piece
   };
 }
 
+/** Ход пешки на последнюю горизонталь — нужно выбрать, в какую фигуру она превратится. */
+export function isPromotionMove(fen: string, from: string, to: string): boolean {
+  return loadPosition(fen)
+    .moves({ square: from as Square, verbose: true })
+    .some((m) => m.to === to && !!m.promotion);
+}
+
+export type IllegalReason = "in-check" | "pinned" | "king-attacked";
+
+/**
+ * Почему ход нельзя сделать, если дело в безопасности короля:
+ * король под шахом, фигура закрывает короля, король идёт под удар. Иначе null.
+ */
+export function illegalReason(fen: string, from: string, to: string): IllegalReason | null {
+  const piece = pieceAt(fen, from);
+  if (!piece || piece.color !== fen.split(" ")[1] || from === to) return null;
+  const chess = loadPosition(fen);
+  if (chess.moves({ square: from as Square, verbose: true }).some((m) => m.to === to)) return null;
+  const king = chess
+    .board()
+    .flat()
+    .find((p) => p && p.type === "k" && p.color === piece.color);
+  if (!king) return null;
+  const target = pieceAt(fen, to);
+  if (target && target.color === piece.color) return null;
+  const enemy: Color = piece.color === "w" ? "b" : "w";
+  // Без своего короля на доске видно, возможен ли ход «по правилам фигуры».
+  const noKing = loadPosition(fen);
+  noKing.remove(king.square);
+  if (piece.type === "k") {
+    const a = parseSquare(from);
+    const b = parseSquare(to);
+    const step = Math.max(Math.abs(a.col - b.col), Math.abs(a.row - b.row)) === 1;
+    return step && noKing.isAttacked(to as Square, enemy) ? "king-attacked" : null;
+  }
+  if (!noKing.moves({ square: from as Square, verbose: true }).some((m) => m.to === to)) return null;
+  return chess.inCheck() ? "in-check" : "pinned";
+}
+
 /** Стоит ли король стороны, чей ход, под шахом. */
 export function isInCheck(fen: string): boolean {
   return loadPosition(fen).inCheck();

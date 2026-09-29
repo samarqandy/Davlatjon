@@ -158,20 +158,34 @@ export function startFen(mode: PlayMode, variant?: EndgameVariant): string {
   return new Chess().fen();
 }
 
-/** Фигуры, которых не хватает на доске у каждой стороны, — «съеденные». */
-export function capturedPieces(fen: string): { w: string[]; b: string[] } {
-  const start: Record<string, number> = { p: 8, n: 2, b: 2, r: 2, q: 1 };
-  const count = { w: { ...start }, b: { ...start } };
-  const board = fen.split(" ")[0];
-  for (const ch of board) {
-    const lower = ch.toLowerCase();
-    if (!(lower in start)) continue;
-    count[ch === lower ? "b" : "w"][lower]--;
-  }
-  const list = (side: "w" | "b") =>
-    (["q", "r", "b", "n", "p"] as const).flatMap((t) =>
-      Array.from({ length: Math.max(0, count[side][t]) }, () => `${side}${t.toUpperCase()}`),
-    );
+/**
+ * Съеденные фигуры каждой стороны — по сравнению с началом этой партии
+ * (в игре с форой или «пешечном бою» фигур изначально меньше, и лишних «съеденных» быть не должно).
+ * Превращённая пешка считается ушедшей с доски пешкой, а не лишней фигурой.
+ */
+export function capturedPieces(fen: string, start: string = new Chess().fen()): { w: string[]; b: string[] } {
+  const TYPES = ["q", "r", "b", "n", "p"] as const;
+  const count = (f: string) => {
+    const c = { w: { p: 0, n: 0, b: 0, r: 0, q: 0 }, b: { p: 0, n: 0, b: 0, r: 0, q: 0 } };
+    for (const ch of f.split(" ")[0]) {
+      const lower = ch.toLowerCase() as (typeof TYPES)[number];
+      if (TYPES.includes(lower)) c[ch === lower ? "b" : "w"][lower]++;
+    }
+    return c;
+  };
+  const was = count(start);
+  const now = count(fen);
+  const list = (side: "w" | "b") => {
+    const lost = { p: 0, n: 0, b: 0, r: 0, q: 0 };
+    let promoted = 0;
+    for (const t of ["q", "r", "b", "n"] as const) {
+      const diff = was[side][t] - now[side][t];
+      if (diff >= 0) lost[t] = diff;
+      else promoted -= diff;
+    }
+    lost.p = Math.max(0, was[side].p - now[side].p - promoted);
+    return TYPES.flatMap((t) => Array.from({ length: lost[t] }, () => `${side}${t.toUpperCase()}`));
+  };
   return { w: list("w"), b: list("b") };
 }
 
