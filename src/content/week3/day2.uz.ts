@@ -14,7 +14,7 @@ export const day2Uz: Uz<Day> = {
       title: "Va, yoki, emas",
       body: [
         {
-          text: "Shanba kuni Davlatjon basseynga bordi 🏊 va muzqaymoq yedi 🍦. Kinoga 🎬 bormadi, futbol ⚽ ham oʻynamadi.",
+          text: "Shanba kuni {name} basseynga bordi 🏊 va muzqaymoq yedi 🍦. Kinoga 🎬 bormadi, futbol ⚽ ham oʻynamadi.",
         },
         {
           text: "«Va» soʻzi — ikkalasi ham toʻgʻri degani. «Yoki» soʻzi — ikkitadan kamida bittasi toʻgʻri degani.",
@@ -24,11 +24,11 @@ export const day2Uz: Uz<Day> = {
       answer: {
         prompt: "Rostmi yoki yolgʻon?",
         items: {
-          a: { label: "a) U basseynga bordi va muzqaymoq yedi." },
-          b: { label: "b) U kinoga yoki basseynga bordi." },
-          c: { label: "c) U kinoga va basseynga bordi." },
-          d: { label: "d) U kinoga bormadi." },
-          e: { label: "e) U futbol oʻynadi yoki kinoga bordi." },
+          a: { label: "a) {name} basseynga bordi va muzqaymoq yedi." },
+          b: { label: "b) {name} kinoga yoki basseynga bordi." },
+          c: { label: "c) {name} kinoga va basseynga bordi." },
+          d: { label: "d) {name} kinoga bormadi." },
+          e: { label: "e) {name} futbol oʻynadi yoki kinoga bordi." },
         },
         options: {
           true: { label: "Rost" },
@@ -40,7 +40,7 @@ export const day2Uz: Uz<Day> = {
         "Oʻzingning yakshanbang haqida «yoki» bilan bitta rost gap va «va» bilan bitta yolgʻon gap oʻylab top.",
       ],
       hints: [
-        "Davlatjon shanba kuni nima qilganini va nima qilmaganini yana bir oʻqib chiq.",
+        "{name} shanba kuni nima qilganini va nima qilmaganini yana bir oʻqib chiq.",
         "Basseyn — ha, muzqaymoq — ha, kino — yoʻq, futbol — yoʻq.",
         "Shu toʻrt dalilni yozib ol va har bir gapning har bir qismini ular boʻyicha tekshir.",
         "b) ni koʻrib chiqamiz: «kino yoki basseyn». Kino — yoʻq, basseyn — ha. «Yoki» uchun bitta «ha» yetarli.",
@@ -52,7 +52,7 @@ export const day2Uz: Uz<Day> = {
           "a) Basseyn — ha va muzqaymoq — ha: rost.",
           "b) Kino — yoʻq, basseyn — ha. «Yoki» uchun bitta «ha» yetadi: rost.",
           "c) «Va» uchun ikkala «ha» kerak, kino esa — yoʻq: yolgʻon.",
-          "d) U kinoga bormagan: rost.",
+          "d) {name} kinoga bormagan: rost.",
           "e) Futbol — yoʻq, kino — yoʻq. Birorta ham «ha» yoʻq: yolgʻon.",
         ],
         discuss: [
@@ -316,10 +316,7 @@ export const day2Uz: Uz<Day> = {
           false: { label: "Yolgʻon" },
         },
       },
-      followUps: [
-        "Davlatjon bekatga soat 8:40 da keldi. U avtobusni qancha kutadi?",
-        "Bir soatda nechta avtobus keladi?",
-      ],
+      followUps: ["{name} bekatga soat 8:40 da keldi. U avtobusni qancha kutadi?", "Bir soatda nechta avtobus keladi?"],
       hints: [
         "Eʼlonni yana bir oʻqi: birinchi avtobus soat nechada keladi va keyingilari necha minutdan keyin keladi?",
         "15 minut — bu chorak soat. 7:00 dan keyin avtobus 7:15 da keladi.",

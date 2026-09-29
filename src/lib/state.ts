@@ -3,6 +3,7 @@
  * Без React и без браузера — поэтому этим пользуются и сервер (синхронизация с аккаунтом), и тесты.
  * Сам стор (localStorage + подписки) — в src/lib/store.ts.
  */
+import { cleanChildName } from "./childName";
 
 export interface TaskMarks {
   explained?: boolean;
@@ -66,6 +67,12 @@ export interface Settings {
   boardSounds?: boolean;
   /** Язык платформы: русский или узбекский. */
   lang?: "ru" | "uz";
+  /** Имя ребёнка — как записали при первом запуске (любой алфавит). */
+  childName?: string;
+  /** Как писать имя по-узбекски латиницей, если оно записано кириллицей (иначе — автоматически). */
+  childNameUz?: string;
+  /** Когда имя меняли в последний раз (мс) — при слиянии устройств побеждает последнее. */
+  childNameAt?: number;
 }
 
 /** Сыгранная с роботом или вдвоём партия. */
@@ -234,6 +241,12 @@ export function sanitize(raw: unknown): AppState {
           : undefined,
       sound: settings.sound !== false,
       boardSounds: settings.boardSounds !== false,
+      childName: cleanChildName(settings.childName),
+      childNameUz: cleanChildName(settings.childNameUz),
+      childNameAt:
+        Number.isFinite(settings.childNameAt) && (settings.childNameAt as number) > 0
+          ? (settings.childNameAt as number)
+          : undefined,
       lang: settings.lang === "uz" ? "uz" : "ru",
     },
     chess: isObject(raw.chess) ? (raw.chess as AppState["chess"]) : {},

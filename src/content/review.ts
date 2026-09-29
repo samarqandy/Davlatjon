@@ -4,7 +4,7 @@ import type { Week } from "./types";
 export const REVIEW_QUESTIONS: Week["review"] = [
   {
     id: "fast",
-    text: "Что Давлатжон решает быстро и уверенно?",
+    text: "Что {child} решает быстро и уверенно?",
     hint: "Задачи, решённые без подсказок и с первой попытки.",
   },
   {

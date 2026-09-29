@@ -50,7 +50,7 @@ create table if not exists lab_progress (
 2. **Authorized redirect URIs**: `https://<sayt-manzili>/api/auth/google/callback`
    (sinov uchun `http://localhost:3000/api/auth/google/callback` ham qoʻshsa boʻladi).
 3. Client ID va Client secret’ni `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` ga yozing.
-4. OAuth consent screen’da ilova nomi: «Davlatjon laboratoriyasi», scopes: `openid`, `email`, `profile`.
+4. OAuth consent screen’da ilova nomi: «Davlatjon», scopes: `openid`, `email`, `profile`.
 
 ## 3. Telegram orqali kirish
 

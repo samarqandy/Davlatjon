@@ -167,7 +167,7 @@ export const guideUz: Uz<typeof GUIDE> = {
   better: {
     title: "«Bundan yaxshiroq boʻladimi?» odati",
     paragraphs: [
-      "Masala yechilgach, soʻrang: «Boshqacha yechsa boʻladimi?» Vaqt oʻtib, Davlatjon oʻzidan oʻzi soʻray boshlaydi: «Bundan yaxshiroq usul bormi?» Bu — matematika, algoritmlar va muhandislik uchun eng muhim odat.",
+      "Masala yechilgach, soʻrang: «Boshqacha yechsa boʻladimi?» Vaqt oʻtib, {child} oʻzidan oʻzi soʻray boshlaydi: «Bundan yaxshiroq usul bormi?» Bu — matematika, algoritmlar va muhandislik uchun eng muhim odat.",
     ],
   },
   observe: {

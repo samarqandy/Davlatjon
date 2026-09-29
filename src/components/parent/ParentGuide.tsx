@@ -18,9 +18,7 @@ export function ParentGuide({ content }: { content: Both<GuideContent> }) {
     <div className="space-y-5">
       <div>
         <p className="text-sm font-extrabold tracking-wide text-brand uppercase">{t("Методичка", "Qoʻllanma")}</p>
-        <h1 className="text-3xl font-black">
-          {t("Как заниматься с Давлатжоном", "Davlatjon bilan qanday shugʻullanish kerak")}
-        </h1>
+        <h1 className="text-3xl font-black">{t("Как заниматься дома", "{child} bilan qanday shugʻullanish kerak")}</h1>
         <p className="mt-1 max-w-3xl text-muted">
           {t(
             "Коротко о главном: как устроена программа, как проводить занятие, давать подсказки и наблюдать — чтобы математика оставалась местом, где происходят интересные вещи.",

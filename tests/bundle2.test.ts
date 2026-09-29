@@ -144,9 +144,11 @@ describe("PGN", () => {
       start: new Chess().fen(),
       ucis: ["e2e4", "e7e5", "f1c4", "b8c6", "d1h5", "g8f6", "h5f7"],
     };
-    const pgn = gamePgn(g);
+    const pgn = gamePgn(g, "ru", "Анна");
     expect(pgn).toContain('[White "Робот «Конь»"]');
-    expect(pgn).toContain('[Black "Давлатжон"]');
+    expect(pgn).toContain('[Black "Анна"]');
+    expect(pgn).toContain('[Site "Davlatjon"]');
+    expect(gamePgn(g)).toContain('[Black "Друг"]');
     expect(pgn).toContain('[Result "1-0"]');
     expect(pgn).toContain('[Date "2026.09.27"]');
     expect(pgn).toMatch(/4\. Qxf7# 1-0$/);

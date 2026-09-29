@@ -141,7 +141,7 @@ export const day6Uz: Uz<Day> = {
       title: "Eng tez yoʻl",
       body: [
         {
-          text: "Davlatjon velosipedda 🚲 uyidan buvisinikiga ketyapti. Xaritada har bir yoʻlda necha daqiqa ketishi yozilgan.",
+          text: "{name} velosipedda 🚲 uyidan buvisinikiga ketyapti. Xaritada har bir yoʻlda necha daqiqa ketishi yozilgan.",
         },
         { label: "a)", text: "Qaysi yoʻl eng tez? Unda necha daqiqa ketadi?" },
         {
@@ -216,7 +216,7 @@ export const day6Uz: Uz<Day> = {
       body: [
         { text: "Doʻkonda bitta daftar 📒 3 ming soʻm turadi, 4 ta daftardan iborat toʻplam esa — 10 ming soʻm." },
         {
-          text: "Davlatjonga 9 ta daftar kerak. Ularni qanday qilib eng arzonga sotib olsa boʻladi? Bu qancha turadi?",
+          text: "{name:ga} 9 ta daftar kerak. Ularni qanday qilib eng arzonga sotib olsa boʻladi? Bu qancha turadi?",
         },
       ],
       answer: { fields: { price: { label: "Eng arzon narx", suffix: "ming soʻm" } } },

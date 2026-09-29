@@ -8,6 +8,7 @@ import { useSyncExternalStore } from "react";
  * и без ошибок гидратации (на сервере и при гидратации — состояние по умолчанию).
  */
 
+import { cleanChildName } from "./childName";
 import {
   DEFAULT_STATE,
   EMPTY_CHESS,
@@ -322,6 +323,11 @@ export function chessEndgameSolved(id: string, now = Date.now()) {
 
 export function updateSettings(patch: Partial<Settings>) {
   setState((s) => ({ ...s, settings: { ...s.settings, ...patch } }));
+}
+
+/** Записать имя ребёнка (и, если нужно, его узбекское написание латиницей). */
+export function setChildName(name: string, uz?: string) {
+  updateSettings({ childName: cleanChildName(name), childNameUz: cleanChildName(uz), childNameAt: Date.now() });
 }
 
 export function setWelcomed() {

@@ -10,11 +10,10 @@ import { LEGEND_LEVELS, SECRET_IDS, UZ_CLIPS, VOICE_CLIPS, speakable } from "@/l
 const file = (src: string) => path.join(process.cwd(), "public", src);
 
 describe("озвучка", () => {
-  it("у каждого уровня и каждой тайны есть запись, у похвалы и приветствия — файлы", () => {
+  it("у каждого уровня и каждой тайны есть запись, у похвалы — файлы", () => {
     expect([...LEGEND_LEVELS].sort()).toEqual(CHESS_LEVELS.map((l) => l.id).sort());
     expect([...SECRET_IDS].sort()).toEqual(SECRETS.map((s) => s.id).sort());
     const all = [
-      VOICE_CLIPS.welcome("ru"),
       ...VOICE_CLIPS.mate("ru"),
       ...VOICE_CLIPS.praise("ru"),
       ...VOICE_CLIPS.retry("ru"),
@@ -43,7 +42,6 @@ describe("озвучка", () => {
 
   it("по-узбекски звучат только готовые узбекские записи, русский диктор не подменяет их", () => {
     const uz = [
-      VOICE_CLIPS.welcome("uz"),
       ...VOICE_CLIPS.praise("uz"),
       ...VOICE_CLIPS.retry("uz"),
       ...VOICE_CLIPS.mate("uz"),

@@ -115,13 +115,25 @@ const largest = (x: number, y: number) => Math.max(x, y);
 export function mergeStates(localRaw: unknown, remoteRaw: unknown): AppState {
   const a = sanitize(localRaw);
   const b = sanitize(remoteRaw);
+  // Имя — с того устройства, где его записали позже; пустое имя не затирает записанное.
+  const named =
+    !a.settings.childName || (b.settings.childName && (b.settings.childNameAt ?? 0) > (a.settings.childNameAt ?? 0))
+      ? b
+      : a;
   return {
     version: 1,
     tasks: mergeRecords(a.tasks, b.tasks, mergeTask),
     days: mergeRecords(a.days, b.days, mergeDay),
     myProblems: mergeById(a.myProblems, b.myProblems).sort((x, y) => x.createdAt - y.createdAt),
     reviews: mergeRecords(a.reviews, b.reviews, (x, y) => mergeRecords(x, y, (p, q) => firstText(p, q) ?? "")),
-    settings: { ...b.settings, ...a.settings, age: a.settings.age ?? b.settings.age },
+    settings: {
+      ...b.settings,
+      ...a.settings,
+      age: a.settings.age ?? b.settings.age,
+      childName: named.settings.childName,
+      childNameUz: named.settings.childNameUz,
+      childNameAt: named.settings.childNameAt,
+    },
     chess: mergeRecords(a.chess, b.chess, mergeExercise),
     // Одна и та же партия: берём ту запись, где уже есть разбор.
     chessGames: mergeById(a.chessGames, b.chessGames, (x, y) => (x.analysis || !y.analysis ? x : y))
@@ -156,6 +168,10 @@ function stable(x: unknown): string {
 
 /** Одинаковый ли прогресс (без учёта настроек устройства) — чтобы не гонять лишние запросы. */
 export function sameProgress(a: AppState, b: AppState): boolean {
-  const strip = (s: AppState) => stable({ ...s, settings: { age: s.settings.age } });
+  const strip = (s: AppState) =>
+    stable({
+      ...s,
+      settings: { age: s.settings.age, childName: s.settings.childName, childNameUz: s.settings.childNameUz },
+    });
   return strip(a) === strip(b);
 }

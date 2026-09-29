@@ -4,9 +4,10 @@ import { useRef, useState } from "react";
 import { AccountPanel } from "@/components/AccountPanel";
 import { Button, Card, cn } from "@/components/ui";
 import { AGE_MAX, AGE_MIN, profileMeta, profileText } from "@/lib/age";
+import { CHILD_NAME_MAX, cleanChildName, latinize } from "@/lib/childName";
 import { LANGS, setLang, useLang, useT } from "@/lib/i18n";
 import { forgetPin } from "@/lib/parentGate";
-import { getState, replaceState, resetProgress, sanitize, updateSettings, useStore } from "@/lib/store";
+import { getState, replaceState, resetProgress, sanitize, setChildName, updateSettings, useStore } from "@/lib/store";
 
 /** Сообщение сразу на обоих языках — чтобы оно не застряло на старом языке после переключения. */
 type Message = { ru: string; uz: string };
@@ -57,6 +58,7 @@ export function SettingsPanel() {
 
       <Card className="divide-y divide-line">
         <LangRow />
+        <NameRow name={settings.childName} nameUz={settings.childNameUz} />
         <AgeRow value={settings.age} onChange={(age) => updateSettings({ age })} />
         <Toggle
           title={t("Озвучка", "Diktor ovozi")}
@@ -227,6 +229,65 @@ function LangRow() {
 }
 
 /** Возраст ребёнка: от него зависят советы, сложность задачи дня и открытые уровни шахмат. */
+/** Имя ребёнка: сохраняется, когда поле теряет фокус или нажат Enter. Кириллическое имя — ещё и латиницей для узбекского. */
+function NameRow({ name, nameUz }: { name?: string; nameUz?: string }) {
+  const t = useT();
+  const [draft, setDraft] = useState<string | null>(null);
+  const [draftUz, setDraftUz] = useState<string | null>(null);
+  const value = draft ?? name ?? "";
+  const cyrillic = /[\u0400-\u04FF]/.test(value);
+  const save = () => {
+    if (draft === null && draftUz === null) return;
+    const clean = cleanChildName(value);
+    if (clean) setChildName(clean, cyrillic ? (draftUz ?? nameUz) : undefined);
+    setDraft(null);
+    setDraftUz(null);
+  };
+  const input =
+    "min-h-11 w-full rounded-xl border-2 border-line bg-white px-3 font-bold outline-none focus:border-brand";
+  return (
+    <div className="space-y-2 p-5">
+      <label className="block">
+        <span className="block font-extrabold">{t("Имя ребёнка", "Farzandingiz ismi")}</span>
+        <span className="block text-[0.95rem] text-muted">
+          {t(
+            "Так Лаборатория обращается к ребёнку, и это имя носит герой задач.",
+            "Laboratoriya farzandingizga shu ism bilan murojaat qiladi, masalalar qahramoni ham shu ismda.",
+          )}
+        </span>
+        <input
+          type="text"
+          value={value}
+          maxLength={CHILD_NAME_MAX + 8}
+          autoComplete="off"
+          onChange={(e) => setDraft(e.target.value)}
+          onBlur={save}
+          onKeyDown={(e) => e.key === "Enter" && save()}
+          className={cn(input, "mt-2")}
+        />
+      </label>
+      {cyrillic && (
+        <label className="block">
+          <span className="block text-sm font-bold text-muted">
+            {t("Как писать имя по-узбекски (латиницей)", "Ismning oʻzbekcha (lotin) yozilishi")}
+          </span>
+          <input
+            type="text"
+            value={draftUz ?? nameUz ?? ""}
+            placeholder={latinize(cleanChildName(value) ?? "")}
+            maxLength={CHILD_NAME_MAX + 8}
+            autoComplete="off"
+            onChange={(e) => setDraftUz(e.target.value)}
+            onBlur={save}
+            onKeyDown={(e) => e.key === "Enter" && save()}
+            className={cn(input, "mt-1")}
+          />
+        </label>
+      )}
+    </div>
+  );
+}
+
 function AgeRow({ value, onChange }: { value?: number; onChange: (age: number | undefined) => void }) {
   const t = useT();
   const lang = useLang();

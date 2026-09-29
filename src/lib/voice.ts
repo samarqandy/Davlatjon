@@ -35,7 +35,6 @@ export const SECRET_IDS = [
  * русский диктор в узбекском интерфейсе был бы некстати.
  */
 export const UZ_CLIPS: ReadonlySet<string> = new Set<string>([
-  "welcome",
   "praise-1",
   "praise-2",
   "praise-3",
@@ -55,8 +54,8 @@ function clips(lang: Lang, names: string[]): string[] {
   return names.map((n) => clip(lang, n)).filter((x): x is string => !!x);
 }
 
+// Приветствие читает голос браузера: в нём теперь нет имени, а запись с именем подошла бы не всем детям.
 export const VOICE_CLIPS = {
-  welcome: (lang: Lang) => clip(lang, "welcome"),
   mate: (lang: Lang) => clips(lang, ["mate"]),
   praise: (lang: Lang) => clips(lang, ["praise-1", "praise-2", "praise-3"]),
   retry: (lang: Lang) => clips(lang, ["retry-1", "retry-2"]),

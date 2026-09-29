@@ -5,18 +5,19 @@ import "./globals.css";
 import { AccountSync } from "@/components/AccountSync";
 import { LangSync } from "@/components/LangSwitch";
 import { ServiceWorker } from "@/components/ServiceWorker";
+import { BRAND, BRAND_TITLE } from "@/lib/brand";
 
 export const metadata: Metadata = {
   title: {
-    default: "Лаборатория Давлатжона — математика, логика, алгоритмы",
-    template: "%s · Лаборатория Давлатжона",
+    default: BRAND_TITLE.ru,
+    template: `%s · ${BRAND}`,
   },
   description:
     "Ежедневные занятия для развития математического, логического, алгоритмического и научного мышления ребёнка от 7 лет: задачи, подсказки, робот-программист, печать листов и раздел для родителей.",
-  applicationName: "Лаборатория Давлатжона",
+  applicationName: BRAND,
   // Личная учебная платформа ребёнка: поисковикам её показывать не нужно.
   robots: { index: false, follow: false },
-  appleWebApp: { capable: true, title: "Лаборатория", statusBarStyle: "default" },
+  appleWebApp: { capable: true, title: BRAND, statusBarStyle: "default" },
   formatDetection: { telephone: false },
 };
 
@@ -30,10 +31,14 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
   return (
     <html lang="ru" suppressHydrationWarning>
       <head>
-        {/* Если выбран узбекский, прячем страницу до загрузки — чтобы не мелькал русский текст. */}
+        {/*
+          Узбекский язык — прячем страницу до загрузки, чтобы не мелькал русский текст. Имя ребёнка — только
+          на страницах, где оно стоит в текстах заданий (занятия, раздел родителя, задачник): чтобы вместо
+          имени не мелькало «Друг». Главная и шахматы с именем показываются сразу — там приветствие без имени до загрузки.
+        */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `try{var s=JSON.parse(localStorage.getItem("davlatjon-lab:v1")||"{}");if(s.settings&&s.settings.lang==="uz"){var h=document.documentElement;h.lang="uz";h.classList.add("i18n-wait");setTimeout(function(){h.classList.remove("i18n-wait")},1500)}}catch(e){}`,
+            __html: `try{var s=JSON.parse(localStorage.getItem("davlatjon-lab:v1")||"{}").settings||{};var named=s.childName&&["week","parent","my-problems"].indexOf(location.pathname.split("/")[1])>=0;if(s.lang==="uz"||named){var h=document.documentElement;if(s.lang==="uz")h.lang="uz";h.classList.add("i18n-wait");setTimeout(function(){h.classList.remove("i18n-wait")},1500)}}catch(e){}`,
           }}
         />
       </head>

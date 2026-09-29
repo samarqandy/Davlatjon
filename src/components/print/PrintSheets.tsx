@@ -5,6 +5,7 @@ import { RichText } from "@/components/RichText";
 import { BlockView } from "@/components/task/BlockView";
 import { hintLabel, levelsFor, sectionsFor } from "@/content/meta";
 import type { Day, PrintSpace, Task } from "@/content/types";
+import { BRAND } from "@/lib/brand";
 import { useLang, useT } from "@/lib/i18n";
 import { PrintAnswerArea } from "./PrintAnswerArea";
 
@@ -18,7 +19,7 @@ function SheetHeader({ day, subtitle }: { day: Day; subtitle: string }) {
         <LogoMark size={34} />
         <div className="flex-1 leading-tight">
           <p className="text-[9pt] font-bold tracking-wide text-muted uppercase">
-            {t(`Лаборатория Давлатжона · ${subtitle}`, `Davlatjon laboratoriyasi · ${subtitle}`)}
+            {BRAND} · {subtitle}
           </p>
           <p className="text-[16pt] font-black">
             {t(

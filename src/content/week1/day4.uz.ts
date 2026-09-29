@@ -62,10 +62,10 @@ export const day4Uz: Uz<Day> = {
       },
     },
     w1d4t3: {
-      title: "Davlatjonning kiyimlari",
+      title: "Nima kiyaman?",
       body: [
         {
-          text: "Davlatjonning 3 ta futbolkasi — qizil, koʻk va yashil — hamda 2 ta shimi bor: qora va kulrang.",
+          text: "{name:ning} 3 ta futbolkasi — qizil, koʻk va yashil — hamda 2 ta shimi bor: qora va kulrang.",
         },
         null,
         { label: "a)", text: "U necha xil kiyinishi mumkin (futbolka + shim)?" },
@@ -97,7 +97,7 @@ export const day4Uz: Uz<Day> = {
     w1d4t4: {
       title: "Oʻsib borayotgan zinapoyalar",
       body: [
-        { text: "Davlatjon kubiklardan zinapoyalar quryapti." },
+        { text: "{name} kubiklardan zinapoyalar quryapti." },
         null,
         { label: "a)", text: "5-zinapoya uchun nechta kubik kerak boʻladi?" },
         { label: "b)", text: "6-zinapoya uchun-chi?" },
@@ -231,7 +231,7 @@ export const day4Uz: Uz<Day> = {
         },
         {
           visual: {
-            items: [{ label: "Davlatjon" }, { label: "Ali" }, { label: "Bobur" }, { label: "Temur" }],
+            items: [{ label: "{name}" }, { label: "Ali" }, { label: "Bobur" }, { label: "Temur" }],
           },
         },
         { text: "Hammasi boʻlib necha marta qoʻl berib koʻrishildi?" },
@@ -248,8 +248,8 @@ export const day4Uz: Uz<Day> = {
       solution: {
         answer: "6 marta.",
         explanation: [
-          "Davlatjon Ali, Bobur va Temur bilan koʻrishadi — 3 marta.",
-          "Ali — Bobur va Temur bilan (Davlatjon bilan allaqachon koʻrishgan) — 2 marta.",
+          "{name} Ali, Bobur va Temur bilan koʻrishadi — 3 marta.",
+          "Ali — Bobur va Temur bilan ({name} bilan allaqachon koʻrishgan) — 2 marta.",
           "Bobur — Temur bilan — 1 marta.",
           "Jami: `3 + 2 + 1 = 6`.",
         ],

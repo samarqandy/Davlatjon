@@ -95,7 +95,7 @@ test.describe("oʻzbek tili", () => {
 
   test("tab sarlavhasi va yurishlar yozuvi — oʻzbekcha", async ({ page }) => {
     await page.goto("/chess/pawn");
-    await expect(page).toHaveTitle(/Shaxmat · Piyoda · Davlatjon laboratoriyasi/);
+    await expect(page).toHaveTitle(/Shaxmat · Piyoda · Davlatjon$/);
     await page.goto("/chess/games/opera");
     await expect(page.locator("main")).toContainText("♘");
   });

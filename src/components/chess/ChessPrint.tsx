@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui";
 import { PUZZLES, PUZZLE_THEMES } from "@/content/chess/puzzles";
+import { BRAND } from "@/lib/brand";
 import { useT } from "@/lib/i18n";
 import { ChessBoard } from "./ChessBoard";
 
@@ -31,7 +32,7 @@ export function ChessPrint() {
         <header className="mb-4 flex items-baseline justify-between border-b-2 border-ink/70 pb-2">
           <div>
             <p className="text-xs font-extrabold tracking-wide text-muted uppercase">
-              {t("Лаборатория Давлатжона · шахматы", "Davlatjon laboratoriyasi · shaxmat")}
+              {BRAND} · {t("шахматы", "shaxmat")}
             </p>
             <h1 className="text-2xl font-black">{t("Шахматные задачи", "Shaxmat masalalari")}</h1>
           </div>

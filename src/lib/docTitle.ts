@@ -6,12 +6,11 @@
  * изменяемые (название дня, уровня, партии) страница сообщает сама через useTitleTranslation.
  */
 import { useEffect } from "react";
+import { BRAND_TITLE } from "./brand";
 import type { Lang } from "./lang";
 
 const TITLE_UZ: Record<string, string> = {
-  "Лаборатория Давлатжона": "Davlatjon laboratoriyasi",
-  "Лаборатория Давлатжона — математика, логика, алгоритмы":
-    "Davlatjon laboratoriyasi — matematika, mantiq, algoritmlar",
+  [BRAND_TITLE.ru]: BRAND_TITLE.uz,
   Шахматы: "Shaxmat",
   "Шахматная школа": "Shaxmat maktabi",
   "Координаты и запись ходов": "Koordinatalar va yurishlar yozuvi",

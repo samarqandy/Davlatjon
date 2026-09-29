@@ -1,16 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { ChessHomeCard } from "@/components/chess/ChessHomeCard";
 import { Button, ButtonLink, Card, cn, ProgressBar } from "@/components/ui";
 import { sectionsFor } from "@/content/meta";
 import type { DaySummary, WeekSummary } from "@/content/summary";
+import { ChildNameField } from "@/components/ChildNameField";
+import { ChildNameBanner } from "@/components/home/ChildNameBanner";
 import { ListenButton } from "@/components/ListenButton";
-import { VOICE_CLIPS } from "@/lib/voice";
+import { cleanChildName } from "@/lib/childName";
 import { AGE_MAX, AGE_MIN, PROFILES, ageProfile, profileMeta, profileText } from "@/lib/age";
 import { LANGS, setLang, useBoth, useLang, useT, type Both, type T } from "@/lib/i18n";
-import { setWelcomed, updateSettings, useHydrated, useStore, type AppState } from "@/lib/store";
+import { setChildName, setWelcomed, updateSettings, useHydrated, useStore, type AppState } from "@/lib/store";
 
 type Status = "done" | "active" | "next" | "later";
 
@@ -44,13 +46,18 @@ export function HomeDashboard({ weeks: both }: { weeks: Both<WeekSummary[]> }) {
   return (
     <div className="space-y-8">
       {hydrated && !state.welcomed && <Welcome />}
+      <ChildNameBanner />
 
       <section className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
         <div className="relative overflow-hidden rounded-[2rem] bg-linear-to-br from-[#4f46e5] via-[#5b4ff0] to-[#7c3aed] p-6 text-white shadow-lift sm:p-8">
           <div className="absolute -top-10 -right-8 text-[9rem] leading-none opacity-15 select-none" aria-hidden>
             ∑
           </div>
-          <p className="text-lg font-bold text-white/80">{t("Привет, Давлатжон! 👋", "Salom, Davlatjon! 👋")}</p>
+          <p className="text-lg font-bold text-white/80">
+            {hydrated && state.settings.childName
+              ? t("Привет, {name}! 👋", "Salom, {name}! 👋")
+              : t("Привет! 👋", "Salom! 👋")}
+          </p>
           <h1 className="mt-1 text-3xl leading-tight font-black sm:text-4xl">
             {t("Математика — это место, где происходят интересные вещи", "Matematika — qiziqarli kashfiyotlar olami")}
           </h1>
@@ -313,7 +320,16 @@ function StatCard({ emoji, value, label, href }: { emoji: string; value: number;
 function Welcome() {
   const t = useT();
   const lang = useLang();
+  const [name, setName] = useState("");
   const [age, setAge] = useState<number | null>(null);
+  const text = useRef<HTMLDivElement>(null);
+  const ready = !!cleanChildName(name) && !!age;
+  const start = () => {
+    if (!ready) return;
+    setChildName(name);
+    updateSettings({ age: age! });
+    setWelcomed();
+  };
   const profile = age ? profileText(PROFILES[ageProfile(age)], lang) : null;
   const ages = Array.from({ length: AGE_MAX - AGE_MIN + 1 }, (_, i) => AGE_MIN + i);
   return (
@@ -345,44 +361,52 @@ function Welcome() {
             ))}
           </div>
         </div>
-        <h2 id="welcome-title" className="text-2xl font-black">
-          {t("Привет! Добро пожаловать в Лабораторию Давлатжона!", "Salom! Davlatjon laboratoriyasiga xush kelibsan!")}
-        </h2>
-        <p className="mt-2 text-lg text-muted">
-          {t(
-            "Здесь живут задачи, над которыми интересно подумать. Три правила Лаборатории:",
-            "Bu yerda ustida bosh qotirish maroqli boʻlgan masalalar yashaydi. Laboratoriyaning uchta qoidasi bor:",
-          )}
-        </p>
-        <ListenButton
-          src={VOICE_CLIPS.welcome(lang)}
-          label={t("Послушать приветствие", "Salomlashuvni tinglash")}
-          className="mt-2"
-        />
-        <ol className="mt-4 space-y-2 text-lg font-bold">
-          <li>
-            🐢{" "}
+        <div ref={text}>
+          <h2 id="welcome-title" className="text-2xl font-black">
+            {t("Привет! Добро пожаловать в лабораторию!", "Salom! Laboratoriyaga xush kelibsan!")}
+          </h2>
+          <p className="mt-2 text-lg text-muted">
             {t(
-              "Не торопись: думать — важнее, чем быстро отвечать.",
-              "Shoshilma: tez javob berishdan koʻra oʻylab koʻrish muhimroq.",
+              "Здесь живут задачи, над которыми интересно подумать. Три правила Лаборатории:",
+              "Bu yerda ustida bosh qotirish maroqli boʻlgan masalalar yashaydi. Laboratoriyaning uchta qoidasi bor:",
             )}
-          </li>
-          <li>
-            💡{" "}
-            {t(
-              "Застрял? Открой подсказку — они приходят по одной.",
-              "Qiynaldingmi? Maslahatni och — ular bittadan keladi.",
+          </p>
+          <ol className="mt-4 space-y-2 text-lg font-bold">
+            <li>
+              🐢{" "}
+              {t(
+                "Не торопись: думать — важнее, чем быстро отвечать.",
+                "Shoshilma: tez javob berishdan koʻra oʻylab koʻrish muhimroq.",
+              )}
+            </li>
+            <li>
+              💡{" "}
+              {t(
+                "Застрял? Открой подсказку — они приходят по одной.",
+                "Qiynaldingmi? Maslahatni och — ular bittadan keladi.",
+              )}
+            </li>
+            <li>
+              💬{" "}
+              {t(
+                "Нашёл ответ? Объясни, почему это так — и поищи другой способ.",
+                "Javobni topdingmi? Nega aynan shunday ekanini tushuntir va boshqa yoʻlini ham izla.",
+              )}
+            </li>
+          </ol>
+        </div>
+        <ListenButton from={text} label={t("Послушать приветствие", "Salomlashuvni tinglash")} className="mt-3" />
+        <div className="mt-5">
+          <ChildNameField
+            value={name}
+            onChange={setName}
+            hint={t(
+              "Так Лаборатория будет к тебе обращаться. Родители могут поменять имя в своём разделе.",
+              "Laboratoriya senga shu ism bilan murojaat qiladi. Ota-onang uni oʻz boʻlimida oʻzgartira oladi.",
             )}
-          </li>
-          <li>
-            💬{" "}
-            {t(
-              "Нашёл ответ? Объясни, почему это так — и поищи другой способ.",
-              "Javobni topdingmi? Nega aynan shunday ekanini tushuntir va boshqa yoʻlini ham izla.",
-            )}
-          </li>
-        </ol>
-        <fieldset className="mt-5">
+          />
+        </div>
+        <fieldset className="mt-4">
           <legend className="text-lg font-black">{t("Сколько тебе лет?", "Necha yoshdasan?")}</legend>
           <p className="text-sm text-muted">
             {t(
@@ -412,15 +436,7 @@ function Welcome() {
             </p>
           )}
         </fieldset>
-        <Button
-          size="lg"
-          className="mt-5 w-full"
-          disabled={!age}
-          onClick={() => {
-            if (age) updateSettings({ age });
-            setWelcomed();
-          }}
-        >
+        <Button size="lg" className="mt-5 w-full" disabled={!ready} onClick={start}>
           {t("Поехали! 🚀", "Ketdik! 🚀")}
         </Button>
       </div>

@@ -74,31 +74,31 @@ export const day4Uz: Uz<Day> = {
       },
     },
     w2d4t3: {
-      title: "Dadasi ikki baravar katta",
+      title: "Dadang ikki baravar katta",
       body: [
-        { text: "Hozir Davlatjon 8 yoshda, dadasi esa 32 yoshda." },
-        { text: "Necha yildan keyin dadasi Davlatjondan roppa-rosa ikki baravar katta boʻladi?" },
+        { text: "Tasavvur qil: sen 8 yoshdasan, dadang esa 32 yoshda." },
+        { text: "Necha yildan keyin dadang sendan roppa-rosa ikki baravar katta boʻladi?" },
         {
-          text: "«Ikki baravar katta» degani — dadasining yoshi Davlatjonning yoshicha va yana shuncha boʻladi.",
+          text: "«Ikki baravar katta» degani — dadangning yoshi sening yoshingcha va yana shuncha boʻladi.",
         },
       ],
       answer: { fields: { years: { label: "Necha yildan keyin?" } } },
       followUps: [
-        "Oʻsha yili har biri necha yoshda boʻladi?",
-        "Hozir dadasi oʻgʻlidan necha yosh katta? 16 yildan keyin necha yosh katta boʻladi?",
+        "Oʻsha yili har biringiz necha yoshda boʻlasiz?",
+        "Hozir dadang sendan necha yosh katta? 16 yildan keyin-chi?",
       ],
       hints: [
-        "Shartni yana bir bor oʻqib chiq: hozir dada va oʻgʻil necha yoshda? Nima boʻlishi kerak?",
-        "Har yili dadasi ham, Davlatjon ham 1 yoshga kattalashadi. Dadasi oʻgʻlidan necha yosh katta? Bu farq oʻzgaradimi?",
-        "Jadval tuz: necha yildan keyin — oʻgʻilning yoshi — dadaning yoshi — oʻgʻil yoshining ikki baravari.",
-        "Sinab koʻr: 10 yildan keyin oʻgʻil 18 yoshda, dadasi 42 yoshda. 18 dan ikki baravar koʻp — bu 36. Dada hali ham keragidan katta. Yana sinab koʻr!",
-        "Dada har doim 24 yosh katta. Ikki baravar katta degani: dadaning yoshi — oʻgʻilning yoshi va yana shuncha. Oʻgʻil necha yoshda boʻlganda 24 yillik farq aynan uning yoshiga teng boʻladi?",
+        "Shartni yana bir bor oʻqib chiq: hozir sen va dadang necha yoshdasiz? Nima boʻlishi kerak?",
+        "Har yili dadang ham, sen ham 1 yoshga kattalashasiz. Dadang sendan necha yosh katta? Bu farq oʻzgaradimi?",
+        "Jadval tuz: necha yildan keyin — sening yoshing — dadangning yoshi — sening yoshingning ikki baravari.",
+        "Sinab koʻr: 10 yildan keyin sen 18 yoshda, dadang 42 yoshda boʻladi. 18 dan ikki baravar koʻp — bu 36. Dadang hali ham keragidan katta. Yana sinab koʻr!",
+        "Dadang har doim 24 yosh katta. Ikki baravar katta degani: dadangning yoshi — sening yoshing va yana shuncha. Sen necha yoshda boʻlganingda 24 yillik farq aynan sening yoshingga teng boʻladi?",
       ],
       solution: {
-        answer: "16 yildan keyin: Davlatjon 24 yoshda, dadasi esa 48 yoshda boʻladi.",
+        answer: "16 yildan keyin: sen 24 yoshda, dadang esa 48 yoshda boʻladi.",
         explanation: [
           "Urinishlar: 4 yildan keyin — 12 va 36 (ikki baravar boʻlishi uchun 24 kerak edi), 10 yildan keyin — 18 va 42 (36 kerak edi), 16 yildan keyin — 24 va 48 ✓.",
-          "Mulohaza bilan ham topsa boʻladi: dada har doim 24 yosh katta. Oʻgʻli ham xuddi shuncha — 24 yoshga toʻlganda, dadasi undan ikki baravar katta boʻladi. Bu `24 − 8 = 16` yildan keyin.",
+          "Mulohaza bilan ham topsa boʻladi: dadang har doim 24 yosh katta. Sen ham xuddi shuncha — 24 yoshga toʻlganingda, dadang sendan ikki baravar katta boʻladi. Bu `24 − 8 = 16` yildan keyin.",
         ],
         discuss: [
           "Yoshlar farqi oʻzgarmaydi — bu «invariant», ertangi kunning asbobi. Farzandingiz «Dada har doim 24 yosh katta!» deb oʻzi payqasa — juda yaxshi.",
@@ -235,7 +235,7 @@ export const day4Uz: Uz<Day> = {
     w2d4t7: {
       title: "Roppa-rosa 50",
       body: [
-        { text: "Davlatjonda 50 ming soʻm bor. Oʻyinchoqlar doʻkonidagi narxlar (ming soʻmda):" },
+        { text: "{name:da} 50 ming soʻm bor. Oʻyinchoqlar doʻkonidagi narxlar (ming soʻmda):" },
         {
           visual: {
             items: [
@@ -248,7 +248,7 @@ export const day4Uz: Uz<Day> = {
           },
         },
         {
-          text: "Davlatjon roppa-rosa 50 ming soʻm sarflamoqchi — ortiq ham emas, kam ham emas. Har bir oʻyinchoqni u koʻpi bilan bir marta sotib oladi. Barcha usullarni top.",
+          text: "{name} roppa-rosa 50 ming soʻm sarflamoqchi — ortiq ham emas, kam ham emas. Har bir oʻyinchoqni koʻpi bilan bir marta sotib olish mumkin. Barcha usullarni top.",
         },
       ],
       answer: { fields: { ways: { label: "Jami nechta usul bor?" } } },
@@ -280,7 +280,7 @@ export const day4Uz: Uz<Day> = {
       title: "Suv quyish",
       body: [
         {
-          text: "Davlatjonda ikkita chelak bor: 3 litrli va 5 litrli. Chelaklarda oʻlchov chiziqlari yoʻq — faqat chelak boʻshmi yoki toʻlami, shuni koʻrish mumkin.",
+          text: "{name:da} ikkita chelak bor: 3 litrli va 5 litrli. Chelaklarda oʻlchov chiziqlari yoʻq — faqat chelak boʻshmi yoki toʻlami, shuni koʻrish mumkin.",
         },
         {
           text: "Chelakni jumrakdan liq toʻldirish, boʻshatish yoki bir chelakdan ikkinchisiga suv quyish mumkin. Qanday qilib roppa-rosa 4 litr suv olsa boʻladi?",

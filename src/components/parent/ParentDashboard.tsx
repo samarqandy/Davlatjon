@@ -63,8 +63,8 @@ export function ParentDashboard({ weeks: both }: { weeks: Both<ParentWeek[]> }) 
           <h1 className="text-2xl font-black">{t("Здравствуйте! 👋", "Assalomu alaykum! 👋")}</h1>
           <p className="mt-1 text-muted">
             {t(
-              "Здесь — ответы, объяснения и подсказки к каждому дню, заметки о том, как думает Давлатжон, и еженедельный обзор. Ребёнок этот раздел не видит.",
-              "Bu yerda har bir kun uchun javoblar, tushuntirishlar va maslahatlar, Davlatjon qanday fikrlashi haqidagi qaydlar hamda haftalik sharh jamlangan. Farzandingiz bu boʻlimni koʻrmaydi.",
+              "Здесь — ответы, объяснения и подсказки к каждому дню, заметки о том, как думает {child}, и еженедельный обзор. Ребёнок этот раздел не видит.",
+              "Bu yerda har bir kun uchun javoblar, tushuntirishlar va maslahatlar, {child} qanday fikrlashi haqidagi qaydlar hamda haftalik sharh jamlangan. Farzandingiz bu boʻlimni koʻrmaydi.",
             )}
           </p>
           {weeks.map((w) => {

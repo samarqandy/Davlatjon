@@ -51,7 +51,7 @@ export const day2Uz: Uz<Day> = {
     w2d2t2: {
       title: "Teskari zanjir",
       body: [
-        { text: "Davlatjon bir son oʻyladi va u bilan uchta amal bajardi. Oxirida 20 chiqdi." },
+        { text: "{name} bir son oʻyladi va u bilan uchta amal bajardi. Oxirida 20 chiqdi." },
         { visual: { steps: [null, "ikki baravar oshir", null] } },
         { text: "U qaysi sonni oʻylagan?" },
       ],
@@ -61,7 +61,7 @@ export const day2Uz: Uz<Day> = {
         "Agar 10 soni oʻylansa, oxirida nima chiqadi?",
       ],
       hints: [
-        "Shartni yana bir bor oʻqib chiq: Davlatjon qaysi uchta amalni bajardi va qanday tartibda?",
+        "Shartni yana bir bor oʻqib chiq: {name} qaysi uchta amalni bajardi va qanday tartibda?",
         "Aniq bilganimiz: oxirida 20 chiqdi. Qaysi amal eng oxirgisi boʻlgan?",
         "Zanjirni qaytadan chizib ol va u boʻylab oʻngdan chapga yur. Har bir strelka ustiga teskari amalni yoz.",
         "«−10» dan keyin 20 chiqqan boʻlsa, undan oldin qaysi son boʻlgan?",
@@ -82,7 +82,7 @@ export const day2Uz: Uz<Day> = {
       title: "Buvijonning olmalari",
       body: [
         {
-          text: "Buvijon dasturxonga olma 🍎 qoʻydi. Birinchi boʻlib Ali keldi va hamma olmaning yarmini oldi. Keyin Bobur keldi va qolgan olmalarning yarmini oldi. Davlatjonga oxirgi 3 ta olma qoldi.",
+          text: "Buvijon dasturxonga olma 🍎 qoʻydi. Birinchi boʻlib Ali keldi va hamma olmaning yarmini oldi. Keyin Bobur keldi va qolgan olmalarning yarmini oldi. {name:ga} oxirgi 3 ta olma qoldi.",
         },
         { label: "a)", text: "Dasturxonda boshida nechta olma boʻlgan?" },
         { label: "b)", text: "Ali nechta olma oldi?" },
@@ -95,25 +95,25 @@ export const day2Uz: Uz<Day> = {
       },
       followUps: [
         "Javobni tekshir: olmalarni masaladagidek tartib bilan boʻlib chiq.",
-        "Agar Davlatjonga 5 ta olma qolganida, boshida nechta olma boʻlardi?",
+        "Agar {name:ga} 5 ta olma qolganida, boshida nechta olma boʻlardi?",
       ],
       hints: [
         "Shartni yana bir bor oʻqib chiq. Eng oxirida nima aniq maʼlum?",
-        "Davlatjonga 3 ta olma qoldi. Bu — Boburdan keyin qolgani. Bobur esa roppa-rosa yarmini olgan edi. U kelganda nechta olma bor edi?",
-        "Oxiridan boshlab yozib bor: Davlatjon kelganda, Bobur kelganda, Ali kelganda nechta olma boʻlgan. Olmalarni doirachalar qilib chizsang ham boʻladi.",
+        "{name:ga} 3 ta olma qoldi. Bu — Boburdan keyin qolgani. Bobur esa roppa-rosa yarmini olgan edi. U kelganda nechta olma bor edi?",
+        "Oxiridan boshlab yozib bor: {name} kelganda, Bobur kelganda, Ali kelganda nechta olma boʻlgan. Olmalarni doirachalar qilib chizsang ham boʻladi.",
         "Boburdan keyin 3 ta olma qolgan, u esa roppa-rosa yarmini olgan boʻlsa, demak, uning oʻzi ham 3 ta olgan. Bobur kelganda nechta olma boʻlgan?",
         "Bobur kelganda 6 ta olma bor edi. Bu — Ali qoldirgan yarmi. Eng boshida nechta olma boʻlgan?",
       ],
       solution: {
         answer: "a) 12 ta olma; b) 6 ta olma.",
         explanation: [
-          "Oxiridan boshlaymiz. Davlatjonga 3 ta olma qoldi — bu Bobur kelgandagi olmalarning yarmi (qolgan yarmini Boburning oʻzi oldi). Demak, Bobur kelganda `3 + 3 = 6` ta olma bor edi.",
+          "Oxiridan boshlaymiz. {name:ga} 3 ta olma qoldi — bu Bobur kelgandagi olmalarning yarmi (qolgan yarmini Boburning oʻzi oldi). Demak, Bobur kelganda `3 + 3 = 6` ta olma bor edi.",
           "Bu 6 ta olma — Ali qoldirgan yarmi. Demak, boshida `6 + 6 = 12` ta olma boʻlgan, Ali esa 6 tasini olgan.",
           "Tekshiramiz: 12 → Ali 6 tasini oldi, 6 ta qoldi → Bobur 3 tasini oldi, 3 ta qoldi ✓.",
         ],
         discuss: [
           "Koʻp uchraydigan xato — «hammaga teng, 3 tadan, jami 9». Boshidan oxiriga qarab tekshirilsa, xato darhol koʻrinadi: 9 ta olmani teng ikkiga boʻlib boʻlmaydi.",
-          "Agar Davlatjonga 5 ta olma qolsa: `5 + 5 = 10`, `10 + 10 = 20`.",
+          "Agar {name:ga} 5 ta olma qolsa: `5 + 5 = 10`, `10 + 10 = 20`.",
         ],
       },
     },
@@ -256,7 +256,7 @@ export const day2Uz: Uz<Day> = {
       title: "Soat nechada turish kerak?",
       body: [
         {
-          text: "Maktabda darslar 8:30 da boshlanadi. Uydan maktabgacha yoʻl 20 daqiqa oladi. Yuvinish, kiyinish va nonushta qilishga Davlatjon 35 daqiqada ulguradi.",
+          text: "Maktabda darslar 8:30 da boshlanadi. Uydan maktabgacha yoʻl 20 daqiqa oladi. Yuvinish, kiyinish va nonushta qilishga {name} 35 daqiqada ulguradi.",
         },
         { visual: { caption: "Darslar boshlanishi — 8:30" } },
         {
@@ -272,7 +272,7 @@ export const day2Uz: Uz<Day> = {
         },
       },
       followUps: [
-        "Agar Davlatjon 10 daqiqa erta borishni xohlasa, soat nechada turishi kerak?",
+        "Agar {name} 10 daqiqa erta borishni xohlasa, soat nechada turishi kerak?",
         "Oʻzingning ertalabki kun tartibingni ham shunday tuzib koʻr.",
       ],
       hints: [

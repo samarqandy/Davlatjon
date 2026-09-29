@@ -10,8 +10,6 @@ import { week3 } from "./week3";
 export const WEEKS: Week[] = [week1, week2, week3];
 
 export const PROGRAM = {
-  title: "Лаборатория Давлатжона",
-  childName: "Давлатжон",
   motto: "Математика — это место, где происходят интересные вещи.",
   priorities: ["Любопытство", "Мышление", "Рассуждение", "Открытие", "Уверенность"],
 };
