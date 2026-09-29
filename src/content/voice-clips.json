@@ -54,6 +54,9 @@
     "task:w1d7t3": "47492665",
     "task:w1d7t4": "f4348a2d",
     "task:w1d7t5": "746f40f3",
+    "task:w1d7r": "0ae8704c",
+    "task:w2d1t1": "a9d446d2",
+    "task:w2d1t2": "c707104d",
     "task:w2d4t5": "71ac8afb",
     "task:w2d4t6": "f22679e6",
     "task:w2d4t7": "943c7b13",
@@ -94,6 +97,8 @@
     "task:w3d2t3": "97d9ed44",
     "task:w3d2t4": "f65e8546",
     "task:w3d2t5": "fbd232e1",
+    "task:w3d2t6": "e3cf3cc6",
+    "task:w3d2t7": "f0c9afdf",
     "lesson:pawn-0": "4edda190",
     "lesson:pawn-1": "f12bdc17",
     "lesson:pawn-2": "c8cf544e",
@@ -133,7 +138,11 @@
     "dyk:6-a": "5ac851aa",
     "dyk:7-q": "60a11ad6",
     "dyk:7-a": "0e171fc9",
-    "dyk:8-q": "0903cacf"
+    "dyk:8-q": "0903cacf",
+    "dyk:8-a": "e18c2fc5",
+    "dyk:9-q": "afe5d4a8",
+    "dyk:9-a": "9e4f3f02",
+    "dyk:10-q": "16ec0228"
   },
   "uz": {
     "task:w1d1t1": "fb905d95",
@@ -183,6 +192,9 @@
     "task:w1d6t4": "b63870a0",
     "task:w1d6t5": "1aff0710",
     "task:w1d6t6": "aa32f85e",
+    "task:w1d6t7": "f5c9f2b7",
+    "task:w1d6t8": "48118d58",
+    "task:w1d7t1": "c8666c56",
     "task:w2d4t5": "21624268",
     "task:w2d4t6": "e6eefbdc",
     "task:w2d4t7": "baaae8f2",
@@ -214,6 +226,8 @@
     "task:w3d1t2": "c5bc7c21",
     "task:w3d1t3": "74bc1335",
     "task:w3d1t4": "d072fb55",
+    "task:w3d1t5": "bd0732c5",
+    "task:w3d1t6": "4b930e31",
     "lesson:pawn-0": "e06088f7",
     "lesson:pawn-1": "fa583c1b",
     "lesson:pawn-2": "ffd73df7",
@@ -231,6 +245,9 @@
     "lesson:rook-2": "c8fa04c3",
     "lesson:queen-0": "0ee5bd9d",
     "lesson:queen-1": "883d06e5",
-    "lesson:queen-2": "ac0b8318"
+    "lesson:queen-2": "ac0b8318",
+    "lesson:king-0": "1a392602",
+    "lesson:king-1": "8f9b1209",
+    "lesson:king-2": "677037a2"
   }
 }
