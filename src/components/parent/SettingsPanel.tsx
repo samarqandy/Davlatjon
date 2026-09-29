@@ -63,8 +63,8 @@ export function SettingsPanel() {
         <Toggle
           title={t("Озвучка", "Diktor ovozi")}
           text={t(
-            "Диктор читает легенды уровней и хвалит за решения, кнопка «🔊 Послушать» читает задачи и истории вслух.",
-            "Diktor darajalar afsonalarini oʻqib beradi va yechimlar uchun maqtaydi, «🔊 Tinglash» tugmasi esa masala va hikoyalarni ovoz chiqarib oʻqiydi.",
+            "Диктор читает приветствие, легенды уровней и истории «Тайн шахмат» и хвалит за решения. Это записи диктора, а не голос браузера.",
+            "Diktor salomlashuvni, darajalar afsonalarini va «Shaxmat sirlari» hikoyalarini oʻqib beradi, yechimlar uchun maqtaydi. Bu brauzer ovozi emas, diktor yozuvlari.",
           )}
           value={settings.sound !== false}
           onChange={(v) => updateSettings({ sound: v })}

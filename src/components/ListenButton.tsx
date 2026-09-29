@@ -1,58 +1,30 @@
 "use client";
 
-import { useEffect, useId, useState, useSyncExternalStore, type RefObject } from "react";
+import { useEffect, useId, useState } from "react";
 import { cn } from "@/components/ui";
-import { useLang, useT } from "@/lib/i18n";
+import { useT } from "@/lib/i18n";
 import { useStore } from "@/lib/store";
-import { canSpeak, onVoiceChange, onVoicesChanged, playClip, playingId, speak, stopVoice } from "@/lib/voice";
+import { onVoiceChange, playClip, playingId, stopVoice } from "@/lib/voice";
 
 /**
- * Кнопка «Послушать»: запись диктора (src), а если её нет — голос браузера читает текст.
- * Текст можно передать строкой или взять из блока на странице (from).
- * Нет ни записи, ни голоса на языке интерфейса — кнопки нет.
+ * Кнопка «Послушать»: проигрывает запись диктора (src).
+ * Голос браузера не подставляется: нет записи на языке интерфейса или звук выключен — кнопки нет.
  */
-export function ListenButton({
-  src,
-  text,
-  from,
-  label,
-  className,
-}: {
-  src?: string;
-  text?: string;
-  from?: RefObject<HTMLElement | null>;
-  label?: string;
-  className?: string;
-}) {
+export function ListenButton({ src, label, className }: { src?: string; label?: string; className?: string }) {
   const id = useId();
   const t = useT();
-  const lang = useLang();
   const sound = useStore((s) => s.settings.sound !== false);
   const [playing, setPlaying] = useState(false);
-  const speech = useSyncExternalStore(
-    onVoicesChanged,
-    () => canSpeak(lang),
-    () => false,
-  );
 
   useEffect(() => onVoiceChange((now) => setPlaying(now === id)), [id]);
   useEffect(() => () => void (playingId() === id && stopVoice()), [id]);
 
-  if (!sound || (!src && !speech)) return null;
-
-  const read = () => {
-    const x = text ?? from?.current?.innerText ?? "";
-    if (x && canSpeak(lang)) speak(x, id, lang);
-  };
+  if (!sound || !src) return null;
 
   return (
     <button
       type="button"
-      onClick={() => {
-        if (playing) stopVoice();
-        else if (src) playClip(src, id, read);
-        else read();
-      }}
+      onClick={() => (playing ? stopVoice() : playClip(src, id))}
       aria-pressed={playing}
       className={cn(
         "inline-flex min-h-9 items-center gap-1.5 rounded-xl px-3 py-1 text-sm font-extrabold transition",

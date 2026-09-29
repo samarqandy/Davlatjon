@@ -199,11 +199,7 @@ function LevelLegend({ level }: { level: ChessLevel }) {
         <p className="text-xs font-extrabold tracking-wide text-brand uppercase">
           {t("🔮 Легенда уровня", "🔮 Daraja afsonasi")}
         </p>
-        <ListenButton
-          src={VOICE_CLIPS.legend(level.id, lang)}
-          text={[level.legend.hook, level.legend.title, ...level.legend.story].join(" ")}
-          label={t("Послушать легенду", "Afsonani tinglash")}
-        />
+        <ListenButton src={VOICE_CLIPS.legend(level.id, lang)} label={t("Послушать легенду", "Afsonani tinglash")} />
       </div>
       <h2 id="legend-h" className="mt-1 text-2xl leading-snug font-black">
         {level.legend.hook}

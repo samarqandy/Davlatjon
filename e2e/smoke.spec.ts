@@ -360,6 +360,11 @@ test("первый запуск: ребёнок называет имя и вы�
   const dialog = page.getByRole("dialog");
   await expect(dialog.getByRole("heading", { name: /Добро пожаловать/ })).toBeVisible();
   await expect(dialog.getByRole("button", { name: "Поехали! 🚀" })).toBeDisabled();
+  // Приветствие читает диктор — запись есть на обоих языках.
+  await expect(dialog.getByRole("button", { name: /Послушать приветствие/ })).toBeVisible();
+  await dialog.getByRole("button", { name: "Oʻzbekcha" }).click();
+  await expect(dialog.getByRole("button", { name: /Salomlashuvni tinglash/ })).toBeVisible();
+  await dialog.getByRole("button", { name: "Русский" }).click();
   await dialog.getByRole("button", { name: "10", exact: true }).click();
   await expect(dialog.getByText(/Средний профиль/)).toBeVisible();
   // Без имени — ещё рано.

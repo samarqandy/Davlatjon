@@ -154,11 +154,7 @@ function SecretCard({
         <div className="space-y-4 px-4 pb-5 sm:px-5">
           <div className="gap-5 sm:flex sm:items-start">
             <div className="min-w-0 flex-1 space-y-2 text-lg leading-relaxed">
-              <ListenButton
-                src={VOICE_CLIPS.secret(s.id, lang)}
-                text={[s.hook, ...s.story].join(" ")}
-                label={t("Послушать историю", "Hikoyani tinglash")}
-              />
+              <ListenButton src={VOICE_CLIPS.secret(s.id, lang)} label={t("Послушать историю", "Hikoyani tinglash")} />
               {s.story.map((p) => (
                 <p key={p}>{p}</p>
               ))}
