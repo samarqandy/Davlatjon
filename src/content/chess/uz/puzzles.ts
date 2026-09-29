@@ -5,42 +5,99 @@ export const themesUz: Uz<PuzzleThemeInfo[]> = {
   mate1: {
     name: "Bir yurishda mot",
     about: "Shunday yurish top-ki, raqib shohining qochadigan joyi qolmasin.",
+    hint: "Shoh beradigan yurishlarni birma-bir tekshirib koʻr. Qaysi biridan keyin shohning qochadigan joyi, toʻsadigan donasi va donangni urib oladigan himoyachisi qolmaydi?",
+  },
+  backrank: {
+    name: "Oxirgi gorizontalda mot",
+    about:
+      "Shoh oʻz piyodalari ortiga yashiringan — va oʻzini oʻzi qamab qoʻygan. Rux yoki farzin taxtaning chetida mot qiladi.",
+    hint: "Raqib shohi chetki gorizontaldan chiqib keta oladimi? Qaysi donang shu gorizontalga shoh berib yetib bora oladi?",
   },
   hanging: {
     name: "Tekin dona",
     about: "Kimdir donasini himoyasiz qoldiribdi. Qani, urib ol!",
+    hint: "Raqibning har bir donasini tekshir: uni kimdir himoya qilyaptimi? Tekinga urib olsa boʻladiganini top.",
   },
   fork: {
     name: "Vilka",
     about: "Bitta yurish bilan birdaniga ikki donaga hujum qil.",
+    hint: "Bitta donang birdaniga ikki donaga hujum qiladigan yurishni izla. Vilkani koʻpincha ot yoki farzin qiladi — ayniqsa shoh berib.",
   },
   pin: {
     name: "Bogʻlash",
     about: "Dona joyidan qimirlay olmaydi: orqasida shoh turibdi.",
+    hint: "Raqibning shunday donasini top-ki, uning ortida bir chiziqda shoh yoki farzin tursin. Unga hujum qil — u joyidan qimirlay olmaydi.",
   },
   skewer: {
     name: "Rentgen",
     about: "Shoh berasan — shohning ortida esa yana bir dona yashirinib turibdi.",
+    hint: "Chiziq boʻylab shunday shoh ber-ki, shoh chekinsin, uning ortida esa boshqa dona ochilib qolsin.",
   },
   discovered: {
     name: "Ochiq shoh",
     about: "Bir dona chiziqdan chetga chiqadi — va boshqa donaning zarbasiga yoʻl ochadi.",
+    hint: "Donang oʻzingning boshqa donang bilan raqib shohi orasida turibdi. Uni tahdid bilan chetga olib chiq — shohni orqadagi dona beradi.",
+  },
+  doublecheck: {
+    name: "Qoʻsh shoh",
+    about: "Ikki dona birdaniga shoh beradi. Toʻsib ham, ikkalasini urib ham boʻlmaydi — shoh faqat qochishi mumkin.",
+    hint: "Shunday yurish top-ki, undan keyin ikki dona birdaniga shoh bersin: yurgan dona ham, u yoʻl ochib bergan dona ham.",
   },
   promotion: {
     name: "Piyodaning aylanishi",
     about: "Piyoda taxtaning narigi chetiga yetib boradi va farzinga aylanadi.",
+    hint: "Qaysi piyoda oxirgi gorizontalga eng yaqin? Unga nima xalaqit beryapti? Yoʻlini ochib ber.",
+  },
+  pawnend: {
+    name: "Piyodali endshpil",
+    about:
+      "Taxtada faqat shohlar va piyodalar qolgan. Kim birinchi boʻlib piyodasini farzinga aylantirsa, odatda oʻsha yutadi.",
+    hint: "Yurishlarni sanab koʻr: shoh piyodaga yetib ola oladimi? Oppozitsiyani unutma — shohlar bir katak oralab bir-biriga qarab turadi.",
   },
   stalemate: {
     name: "Mot, pat emas!",
     about: "Ehtiyot boʻl: bitta notoʻgʻri yurish — va gʻalaba oʻrniga durang.",
+    hint: "Yurishingdan keyin raqib shohiga shoh berilgan boʻlishi kerak. Shoh ham, yurish ham yoʻq boʻlsa — bu pat, yaʼni durang.",
   },
   mate2: {
     name: "Ikki yurishda mot",
     about: "Birinchi yurish — tahdid yoki qurbon, ikkinchisi — raqib qanday himoyalanmasin, mot.",
+    hint: "Birinchi yurish — shoh, qurbon yoki jimgina tahdid. Tekshirib koʻr: undan keyin raqib qanday himoyalana oladi?",
+  },
+  smothered: {
+    name: "Boʻgʻiq mot",
+    about: "Shohni oʻz donalari oʻrab olgan, ot esa toʻsib boʻlmaydigan mot qiladi.",
+    hint: "Raqib shohi oʻz donalari orasida siqilib qolgan. Qaysi ot yurishi shoh beradi? Balki avval raqib donasini oxirgi boʻsh katakka kelishga majbur qilish kerakdir?",
+  },
+  trapped: {
+    name: "Qamalgan dona",
+    about: "Raqib donasining chekinadigan joyi yoʻq. Unga hujum qil — u seniki.",
+    hint: "Boʻsh kataklari kam qolgan raqib donasini top. Shunday hujum qil-ki, uning qochadigan joyi qolmasin.",
+  },
+  defender: {
+    name: "Himoyachini yoʻqot",
+    about: "Qoʻriqlab turgan donani urib ol yoki haydab yubor — u himoya qilgan narsa himoyasiz qoladi.",
+    hint: "Raqibning muhim donasini yoki katagini nima himoya qilyapti? Avval oʻsha himoyachini yoʻqot.",
+  },
+  deflection: {
+    name: "Chalgʻitish",
+    about: "Raqib donasini muhim joyidan ketishga majbur qil — va boʻshab qolgan joydan foydalan.",
+    hint: "Raqibning qaysi donasi himoyani yolgʻiz oʻzi ushlab turibdi? Unga urib olish imkonini yoki eʼtiborsiz qoldirib boʻlmaydigan tahdidni taklif qil.",
+  },
+  attraction: {
+    name: "Jalb qilish",
+    about: "Qurbon berib, shohni yoki donani yomon katakka chaqirib olasan — u yerda esa uni zarba kutib turadi.",
+    hint: "Qurbon berib, shohni yoki donani vilka, bogʻlash yoki mot kutib turgan katakka chaqirib olsa boʻladimi?",
+  },
+  defense: {
+    name: "Himoya",
+    about: "Raqib zarba tayyorlayapti. Qutqaradigan yurishni top.",
+    hint: "Avval raqibning tahdidini top: u keyingi yurishda nima qilmoqchi? Keyin shu tahdidni qaytaradigan yurishni izla.",
   },
   mate3: {
     name: "Uch yurishda mot",
-    about: "Mashhur partiyadan olingan kombinatsiya.",
+    about: "Ketma-ket uchta aniq yurish — va raqibga mot. Baʼzi kombinatsiyalar mashhur partiyalardan olingan.",
+    hint: "Kuchli yurishlarni izla: shoh berish, urib olish, tahdid. Har bir yurishing raqibga iloji boricha kamroq tanlov qoldirsin.",
   },
 };
 

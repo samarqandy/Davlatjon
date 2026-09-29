@@ -9,6 +9,8 @@ import { profileText, useAgeProfile } from "@/lib/age";
 import { awards, earned } from "@/lib/awards";
 import { currentRank, levelStatuses } from "@/lib/chessProgress";
 import { useLang, useT } from "@/lib/i18n";
+import { plural, thousands } from "@/lib/plural";
+import { PUZZLE_TOTAL, solvedCount } from "@/lib/puzzleStats";
 import { useHydrated, useStore } from "@/lib/store";
 import { useChess } from "@/lib/useChess";
 import { ChessBoard, PieceIcon } from "./ChessBoard";
@@ -30,7 +32,7 @@ export function ChessSchool() {
   const robotName = profileText(profile, lang).robotName;
   const dailyRu = dailyPuzzleFor(profile.minStars);
   const daily = puzzles.find((p) => p.id === dailyRu.id) ?? dailyRu;
-  const puzzlesSolved = hydrated ? puzzles.filter((p) => state.chessPuzzles[p.id]?.solvedAt).length : 0;
+  const puzzlesSolved = hydrated ? solvedCount(state.chessPuzzles) : 0;
   const openingsLearned = hydrated ? new Set(Object.keys(state.chessOpenings).map((k) => k.split(":")[0])).size : 0;
   const gamesViewed = hydrated ? Object.keys(state.chessGamesViewed).length : 0;
   const played = hydrated ? state.chessGames.length : 0;
@@ -57,10 +59,12 @@ export function ChessSchool() {
       emoji: "🎯",
       title: t("Задачи", "Masalalar"),
       text: t(
-        `${puzzles.length} задач: маты, вилки, связки, комбинации из великих партий. Задача дня и серия.`,
-        `${puzzles.length} ta masala: motlar, vilkalar, bogʻlashlar, buyuk partiyalardan olingan kombinatsiyalar. Kun masalasi va «Ketma-ket» oʻyini.`,
+        `${thousands(PUZZLE_TOTAL)} ${plural(PUZZLE_TOTAL, "задача", "задачи", "задач")}: маты, вилки, связки, комбинации. Подбираются по силам; задача дня, серия и «Дятел».`,
+        `${thousands(PUZZLE_TOTAL)} ta masala: motlar, vilkalar, bogʻlashlar, kombinatsiyalar. Kuchingga qarab tanlanadi; kun masalasi, «Ketma-ket» va «Qizilishton».`,
       ),
-      stat: t(`${puzzlesSolved} из ${puzzles.length} решено`, `${puzzles.length} tadan ${puzzlesSolved} tasi yechildi`),
+      stat: puzzlesSolved
+        ? t(`решено ${puzzlesSolved}`, `${puzzlesSolved} ta yechildi`)
+        : t("Реши первую задачу!", "Birinchi masalangni yech!"),
     },
     {
       href: "/chess/openings",

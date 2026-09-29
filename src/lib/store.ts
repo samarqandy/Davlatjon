@@ -1,6 +1,6 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { useMemo, useSyncExternalStore } from "react";
 
 /**
  * Прогресс хранится в localStorage этого браузера.
@@ -27,7 +27,10 @@ import {
   type Settings,
   type TaskMarks,
   type TaskProgress,
+  type Woodpecker,
+  WOODPECKER_ROUNDS,
 } from "./state";
+import { ratePuzzle, startRating, type PuzzleRating } from "./puzzleRating";
 
 export * from "./state";
 
@@ -288,6 +291,45 @@ export function duePuzzles(progress: Record<string, ChessPuzzleProgress>, today:
     .filter(([, p]) => p.due && p.due <= today)
     .sort((a, b) => (a[1].due! < b[1].due! ? -1 : 1))
     .map(([id]) => id);
+}
+
+/** Первая попытка задачи из базы меняет скрытый рейтинг: win — с первого раза, без ошибок и подсказок. */
+export function chessPuzzleRated(puzzleRating: number, win: boolean, now = Date.now()) {
+  setState((s) => ({
+    ...s,
+    chessRating: ratePuzzle(s.chessRating ?? startRating(s.settings.age, now), puzzleRating, win, now),
+  }));
+}
+
+/** Рейтинг задач: записанный, а пока задач из базы не было — стартовый по возрасту. */
+export function usePuzzleRating(): PuzzleRating {
+  const rating = useStore((s) => s.chessRating);
+  const age = useStore((s) => s.settings.age);
+  return useMemo(() => rating ?? startRating(age, 0), [rating, age]);
+}
+
+/** «Дятел»: новый набор задач — круги начинаются заново. */
+export function woodpeckerStart(keys: string[], now = Date.now()) {
+  setState((s) => ({ ...s, chessWoodpecker: { keys, rounds: [], index: 0, ms: 0, misses: 0, at: now } }));
+}
+
+/** «Дятел»: задача набора решена. После последней круг записывается, и следующий начинается с первой задачи. */
+export function woodpeckerSolved(ms: number, misses: number, now = Date.now()) {
+  setState((s) => {
+    const w = s.chessWoodpecker;
+    if (!w || w.rounds.length >= WOODPECKER_ROUNDS) return s;
+    const index = w.index + 1;
+    const total = { ms: w.ms + ms, misses: w.misses + misses };
+    const next: Woodpecker =
+      index < w.keys.length
+        ? { ...w, ...total, index, at: now }
+        : { ...w, rounds: [...w.rounds, { ...total, at: now }], index: 0, ms: 0, misses: 0, at: now };
+    return { ...s, chessWoodpecker: next };
+  });
+}
+
+export function woodpeckerReset() {
+  setState((s) => ({ ...s, chessWoodpecker: undefined }));
 }
 
 export function chessStreakReached(n: number) {

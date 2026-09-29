@@ -11,6 +11,11 @@ export function pluralize(n: number, one: string, few: string, many: string): st
   return `${n} ${plural(n, one, few, many)}`;
 }
 
+/** 4950 → «4 950» (неразрывный пробел). Одинаково на сервере и в браузере — в отличие от toLocaleString. */
+export function thousands(n: number): string {
+  return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, "\u00a0");
+}
+
 /** «7 мин» из миллисекунд, для родителя. */
 export function formatMinutes(ms: number, lang: "ru" | "uz" = "ru"): string {
   const min = Math.round(ms / 60000);

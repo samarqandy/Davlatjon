@@ -4,6 +4,7 @@
  * Сам стор (localStorage + подписки) — в src/lib/store.ts.
  */
 import { cleanChildName } from "./childName";
+import type { PuzzleLevel, PuzzleRating } from "./puzzleRating";
 
 export interface TaskMarks {
   explained?: boolean;
@@ -73,6 +74,8 @@ export interface Settings {
   childNameUz?: string;
   /** Когда имя меняли в последний раз (мс) — при слиянии устройств побеждает последнее. */
   childNameAt?: number;
+  /** Сложность задач из базы: легче своего уровня, по силам (по умолчанию) или труднее. */
+  puzzleLevel?: PuzzleLevel;
 }
 
 /** Сыгранная с роботом или вдвоём партия. */
@@ -125,6 +128,27 @@ export interface ChessPuzzleProgress {
   due?: string;
 }
 
+/** «Дятел»: один набор задач решается три круга подряд — с каждым кругом быстрее. */
+export interface WoodpeckerRound {
+  ms: number;
+  misses: number;
+  at: number;
+}
+
+export interface Woodpecker {
+  /** Задачи набора (ключи банка «тема/id»). */
+  keys: string[];
+  /** Пройденные круги. */
+  rounds: WoodpeckerRound[];
+  /** Текущий круг: сколько задач решено, сколько на них ушло времени и было ошибок. */
+  index: number;
+  ms: number;
+  misses: number;
+  at: number;
+}
+
+export const WOODPECKER_ROUNDS = 3;
+
 /** Через сколько дней повторить задачу из коробки 1, 2, 3, 4. */
 export const REVIEW_DAYS = [1, 3, 7, 21];
 
@@ -165,8 +189,12 @@ export interface AppState {
   chess: Record<string, ChessExerciseProgress>;
   /** Партии с роботом и вдвоём (последние 200). */
   chessGames: ChessGameRecord[];
-  /** Задачи: id → прогресс. */
+  /** Задачи: id задачи школы или «тема/id» задачи из базы → прогресс. */
   chessPuzzles: Record<string, ChessPuzzleProgress>;
+  /** Скрытый рейтинг задач из базы (появляется после первой такой задачи). */
+  chessRating?: PuzzleRating;
+  /** «Дятел»: текущий набор и пройденные круги. */
+  chessWoodpecker?: Woodpecker;
   /** Лучшая серия решённых задач подряд. */
   chessStreak: number;
   /** Выученные дебюты: «id:side» → когда. */
@@ -222,6 +250,23 @@ export function isObject(v: unknown): v is Record<string, unknown> {
 }
 
 /** Приводит данные из файла или старой версии к текущему формату. */
+const finite = (x: unknown): x is number => typeof x === "number" && Number.isFinite(x);
+
+function ratingOf(x: unknown): PuzzleRating | undefined {
+  if (!isObject(x) || !finite(x.r) || !finite(x.rd) || !finite(x.n) || !finite(x.at)) return undefined;
+  return { r: x.r, rd: x.rd, n: x.n, at: x.at };
+}
+
+function woodpeckerOf(x: unknown): Woodpecker | undefined {
+  if (!isObject(x) || !Array.isArray(x.keys) || !x.keys.every((k) => typeof k === "string")) return undefined;
+  if (!Array.isArray(x.rounds) || !finite(x.index) || !finite(x.ms) || !finite(x.misses) || !finite(x.at))
+    return undefined;
+  const rounds = x.rounds.filter(
+    (r): r is WoodpeckerRound => isObject(r) && finite(r.ms) && finite(r.misses) && finite(r.at),
+  );
+  return { keys: x.keys as string[], rounds, index: x.index, ms: x.ms, misses: x.misses, at: x.at };
+}
+
 export function sanitize(raw: unknown): AppState {
   if (!isObject(raw)) return DEFAULT_STATE;
   const settings = isObject(raw.settings) ? raw.settings : {};
@@ -248,10 +293,14 @@ export function sanitize(raw: unknown): AppState {
           ? (settings.childNameAt as number)
           : undefined,
       lang: settings.lang === "uz" ? "uz" : "ru",
+      puzzleLevel:
+        settings.puzzleLevel === "easy" || settings.puzzleLevel === "hard" ? settings.puzzleLevel : undefined,
     },
     chess: isObject(raw.chess) ? (raw.chess as AppState["chess"]) : {},
     chessGames: Array.isArray(raw.chessGames) ? (raw.chessGames as ChessGameRecord[]) : [],
     chessPuzzles: isObject(raw.chessPuzzles) ? (raw.chessPuzzles as AppState["chessPuzzles"]) : {},
+    chessRating: ratingOf(raw.chessRating),
+    chessWoodpecker: woodpeckerOf(raw.chessWoodpecker),
     chessStreak: typeof raw.chessStreak === "number" ? raw.chessStreak : 0,
     chessOpenings: isObject(raw.chessOpenings) ? (raw.chessOpenings as AppState["chessOpenings"]) : {},
     chessGamesViewed: isObject(raw.chessGamesViewed) ? (raw.chessGamesViewed as AppState["chessGamesViewed"]) : {},
