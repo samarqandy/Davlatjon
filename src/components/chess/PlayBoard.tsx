@@ -30,6 +30,7 @@ import {
   type PlayMode,
   type PlayStatus,
 } from "@/lib/play";
+import { crownsFromHelp, robotPersona } from "@/lib/crowns";
 import { pluralize } from "@/lib/plural";
 import { random } from "@/lib/random";
 import { cheer } from "@/lib/voice";
@@ -87,6 +88,7 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
   const [thinking, setThinking] = useState(config.mode !== "two" && config.color === "b");
   const [hint, setHint] = useState<string | null>(null);
   const [hints, setHints] = useState(0);
+  const [undos, setUndos] = useState(0);
   const [resigned, setResigned] = useState(false);
   const [flipped, setFlipped] = useState(false);
   const recorded = useRef(false);
@@ -172,8 +174,9 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
       ucis: plies.map((p) => p.uci),
       clock: config.clock?.id,
       odds: config.odds ? `${config.odds.side}${config.odds.piece}` : undefined,
+      ...(config.mode === "robot" ? { hints, undos } : {}),
     });
-  }, [status.over, status.winner, status.mate, withRobot, config, myMoves, gameId, start, plies]);
+  }, [status.over, status.winner, status.mate, withRobot, config, myMoves, gameId, start, plies, hints, undos]);
 
   const tryMove = (from: string, to: string, promotion?: PromotionPiece): boolean => {
     if (!myTurn || status.over || thinking) return false;
@@ -213,6 +216,7 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
     if (thinking) return;
     // С роботом отменяем и его ответ, чтобы снова был ход ребёнка.
     const back = withRobot && plies.length >= 2 && turn === config.color ? 2 : 1;
+    if (!status.over) setUndos((u) => u + 1);
     setPlies((p) => p.slice(0, -back));
     setSelected(null);
     setHint(null);
@@ -236,6 +240,7 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
     setSelected(null);
     setHint(null);
     setHints(0);
+    setUndos(0);
     setResigned(false);
     setThinking(withRobot && config.color === "b");
     recorded.current = false;
@@ -260,6 +265,20 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
   const bottomTrophies = orientation === "white" ? captured.b : captured.w;
 
   const robot = robotLevels(lang)[config.level - 1];
+  const persona = config.mode === "robot" ? robotPersona(config.level, lang) : undefined;
+  const robotSays = !persona
+    ? null
+    : !status.over
+      ? persona.hello
+      : status.winner === config.color
+        ? persona.lost
+        : status.winner === "draw"
+          ? null
+          : persona.won;
+  const crowns =
+    config.mode === "robot" && status.over && status.winner === config.color
+      ? crownsFromHelp(hints + undos, !!config.odds)
+      : 0;
   const variant = config.variant ? endgameText(config.variant, lang) : undefined;
   const title =
     config.mode === "robot"
@@ -363,6 +382,31 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
           <p role="status" data-illegal className="rounded-2xl bg-rose/10 px-4 py-2 text-sm font-bold text-rose">
             {illegal}
           </p>
+        )}
+        {crowns > 0 && (
+          <p className="rounded-2xl bg-sun-soft px-4 py-2 font-black text-[#7a4b00]" data-crowns={crowns}>
+            <span className="mr-1 text-2xl">{"👑".repeat(crowns)}</span>
+            {crowns === 3
+              ? t(
+                  "Три короны — победа без подсказок и отмен ходов!",
+                  "Uchta toj — maslahatsiz va yurishni qaytarmasdan gʻalaba!",
+                )
+              : crowns === 2
+                ? t(
+                    "Две короны. Без подсказок и отмен ходов будет три!",
+                    "Ikkita toj. Maslahat va yurishni qaytarishsiz uchta boʻladi!",
+                  )
+                : t(
+                    "Одна корона. Чем меньше подсказок и отмен, тем больше корон.",
+                    "Bitta toj. Maslahat va qaytarish qancha kam boʻlsa, toj shuncha koʻp.",
+                  )}
+          </p>
+        )}
+        {robotSays && robot && (
+          <div className="flex items-start gap-2" data-robot-says>
+            <PieceIcon piece={robot.piece} className="h-10 w-10 shrink-0 rounded-xl bg-[#f0d9b5] p-0.5" />
+            <p className="rounded-2xl rounded-tl-sm bg-white px-3 py-2 text-sm font-bold shadow-card">{robotSays}</p>
+          </div>
         )}
         {status.over && (config.mode === "robot" || config.mode === "two") && plies.length > 1 && (
           <ButtonLink href={`/chess/review#${gameId}`} variant="sun">

@@ -25,6 +25,8 @@
   --animate-shake: shake 0.45s ease-in-out;
   --animate-float: float 3s ease-in-out infinite;
   --animate-fade-up: fade-up 0.35s ease-out both;
+  /* Полоска времени: длительность задаётся на месте (animation-duration). */
+  --animate-drain: drain 1s linear forwards;
 
   @keyframes pop {
     0% {
@@ -57,6 +59,14 @@
     }
     50% {
       transform: translateY(-6px);
+    }
+  }
+  @keyframes drain {
+    from {
+      transform: scaleX(1);
+    }
+    to {
+      transform: scaleX(0);
     }
   }
   @keyframes fade-up {
@@ -187,6 +197,17 @@
 @page {
   size: A4;
   margin: 11mm 12mm 13mm;
+}
+
+/* Сертификат о звании: лист A4 альбомный (размер страницы задаёт сама страница сертификата). */
+@media print {
+  /* Отступ сверху — полем, а не margin: margin «проваливается» в body (min-height: 100dvh) и даёт вторую страницу. */
+  .certificate-sheet {
+    width: 281mm;
+    max-width: none;
+    margin: 0 auto;
+    padding-top: 7mm;
+  }
 }
 
 @media print {

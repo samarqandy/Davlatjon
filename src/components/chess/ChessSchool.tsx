@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { ChildNameBanner } from "@/components/home/ChildNameBanner";
+import { TodayCard } from "@/components/progress/TodayCard";
 import { cn, ProgressBar } from "@/components/ui";
 import { chessLevelHref } from "@/content/chess";
 import { dailyPuzzleFor } from "@/content/chess/puzzles";
@@ -143,6 +144,19 @@ export function ChessSchool() {
           : t("Побей свой рекорд", "Oʻz rekordingni yangila"),
     },
     {
+      href: "/chess/drills",
+      emoji: "🛡️",
+      title: t("Тренажёры", "Trenajyorlar"),
+      text: t(
+        "Кто в опасности? Запомни доску. Путь коня. Пять минут — и глаз шахматиста становится зорче.",
+        "Kim xavf ostida? Taxtani eslab qol. Ot yoʻli. Besh daqiqa — va shaxmatchining koʻzi oʻtkirlashadi.",
+      ),
+      stat:
+        hydrated && (state.chessDrills.safety || state.chessDrills.memory || state.chessDrills.knight)
+          ? t("Побей свои рекорды", "Oʻz rekordlaringni yangila")
+          : t("Три новые тренировки", "Uchta yangi mashgʻulot"),
+    },
+    {
       href: "/chess/awards",
       emoji: "🏅",
       title: t("Награды", "Mukofotlar"),
@@ -185,7 +199,7 @@ export function ChessSchool() {
       emoji: "✍️",
       title: t("Дневник партий", "Partiyalar kundaligi"),
       text: t(
-        "Записывай партии с папой, мамой и друзьями — и что ты в них понял.",
+        "Записывай партии с папой, мамой и друзьями — и что в них удалось понять.",
         "Dadang, oying va doʻstlaring bilan oʻynagan partiyalaringni yozib bor — ulardan nimani tushunganingni ham.",
       ),
       stat:
@@ -243,6 +257,7 @@ export function ChessSchool() {
           </div>
         </div>
       </section>
+      <TodayCard />
 
       <section aria-labelledby="chess-sections">
         <h2 id="chess-sections" className="mb-3 text-2xl font-black">

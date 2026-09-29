@@ -5,6 +5,7 @@ import "./globals.css";
 import { AccountSync } from "@/components/AccountSync";
 import { LangSync } from "@/components/LangSwitch";
 import { ServiceWorker } from "@/components/ServiceWorker";
+import { XpToast } from "@/components/progress/XpToast";
 import { BRAND, BRAND_TITLE } from "@/lib/brand";
 
 export const metadata: Metadata = {
@@ -46,6 +47,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
         {children}
         <ServiceWorker />
         <LangSync />
+        <XpToast />
         <AccountSync />
       </body>
     </html>

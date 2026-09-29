@@ -7,6 +7,7 @@ import { Button, ButtonLink, cn, ProgressBar } from "@/components/ui";
 import { CHESS_LEVELS, chessLevelHref } from "@/content/chess";
 import { chessImagesIn } from "@/content/chess/content";
 import type { ChessLevel } from "@/content/chess/types";
+import { certificateHref } from "@/lib/certificate";
 import { levelStatuses } from "@/lib/chessProgress";
 import { useTitleTranslation } from "@/lib/docTitle";
 import { useLang, useT } from "@/lib/i18n";
@@ -271,16 +272,21 @@ function RankEarned({ level, next }: { level: ChessLevel; next: ChessLevel | und
           {next
             ? t(`Теперь открыт уровень «${next.name}».`, `Endi «${next.name}» darajasi ochildi.`)
             : t(
-                "Ты прошёл всю шахматную школу. Настоящий король! 👑",
+                "Вся шахматная школа пройдена. Настоящий король! 👑",
                 "Butun shaxmat maktabini tamomlading. Haqiqiy shoh! 👑",
               )}
         </p>
       </div>
-      {next && (
-        <ButtonLink href={chessLevelHref(next.id)}>
-          {t(`Уровень «${next.name}» →`, `«${next.name}» darajasi →`)}
+      <div className="flex flex-wrap gap-2">
+        <ButtonLink href={certificateHref(level.id)} variant="sun" data-certificate-link>
+          🏅 {t("Сертификат", "Sertifikat")}
         </ButtonLink>
-      )}
+        {next && (
+          <ButtonLink href={chessLevelHref(next.id)}>
+            {t(`Уровень «${next.name}» →`, `«${next.name}» darajasi →`)}
+          </ButtonLink>
+        )}
+      </div>
     </section>
   );
 }

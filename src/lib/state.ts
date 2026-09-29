@@ -99,6 +99,9 @@ export interface ChessGameRecord {
   /** Часы «5+3» и фора «bq» (чёрные без ферзя). */
   clock?: string;
   odds?: string;
+  /** Партия с роботом: сколько раз ребёнок брал подсказку и отменял ход (для корон). */
+  hints?: number;
+  undos?: number;
   /** Оценки движка для каждой позиции — сохраняются после разбора. */
   analysis?: {
     evals: number[];

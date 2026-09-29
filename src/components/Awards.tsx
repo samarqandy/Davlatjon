@@ -3,10 +3,13 @@
 import Link from "next/link";
 import { useState } from "react";
 import { cn, ProgressBar } from "@/components/ui";
+import { PieceIcon } from "@/components/chess/ChessBoard";
 import { activityDays, awards, dayStreak, earned } from "@/lib/awards";
+import { certificateHref, rankEarnedAt } from "@/lib/certificate";
 import { useLang, useT } from "@/lib/i18n";
 import { plural, pluralize } from "@/lib/plural";
 import { isoDay, useHydrated, useStore } from "@/lib/store";
+import { useChess } from "@/lib/useChess";
 import { useToday } from "@/lib/useToday";
 
 const WEEKS = 14;
@@ -71,6 +74,8 @@ export function AwardsPage() {
 
       {today && <Calendar days={days} today={today} />}
 
+      <Certificates />
+
       <section aria-labelledby="awards-h">
         <h2 id="awards-h" className="mb-3 text-2xl font-black">
           🏅 {t("Награды", "Mukofotlar")}
@@ -109,6 +114,45 @@ export function AwardsPage() {
         </ul>
       </section>
     </div>
+  );
+}
+
+/** Сертификаты о полученных званиях — ссылки на листы для печати. */
+function Certificates() {
+  const t = useT();
+  const hydrated = useHydrated();
+  const { levels } = useChess();
+  const state = useStore((s) => s);
+  if (!hydrated) return null;
+  const earnedLevels = levels.filter((l) => rankEarnedAt(l, state));
+  return (
+    <section aria-labelledby="cert-h" className="rounded-3xl bg-white p-4 shadow-card">
+      <h2 id="cert-h" className="text-lg font-black">
+        📜 {t("Сертификаты о званиях", "Unvon sertifikatlari")}
+      </h2>
+      {earnedLevels.length ? (
+        <ul className="mt-2 flex flex-wrap gap-2">
+          {earnedLevels.map((l) => (
+            <li key={l.id}>
+              <Link
+                href={certificateHref(l.id)}
+                className="inline-flex items-center gap-2 rounded-2xl border-2 border-sun/50 bg-sun-soft px-3 py-1.5 font-bold hover:border-sun"
+              >
+                <PieceIcon piece={l.piece} className="h-7 w-7" />
+                {l.name}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="mt-1 text-sm text-muted">
+          {t(
+            "Реши все упражнения уровня шахматной школы — и здесь появится сертификат с твоим именем для печати.",
+            "Shaxmat maktabidagi darajaning hamma mashqlarini yech — bu yerda isming yozilgan sertifikat paydo boʻladi.",
+          )}
+        </p>
+      )}
+    </section>
   );
 }
 

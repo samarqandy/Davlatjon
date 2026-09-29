@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Button, cn } from "@/components/ui";
+import { BOSS_LEVEL, bestCrowns } from "@/lib/crowns";
 import { robotLevels } from "@/lib/engine/search";
 import { profileText, useAgeProfile } from "@/lib/age";
 import { useLang, useT } from "@/lib/i18n";
@@ -141,8 +142,22 @@ function ModeChooser() {
               <p className="mt-2 flex-1 text-xs text-muted">{l.about}</p>
               {hydrated && wins(l.id) > 0 && (
                 <p className="mt-1 text-xs font-extrabold text-[#065f46]">
-                  🏆 {t("побед", "gʻalabalar")}: {wins(l.id)}
+                  🏆 {t("побед", "gʻalabalar")}: {wins(l.id)}{" "}
+                  <span
+                    className="ml-1 whitespace-nowrap"
+                    data-best-crowns={bestCrowns(robotGames, l.id)}
+                    title={t("Лучший результат: короны", "Eng yaxshi natija: tojlar")}
+                  >
+                    {[1, 2, 3].map((i) => (
+                      <span key={i} className={i > bestCrowns(robotGames, l.id) ? "opacity-25 grayscale" : undefined}>
+                        👑
+                      </span>
+                    ))}
+                  </span>
                 </p>
+              )}
+              {l.id === BOSS_LEVEL && (
+                <p className="mt-1 text-xs font-extrabold text-rose">{t("😈 Главный босс", "😈 Bosh boss")}</p>
               )}
               <div className="mt-2 flex gap-1">
                 <Button size="sm" className="flex-1" onClick={() => setHash(`#robot-${l.id}-w${robotQuery}`)}>
