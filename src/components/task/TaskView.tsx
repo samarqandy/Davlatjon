@@ -2,10 +2,12 @@
 
 import { useEffect } from "react";
 import { AnswerPanel } from "@/components/answers/AnswerPanel";
+import { ListenButton } from "@/components/ListenButton";
 import { LevelBadge, SectionTag } from "@/components/ui";
 import type { Task } from "@/content/types";
 import { useLang, useT } from "@/lib/i18n";
 import { addTime, useTask } from "@/lib/store";
+import { VOICE_CLIPS } from "@/lib/voice";
 import { AfterSolve } from "./AfterSolve";
 import { BlockView } from "./BlockView";
 import { HintLadder } from "./HintLadder";
@@ -52,6 +54,7 @@ export function TaskView({ task, number, total }: { task: Task; number: number; 
               <span className="ml-auto text-sm font-bold text-muted">
                 {t(`Задача ${number} из ${total}`, `${number}-masala (jami ${total} ta)`)}
               </span>
+              <ListenButton src={VOICE_CLIPS.task(task.id, lang)} label={t("Прочитать", "Oʻqib berish")} />
             </div>
             <h2 className="mb-4 flex items-center gap-2 text-2xl font-black sm:text-3xl">
               {task.title}

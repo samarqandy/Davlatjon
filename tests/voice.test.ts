@@ -6,6 +6,12 @@ import { CHESS_LEVELS } from "@/content/chess";
 import { SECRETS } from "@/content/chess/secrets";
 import { sanitize } from "@/lib/store";
 import { LEGEND_LEVELS, SECRET_IDS, UZ_CLIPS, VOICE_CLIPS } from "@/lib/voice";
+import recorded from "@/content/voice-clips.json";
+import { chessContent } from "@/content/chess/content";
+import { allDays } from "@/content/program";
+import { localizeDay } from "@/content/uz";
+import type { Lang } from "@/lib/lang";
+import { lessonVoiceText, taskVoiceText, textHash } from "@/lib/voiceText";
 
 const file = (src: string) => path.join(process.cwd(), "public", src);
 
@@ -58,5 +64,65 @@ describe("озвучка", () => {
   it("звук по умолчанию включён, выключение сохраняется", () => {
     expect(sanitize({}).settings.sound).toBe(true);
     expect(sanitize({ settings: { sound: false } }).settings.sound).toBe(false);
+  });
+});
+
+/** Всё, что можно озвучить кнопкой «Послушать»: «вид:id» → нынешний текст. */
+function voiceTexts(lang: Lang): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const d of allDays())
+    for (const t of (lang === "uz" ? localizeDay(d, "uz") : d).tasks) out[`task:${t.id}`] = taskVoiceText(t.body);
+  const c = chessContent(lang);
+  for (const l of c.levels) l.lesson.forEach((card, i) => (out[`lesson:${l.id}-${i}`] = lessonVoiceText(card)));
+  c.didYouKnow.forEach((x, i) => {
+    out[`dyk:${i}-q`] = x.q;
+    out[`dyk:${i}-a`] = x.a;
+  });
+  return out;
+}
+
+const DIRS: Record<string, string> = { task: "tasks", lesson: "lessons", dyk: "dyk" };
+const clipFile = (lang: Lang, key: string) => {
+  const [kind, id] = key.split(":");
+  return file(`/audio/${lang === "uz" ? "uz/" : ""}${DIRS[kind]}/${id}.mp3`);
+};
+
+describe("записи условий задач, уроков и «Знаешь ли ты?»", () => {
+  // WRITE_VOICE_MANIFEST=1 npx vitest run tests/voice.test.ts — после записи новых файлов: оглавление по тому, что лежит в public/audio.
+  it.runIf(!!process.env.WRITE_VOICE_MANIFEST)("оглавление записей переписано", () => {
+    const manifest: Record<string, Record<string, string>> = {};
+    for (const lang of ["ru", "uz"] as const) {
+      manifest[lang] = {};
+      for (const [key, text] of Object.entries(voiceTexts(lang)))
+        if (fs.existsSync(clipFile(lang, key))) manifest[lang][key] = textHash(text);
+    }
+    fs.writeFileSync(
+      path.join(process.cwd(), "src/content/voice-clips.json"),
+      JSON.stringify(manifest, null, 2) + "\n",
+    );
+  });
+
+  it("каждая запись на месте, это MP3, и записана с нынешнего текста", () => {
+    const problems: string[] = [];
+    for (const lang of ["ru", "uz"] as const) {
+      const texts = voiceTexts(lang);
+      for (const [key, hash] of Object.entries((recorded as Record<Lang, Record<string, string>>)[lang])) {
+        const f = clipFile(lang, key);
+        if (!fs.existsSync(f)) problems.push(`${lang} ${key}: нет файла`);
+        else if (!/^(ID3|\xff)/.test(fs.readFileSync(f).subarray(0, 3).toString("latin1")))
+          problems.push(`${lang} ${key}: не MP3`);
+        if (texts[key] === undefined) problems.push(`${lang} ${key}: такого текста больше нет`);
+        else if (textHash(texts[key]) !== hash) problems.push(`${lang} ${key}: текст изменился — перезапишите`);
+      }
+    }
+    expect(problems).toEqual([]);
+  });
+
+  it("кнопка ведёт к записи, только если она есть", () => {
+    const ru = recorded as Record<Lang, Record<string, string>>;
+    const someTask = Object.keys(ru.ru).find((k) => k.startsWith("task:"));
+    if (someTask) expect(VOICE_CLIPS.task(someTask.slice(5), "ru")).toBe(`/audio/tasks/${someTask.slice(5)}.mp3`);
+    expect(VOICE_CLIPS.task("нет-такой", "ru")).toBeUndefined();
+    expect(VOICE_CLIPS.dyk(9999, "q", "uz")).toBeUndefined();
   });
 });

@@ -8,6 +8,7 @@ import { sectionsFor } from "@/content/meta";
 import type { DaySummary, WeekSummary } from "@/content/summary";
 import { ChildNameField } from "@/components/ChildNameField";
 import { ChildNameBanner } from "@/components/home/ChildNameBanner";
+import { TodayCard } from "@/components/progress/TodayCard";
 import { ListenButton } from "@/components/ListenButton";
 import { cleanChildName } from "@/lib/childName";
 import { AGE_MAX, AGE_MIN, PROFILES, ageProfile, profileMeta, profileText } from "@/lib/age";
@@ -176,6 +177,8 @@ export function HomeDashboard({ weeks: both }: { weeks: Both<WeekSummary[]> }) {
           </div>
         </Card>
       </section>
+
+      <TodayCard />
 
       <ChessHomeCard />
 
@@ -382,14 +385,14 @@ function Welcome() {
             <li>
               💡{" "}
               {t(
-                "Застрял? Открой подсказку — они приходят по одной.",
+                "Трудно? Открой подсказку — они приходят по одной.",
                 "Qiynaldingmi? Maslahatni och — ular bittadan keladi.",
               )}
             </li>
             <li>
               💬{" "}
               {t(
-                "Нашёл ответ? Объясни, почему это так — и поищи другой способ.",
+                "Есть ответ? Объясни, почему это так — и поищи другой способ.",
                 "Javobni topdingmi? Nega aynan shunday ekanini tushuntir va boshqa yoʻlini ham izla.",
               )}
             </li>

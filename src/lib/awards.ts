@@ -5,6 +5,7 @@ import { PUZZLES } from "@/content/chess/puzzles";
 import { pluralize } from "./plural";
 import { solvedCount } from "./puzzleStats";
 import { currentRank } from "./chessProgress";
+import { crownsFor } from "./crowns";
 import { tFor, type Lang } from "./lang";
 import { isoDay, type AppState } from "./store";
 
@@ -131,6 +132,14 @@ export function awards(s: AppState, lang: Lang = "ru"): Award[] {
       t("Победитель «Ферзя»", "«Farzin» ustidan gʻalaba"),
       t("Обыграй самого сильного робота.", "Eng kuchli robotni yut."),
       robotWins(5),
+      1,
+    ),
+    a(
+      "crowns-3",
+      "👑",
+      t("Три короны", "Uchta toj"),
+      t("Обыграй робота без подсказок и отмен ходов.", "Robotni maslahatsiz va yurishni qaytarmasdan yut."),
+      s.chessGames.some((g) => crownsFor(g) === 3) ? 1 : 0,
       1,
     ),
     a(
