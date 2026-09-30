@@ -385,14 +385,14 @@ function Welcome() {
             <li>
               💡{" "}
               {t(
-                "Застрял? Открой подсказку — они приходят по одной.",
+                "Трудно? Открой подсказку — они приходят по одной.",
                 "Qiynaldingmi? Maslahatni och — ular bittadan keladi.",
               )}
             </li>
             <li>
               💬{" "}
               {t(
-                "Нашёл ответ? Объясни, почему это так — и поищи другой способ.",
+                "Есть ответ? Объясни, почему это так — и поищи другой способ.",
                 "Javobni topdingmi? Nega aynan shunday ekanini tushuntir va boshqa yoʻlini ham izla.",
               )}
             </li>
