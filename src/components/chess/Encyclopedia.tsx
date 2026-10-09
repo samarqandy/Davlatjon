@@ -321,7 +321,7 @@ export function Encyclopedia() {
         </h2>
         <p className="text-muted">
           {t(
-            "Подумай сам, потом открой ответ. Многие задачи ты уже встречал на неделях лаборатории!",
+            "Подумай, потом открой ответ. Многие задачи тебе уже встречались на неделях лаборатории!",
             "Avval oʻzing oʻylab koʻr, keyin javobni och. Bu masalalarning koʻpini laboratoriya haftalarida uchratgansan!",
           )}
         </p>

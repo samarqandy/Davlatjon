@@ -4,7 +4,7 @@ import { CHESS_LEVELS } from "@/content/chess";
 import { allDays } from "@/content/program";
 import { longDate, rankEarnedAt } from "@/lib/certificate";
 import { loadPosition } from "@/lib/chess";
-import { bestCrowns, crownsFor, crownsFromHelp, robotPersona } from "@/lib/crowns";
+import { bestCrowns, crownsFor, crownsForWin, robotPersona } from "@/lib/crowns";
 import {
   KNIGHT_ROUNDS,
   knightDistance,
@@ -19,6 +19,7 @@ import {
 } from "@/lib/miniDrills";
 import { gentleStreak, questDone, questFor, questStars, weekActiveDays } from "@/lib/quest";
 import { DEFAULT_STATE, isoDay, type AppState, type ChessGameRecord, type TaskProgress } from "@/lib/state";
+import { levelName, showsNumbers } from "@/lib/workshop";
 import { XP, xpForLevel, xpLevel, xpTotal } from "@/lib/xp";
 
 const at = (day: string, hour = 12) => new Date(`${day}T${String(hour).padStart(2, "0")}:00:00`).getTime();
@@ -48,7 +49,7 @@ describe("опыт и уровни", () => {
     expect(xpLevel(160)).toEqual({ level: 3, into: 10, need: 150 });
   });
 
-  it("задача без подсказок стоит больше, партия с победой — больше поражения", () => {
+  it("подсказки опыт не уменьшают, партия с победой — больше поражения", () => {
     const d = at("2026-09-28");
     const s = state({
       tasks: { a: task(d), b: task(d, 2) },
@@ -58,7 +59,7 @@ describe("опыт и уровни", () => {
       ],
       chessDrills: { safety: 4, find: 12 },
     });
-    expect(xpTotal(s)).toBe(XP.task * 2 + XP.taskClean + XP.game * 2 + XP.win + XP.drill);
+    expect(xpTotal(s)).toBe(XP.task * 2 + XP.game * 2 + XP.win + XP.drill);
   });
 
   it("звание за уровень шахматной школы даёт бонус", () => {
@@ -177,19 +178,28 @@ describe("короны за победы над роботом", () => {
     ...patch,
   });
 
-  it("без помощи — три, до трёх раз — две, больше — одна", () => {
-    expect(crownsFromHelp(0)).toBe(3);
-    expect(crownsFromHelp(3)).toBe(2);
-    expect(crownsFromHelp(4)).toBe(1);
-    expect(crownsFromHelp(0, true)).toBe(2);
+  it("победа — всегда корона; в режиме «Сам» — три, с форой — две", () => {
+    expect(crownsForWin(false)).toBe(1);
+    expect(crownsForWin(true)).toBe(3);
+    expect(crownsForWin(true, true)).toBe(2);
+    expect(crownsForWin(false, true)).toBe(1);
   });
 
-  it("поражение, ничья и игра вдвоём корон не дают; старая победа — одна корона", () => {
-    expect(crownsFor(game({ result: "loss", hints: 0, undos: 0 }))).toBe(0);
-    expect(crownsFor(game({ result: "draw", hints: 0, undos: 0 }))).toBe(0);
-    expect(crownsFor(game({ mode: "two", hints: 0, undos: 0 }))).toBe(0);
+  it("поражение, ничья и игра вдвоём корон не дают; помощь корону не отнимает", () => {
+    expect(crownsFor(game({ result: "loss", hints: 0, undos: 0, solo: true }))).toBe(0);
+    expect(crownsFor(game({ result: "draw", hints: 0, undos: 0, solo: true }))).toBe(0);
+    expect(crownsFor(game({ mode: "two", hints: 0, undos: 0, solo: true }))).toBe(0);
+    // Новые записи: подсказки и отмены на корону не влияют, считается только выбранный режим.
+    expect(crownsFor(game({ hints: 9, undos: 9, solo: false }))).toBe(1);
+    expect(crownsFor(game({ hints: 0, undos: 0, solo: true }))).toBe(3);
+  });
+
+  it("старые партии (до режима «Сам») не теряют корон", () => {
     expect(crownsFor(game({}))).toBe(1);
+    expect(crownsFor(game({ hints: 0, undos: 0 }))).toBe(3);
     expect(crownsFor(game({ hints: 1, undos: 1 }))).toBe(2);
+    expect(crownsFor(game({ hints: 5, undos: 0 }))).toBe(1);
+    expect(crownsFor(game({ hints: 0, undos: 0, odds: "bq" }))).toBe(2);
   });
 
   it("лучший результат по каждому роботу", () => {
@@ -276,4 +286,20 @@ describe("тренажёр «Путь коня»", () => {
 
 it("isoDay и время теста в одном часовом поясе", () => {
   expect(isoDay(at("2026-09-29"))).toBe("2026-09-29");
+});
+
+describe("названия уровней", () => {
+  it("у каждого уровня есть имя на двух языках, после десятого — последнее", () => {
+    for (let n = 1; n <= 10; n++) {
+      expect(levelName(n, "ru").name).toBeTruthy();
+      expect(levelName(n, "uz").name).not.toMatch(/[Ѐ-ӿ]/);
+    }
+    expect(levelName(25, "ru")).toEqual(levelName(10, "ru"));
+    expect(levelName(0, "ru")).toEqual(levelName(1, "ru"));
+  });
+  it("числа показываются только с десяти лет", () => {
+    expect(showsNumbers(undefined)).toBe(false);
+    expect(showsNumbers(9)).toBe(false);
+    expect(showsNumbers(10)).toBe(true);
+  });
 });

@@ -233,7 +233,7 @@ export function MagicTrianglePuzzle({ taskId, numbers, sums }: { taskId: string;
             {found.length === sums.length && (
               <p className="mt-2 text-sm font-bold text-[#86198f]">
                 {t(
-                  "Ты нашёл все возможные суммы! А почему не получаются 8 и 13?",
+                  "Нашлись все возможные суммы! А почему не получаются 8 и 13?",
                   "Mumkin boʻlgan hamma yigʻindilarni topding! Nega 8 va 13 chiqmaydi?",
                 )}
               </p>

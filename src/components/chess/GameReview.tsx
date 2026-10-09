@@ -238,7 +238,7 @@ function ReviewView({ game }: { game: ChessGameRecord }) {
         <p className="font-bold text-muted">
           {hero &&
             t(
-              `Ты играл ${hero === "w" ? "белыми" : "чёрными"} · `,
+              `Партия ${hero === "w" ? "белыми" : "чёрными"} · `,
               `Sen ${hero === "w" ? "oqlar" : "qoralar"} bilan oʻynading · `,
             )}
           {movesText(t, Math.ceil(game.ucis!.length / 2))}

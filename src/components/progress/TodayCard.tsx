@@ -4,26 +4,34 @@ import Link from "next/link";
 import { useMemo } from "react";
 import { cn, ProgressBar } from "@/components/ui";
 import { activityDays } from "@/lib/awards";
-import { useT } from "@/lib/i18n";
+import { useLang, useT } from "@/lib/i18n";
 import { pluralize } from "@/lib/plural";
 import { gentleStreak, questDone, questFor, questStars, weekActiveDays, WEEK_GOAL, type QuestGoal } from "@/lib/quest";
 import { useHydrated, useStore } from "@/lib/store";
 import { useToday } from "@/lib/useToday";
+import { levelName, showsNumbers } from "@/lib/workshop";
 import { xpLevel, xpTotal } from "@/lib/xp";
 
 /** Уровень по опыту: число и полоска до следующего уровня. */
 export function XpBar({ className, dark }: { className?: string; dark?: boolean }) {
   const t = useT();
+  const lang = useLang();
+  const numbers = useStore((s) => showsNumbers(s.settings.age));
   const hydrated = useHydrated();
   const xp = useStore((s) => xpTotal(s));
   const lvl = xpLevel(hydrated ? xp : 0);
+  const name = levelName(lvl.level, lang);
   return (
     <div className={className} data-xp={hydrated ? xp : undefined}>
       <div className="flex items-baseline justify-between gap-2">
-        <p className="font-black">⭐ {t(`Уровень ${lvl.level}`, `${lvl.level}-daraja`)}</p>
-        <p className={cn("text-xs font-bold tabular-nums", dark ? "text-white/75" : "text-muted")}>
-          {lvl.into} / {lvl.need} XP
+        <p className="font-black" data-level-name={numbers ? undefined : name.name}>
+          {numbers ? `⭐ ${t(`Уровень ${lvl.level}`, `${lvl.level}-daraja`)}` : `${name.emoji} ${name.name}`}
         </p>
+        {numbers && (
+          <p className={cn("text-xs font-bold tabular-nums", dark ? "text-white/75" : "text-muted")}>
+            {lvl.into} / {lvl.need} XP
+          </p>
+        )}
       </div>
       <ProgressBar value={lvl.into} max={lvl.need} className={cn("mt-1", dark && "bg-white/20")} />
     </div>

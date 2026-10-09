@@ -35,7 +35,8 @@ export function HintLadder({ taskId, hints }: { taskId: string; hints: readonly 
 
   return (
     <section
-      className="rounded-3xl border border-[#fde68a] bg-[#fffbeb] p-4"
+      id="hints"
+      className="scroll-mt-24 rounded-3xl border border-[#fde68a] bg-[#fffbeb] p-4"
       aria-label={t("Подсказки", "Maslahatlar")}
     >
       <div className="mb-3 flex items-center justify-between gap-2">
@@ -56,7 +57,7 @@ export function HintLadder({ taskId, hints }: { taskId: string; hints: readonly 
       {opened === 0 && (
         <p className="mb-3 text-[0.95em] text-[#7a4b00]">
           {t(
-            "Застрял? Подсказки открываются по одной. Сначала попробуй подумать сам — это самое интересное!",
+            "Трудно? Подсказки открываются по одной. Сначала попробуй подумать — это самое интересное!",
             "Qiynaldingmi? Maslahatlar bittadan ochiladi. Avval oʻzing oʻylab koʻr — eng qizigʻi shunda!",
           )}
         </p>

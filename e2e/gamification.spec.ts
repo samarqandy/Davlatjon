@@ -46,12 +46,22 @@ test("задание дня: три дела, уровень и серия", asy
   await page.goto("/");
   const card = page.locator("[data-today]");
   await expect(card.locator('[data-quest="open"]')).toBeVisible();
-  await expect(card.getByText("Уровень 1")).toBeVisible();
+  // Девять лет: вместо номера уровня и XP — имя уровня.
+  await expect(card.locator('[data-level-name="Росточек"]')).toBeVisible();
+  await expect(card.getByText(/XP/)).toHaveCount(0);
   await expect(card.getByText("Начни серию сегодня!")).toBeVisible();
   await expect(card.getByRole("link", { name: /Реши 3 задачи в тренажёре/ })).toHaveAttribute(
     "href",
     "/chess/puzzles#practice",
   );
+});
+
+test("с десяти лет — номер уровня и опыт", async ({ page }) => {
+  await prepare(page, { settings: { age: 11, lang: "ru", hintPause: false, bigText: false } });
+  await page.goto("/");
+  const card = page.locator("[data-today]");
+  await expect(card.getByText("Уровень 1")).toBeVisible();
+  await expect(card.getByText("0 / 50 XP")).toBeVisible();
 });
 
 test("всё сделано — звезда дня, опыт посчитан из прогресса", async ({ page }) => {

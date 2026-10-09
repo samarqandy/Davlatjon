@@ -7,6 +7,7 @@ import { useLang, useT } from "@/lib/i18n";
 import { checkPartition, type PartitionGrid } from "@/lib/partition";
 import { pluralize } from "@/lib/plural";
 import { addFound, markSolved, recordCheck, saveTaskInput, useTask } from "@/lib/store";
+import { CheckButton } from "./CheckButton";
 import { Feedback, type FeedbackState } from "./Feedback";
 
 // ---------------------------------------------------------------------------
@@ -105,7 +106,7 @@ export function SymmetryPuzzle({ taskId, left, hintsLeft }: { taskId: string; le
       setFeedback({
         tone: "success",
         text: t(`${praise(n, lang)} Получилась симметричная картинка!`, `${praise(n, lang)} Rasm simmetrik chiqdi!`),
-        sub: t("Как ты проверял, что отразил правильно?", "Toʻgʻri aks ettirganingni qanday tekshirding?"),
+        sub: t("Как проверить, что отражение получилось правильным?", "Toʻgʻri aks ettirganingni qanday tekshirding?"),
       });
     else
       setFeedback({
@@ -276,7 +277,7 @@ export function PartitionPuzzle({
       total >= distinct
         ? {
             tone: "success",
-            text: t(`Ты нашёл все ${distinct} способов! 🏆`, `${distinct} ta usulning hammasini topding! 🏆`),
+            text: t(`Все способы найдены: ${distinct}! 🏆`, `${distinct} ta usulning hammasini topding! 🏆`),
             sub: t("Что общего у всех разрезов?", "Bu kesishlarning hammasida qanday oʻxshashlik bor?"),
           }
         : {
@@ -443,9 +444,7 @@ export function MagicSquarePuzzle({
           </span>
         ))}
       </div>
-      <Button onClick={check} size="lg" disabled={!filled}>
-        {t("Проверить", "Tekshirish")}
-      </Button>
+      <CheckButton ready={filled} onCheck={check} onNotReady={setFeedback} />
       <Feedback state={feedback} />
     </div>
   );

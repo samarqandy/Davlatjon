@@ -30,11 +30,11 @@ import {
   type PlayMode,
   type PlayStatus,
 } from "@/lib/play";
-import { crownsFromHelp, robotPersona } from "@/lib/crowns";
+import { crownsForWin, robotPersona } from "@/lib/crowns";
 import { pluralize } from "@/lib/plural";
 import { random } from "@/lib/random";
 import { cheer } from "@/lib/voice";
-import { recordChessGame } from "@/lib/store";
+import { recordChessGame, removeChessGame } from "@/lib/store";
 import { ChessBoard, PieceIcon, type PromotionPiece, type SquareMark } from "./ChessBoard";
 import { illegalText, usePromotion } from "./useMoveInput";
 
@@ -49,6 +49,8 @@ export interface PlayConfig {
   clock?: ClockSetting;
   /** Фора: одна сторона играет без фигуры. */
   odds?: Odds;
+  /** «Сам»: без подсказок и отмены ходов — за победу корона с золотым блеском. */
+  solo?: boolean;
 }
 
 const newGameId = () => `g${Math.floor(random() * 36 ** 8).toString(36)}`;
@@ -90,6 +92,17 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
   const [hints, setHints] = useState(0);
   const [undos, setUndos] = useState(0);
   const [resigned, setResigned] = useState(false);
+  const [confirmEnd, setConfirmEnd] = useState(false);
+  // Снимок прежней партии на 8 секунд после «Новая партия» — чтобы случайное нажатие не стоило партии.
+  const [previous, setPrevious] = useState<{
+    start: string;
+    plies: Ply[];
+    hints: number;
+    undos: number;
+    clock: { w: number; b: number };
+    gameId: string;
+  } | null>(null);
+  const previousTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [flipped, setFlipped] = useState(false);
   const recorded = useRef(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -103,7 +116,7 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
     ? {
         over: true,
         winner: config.color === "w" ? ("b" as const) : ("w" as const),
-        reason: t("Ты сдался. Ничего страшного — сыграем ещё!", "Sen taslim boʻlding. Hechqisi yoʻq — yana oʻynaymiz!"),
+        reason: t("Партия закончена.", "Partiya tugadi."),
       }
     : flag
       ? {
@@ -174,7 +187,7 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
       ucis: plies.map((p) => p.uci),
       clock: config.clock?.id,
       odds: config.odds ? `${config.odds.side}${config.odds.piece}` : undefined,
-      ...(config.mode === "robot" ? { hints, undos } : {}),
+      ...(config.mode === "robot" ? { hints, undos, solo: !!config.solo } : {}),
     });
   }, [status.over, status.winner, status.mate, withRobot, config, myMoves, gameId, start, plies, hints, undos]);
 
@@ -217,6 +230,11 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
     // С роботом отменяем и его ответ, чтобы снова был ход ребёнка.
     const back = withRobot && plies.length >= 2 && turn === config.color ? 2 : 1;
     if (!status.over) setUndos((u) => u + 1);
+    // Партия уже записана (сдача, мат, время), а ребёнок вернул ход: запись снимаем, иначе потеряется настоящий итог.
+    if (recorded.current) {
+      removeChessGame(gameId);
+      recorded.current = false;
+    }
     setPlies((p) => p.slice(0, -back));
     setSelected(null);
     setHint(null);
@@ -232,6 +250,12 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
   };
 
   const restart = () => {
+    if (plies.length >= 2 && !status.over) {
+      setPrevious({ start, plies, hints, undos, clock, gameId });
+      if (previousTimer.current) clearTimeout(previousTimer.current);
+      previousTimer.current = setTimeout(() => setPrevious(null), 8000);
+    }
+    setConfirmEnd(false);
     setStart(initialFen(config));
     setGameId(newGameId());
     setClock({ w: clockMs, b: clockMs });
@@ -245,6 +269,31 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
     setThinking(withRobot && config.color === "b");
     recorded.current = false;
   };
+
+  const restorePrevious = () => {
+    if (!previous) return;
+    if (previousTimer.current) clearTimeout(previousTimer.current);
+    setStart(previous.start);
+    setGameId(previous.gameId);
+    setClock(previous.clock);
+    setPlies(previous.plies);
+    setHints(previous.hints);
+    setUndos(previous.undos);
+    setFlag(null);
+    setResigned(false);
+    setSelected(null);
+    setHint(null);
+    setThinking(false);
+    recorded.current = false;
+    setPrevious(null);
+  };
+
+  useEffect(
+    () => () => {
+      if (previousTimer.current) clearTimeout(previousTimer.current);
+    },
+    [],
+  );
 
   const marks: Record<string, SquareMark> = {};
   if (last) {
@@ -277,7 +326,7 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
           : persona.won;
   const crowns =
     config.mode === "robot" && status.over && status.winner === config.color
-      ? crownsFromHelp(hints + undos, !!config.odds)
+      ? crownsForWin(!!config.solo, !!config.odds)
       : 0;
   const variant = config.variant ? endgameText(config.variant, lang) : undefined;
   const title =
@@ -387,19 +436,15 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
           <p className="rounded-2xl bg-sun-soft px-4 py-2 font-black text-[#7a4b00]" data-crowns={crowns}>
             <span className="mr-1 text-2xl">{"👑".repeat(crowns)}</span>
             {crowns === 3
-              ? t(
-                  "Три короны — победа без подсказок и отмен ходов!",
-                  "Uchta toj — maslahatsiz va yurishni qaytarmasdan gʻalaba!",
-                )
+              ? t("Корона с золотым блеском: без подсказок!", "Oltin yaltiroq toj: maslahatsiz!")
               : crowns === 2
                 ? t(
-                    "Две короны. Без подсказок и отмен ходов будет три!",
-                    "Ikkita toj. Maslahat va yurishni qaytarishsiz uchta boʻladi!",
+                    "Две короны: робот играл без фигуры, а ты — без подсказок!",
+                    "Ikkita toj: robot donasiz oʻynadi, sen esa maslahatsiz!",
                   )
-                : t(
-                    "Одна корона. Чем меньше подсказок и отмен, тем больше корон.",
-                    "Bitta toj. Maslahat va qaytarish qancha kam boʻlsa, toj shuncha koʻp.",
-                  )}
+                : hints > 0
+                  ? t("Корона твоя! 👑 Подсказка — умный ход.", "Toj seniki! 👑 Maslahat soʻrash — aqlli qadam.")
+                  : t("Корона твоя!", "Toj seniki!")}
           </p>
         )}
         {robotSays && robot && (
@@ -421,25 +466,69 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
 
       <aside className="space-y-3">
         <div className="flex flex-wrap gap-2">
-          <Button variant="secondary" size="sm" onClick={showHint} disabled={!myTurn || status.over || thinking}>
-            💡 {t("Подсказка", "Maslahat")}
-            {hints ? ` (${hints})` : ""}
-          </Button>
-          <Button variant="secondary" size="sm" onClick={undo} disabled={plies.length === 0 || thinking}>
-            ↶ {t("Отменить", "Ortga qaytarish")}
-          </Button>
+          {!config.solo && (
+            <>
+              <Button variant="secondary" size="sm" onClick={showHint} disabled={!myTurn || status.over || thinking}>
+                💡 {t("Подсказка", "Maslahat")}
+              </Button>
+              <Button variant="secondary" size="sm" onClick={undo} disabled={plies.length === 0 || thinking}>
+                ↶ {t("Отменить", "Ortga qaytarish")}
+              </Button>
+            </>
+          )}
           <Button variant="secondary" size="sm" onClick={() => setFlipped((f) => !f)}>
             🔄 {t("Перевернуть", "Taxtani aylantirish")}
           </Button>
           {withRobot && !status.over && (
-            <Button variant="ghost" size="sm" onClick={() => setResigned(true)} disabled={plies.length === 0}>
-              🏳️ {t("Сдаться", "Taslim boʻlish")}
+            <Button variant="ghost" size="sm" onClick={() => setConfirmEnd(true)} disabled={plies.length === 0}>
+              🏁 {t("Закончить партию", "Partiyani tugatish")}
             </Button>
           )}
-          <Button size="sm" onClick={restart}>
+          <Button size="sm" variant={status.over ? "primary" : "secondary"} onClick={restart}>
             ↺ {t("Новая партия", "Yangi partiya")}
           </Button>
         </div>
+        {previous && (
+          <p
+            role="status"
+            data-previous-game
+            className="flex flex-wrap items-center gap-2 rounded-2xl bg-white px-4 py-2 text-sm font-bold shadow-card"
+          >
+            {t("Началась новая партия.", "Yangi partiya boshlandi.")}
+            <Button size="sm" variant="soft" onClick={restorePrevious}>
+              ↩ {t("Вернуть прежнюю", "Avvalgisini qaytarish")}
+            </Button>
+          </p>
+        )}
+        {confirmEnd && !status.over && (
+          <div
+            role="alertdialog"
+            aria-labelledby="end-title"
+            data-confirm-end
+            className="space-y-3 rounded-2xl border-2 border-line bg-white p-4 shadow-card"
+          >
+            <p id="end-title" className="text-lg font-black">
+              {t("Закончим партию?", "Partiyani tugatamizmi?")}
+            </p>
+            <p className="text-sm text-muted">
+              {t("Партию можно будет разобрать.", "Partiyani keyin tahlil qilsa boʻladi.")}
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              <Button autoFocus onClick={() => setConfirmEnd(false)}>
+                {t("Играть дальше", "Davom etish")}
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setConfirmEnd(false);
+                  setResigned(true);
+                }}
+              >
+                {t("Закончить", "Tugatish")}
+              </Button>
+            </div>
+          </div>
+        )}
         <div className="rounded-2xl bg-white p-3 shadow-card">
           <p className="mb-2 text-sm font-extrabold text-muted">
             {t("Ходы", "Yurishlar")} ·{" "}

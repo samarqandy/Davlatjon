@@ -110,7 +110,7 @@ export function WallLab({ taskId, numbers, tops }: { taskId: string; numbers: nu
       sub: isNew
         ? total >= tops.length
           ? t(
-              "Ты нашёл все числа, которые могут быть наверху! Почему среди них нет нечётных?",
+              "Нашлись все числа, которые могут быть наверху! Почему среди них нет нечётных?",
               "Tepada chiqishi mumkin boʻlgan hamma sonlarni topding! Nega ular orasida toq son yoʻq?",
             )
           : t(

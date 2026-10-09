@@ -230,7 +230,7 @@ export function RobotPuzzle({
         markSolved(taskId);
         setFeedback({
           tone: "success",
-          text: t(`Ты нашёл все пути: ${total}! 🏆`, `Hamma yoʻllarni topding: ${total} ta! 🏆`),
+          text: t(`Все пути найдены: ${total}! 🏆`, `Hamma yoʻllarni topding: ${total} ta! 🏆`),
           sub: t("Как доказать, что других нет?", "Boshqa yoʻl yoʻqligini qanday isbotlaysan?"),
         });
       } else {

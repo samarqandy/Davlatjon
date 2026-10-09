@@ -328,6 +328,14 @@ export function ChessSchool() {
                   </div>
                   <p className="mt-3 font-bold">{level.title}</p>
                   <p className="mt-1 text-sm text-muted">{level.goal}</p>
+                  {hydrated && open && i > 0 && !statuses[i - 1].passed && (
+                    <p className="mt-1 text-xs font-bold text-muted">
+                      {t(
+                        `Звание «${levels[i - 1].name}» — после всех её упражнений.`,
+                        `«${levels[i - 1].name}» unvoni — hamma mashqlar yechilgach.`,
+                      )}
+                    </p>
+                  )}
                   <div className="mt-3 flex items-center gap-2">
                     <ProgressBar value={hydrated ? st.solved : 0} max={st.total} className="flex-1" />
                     <span className="text-xs font-extrabold whitespace-nowrap text-muted">

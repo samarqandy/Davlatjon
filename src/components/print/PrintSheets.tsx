@@ -98,7 +98,9 @@ export function WorksheetSheet({ day, withSpace }: { day: Day; withSpace: boolea
       <div className="mb-5 grid grid-cols-[1fr_auto] gap-4 text-[10.5pt]">
         <div className="space-y-1">
           {day.intro.map((p) => (
-            <p key={p}>{p}</p>
+            <p key={p}>
+              <RichText text={p} />
+            </p>
           ))}
           <p className="font-bold">
             {day.habit.emoji} {t(`Привычка дня: «${day.habit.name}»`, `Bugungi odat: «${day.habit.name}»`)}
@@ -129,7 +131,7 @@ export function WorksheetSheet({ day, withSpace }: { day: Day; withSpace: boolea
           <span>{t("Как было сегодня? 😀 🙂 😐 😕", "Bugun qanday oʻtdi? 😀 🙂 😐 😕")}</span>
         </div>
         <p className="mt-2">
-          {t("Что нового я сегодня понял:", "Bugun nimani yangi tushundim:")}{" "}
+          {t("Что нового мне открылось сегодня:", "Bugun nimani yangi tushundim:")}{" "}
           <span className="answer-line" style={{ minWidth: "95mm" }} />
         </p>
       </footer>

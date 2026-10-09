@@ -6,10 +6,10 @@ import { useT } from "@/lib/i18n";
 import { setTaskMark, useTask, type TaskMarks } from "@/lib/store";
 
 const MARKS: { key: keyof TaskMarks; emoji: string; ru: string; uz: string }[] = [
-  { key: "explained", emoji: "💬", ru: "Я объяснил решение", uz: "Yechimni tushuntirdim" },
-  { key: "anotherWay", emoji: "🔁", ru: "Я нашёл другой способ", uz: "Boshqa usul topdim" },
+  { key: "explained", emoji: "💬", ru: "Объяснение получилось", uz: "Yechimni tushuntirdim" },
+  { key: "anotherWay", emoji: "🔁", ru: "Нашёлся другой способ", uz: "Boshqa usul topdim" },
   { key: "liked", emoji: "❤️", ru: "Понравилась задача", uz: "Masala yoqdi" },
-  { key: "hard", emoji: "🧗", ru: "Было трудно, но я справился", uz: "Qiyin boʻldi, lekin uddaladim" },
+  { key: "hard", emoji: "🧗", ru: "Было трудно, но получилось", uz: "Qiyin boʻldi, lekin uddaladim" },
 ];
 
 /** После решения: вопросы «А ещё подумай» и отметки о мышлении (а не только об ответе). */

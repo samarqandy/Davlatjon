@@ -233,7 +233,7 @@ export function ScalesPuzzle({ taskId, coins, weighings }: { taskId: string; coi
         tone: "success",
         text: t(`${praise(n, lang)} Фальшивая — монета № ${c}.`, `${praise(n, lang)} Qalbakisi — ${c}-tanga.`),
         sub: t(
-          `Ты доказал это за ${weighingsWord(history.length, lang)}. ${askExplain(n, lang)}`,
+          `Это доказано за ${weighingsWord(history.length, lang)}. ${askExplain(n, lang)}`,
           `Buni ${weighingsWord(history.length, lang)}da isbotlading. ${askExplain(n, lang)}`,
         ),
       });
@@ -332,7 +332,10 @@ export function ScalesPuzzle({ taskId, coins, weighings }: { taskId: string; coi
                 : {
                     tone: "info",
                     text: t("Нажми на монету, которую считаешь фальшивой.", "Qalbaki deb oʻylagan tangangni bos."),
-                    sub: t("Помни: нужно быть уверенным!", "Esingda boʻlsin: bunga ishonching komil boʻlishi kerak!"),
+                    sub: t(
+                      "Помни: нужна полная уверенность!",
+                      "Esingda boʻlsin: bunga ishonching komil boʻlishi kerak!",
+                    ),
                   },
             );
           }}

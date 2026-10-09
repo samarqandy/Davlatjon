@@ -93,8 +93,8 @@ export function ParentChess() {
         <h1 className="text-3xl font-black">{t("Шахматы: прогресс и ответы", "Shaxmat: natijalar va javoblar")}</h1>
         <p className="mt-1 max-w-3xl text-muted">
           {t(
-            "Шесть уровней-званий: Пешка, Конь, Слон, Ладья, Ферзь, Король. На каждом уровне — урок, правила, словарик, интересные факты и упражнения. Все позиции проверены шахматной библиотекой chess.js. Следующий уровень открывается, когда решены все упражнения предыдущего.",
-            "Oltita daraja-unvon: Piyoda, Ot, Fil, Rux, Farzin, Shoh. Har bir darajada dars, qoidalar, lugʻatcha, qiziqarli faktlar va mashqlar bor. Barcha pozitsiyalar chess.js shaxmat kutubxonasida tekshirilgan. Keyingi daraja oldingisidagi barcha mashqlar yechilgach ochiladi.",
+            "Шесть уровней-званий: Пешка, Конь, Слон, Ладья, Ферзь, Король. На каждом уровне — урок, правила, словарик, интересные факты и упражнения. Все позиции проверены шахматной библиотекой chess.js. Следующий уровень открывается, когда решено около семи упражнений из десяти (из семи — пять), чтобы ребёнок не застревал на одной трудной задаче; звание даётся за все упражнения.",
+            "Oltita daraja-unvon: Piyoda, Ot, Fil, Rux, Farzin, Shoh. Har bir darajada dars, qoidalar, lugʻatcha, qiziqarli faktlar va mashqlar bor. Barcha pozitsiyalar chess.js shaxmat kutubxonasida tekshirilgan. Keyingi daraja oldingisidagi mashqlarning taxminan yetti dan oʻntasi (yettitadan beshtasi) yechilganda ochiladi, shunda bola bitta qiyin masalada qolib ketmaydi; unvon esa hamma mashq uchun beriladi.",
           )}
         </p>
         <div className="mt-4 flex flex-wrap items-center gap-4">

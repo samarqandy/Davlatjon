@@ -138,7 +138,10 @@ export function awards(s: AppState, lang: Lang = "ru"): Award[] {
       "crowns-3",
       "👑",
       t("Три короны", "Uchta toj"),
-      t("Обыграй робота без подсказок и отмен ходов.", "Robotni maslahatsiz va yurishni qaytarmasdan yut."),
+      t(
+        "Обыграй робота в режиме «Сам» — без подсказок и отмены ходов.",
+        "Robotni «Oʻzim» rejimida yut — maslahatsiz va yurishni qaytarmasdan.",
+      ),
       s.chessGames.some((g) => crownsFor(g) === 3) ? 1 : 0,
       1,
     ),

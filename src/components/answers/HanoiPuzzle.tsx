@@ -208,7 +208,7 @@ export function HanoiPuzzle({ taskId, disks, optimal }: { taskId: string; disks:
         sub:
           size < disks
             ? t(
-                "Запомни, как ты это сделал, — и возьми башню побольше.",
+                "Запомни, как это получилось, — и возьми башню побольше.",
                 "Buni qanday qilganingni eslab qol — endi kattaroq minorani ol.",
               )
             : t(

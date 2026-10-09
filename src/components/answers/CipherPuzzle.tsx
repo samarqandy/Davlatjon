@@ -7,6 +7,7 @@ import { encode, shiftLetter } from "@/lib/cipher";
 import { askExplain, praise, retrySub } from "@/lib/feedback";
 import { countText, useLang, useT } from "@/lib/i18n";
 import { recordCheck, saveTaskInput, useTask } from "@/lib/store";
+import { CheckButton } from "./CheckButton";
 import { Feedback, type FeedbackState } from "./Feedback";
 
 /** Буквы шифровки в клеточках. */
@@ -177,9 +178,7 @@ export function CipherPuzzle({
             className="h-14 w-full max-w-72 rounded-xl border-2 border-line bg-paper px-3 text-2xl font-extrabold tracking-widest uppercase outline-none focus:border-brand"
             placeholder={t("слово", "soʻz")}
           />
-          <Button onClick={check} size="lg" disabled={!value.trim()}>
-            {t("Проверить", "Tekshirish")}
-          </Button>
+          <CheckButton ready={!!value.trim()} onCheck={check} onNotReady={setFeedback} />
         </div>
       </div>
       <Feedback state={feedback} />

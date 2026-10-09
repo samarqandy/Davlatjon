@@ -9,6 +9,7 @@ import { evaluate, prettyExpression, usesForbidden } from "@/lib/expression";
 import { askExplain, praise, retrySub } from "@/lib/feedback";
 import { useLang, useT } from "@/lib/i18n";
 import { addFound, markSolved, recordCheck, saveTaskInput, useTask } from "@/lib/store";
+import { CheckButton } from "./CheckButton";
 import { Feedback, type FeedbackState } from "./Feedback";
 
 type SignsSpec = Extract<AnswerSpec, { kind: "signs" }>;
@@ -102,9 +103,12 @@ export function SignsPuzzle({ taskId, spec, hintsLeft }: { taskId: string; spec:
           </div>
         ))}
       </div>
-      <Button onClick={check} size="lg" disabled={!filled}>
-        {t("Проверить", "Tekshirish")}
-      </Button>
+      <CheckButton
+        ready={filled}
+        onCheck={check}
+        onNotReady={setFeedback}
+        missing={["✏️ Поставь знак в каждое окошко", "✏️ Har bir katakchaga belgi qoʻy"]}
+      />
       <Feedback state={feedback} />
     </div>
   );
@@ -297,7 +301,7 @@ export function RulesAnswer({ taskId, spec }: { taskId: string; spec: RulesSpec 
           sub:
             knownFound.length + 1 >= 2
               ? t(
-                  "Ты нашёл разные правила — значит, по трём числам нельзя точно узнать правило!",
+                  "Нашлись разные правила — значит, по трём числам нельзя точно узнать правило!",
                   "Sen har xil qoidalar topding — demak, uchta songa qarab qoidani aniq bilib boʻlmaydi!",
                 )
               : t("А теперь придумай ДРУГОЕ правило.", "Endi BOSHQA qoida oʻylab top."),
@@ -334,9 +338,7 @@ export function RulesAnswer({ taskId, spec }: { taskId: string; spec: RulesSpec 
             placeholder="?"
           />
         </label>
-        <Button onClick={check} size="lg" disabled={!value}>
-          {t("Проверить", "Tekshirish")}
-        </Button>
+        <CheckButton ready={!!value} onCheck={check} onNotReady={setFeedback} />
       </div>
       <Feedback state={feedback} />
       {found.length > 0 && (
@@ -390,7 +392,7 @@ export function OpenAnswer({ taskId, prompt }: { taskId: string; prompt: string 
       <Button variant={solved ? "success" : "primary"} size="lg" onClick={() => markSolved(taskId)} disabled={solved}>
         {solved
           ? t("✓ Готово", "✓ Tayyor")
-          : t("✅ Я решил и рассказал взрослому", "✅ Yechdim va kattalarga aytib berdim")}
+          : t("✅ Решение рассказано взрослому", "✅ Yechdim va kattalarga aytib berdim")}
       </Button>
     </div>
   );
