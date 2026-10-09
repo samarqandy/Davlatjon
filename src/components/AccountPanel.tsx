@@ -110,6 +110,8 @@ function TelegramButton({ botName, back }: { botName: string; back: string }) {
     script.setAttribute("data-telegram-login", botName);
     script.setAttribute("data-size", "large");
     script.setAttribute("data-radius", "14");
+    // Разрешение боту писать в личные сообщения: нужно для итогов недели.
+    script.setAttribute("data-request-access", "write");
     script.setAttribute(
       "data-auth-url",
       `${window.location.origin}/api/auth/telegram?back=${encodeURIComponent(back)}`,

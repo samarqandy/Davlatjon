@@ -6,6 +6,7 @@ import { AccountSync } from "@/components/AccountSync";
 import { LangSync } from "@/components/LangSwitch";
 import { ServiceWorker } from "@/components/ServiceWorker";
 import { ActivityTracker } from "@/components/progress/ActivityTracker";
+import { RestCard } from "@/components/progress/RestCard";
 import { XpToast } from "@/components/progress/XpToast";
 import { BRAND, BRAND_TITLE } from "@/lib/brand";
 
@@ -50,6 +51,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
         <LangSync />
         <XpToast />
         <ActivityTracker />
+        <RestCard />
         <AccountSync />
       </body>
     </html>

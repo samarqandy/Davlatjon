@@ -1,10 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import { Button, Card, cn } from "@/components/ui";
 import { EXTEND_CHOICES, limitStatus, minutes } from "@/lib/activity";
+import { useAccount } from "@/lib/account";
 import { useT } from "@/lib/i18n";
 import {
   extendToday,
+  getState,
   GOAL_DAYS_DEFAULT,
   GOAL_DAYS_MAX,
   GOAL_DAYS_MIN,
@@ -38,7 +41,8 @@ export function ParentTime() {
   const t = useT();
   const today = useToday();
   const settings = useStore((s) => s.settings);
-  const status = useStore((s) => limitStatus(s, today || isoDay(0)));
+  const state = useStore((s) => s);
+  const status = limitStatus(state, today || isoDay(0));
   const limit = settings.dailyLimitMin || 0;
   const goal = settings.goalDays ?? GOAL_DAYS_DEFAULT;
 
@@ -108,6 +112,83 @@ export function ParentTime() {
           ))}
         </div>
       </Card>
+      <TelegramReport />
     </div>
+  );
+}
+
+/** Итоги недели в Telegram: по желанию, без имени ребёнка. Показывается тем, кто вошёл через Telegram. */
+function TelegramReport() {
+  const t = useT();
+  const account = useAccount();
+  const on = useStore((s) => s.settings.reportToTelegram === true);
+  const [status, setStatus] = useState<"idle" | "sending" | "ok" | "blocked">("idle");
+  if (!account.reports) return null;
+  const viaTelegram = account.user?.provider === "telegram";
+
+  const test = async () => {
+    setStatus("sending");
+    try {
+      const res = await fetch("/api/report/telegram", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ state: getState() }),
+      });
+      setStatus(res.ok ? "ok" : "blocked");
+    } catch {
+      setStatus("blocked");
+    }
+  };
+
+  return (
+    <Card className="space-y-4 p-5 sm:p-6" data-telegram-report>
+      <div>
+        <h2 className="text-xl font-black">✈️ {t("Итоги недели в Telegram", "Hafta yakunlari Telegram'da")}</h2>
+        <p className="mt-1 text-muted">
+          {t(
+            "Раз в неделю, в воскресенье вечером, бот пришлёт короткие итоги — без имени ребёнка и без оценок. Выключить можно в любой момент.",
+            "Haftada bir marta, yakshanba kechqurun, bot qisqa xulosa yuboradi — bolaning ismisiz va baholarsiz. Istalgan payt oʻchirib qoʻyish mumkin.",
+          )}
+        </p>
+      </div>
+      {!viaTelegram ? (
+        <p className="font-bold">
+          {t(
+            "Чтобы получать итоги, войдите через Telegram в разделе «Настройки» (и разрешите боту писать вам).",
+            "Xulosalarni olish uchun «Sozlamalar» boʻlimida Telegram orqali kiring (va botga yozishga ruxsat bering).",
+          )}
+        </p>
+      ) : (
+        <>
+          <div
+            className="flex flex-wrap gap-2"
+            role="group"
+            aria-label={t("Присылать итоги недели", "Hafta yakunlarini yuborish")}
+          >
+            <Pill on={on} onClick={() => updateSettings({ reportToTelegram: true })}>
+              {t("Присылать", "Yuborilsin")}
+            </Pill>
+            <Pill on={!on} onClick={() => updateSettings({ reportToTelegram: false })}>
+              {t("Не присылать", "Yuborilmasin")}
+            </Pill>
+          </div>
+          {on && (
+            <div className="space-y-2">
+              <Button variant="soft" className="min-h-11" onClick={test} disabled={status === "sending"}>
+                {t("Прислать пробное сообщение", "Sinov xabarini yuborish")}
+              </Button>
+              <p role="status" className="text-sm font-bold" data-telegram-status={status}>
+                {status === "ok" && t("Отправлено — проверьте Telegram. ✅", "Yuborildi — Telegram'ni tekshiring. ✅")}
+                {status === "blocked" &&
+                  t(
+                    "Не получилось. Выйдите и войдите через Telegram снова, разрешив боту писать, или нажмите «Start» в чате с ботом.",
+                    "Boʻlmadi. Telegram orqali chiqib, qaytadan kiring va botga yozishga ruxsat bering yoki bot bilan chatda «Start» tugmasini bosing.",
+                  )}
+              </p>
+            </div>
+          )}
+        </>
+      )}
+    </Card>
   );
 }

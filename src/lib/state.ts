@@ -313,7 +313,11 @@ function activityOf(x: unknown): AppState["activity"] {
     if (finite(v.extra) && v.extra > 0) entry.extra = Math.min(v.extra, 6 * 3_600_000);
     out[day] = entry;
   }
-  return Object.fromEntries(Object.entries(out).sort(([a], [b]) => (a < b ? 1 : -1)).slice(0, ACTIVITY_DAYS_KEPT));
+  return Object.fromEntries(
+    Object.entries(out)
+      .sort(([a], [b]) => (a < b ? 1 : -1))
+      .slice(0, ACTIVITY_DAYS_KEPT),
+  );
 }
 
 export function sanitize(raw: unknown): AppState {

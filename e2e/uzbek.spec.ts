@@ -91,6 +91,7 @@ test.describe("oʻzbek tili", () => {
       "/parent/guide",
       "/parent/chess",
       "/parent/settings",
+      "/parent/report",
     ]) {
       await expectNoCyrillic(page, url);
     }
