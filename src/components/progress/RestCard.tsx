@@ -33,7 +33,8 @@ export function RestCard() {
     setLastPath(path);
     setArmed(true);
   }
-  if (!reached && armed) setArmed(false);
+  // До гидратации хранилище показывает состояние по умолчанию, поэтому «не исчерпано» ещё ничего не значит.
+  if (hydrated && !reached && armed) setArmed(false);
 
   useEffect(() => {
     let prev = xpTotal(getState());

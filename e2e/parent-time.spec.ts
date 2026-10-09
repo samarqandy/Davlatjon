@@ -91,7 +91,7 @@ test("пока время не вышло, ничего про время реб
   await page.goto("/");
   await expect(page.locator("[data-today]")).toBeVisible();
   await expect(page.locator("[data-rest-card]")).toHaveCount(0);
-  expect(await page.locator("main").innerText()).not.toMatch(/осталось|таймер|\d+ мин/i);
+  expect(await page.locator("main").innerText()).not.toMatch(/осталось|таймер|обратный отсчёт/i);
 });
 
 test("раздел родителя не закрывается карточкой, чтобы можно было изменить ограничение", async ({ page }) => {
@@ -114,4 +114,44 @@ test("приглашение на неделю: родитель выбирае�
   await page.getByRole("button", { name: "4 дн." }).click();
   await page.goto("/");
   await expect(page.locator("[data-today]").getByText(/На этой неделе: \d из 4 дней/)).toBeVisible();
+});
+
+/** Время в браузере ускоряем, чтобы не ждать полминуты на каждую запись. */
+async function seconds(page: Page, n: number) {
+  for (let i = 0; i < n; i += 5) {
+    await page.mouse.click(5, 5);
+    await page.clock.runFor(5000);
+  }
+}
+const activityMs = (page: Page) =>
+  page.evaluate((key) => {
+    const a = JSON.parse(localStorage.getItem(key) ?? "{}").activity ?? {};
+    return Object.values(a as Record<string, { ms: number }>).reduce((n, d) => n + d.ms, 0);
+  }, KEY);
+
+test("активное время копится, пока ребёнок что-то делает, и не копится в разделе родителя", async ({ page }) => {
+  await page.clock.install();
+  await prepare(page);
+  await page.goto("/");
+  await expect(page.locator("[data-today]")).toBeVisible();
+  await seconds(page, 40);
+  await expect.poll(() => activityMs(page)).toBeGreaterThanOrEqual(25_000);
+
+  // Уход со страницы дописывает остаток, поэтому «до» меряем уже в разделе родителя.
+  await createPin(page);
+  const before = await activityMs(page);
+  await seconds(page, 40);
+  expect(await activityMs(page)).toBe(before);
+});
+
+test("время вышло посреди дела — карточка ждёт, пока ребёнок перейдёт на другую страницу", async ({ page }) => {
+  await page.clock.install();
+  await prepare(page, { settings: { dailyLimitMin: 20 }, activity: { TODAY: { ms: 19 * 60_000 + 40_000 } } });
+  await page.goto("/");
+  await expect(page.locator("[data-today]")).toBeVisible();
+  await seconds(page, 60);
+  await expect.poll(() => activityMs(page)).toBeGreaterThan(20 * 60_000);
+  await expect(page.locator("[data-rest-card]")).toHaveCount(0);
+  await page.locator('a[href="/chess"]').first().click();
+  await expect(page.locator("[data-rest-card]")).toBeVisible();
 });
