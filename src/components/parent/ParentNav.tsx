@@ -34,6 +34,7 @@ export function ParentNav({ weeks }: { weeks: NavWeek[] }) {
       label: t("📝 Недельный обзор", "📝 Haftalik sharh"),
       active: /^\/parent\/week\/\d+\/review$/.test(path),
     },
+    { href: "/parent/report", label: t("📈 Итоги недели", "📈 Hafta yakunlari"), active: path === "/parent/report" },
     { href: "/parent/chess", label: t("♞ Шахматы", "♞ Shaxmat"), active: path === "/parent/chess" },
     { href: "/parent/guide", label: t("📘 Методичка", "📘 Qoʻllanma"), active: path === "/parent/guide" },
     { href: "/parent/settings", label: t("⚙️ Настройки", "⚙️ Sozlamalar"), active: path === "/parent/settings" },
