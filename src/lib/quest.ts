@@ -122,6 +122,3 @@ export function weekActiveDays(days: Record<string, number>, today: string): num
     if (days[isoDay(m.getTime())]) n++;
   return n;
 }
-
-/** Цель недели по умолчанию — пять дней с занятиями. */
-export const WEEK_GOAL = 5;

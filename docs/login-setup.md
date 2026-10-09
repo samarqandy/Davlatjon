@@ -12,6 +12,7 @@ Environment Variables). Birortasi boʻlmasa, sayt avvalgidek hisobsiz ishlayvera
 | `DATABASE_URL`                             | Neon bazasiga ulanish satri (`postgresql://…`). Vercel orqali ulansa, oʻzi qoʻshiladi (pastda).   |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Google orqali kirish uchun (pastda).                                                              |
 | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_NAME`  | Telegram orqali kirish uchun (pastda).                                                            |
+| `CRON_SECRET`                              | Haftalik hisobot uchun tasodifiy satr, kamida 16 belgi (pastda, 5-boʻlim).                        |
 | `APP_URL`                                  | Ixtiyoriy: sayt manzili, masalan `https://davlatjon.vercel.app` (proksi xost nomini almashtirsa). |
 
 Kamida bitta kirish usuli kerak: Google yoki Telegram. Oʻzgaruvchilarni qoʻshgandan keyin saytni qayta
@@ -64,6 +65,22 @@ create table if not exists lab_progress (
 Qayta joylangandan keyin `https://davlatjon.vercel.app/api/auth/me` ni oching. `"google": true` yoki
 `"telegram": true` koʻrinsa, hammasi ulangan. `false` boʻlsa: `AUTH_SECRET` 32 belgidan qisqa emasmi,
 `DATABASE_URL` bormi, kirish usulining ikkala oʻzgaruvchisi ham yozilganmi — va sayt qayta joylanganmi.
+
+## 5. Haftalik hisobot Telegram'da (ixtiyoriy)
+
+Ota-ona Telegram orqali kirgan va **Ota-onalar uchun → Hafta yakunlari** sahifasida «Yuborilsin» ni tanlagan boʻlsa,
+bot har yakshanba kechqurun (16:00 UTC, Toshkent vaqti bilan 21:00) qisqa xulosa yuboradi. Xabarda bolaning ismi,
+baholar va foizlar yoʻq; mashgʻulot boʻlmagan haftada xabar yuborilmaydi.
+
+1. Vercel → Environment Variables: `CRON_SECRET` = tasodifiy satr (`openssl rand -base64 24`), kamida 16 belgi.
+   Tokenni va bu qiymatni chatga yozmang — faqat Vercel’ga qoʻying.
+2. Qayta joylang. `vercel.json` dagi `crons` Vercel Cron’ni har yakshanba `/api/cron/weekly` ga yuboradi;
+   Vercel soʻrovga `Authorization: Bearer <CRON_SECRET>` qoʻshadi, sirsiz soʻrov rad etiladi.
+3. Telegram’da bot sizga yozishi uchun kirishda ruxsat berish kerak (kirish tugmasi buni soʻraydi). Avval kirgan boʻlsangiz —
+   chiqib, qaytadan kiring yoki botga `/start` yuboring.
+4. Sahifada «Sinov xabarini yuborish» tugmasi bor — xabar darhol sizning Telegram’ingizga keladi.
+
+Tekshirish: `https://davlatjon.vercel.app/api/auth/me` javobida `"reports": true` boʻlishi kerak.
 
 ## Qanday ishlaydi
 

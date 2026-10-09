@@ -91,6 +91,7 @@ test.describe("oʻzbek tili", () => {
       "/parent/guide",
       "/parent/chess",
       "/parent/settings",
+      "/parent/report",
     ]) {
       await expectNoCyrillic(page, url);
     }
@@ -160,5 +161,5 @@ test("kirish: sozlanmagan saytda hisobsiz ishlashi aytiladi", async ({ page }) =
   await expect(page.getByRole("heading", { name: /Hisob/ })).toBeVisible();
   await expect(page.getByText(/Hisobsiz ham hammasi ishlaydi/)).toBeVisible();
   const me = await page.request.get("/api/auth/me");
-  expect(await me.json()).toEqual({ user: null, providers: { google: false, telegram: false } });
+  expect(await me.json()).toEqual({ user: null, providers: { google: false, telegram: false }, reports: false });
 });

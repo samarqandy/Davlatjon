@@ -11,6 +11,8 @@ export interface AuthConfig {
   storage?: { databaseUrl: string };
   /** Адрес сайта для ссылок возврата (если прокси подменяет хост). */
   appUrl?: string;
+  /** Секрет для еженедельной рассылки: Vercel Cron присылает его в заголовке Authorization. */
+  cronSecret?: string;
 }
 
 export function authConfig(env: Record<string, string | undefined> = process.env): AuthConfig {
@@ -23,7 +25,15 @@ export function authConfig(env: Record<string, string | undefined> = process.env
   // Интеграция Neon в Vercel сама кладёт DATABASE_URL (и копию в POSTGRES_URL).
   const databaseUrl = [env.DATABASE_URL, env.POSTGRES_URL].find((url) => url && /^postgres(ql)?:\/\//.test(url));
   const storage = databaseUrl ? { databaseUrl } : undefined;
-  return { secret: env.AUTH_SECRET ?? "", google, telegram, storage, appUrl: env.APP_URL?.replace(/\/$/, "") };
+  const cronSecret = env.CRON_SECRET && env.CRON_SECRET.length >= 16 ? env.CRON_SECRET : undefined;
+  return {
+    secret: env.AUTH_SECRET ?? "",
+    google,
+    telegram,
+    storage,
+    appUrl: env.APP_URL?.replace(/\/$/, ""),
+    cronSecret,
+  };
 }
 
 /** Какие способы входа доступны: нужен секрет для cookie, хранилище и сам провайдер. */
@@ -34,6 +44,11 @@ export function availableProviders(cfg: AuthConfig): { google: boolean; telegram
     telegram: base && !!cfg.telegram,
     botName: base && cfg.telegram ? cfg.telegram.botName : undefined,
   };
+}
+
+/** Итоги недели в Telegram доступны, когда есть вход через Telegram, хранилище и секрет рассылки. */
+export function weeklyReportsAvailable(cfg: AuthConfig): boolean {
+  return availableProviders(cfg).telegram && !!cfg.cronSecret;
 }
 
 /** Адрес сайта: из APP_URL или из самого запроса. */

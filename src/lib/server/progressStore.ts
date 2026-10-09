@@ -13,6 +13,8 @@ export interface StoredProgress {
 export interface ProgressStore {
   get(userId: string): Promise<StoredProgress | null>;
   put(userId: string, state: unknown): Promise<void>;
+  /** Аккаунты Telegram, где родитель включил итоги недели (для еженедельной рассылки). */
+  telegramRecipients(): Promise<{ userId: string; state: unknown }[]>;
 }
 
 /** Один SQL-запрос с параметрами $1, $2… — возвращает строки. */
@@ -44,6 +46,14 @@ export function sqlStore(query: SqlQuery): ProgressStore {
       if (!rows[0]) return null;
       const { state, updated_at } = rows[0];
       return { state, updatedAt: new Date(updated_at as string | Date).toISOString() };
+    },
+    async telegramRecipients() {
+      await ensureTable();
+      const rows = await query(
+        `select user_id, state from lab_progress
+         where user_id like 'tg:%' and state -> 'settings' ->> 'reportToTelegram' = 'true'`,
+      );
+      return rows.map((r) => ({ userId: String(r.user_id), state: r.state }));
     },
     async put(userId, state) {
       await ensureTable();

@@ -44,3 +44,28 @@ export function verifyTelegram(
   if (!Number.isFinite(age) || age > TELEGRAM_MAX_AGE || age < -300) return null;
   return data as unknown as TelegramUser;
 }
+
+export type SendResult = "ok" | "blocked" | "error";
+
+/**
+ * Отправить сообщение в личный чат (chat_id пользователя совпадает с его id).
+ * "blocked" — бот не может писать этому человеку (не разрешил сообщения или остановил бота).
+ */
+export async function sendTelegramMessage(
+  botToken: string,
+  chatId: string,
+  text: string,
+  fetchImpl: typeof fetch = fetch,
+): Promise<SendResult> {
+  try {
+    const res = await fetchImpl(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ chat_id: chatId, text, disable_web_page_preview: true }),
+    });
+    if (res.ok) return "ok";
+    return res.status === 403 || res.status === 400 ? "blocked" : "error";
+  } catch {
+    return "error";
+  }
+}

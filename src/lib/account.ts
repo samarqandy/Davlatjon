@@ -10,9 +10,16 @@ export interface AccountInfo {
   status: "loading" | "ready";
   user: { name: string; provider: "google" | "telegram" } | null;
   providers: { google: boolean; telegram: boolean; botName?: string };
+  /** Включена ли рассылка итогов недели в Telegram. */
+  reports: boolean;
 }
 
-const LOADING: AccountInfo = { status: "loading", user: null, providers: { google: false, telegram: false } };
+const LOADING: AccountInfo = {
+  status: "loading",
+  user: null,
+  providers: { google: false, telegram: false },
+  reports: false,
+};
 
 let info: AccountInfo = LOADING;
 let requested = false;
@@ -27,7 +34,12 @@ export async function refreshAccount(): Promise<AccountInfo> {
   try {
     const res = await fetch("/api/auth/me", { cache: "no-store" });
     const data = (await res.json()) as Omit<AccountInfo, "status">;
-    emit({ status: "ready", user: data.user ?? null, providers: data.providers ?? LOADING.providers });
+    emit({
+      status: "ready",
+      user: data.user ?? null,
+      providers: data.providers ?? LOADING.providers,
+      reports: data.reports === true,
+    });
   } catch {
     emit({ ...info, status: "ready" });
   }

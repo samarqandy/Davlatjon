@@ -133,6 +133,9 @@ export function mergeStates(localRaw: unknown, remoteRaw: unknown): AppState {
       ...b.settings,
       ...a.settings,
       age: a.settings.age ?? b.settings.age,
+      dailyLimitMin: a.settings.dailyLimitMin ?? b.settings.dailyLimitMin,
+      goalDays: a.settings.goalDays ?? b.settings.goalDays,
+      reportToTelegram: a.settings.reportToTelegram ?? b.settings.reportToTelegram,
       childName: named.settings.childName,
       childNameUz: named.settings.childNameUz,
       childNameAt: named.settings.childNameAt,
@@ -156,6 +159,11 @@ export function mergeStates(localRaw: unknown, remoteRaw: unknown): AppState {
     ),
     chessDrills: mergeRecords(a.chessDrills, b.chessDrills, largest),
     chessEndgames: mergeRecords(a.chessEndgames, b.chessEndgames, earliest),
+    // Время считаем на каждом устройстве по-своему; берём большее за день, чтобы ничего не терялось.
+    activity: mergeRecords(a.activity, b.activity, (x, y) => {
+      const extra = Math.max(x.extra ?? 0, y.extra ?? 0);
+      return { ms: Math.max(x.ms, y.ms), ...(extra ? { extra } : {}) };
+    }),
     welcomed: a.welcomed || b.welcomed,
   };
 }
@@ -177,7 +185,14 @@ export function sameProgress(a: AppState, b: AppState): boolean {
   const strip = (s: AppState) =>
     stable({
       ...s,
-      settings: { age: s.settings.age, childName: s.settings.childName, childNameUz: s.settings.childNameUz },
+      settings: {
+        age: s.settings.age,
+        childName: s.settings.childName,
+        childNameUz: s.settings.childNameUz,
+        dailyLimitMin: s.settings.dailyLimitMin,
+        goalDays: s.settings.goalDays,
+        reportToTelegram: s.settings.reportToTelegram,
+      },
     });
   return strip(a) === strip(b);
 }

@@ -8,6 +8,7 @@ import { useMemo, useSyncExternalStore } from "react";
  * и без ошибок гидратации (на сервере и при гидратации — состояние по умолчанию).
  */
 
+import { withActivity, withExtra } from "./activity";
 import { cleanChildName } from "./childName";
 import {
   DEFAULT_STATE,
@@ -174,6 +175,16 @@ export function addFound(taskId: string, key: string) {
 export function addTime(taskId: string, ms: number) {
   if (ms <= 0) return;
   updateTask(taskId, (t) => ({ timeMs: t.timeMs + ms }));
+}
+
+/** Прибавить активное время к сегодняшнему дню (вызывает ActivityTracker). */
+export function addActiveTime(ms: number) {
+  setState((s) => withActivity(s, isoDay(Date.now()), ms));
+}
+
+/** Родитель (после PIN-кода) добавляет время на сегодня. */
+export function extendToday(ms: number) {
+  setState((s) => withExtra(s, isoDay(Date.now()), ms));
 }
 
 export function openHint(taskId: string) {

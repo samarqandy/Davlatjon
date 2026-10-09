@@ -6,8 +6,8 @@ import { cn, ProgressBar } from "@/components/ui";
 import { activityDays } from "@/lib/awards";
 import { useLang, useT } from "@/lib/i18n";
 import { pluralize } from "@/lib/plural";
-import { gentleStreak, questDone, questFor, questStars, weekActiveDays, WEEK_GOAL, type QuestGoal } from "@/lib/quest";
-import { useHydrated, useStore } from "@/lib/store";
+import { gentleStreak, questDone, questFor, questStars, weekActiveDays, type QuestGoal } from "@/lib/quest";
+import { GOAL_DAYS_DEFAULT, useHydrated, useStore } from "@/lib/store";
 import { useToday } from "@/lib/useToday";
 import { levelName, showsNumbers } from "@/lib/workshop";
 import { xpLevel, xpTotal } from "@/lib/xp";
@@ -63,6 +63,7 @@ export function TodayCard({ className }: { className?: string }) {
   const hydrated = useHydrated();
   const today = useToday();
   const state = useStore((s) => s);
+  const goal = state.settings.goalDays ?? GOAL_DAYS_DEFAULT;
   const days = useMemo(() => activityDays(state), [state]);
   if (!hydrated || !today) return <section className={cn("min-h-40 rounded-3xl bg-white shadow-card", className)} />;
 
@@ -135,10 +136,10 @@ export function TodayCard({ className }: { className?: string }) {
           </div>
           <div>
             <p className="text-sm font-bold">
-              📅 {t(`На этой неделе: ${week} из ${WEEK_GOAL} дней`, `Bu hafta: ${WEEK_GOAL} kundan ${week} kun`)}
-              {week >= WEEK_GOAL ? t(" — цель недели выполнена! 🎉", " — haftalik maqsad bajarildi! 🎉") : ""}
+              📅 {t(`На этой неделе: ${week} из ${goal} дней`, `Bu hafta: ${goal} kundan ${week} kun`)}
+              {week >= goal ? t(" — цель недели выполнена! 🎉", " — haftalik maqsad bajarildi! 🎉") : ""}
             </p>
-            <ProgressBar value={Math.min(week, WEEK_GOAL)} max={WEEK_GOAL} className="mt-1" />
+            <ProgressBar value={Math.min(week, goal)} max={goal} className="mt-1" />
           </div>
         </div>
       </div>

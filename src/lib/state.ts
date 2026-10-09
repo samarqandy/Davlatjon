@@ -76,7 +76,33 @@ export interface Settings {
   childNameAt?: number;
   /** Сложность задач из базы: легче своего уровня, по силам (по умолчанию) или труднее. */
   puzzleLevel?: PuzzleLevel;
+  /** Родитель: сколько активных минут в день достаточно (0 или нет значения — без ограничения). */
+  dailyLimitMin?: number;
+  /** Родитель: приглашение на неделю — сколько дней с занятиями (3–7, по умолчанию 5). */
+  goalDays?: number;
+  /** Родитель: присылать итоги недели в Telegram (работает при входе через Telegram). */
+  reportToTelegram?: boolean;
 }
+
+/** Активное время за день: пока ребёнок что-то делает на сайте (не открыт раздел родителя). */
+export interface DayActivity {
+  /** Активные миллисекунды. */
+  ms: number;
+  /** Сколько миллисекунд сверху разрешил родитель (PIN-код) в этот день. */
+  extra?: number;
+}
+
+/** Сколько последних дней активности хранить. */
+export const ACTIVITY_DAYS_KEPT = 120;
+/**
+ * Допустимые значения дневного ограничения (минут). В настройке 0 — «без ограничения»: явное значение нужно,
+ * чтобы выключение дошло до другого устройства.
+ */
+export const LIMIT_CHOICES = [20, 30, 45, 60, 90] as const;
+/** Недельное приглашение: сколько дней с занятиями (по умолчанию 5). */
+export const GOAL_DAYS_MIN = 3;
+export const GOAL_DAYS_MAX = 7;
+export const GOAL_DAYS_DEFAULT = 5;
 
 /** Сыгранная с роботом или вдвоём партия. */
 export interface ChessGameRecord {
@@ -215,6 +241,8 @@ export interface AppState {
   chessDrills: Record<string, number>;
   /** Школа эндшпиля: задание → когда решено. */
   chessEndgames: Record<string, number>;
+  /** Активное время по дням «ГГГГ-ММ-ДД» — для отчёта и дневного ограничения. */
+  activity: Record<string, DayActivity>;
   welcomed?: boolean;
 }
 
@@ -238,6 +266,7 @@ export const DEFAULT_STATE: AppState = Object.freeze({
   chessGuess: {},
   chessDrills: {},
   chessEndgames: {},
+  activity: {},
 }) as AppState;
 
 export const EMPTY_CHESS: ChessExerciseProgress = Object.freeze({ misses: 0 }) as ChessExerciseProgress;
@@ -272,6 +301,25 @@ function woodpeckerOf(x: unknown): Woodpecker | undefined {
   return { keys: x.keys as string[], rounds, index: x.index, ms: x.ms, misses: x.misses, at: x.at };
 }
 
+const DAY_KEY = /^\d{4}-\d{2}-\d{2}$/;
+
+function activityOf(x: unknown): AppState["activity"] {
+  if (!isObject(x)) return {};
+  const out: AppState["activity"] = {};
+  for (const [day, v] of Object.entries(x)) {
+    if (!DAY_KEY.test(day) || !isObject(v) || !finite(v.ms) || v.ms < 0) continue;
+    // Не больше суток: сбой часов или чужие данные не должны ломать отчёт.
+    const entry: DayActivity = { ms: Math.min(v.ms, 24 * 3_600_000) };
+    if (finite(v.extra) && v.extra > 0) entry.extra = Math.min(v.extra, 6 * 3_600_000);
+    out[day] = entry;
+  }
+  return Object.fromEntries(
+    Object.entries(out)
+      .sort(([a], [b]) => (a < b ? 1 : -1))
+      .slice(0, ACTIVITY_DAYS_KEPT),
+  );
+}
+
 export function sanitize(raw: unknown): AppState {
   if (!isObject(raw)) return DEFAULT_STATE;
   const settings = isObject(raw.settings) ? raw.settings : {};
@@ -300,6 +348,16 @@ export function sanitize(raw: unknown): AppState {
       lang: settings.lang === "uz" ? "uz" : "ru",
       puzzleLevel:
         settings.puzzleLevel === "easy" || settings.puzzleLevel === "hard" ? settings.puzzleLevel : undefined,
+      dailyLimitMin: [0, ...LIMIT_CHOICES].includes(settings.dailyLimitMin as number)
+        ? (settings.dailyLimitMin as number)
+        : undefined,
+      goalDays:
+        Number.isInteger(settings.goalDays) &&
+        (settings.goalDays as number) >= GOAL_DAYS_MIN &&
+        (settings.goalDays as number) <= GOAL_DAYS_MAX
+          ? (settings.goalDays as number)
+          : undefined,
+      reportToTelegram: typeof settings.reportToTelegram === "boolean" ? settings.reportToTelegram : undefined,
     },
     chess: isObject(raw.chess) ? (raw.chess as AppState["chess"]) : {},
     chessGames: Array.isArray(raw.chessGames) ? (raw.chessGames as ChessGameRecord[]) : [],
@@ -314,6 +372,7 @@ export function sanitize(raw: unknown): AppState {
     chessGuess: isObject(raw.chessGuess) ? (raw.chessGuess as AppState["chessGuess"]) : {},
     chessDrills: isObject(raw.chessDrills) ? (raw.chessDrills as AppState["chessDrills"]) : {},
     chessEndgames: isObject(raw.chessEndgames) ? (raw.chessEndgames as AppState["chessEndgames"]) : {},
+    activity: activityOf(raw.activity),
     welcomed: raw.welcomed === true,
   };
 }
