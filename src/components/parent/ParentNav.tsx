@@ -24,6 +24,8 @@ export function ParentNav({ weeks }: { weeks: NavWeek[] }) {
   const gate = useParentGate();
   const hydrated = useHydrated();
   const days = useStore((s) => s.days);
+  // Пока раздел не открыт PIN-кодом, меню не показываем: оно подсказывало бы ребёнку, что внутри.
+  if (gate !== "unlocked") return null;
   const week = hydrated ? reviewWeek(weeks, days) : (weeks[0]?.number ?? 1);
   const links = [
     { href: "/parent", label: t("📊 Обзор", "📊 Umumiy holat"), active: path === "/parent" },
@@ -52,15 +54,13 @@ export function ParentNav({ weeks }: { weeks: NavWeek[] }) {
           </Link>
         ))}
       </nav>
-      {gate === "unlocked" && (
-        <button
-          type="button"
-          onClick={lockParent}
-          className="ml-auto rounded-xl px-3 py-2 text-sm font-bold text-muted hover:bg-black/5"
-        >
-          🔒 {t("Закрыть раздел", "Boʻlimni yopish")}
-        </button>
-      )}
+      <button
+        type="button"
+        onClick={lockParent}
+        className="ml-auto min-h-11 rounded-xl px-3 py-2 text-sm font-bold text-muted hover:bg-black/5"
+      >
+        🔒 {t("Закрыть раздел", "Boʻlimni yopish")}
+      </button>
     </div>
   );
 }

@@ -1,17 +1,24 @@
 "use client";
 
-import { useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { Button } from "@/components/ui";
 import { useT } from "@/lib/i18n";
-import { createPin, forgetPin, unlockWithPin, useParentGate } from "@/lib/parentGate";
+import {
+  confirmPinReset,
+  createPin,
+  pinResetAt,
+  pinWaitMs,
+  requestPinReset,
+  unlockWithPin,
+  useParentGate,
+} from "@/lib/parentGate";
 
-/** Слова для сброса PIN-кода: подходит любое из них, в узбекском — с любым вариантом апострофа (oʻ, o', o‘). */
-const RESET_WORDS = ["сбросить", "oʻchirish"];
-const normalizeWord = (s: string) =>
-  s
-    .trim()
-    .toLowerCase()
-    .replace(/[ʻʼ'‘’`]/g, "ʻ");
+const two = (n: number) => String(n).padStart(2, "0");
+/** «30.09 14:05» — когда откроется сброс. */
+const stamp = (ms: number) => {
+  const d = new Date(ms);
+  return `${two(d.getDate())}.${two(d.getMonth() + 1)} ${two(d.getHours())}:${two(d.getMinutes())}`;
+};
 
 /** Показывает содержимое только взрослому (после ввода PIN-кода). */
 export function ParentGate({ children, compact = false }: { children: ReactNode; compact?: boolean }) {
@@ -27,11 +34,29 @@ function PinForm({ mode, compact }: { mode: "create" | "enter"; compact: boolean
   const [pin2, setPin2] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [forgot, setForgot] = useState(false);
-  const [resetWord, setResetWord] = useState("");
+  // Пауза после неверных попыток и срок сброса читаются при открытии формы: она показывается только в браузере.
+  const [waitMs, setWaitMs] = useState(() => pinWaitMs());
+  const [resetAt, setResetAt] = useState(() => pinResetAt());
+  const [resetReady, setResetReady] = useState(() => {
+    const at = pinResetAt();
+    return at !== null && Date.now() >= at;
+  });
+
+  // Пока идёт пауза, раз в секунду смотрим, не кончилась ли она; то же — для срока сброса.
+  const waiting = waitMs > 0;
+  useEffect(() => {
+    if (!waiting && (resetAt === null || resetReady)) return;
+    const id = setInterval(() => {
+      setWaitMs(pinWaitMs());
+      if (resetAt !== null && Date.now() >= resetAt) setResetReady(true);
+    }, 1000);
+    return () => clearInterval(id);
+  }, [waiting, resetAt, resetReady]);
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
+    if (waiting) return;
     if (!/^\d{4}$/.test(pin)) return setError(t("PIN-код — это 4 цифры.", "PIN-kod — 4 ta raqam."));
     if (mode === "create") {
       if (pin !== pin2)
@@ -39,10 +64,19 @@ function PinForm({ mode, compact }: { mode: "create" | "enter"; compact: boolean
           t("PIN-коды не совпадают. Попробуйте ещё раз.", "PIN-kodlar bir xil emas. Qaytadan urinib koʻring."),
         );
       await createPin(pin);
-    } else if (!(await unlockWithPin(pin))) {
+    } else {
+      const result = await unlockWithPin(pin);
+      if (result === "ok") return;
       setPin("");
-      setError(t("PIN-код не подошёл.", "PIN-kod mos kelmadi."));
+      setWaitMs(pinWaitMs());
+      setError(result === "wait" ? null : t("PIN-код не подошёл.", "PIN-kod mos kelmadi."));
     }
+  };
+
+  const askReset = () => {
+    requestPinReset();
+    setResetAt(pinResetAt());
+    setResetReady(false);
   };
 
   const input =
@@ -97,7 +131,12 @@ function PinForm({ mode, compact }: { mode: "create" | "enter"; compact: boolean
             </label>
           )}
           {error && <p className="font-bold text-rose">{error}</p>}
-          <Button type="submit" size="lg" className="mt-1 w-44">
+          {waiting && (
+            <p className="font-bold text-muted" role="status">
+              {t("Подождите немного и попробуйте снова.", "Biroz kuting va yana urinib koʻring.")}
+            </p>
+          )}
+          <Button type="submit" size="lg" className="mt-1 w-44" disabled={waiting}>
             {mode === "create" ? t("Сохранить", "Saqlash") : t("Открыть", "Ochish")}
           </Button>
         </form>
@@ -107,36 +146,34 @@ function PinForm({ mode, compact }: { mode: "create" | "enter"; compact: boolean
               <button
                 type="button"
                 onClick={() => setForgot(true)}
-                className="font-bold text-muted underline underline-offset-4"
+                className="inline-flex min-h-11 items-center px-2 font-bold text-muted underline underline-offset-4"
               >
                 {t("Забыли PIN-код?", "PIN-kodni unutdingizmi?")}
               </button>
             ) : (
-              <div className="space-y-2 rounded-2xl bg-paper p-3 text-left">
+              <div className="space-y-2 rounded-2xl bg-paper p-3 text-left" data-pin-reset>
                 <p className="text-muted">
                   {t(
-                    "PIN-код хранится только на этом устройстве. Его можно сбросить — прогресс ребёнка не пропадёт. Для подтверждения напишите слово ",
-                    "PIN-kod faqat shu qurilmada saqlanadi. Uni oʻchirib tashlash mumkin — farzandingizning natijalari yoʻqolmaydi. Tasdiqlash uchun ",
+                    "PIN-код хранится только на этом устройстве. Его можно сбросить через сутки после запроса — прогресс ребёнка не пропадёт.",
+                    "PIN-kod faqat shu qurilmada saqlanadi. Uni soʻrovdan bir sutka keyin oʻchirib tashlash mumkin — farzandingizning natijalari yoʻqolmaydi.",
                   )}
-                  <b>{t("сбросить", "oʻchirish")}</b>
-                  {t(".", " soʻzini yozing.")}
                 </p>
-                <div className="flex gap-2">
-                  <input
-                    value={resetWord}
-                    onChange={(e) => setResetWord(e.target.value)}
-                    className="h-10 flex-1 rounded-xl border-2 border-line px-3 outline-none focus:border-brand"
-                    aria-label={t("Слово для подтверждения", "Tasdiqlash soʻzi")}
-                  />
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    disabled={!RESET_WORDS.includes(normalizeWord(resetWord))}
-                    onClick={forgetPin}
-                  >
-                    {t("Сбросить", "Oʻchirish")}
+                {resetAt === null ? (
+                  <Button size="sm" variant="secondary" onClick={askReset}>
+                    {t("Запросить сброс", "Oʻchirishni soʻrash")}
                   </Button>
-                </div>
+                ) : resetReady ? (
+                  <Button size="sm" variant="secondary" onClick={() => confirmPinReset()}>
+                    {t("Сбросить PIN-код", "PIN-kodni oʻchirish")}
+                  </Button>
+                ) : (
+                  <p className="font-bold">
+                    {t(
+                      `Сброс будет доступен ${stamp(resetAt)}. Если запрос сделали не вы, просто введите PIN-код — запрос отменится.`,
+                      `Oʻchirish ${stamp(resetAt)} da ochiladi. Agar soʻrovni siz yubormagan boʻlsangiz, PIN-kodni kiriting — soʻrov bekor boʻladi.`,
+                    )}
+                  </p>
+                )}
               </div>
             )}
           </div>

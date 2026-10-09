@@ -225,6 +225,13 @@ export function recordChessGame(game: Omit<ChessGameRecord, "id" | "at"> & { id?
   return id;
 }
 
+/** Убрать запись о партии (например, когда ребёнок отменил сдачу и партия продолжилась). */
+export function removeChessGame(id: string) {
+  setState((s) =>
+    s.chessGames.some((g) => g.id === id) ? { ...s, chessGames: s.chessGames.filter((g) => g.id !== id) } : s,
+  );
+}
+
 export function saveChessAnalysis(id: string, analysis: NonNullable<ChessGameRecord["analysis"]>) {
   setState((s) => ({ ...s, chessGames: s.chessGames.map((g) => (g.id === id ? { ...g, analysis } : g)) }));
 }

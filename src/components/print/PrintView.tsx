@@ -89,7 +89,7 @@ export function PrintView({
                 role="tab"
                 aria-selected={variant === v.id}
                 title={t(v.hint.ru, v.hint.uz)}
-                onClick={() => setHash(`#${v.id}`)}
+                onClick={() => setHash(`#${v.id}`, { keepScroll: true })}
                 className={cn(
                   "rounded-xl px-3 py-2 text-sm font-extrabold transition",
                   variant === v.id ? "bg-white text-brand-dark shadow-sm" : "text-muted hover:text-ink",

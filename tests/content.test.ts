@@ -5,6 +5,7 @@
 import { describe, expect, it } from "vitest";
 import { SECTIONS } from "@/content/meta";
 import { WEEKS, allDays, allTasks } from "@/content/program";
+import { localizeDay } from "@/content/uz";
 import type { AnswerSpec, Block, Task } from "@/content/types";
 
 function blockTexts(b: Block): string[] {
@@ -229,6 +230,23 @@ describe("качество текста", () => {
       const mixed = text.match(/[А-Яа-яЁё]+[A-Za-z]+[А-Яа-яЁё]*|[A-Za-z]+[А-Яа-яЁё]+/g);
       expect(mixed, `${id}: ${text}`).toBeNull();
     }
+  });
+
+  it("в подписях, которые выводятся без разметки (заголовки, привычка), нет ** и `", () => {
+    const plain: string[] = [];
+    for (const lang of ["ru", "uz"] as const)
+      for (const day of allDays()) {
+        const d = localizeDay(day, lang);
+        plain.push(d.title, d.habit.name, ...d.tasks.map((t) => t.title));
+      }
+    expect(plain.filter((x) => /\*\*|`/.test(x))).toEqual([]);
+  });
+
+  it("абзацы вступления дня сбалансированы по ** — они выводятся через RichText", () => {
+    for (const lang of ["ru", "uz"] as const)
+      for (const day of allDays())
+        for (const p of localizeDay(day, lang).intro)
+          expect((p.match(/\*\*/g) ?? []).length % 2, `${day.id} ${lang}: ${p}`).toBe(0);
   });
 
   it("разметка сбалансирована: `…` и **…**", () => {

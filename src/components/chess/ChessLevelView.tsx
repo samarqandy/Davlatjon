@@ -11,6 +11,7 @@ import { certificateHref } from "@/lib/certificate";
 import { levelStatuses } from "@/lib/chessProgress";
 import { useTitleTranslation } from "@/lib/docTitle";
 import { useLang, useT } from "@/lib/i18n";
+import { pluralize } from "@/lib/plural";
 import { useHydrated, useStore } from "@/lib/store";
 import { useChess, useChessImage } from "@/lib/useChess";
 import { setHash, useHash } from "@/lib/useHash";
@@ -49,7 +50,7 @@ export function ChessLevelView({ levelId }: { levelId: string }) {
   const solvedIds = new Set(level.exercises.filter((e) => state.chess[e.id]?.solvedAt).map((e) => e.id));
 
   const goExercise = (i: number) => {
-    setHash(`#exercise-${i + 1}`);
+    setHash(`#exercise-${i + 1}`, { keepScroll: true });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -90,7 +91,7 @@ export function ChessLevelView({ levelId }: { levelId: string }) {
       </header>
 
       {!status.unlocked ? (
-        <LockedLevel prev={prev} level={level} />
+        <LockedLevel prev={prev} level={level} need={index > 0 ? statuses[index - 1].need : 0} />
       ) : (
         <>
           {status.passed && <RankEarned level={level} next={next} />}
@@ -113,7 +114,7 @@ export function ChessLevelView({ levelId }: { levelId: string }) {
               <button
                 key={id}
                 type="button"
-                onClick={() => setHash(href)}
+                onClick={() => setHash(href, { keepScroll: true })}
                 aria-current={tab === id ? "page" : undefined}
                 className={cn(
                   "rounded-xl px-2 py-2.5 text-sm leading-tight font-extrabold transition sm:px-4 sm:text-base",
@@ -229,7 +230,7 @@ function LevelLegend({ level }: { level: ChessLevel }) {
   );
 }
 
-function LockedLevel({ prev, level }: { prev: ChessLevel | undefined; level: ChessLevel }) {
+function LockedLevel({ prev, level, need }: { prev: ChessLevel | undefined; level: ChessLevel; need: number }) {
   const t = useT();
   return (
     <section className="rounded-3xl border-2 border-dashed border-line bg-white p-6 text-center shadow-card">
@@ -243,8 +244,8 @@ function LockedLevel({ prev, level }: { prev: ChessLevel | undefined; level: Che
       {prev && (
         <p className="mt-2 text-lg text-muted">
           {t(
-            `Он откроется, когда ты получишь звание «${prev.name}»: реши все упражнения предыдущего уровня.`,
-            `«${prev.name}» unvonini olganingda ochiladi: buning uchun oldingi darajaning hamma mashqlarini yech.`,
+            `Он откроется, когда ты решишь ${pluralize(need, "упражнение", "упражнения", "упражнений")} уровня «${prev.name}».`,
+            `«${prev.name}» darajasida ${need} ta mashq yechsang ochiladi.`,
           )}
         </p>
       )}

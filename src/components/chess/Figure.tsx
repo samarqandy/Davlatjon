@@ -19,7 +19,7 @@ export function Credit({ image, className }: { image: ChessImage; className?: st
   const known = image.author && !/unknown|неизвест|nomaʼlum/i.test(image.author);
   const link = "underline decoration-dotted underline-offset-2 hover:text-ink";
   return (
-    <span className={cn("text-[11px] leading-tight text-muted", className)}>
+    <span className={cn("text-[11px] leading-tight break-words text-muted", className)}>
       {known ? `${KIND_PREFIX[image.kind][lang]}${image.author} · ` : ""}
       {isPublicDomain(image) ? (
         image.licenseCode === "cc0" ? (
@@ -120,9 +120,9 @@ export function PhotoStrip({ images, className }: { images: ChessImage[]; classN
 /** Список всех картинок с авторами и лицензиями — раздел «Откуда картинки». */
 export function ImageCredits({ images }: { images: ChessImage[] }) {
   return (
-    <ul className="grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
+    <ul className="grid grid-cols-[minmax(0,1fr)] gap-x-6 gap-y-2 text-sm sm:grid-cols-[repeat(2,minmax(0,1fr))]">
       {images.map((img) => (
-        <li key={img.id} className="flex items-center gap-2">
+        <li key={img.id} className="flex min-w-0 items-center gap-2">
           <Portrait image={img} size={32} />
           <span className="min-w-0">
             <span className="block truncate font-bold">{img.caption}</span>

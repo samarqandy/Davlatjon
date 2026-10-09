@@ -7,8 +7,18 @@ export interface LevelStatus {
   total: number;
   /** Все упражнения уровня решены — звание получено. */
   passed: boolean;
-  /** Уровень открыт: входит в открытые по возрасту, или предыдущий пройден, или родитель открыл все. */
+  /** Сколько упражнений этого уровня нужно решить, чтобы открылся следующий (звание — всё равно за все). */
+  need: number;
+  /** Уровень открыт: входит в открытые по возрасту, или в предыдущем решено достаточно, или родитель открыл все. */
   unlocked: boolean;
+}
+
+/**
+ * Следующий уровень открывается, когда решено примерно семь из десяти упражнений (из семи — пять): ребёнок
+ * не застревает на одной трудной задаче, а звание по-прежнему означает «решены все».
+ */
+export function unlockNeed(total: number): number {
+  return Math.max(1, Math.ceil(total * 0.7));
 }
 
 export function levelStatuses(levels: readonly ChessLevel[], state: AppState): LevelStatus[] {
@@ -21,7 +31,8 @@ export function levelStatuses(levels: readonly ChessLevel[], state: AppState): L
       solved,
       total,
       passed: solved === total,
-      unlocked: i < open || out[i - 1].passed,
+      need: unlockNeed(total),
+      unlocked: i < open || out[i - 1].solved >= out[i - 1].need,
     });
   });
   return out;

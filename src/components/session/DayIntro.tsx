@@ -1,5 +1,6 @@
 "use client";
 
+import { RichText } from "@/components/RichText";
 import { ButtonLink, Button, LevelBadge } from "@/components/ui";
 import { sectionsFor } from "@/content/meta";
 import { printHref } from "@/content/program";
@@ -37,7 +38,9 @@ export function DayIntro({ day, onStart }: { day: Day; onStart: () => void }) {
         </div>
         <div className="child-text space-y-3 text-lg leading-relaxed sm:text-xl">
           {day.intro.map((p) => (
-            <p key={p}>{p}</p>
+            <p key={p}>
+              <RichText text={p} />
+            </p>
           ))}
         </div>
         <div className="mt-5 inline-flex items-center gap-2 rounded-2xl bg-sun-soft px-4 py-2 font-extrabold text-[#7a4b00]">

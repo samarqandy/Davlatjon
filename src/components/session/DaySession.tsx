@@ -42,7 +42,7 @@ export function DaySession({ day: both, nextDayHref }: { day: Both<Day>; nextDay
   }, [step, day.id]);
 
   const go = (s: number) => {
-    setHash(hashForStep(s, total));
+    setHash(hashForStep(s, total), { keepScroll: true });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
