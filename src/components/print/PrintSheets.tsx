@@ -131,7 +131,7 @@ export function WorksheetSheet({ day, withSpace }: { day: Day; withSpace: boolea
           <span>{t("Как было сегодня? 😀 🙂 😐 😕", "Bugun qanday oʻtdi? 😀 🙂 😐 😕")}</span>
         </div>
         <p className="mt-2">
-          {t("Что нового я сегодня понял:", "Bugun nimani yangi tushundim:")}{" "}
+          {t("Что нового мне открылось сегодня:", "Bugun nimani yangi tushundim:")}{" "}
           <span className="answer-line" style={{ minWidth: "95mm" }} />
         </p>
       </footer>

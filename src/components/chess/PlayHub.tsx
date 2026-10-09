@@ -13,7 +13,7 @@ import { setHash, useHash } from "@/lib/useHash";
 import { PieceIcon } from "./ChessBoard";
 import { PlayBoard, type PlayConfig } from "./PlayBoard";
 
-/** Адрес вида #robot-3-w, #two, #pawns-2-b, #endgame-kq; после «?» — часы и фора: #two?c=5_3&o=bq. */
+/** Адрес вида #robot-3-w, #two, #pawns-2-b, #endgame-kq; после «?» — часы, фора и режим «Сам»: #two?c=5_3&o=bq, #robot-2-w?s=1. */
 export function parseConfig(hash: string): PlayConfig | null {
   const [path, query = ""] = hash.replace(/^#/, "").split("?");
   const [mode, a, b] = path.split("-");
@@ -29,6 +29,7 @@ export function parseConfig(hash: string): PlayConfig | null {
       color,
       // Фору даёт робот: он играет без фигуры.
       odds: oddsPiece ? { side: color === "w" ? "b" : "w", piece: oddsPiece } : undefined,
+      solo: params.get("s") === "1",
     };
   }
   if (mode === "two")
@@ -69,7 +70,9 @@ function ModeChooser() {
   const [clock, setClock] = useState("");
   const [oddsSide, setOddsSide] = useState<"w" | "b">("w");
   const [oddsPiece, setOddsPiece] = useState("");
-  const robotQuery = robotOdds ? `?o=${robotOdds}` : "";
+  const [solo, setSolo] = useState(false);
+  const robotQuery = [robotOdds && `o=${robotOdds}`, solo && "s=1"].filter(Boolean).join("&");
+  const robotQuerySuffix = robotQuery ? `?${robotQuery}` : "";
   const twoParams = [clock && `c=${clock}`, oddsPiece && `o=${oddsSide}${oddsPiece}`].filter(Boolean).join("&");
   const chip = (on: boolean) =>
     cn(
@@ -120,6 +123,18 @@ function ModeChooser() {
             </button>
           ))}
         </div>
+        <div className="mt-2 flex flex-wrap items-center gap-1.5" role="group" aria-label={t("Режим", "Rejim")}>
+          <span className="text-sm font-extrabold text-muted">{t("Режим:", "Rejim:")}</span>
+          <button type="button" className={chip(!solo)} aria-pressed={!solo} onClick={() => setSolo(false)}>
+            {t("с помощью", "yordam bilan")}
+          </button>
+          <button type="button" className={chip(solo)} aria-pressed={solo} onClick={() => setSolo(true)} data-solo>
+            {t(
+              "Сам: без подсказок и отмены → корона с блеском ✨",
+              "Oʻzim: maslahatsiz va qaytarishsiz → yaltiroq toj ✨",
+            )}
+          </button>
+        </div>
         <div className="mt-3 grid gap-2 sm:grid-cols-5">
           {robotLevels(lang).map((l) => (
             <div
@@ -148,11 +163,7 @@ function ModeChooser() {
                     data-best-crowns={bestCrowns(robotGames, l.id)}
                     title={t("Лучший результат: короны", "Eng yaxshi natija: tojlar")}
                   >
-                    {[1, 2, 3].map((i) => (
-                      <span key={i} className={i > bestCrowns(robotGames, l.id) ? "opacity-25 grayscale" : undefined}>
-                        👑
-                      </span>
-                    ))}
+                    {bestCrowns(robotGames, l.id) >= 3 ? "👑✨" : bestCrowns(robotGames, l.id) === 2 ? "👑👑" : "👑"}
                   </span>
                 </p>
               )}
@@ -160,14 +171,14 @@ function ModeChooser() {
                 <p className="mt-1 text-xs font-extrabold text-rose">{t("😈 Главный босс", "😈 Bosh boss")}</p>
               )}
               <div className="mt-2 flex gap-1">
-                <Button size="sm" className="flex-1" onClick={() => setHash(`#robot-${l.id}-w${robotQuery}`)}>
+                <Button size="sm" className="flex-1" onClick={() => setHash(`#robot-${l.id}-w${robotQuerySuffix}`)}>
                   {t("Белыми", "Oqlar bilan")}
                 </Button>
                 <Button
                   size="sm"
                   variant="secondary"
                   className="flex-1"
-                  onClick={() => setHash(`#robot-${l.id}-b${robotQuery}`)}
+                  onClick={() => setHash(`#robot-${l.id}-b${robotQuerySuffix}`)}
                 >
                   {t("Чёрными", "Qoralar bilan")}
                 </Button>

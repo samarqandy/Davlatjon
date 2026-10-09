@@ -188,7 +188,7 @@ export function GraphPuzzle({ taskId, puzzle }: { taskId: string; puzzle: GraphS
             }
           : {
               tone: "retry",
-              text: t(`Ты доехал за ${total} ${puzzle.unit}.`, `Yoʻlga ${total} ${puzzle.unit} ketdi.`),
+              text: t(`Путь занял ${total} ${puzzle.unit}.`, `Yoʻlga ${total} ${puzzle.unit} ketdi.`),
               sub: t(
                 "А можно быстрее? Нажми «Заново» и попробуй другой путь.",
                 "Tezroq yetib borsa boʻlmaydimi? «Qaytadan boshlash» tugmasini bos va boshqa yoʻlni sinab koʻr.",

@@ -1,11 +1,12 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Button, cn } from "@/components/ui";
+import { cn } from "@/components/ui";
 import { askExplain, praise, retrySub } from "@/lib/feedback";
 import { useLang, useT } from "@/lib/i18n";
 import { sudokuConflicts, type SudokuGrid } from "@/lib/sudoku";
 import { recordCheck, saveTaskInput, useTask } from "@/lib/store";
+import { CheckButton } from "./CheckButton";
 import { Feedback, type FeedbackState } from "./Feedback";
 
 /** Толстые линии между прямоугольниками судоку. */
@@ -144,9 +145,12 @@ export function SudokuPuzzle({
         )}
       </div>
       <div>
-        <Button onClick={check} size="lg" disabled={!filled}>
-          {t("Проверить", "Tekshirish")}
-        </Button>
+        <CheckButton
+          ready={filled}
+          onCheck={check}
+          onNotReady={setFeedback}
+          missing={["✏️ Впиши цифры во все пустые клетки", "✏️ Boʻsh kataklarning hammasiga raqam yoz"]}
+        />
       </div>
       <Feedback state={feedback} />
     </div>

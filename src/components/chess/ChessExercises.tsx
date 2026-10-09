@@ -610,7 +610,7 @@ function QuizExercise({ ex }: { ex: Of<"quiz"> }) {
         setFeedback({
           tone: "success",
           text: t(`${praise(0, lang)} Все ответы верные.`, `${praise(0, lang)} Hamma savollarning javobini topding.`),
-          sub: t("Молодец, ты хорошо запомнил правила!", "Qoidalarni juda yaxshi eslab qolibsan!"),
+          sub: t("Отлично! Правила хорошо запомнились!", "Qoidalarni juda yaxshi eslab qolibsan!"),
         });
       } else
         setFeedback({ tone: "info", text: t("Верно!", "Toʻgʻri!"), sub: t("Следующий вопрос.", "Keyingi savol.") });
@@ -699,14 +699,14 @@ function QueensExercise({ ex }: { ex: Of<"queens"> }) {
               `${praise(count - 1, lang)} Ни один ферзь не бьёт другого!`,
               `${praise(count - 1, lang)} Hech bir farzin boshqasini urmayapti!`,
             )
-          : t("Это решение ты уже находил.", "Bu yechimni avval ham topgansan."),
+          : t("Это решение уже было найдено.", "Bu yechimni avval ham topgansan."),
         sub:
           count < total
             ? t(
                 `Найдено решений: ${count} из ${total}. Найдёшь другое?`,
                 `${total} ta yechimdan ${count} tasi topildi. Boshqasini ham topa olasanmi?`,
               )
-            : t(`Ты нашёл все решения — их ${total}!`, `Hamma yechimlarni topding — ular ${total} ta!`),
+            : t(`Все решения найдены — их ${total}!`, `Hamma yechimlarni topding — ular ${total} ta!`),
       });
       return;
     }

@@ -1,12 +1,13 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Button, cn } from "@/components/ui";
+import { cn } from "@/components/ui";
 import type { Field } from "@/content/types";
 import { checkFields } from "@/lib/checks";
 import { askExplain, praise, retrySub, retryTitle } from "@/lib/feedback";
 import { useLang, useT } from "@/lib/i18n";
 import { recordCheck, saveTaskInput, useTask } from "@/lib/store";
+import { CheckButton } from "./CheckButton";
 import { Feedback, type FeedbackState } from "./Feedback";
 
 export function FieldsAnswer({ taskId, fields, hintsLeft }: { taskId: string; fields: Field[]; hintsLeft: boolean }) {
@@ -104,9 +105,7 @@ export function FieldsAnswer({ taskId, fields, hintsLeft }: { taskId: string; fi
           </div>
         ))}
       </div>
-      <Button onClick={check} disabled={!allFilled} size="lg">
-        {t("Проверить", "Tekshirish")}
-      </Button>
+      <CheckButton ready={allFilled} onCheck={check} onNotReady={setFeedback} />
       <Feedback state={feedback} />
     </div>
   );

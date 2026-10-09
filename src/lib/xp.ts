@@ -7,14 +7,11 @@ import type { AppState } from "./state";
 
 /** Сколько опыта за что. */
 export const XP = {
-  task: 10,
-  /** Задача решена без подсказок. */
-  taskClean: 5,
+  /** Опыт не зависит от подсказок: просить помощь — нормально, и награда за это не уменьшается. */
+  task: 15,
   day: 20,
   exercise: 5,
-  puzzle: 5,
-  /** Задача из тренажёра решена с первой попытки. */
-  puzzleClean: 3,
+  puzzle: 8,
   ownPuzzle: 5,
   game: 5,
   win: 10,
@@ -31,10 +28,10 @@ const DRILLS = ["safety", "memory", "knight"];
 /** Весь опыт: по занятиям математикой и шахматами. */
 export function xpTotal(s: AppState): number {
   let xp = 0;
-  for (const t of Object.values(s.tasks)) if (t.solvedAt) xp += XP.task + (t.hints ? 0 : XP.taskClean);
+  for (const t of Object.values(s.tasks)) if (t.solvedAt) xp += XP.task;
   for (const d of Object.values(s.days)) if (d.completedAt) xp += XP.day;
   for (const e of Object.values(s.chess)) if (e.solvedAt) xp += XP.exercise;
-  for (const p of Object.values(s.chessPuzzles)) if (p.solvedAt) xp += XP.puzzle + (p.misses ? 0 : XP.puzzleClean);
+  for (const p of Object.values(s.chessPuzzles)) if (p.solvedAt) xp += XP.puzzle;
   xp += Object.keys(s.chessOwnPuzzles).length * XP.ownPuzzle;
   for (const g of s.chessGames) xp += XP.game + (g.result === "win" ? XP.win : 0);
   xp += new Set(Object.keys(s.chessOpenings).map((k) => k.split(":")[0])).size * XP.opening;

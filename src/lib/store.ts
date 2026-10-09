@@ -143,13 +143,28 @@ export function markSolved(taskId: string) {
   );
 }
 
+let persistAsked = false;
+/** После первой решённой задачи просим браузер не стирать прогресс при нехватке места. */
+function askPersist() {
+  if (persistAsked || typeof navigator === "undefined") return;
+  persistAsked = true;
+  try {
+    void navigator.storage?.persist?.().catch(() => {});
+  } catch {
+    // браузер без этой возможности — прогресс просто хранится как обычно
+  }
+}
+
 export function recordCheck(taskId: string, correct: boolean) {
   updateTask(taskId, (t) => ({
     checks: t.checks + 1,
     missed: correct ? t.missed : t.missed + 1,
     status: t.status ?? "started",
   }));
-  if (correct) markSolved(taskId);
+  if (correct) {
+    markSolved(taskId);
+    askPersist();
+  }
 }
 
 export function addFound(taskId: string, key: string) {

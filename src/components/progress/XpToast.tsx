@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getState, onStateChange } from "@/lib/store";
+import { getState, onStateChange, useStore } from "@/lib/store";
+import { showsNumbers } from "@/lib/workshop";
 import { xpTotal } from "@/lib/xp";
 
 /**
@@ -10,6 +11,7 @@ import { xpTotal } from "@/lib/xp";
  */
 export function XpToast() {
   const [toast, setToast] = useState<{ id: number; gain: number } | null>(null);
+  const numbers = useStore((s) => showsNumbers(s.settings.age));
 
   useEffect(() => {
     let prev = xpTotal(getState());
@@ -35,9 +37,9 @@ export function XpToast() {
       key={toast.id}
       role="status"
       data-xp-toast
-      className="pointer-events-none fixed right-4 bottom-4 z-50 animate-pop rounded-2xl bg-sun px-4 py-2 text-lg font-black text-ink shadow-lift"
+      className="pointer-events-none fixed top-20 right-4 z-50 animate-pop rounded-2xl bg-sun px-4 py-2 text-lg font-black text-ink shadow-lift"
     >
-      +{toast.gain} XP ⭐
+      {numbers ? `+${toast.gain} XP ⭐` : "⭐"}
     </div>
   );
 }

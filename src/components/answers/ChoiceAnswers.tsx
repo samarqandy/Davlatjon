@@ -8,6 +8,7 @@ import { checkAssign, checkChoice, checkOrder, orderMatches } from "@/lib/checks
 import { askExplain, praise, retrySub, retryTitle } from "@/lib/feedback";
 import { useLang, useT } from "@/lib/i18n";
 import { recordCheck, saveTaskInput, useTask } from "@/lib/store";
+import { CheckButton } from "./CheckButton";
 import { Feedback, type FeedbackState } from "./Feedback";
 
 type ChoiceSpec = Extract<AnswerSpec, { kind: "choice" }>;
@@ -58,7 +59,7 @@ export function ChoiceAnswer({ taskId, spec, hintsLeft }: { taskId: string; spec
       setFeedback({
         tone: "retry",
         text: t(
-          "Всё, что ты отметил, подходит! Но это ещё не всё.",
+          "Всё, что отмечено, подходит! Но это ещё не всё.",
           "Belgilaganlaringning hammasi toʻgʻri! Lekin bu hali hammasi emas.",
         ),
         sub: t("Найди остальные варианты.", "Qolgan variantlarni ham top."),
@@ -186,9 +187,12 @@ export function AssignAnswer({ taskId, spec, hintsLeft }: { taskId: string; spec
           </div>
         ))}
       </div>
-      <Button onClick={check} disabled={!filled} size="lg">
-        {t("Проверить", "Tekshirish")}
-      </Button>
+      <CheckButton
+        ready={filled}
+        onCheck={check}
+        onNotReady={setFeedback}
+        missing={["✏️ Выбери ответ в каждой строке", "✏️ Har bir qatorda javobni tanla"]}
+      />
       <Feedback state={feedback} />
     </div>
   );

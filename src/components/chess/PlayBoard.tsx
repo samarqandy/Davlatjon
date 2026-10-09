@@ -30,7 +30,7 @@ import {
   type PlayMode,
   type PlayStatus,
 } from "@/lib/play";
-import { crownsFromHelp, robotPersona } from "@/lib/crowns";
+import { crownsForWin, robotPersona } from "@/lib/crowns";
 import { pluralize } from "@/lib/plural";
 import { random } from "@/lib/random";
 import { cheer } from "@/lib/voice";
@@ -49,6 +49,8 @@ export interface PlayConfig {
   clock?: ClockSetting;
   /** Фора: одна сторона играет без фигуры. */
   odds?: Odds;
+  /** «Сам»: без подсказок и отмены ходов — за победу корона с золотым блеском. */
+  solo?: boolean;
 }
 
 const newGameId = () => `g${Math.floor(random() * 36 ** 8).toString(36)}`;
@@ -185,7 +187,7 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
       ucis: plies.map((p) => p.uci),
       clock: config.clock?.id,
       odds: config.odds ? `${config.odds.side}${config.odds.piece}` : undefined,
-      ...(config.mode === "robot" ? { hints, undos } : {}),
+      ...(config.mode === "robot" ? { hints, undos, solo: !!config.solo } : {}),
     });
   }, [status.over, status.winner, status.mate, withRobot, config, myMoves, gameId, start, plies, hints, undos]);
 
@@ -324,7 +326,7 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
           : persona.won;
   const crowns =
     config.mode === "robot" && status.over && status.winner === config.color
-      ? crownsFromHelp(hints + undos, !!config.odds)
+      ? crownsForWin(!!config.solo, !!config.odds)
       : 0;
   const variant = config.variant ? endgameText(config.variant, lang) : undefined;
   const title =
@@ -434,19 +436,15 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
           <p className="rounded-2xl bg-sun-soft px-4 py-2 font-black text-[#7a4b00]" data-crowns={crowns}>
             <span className="mr-1 text-2xl">{"👑".repeat(crowns)}</span>
             {crowns === 3
-              ? t(
-                  "Три короны — победа без подсказок и отмен ходов!",
-                  "Uchta toj — maslahatsiz va yurishni qaytarmasdan gʻalaba!",
-                )
+              ? t("Корона с золотым блеском: без подсказок!", "Oltin yaltiroq toj: maslahatsiz!")
               : crowns === 2
                 ? t(
-                    "Две короны. Без подсказок и отмен ходов будет три!",
-                    "Ikkita toj. Maslahat va yurishni qaytarishsiz uchta boʻladi!",
+                    "Две короны: робот играл без фигуры, а ты — без подсказок!",
+                    "Ikkita toj: robot donasiz oʻynadi, sen esa maslahatsiz!",
                   )
-                : t(
-                    "Одна корона. Чем меньше подсказок и отмен, тем больше корон.",
-                    "Bitta toj. Maslahat va qaytarish qancha kam boʻlsa, toj shuncha koʻp.",
-                  )}
+                : hints > 0
+                  ? t("Корона твоя! 👑 Подсказка — умный ход.", "Toj seniki! 👑 Maslahat soʻrash — aqlli qadam.")
+                  : t("Корона твоя!", "Toj seniki!")}
           </p>
         )}
         {robotSays && robot && (
@@ -468,13 +466,16 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
 
       <aside className="space-y-3">
         <div className="flex flex-wrap gap-2">
-          <Button variant="secondary" size="sm" onClick={showHint} disabled={!myTurn || status.over || thinking}>
-            💡 {t("Подсказка", "Maslahat")}
-            {hints ? ` (${hints})` : ""}
-          </Button>
-          <Button variant="secondary" size="sm" onClick={undo} disabled={plies.length === 0 || thinking}>
-            ↶ {t("Отменить", "Ortga qaytarish")}
-          </Button>
+          {!config.solo && (
+            <>
+              <Button variant="secondary" size="sm" onClick={showHint} disabled={!myTurn || status.over || thinking}>
+                💡 {t("Подсказка", "Maslahat")}
+              </Button>
+              <Button variant="secondary" size="sm" onClick={undo} disabled={plies.length === 0 || thinking}>
+                ↶ {t("Отменить", "Ortga qaytarish")}
+              </Button>
+            </>
+          )}
           <Button variant="secondary" size="sm" onClick={() => setFlipped((f) => !f)}>
             🔄 {t("Перевернуть", "Taxtani aylantirish")}
           </Button>

@@ -477,7 +477,7 @@ function KnightTour() {
           {path.length === 64 ? (
             <p className="rounded-2xl bg-mint-soft px-3 py-2 font-semibold">
               {t(
-                "🏆 Все 64 клетки! Ты повторил подвиг аль-Адли.",
+                "🏆 Все 64 клетки! Подвиг аль-Адли повторён.",
                 "🏆 Hamma 64 katak! Sen al-Adliyning jasoratini takrorlading.",
               )}
             </p>

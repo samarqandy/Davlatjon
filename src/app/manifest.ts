@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: BRAND_TITLE.ru,
     short_name: BRAND,
-    description: "Математика, логика и алгоритмы для детей от 7 лет: ежедневные занятия, подсказки и печать листов.",
+    description: "Математика, логика и алгоритмы для детей 6–12 лет: ежедневные занятия, подсказки и печать листов.",
     lang: "ru",
     start_url: "/",
     display: "standalone",

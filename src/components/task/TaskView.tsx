@@ -6,7 +6,7 @@ import { ListenButton } from "@/components/ListenButton";
 import { LevelBadge, SectionTag } from "@/components/ui";
 import type { Task } from "@/content/types";
 import { useLang, useT } from "@/lib/i18n";
-import { addTime, useTask } from "@/lib/store";
+import { addTime, useStore, useTask } from "@/lib/store";
 import { VOICE_CLIPS } from "@/lib/voice";
 import { AfterSolve } from "./AfterSolve";
 import { BlockView } from "./BlockView";
@@ -42,6 +42,8 @@ export function TaskView({ task, number, total }: { task: Task; number: number; 
   const lang = useLang();
   useTaskTimer(task.id);
   const solved = progress.status === "solved";
+  const young = useStore((s) => (s.settings.age ?? 9) < 9);
+  const hintsLeft = !solved && progress.hints < task.hints.length;
 
   return (
     <TaskIdContext.Provider value={task.id}>
@@ -54,7 +56,12 @@ export function TaskView({ task, number, total }: { task: Task; number: number; 
               <span className="ml-auto text-sm font-bold text-muted">
                 {t(`Задача ${number} из ${total}`, `${number}-masala (jami ${total} ta)`)}
               </span>
-              <ListenButton src={VOICE_CLIPS.task(task.id, lang)} label={t("Прочитать", "Oʻqib berish")} />
+              <ListenButton
+                src={VOICE_CLIPS.task(task.id, lang)}
+                label={t("Прочитать", "Oʻqib berish")}
+                large={young}
+                className={young ? "order-last w-full justify-center sm:order-none sm:w-auto" : undefined}
+              />
             </div>
             <h2 className="mb-4 flex items-center gap-2 text-2xl font-black sm:text-3xl">
               {task.title}
@@ -78,7 +85,21 @@ export function TaskView({ task, number, total }: { task: Task; number: number; 
             className="rounded-3xl border-2 border-brand/15 bg-brand-soft/40 p-4 sm:p-5"
             aria-label={t("Мой ответ", "Javobim")}
           >
-            <h3 className="mb-3 text-lg font-extrabold text-brand-dark">✏️ {t("Мой ответ", "Javobim")}</h3>
+            <div className="mb-3 flex items-center justify-between gap-2">
+              <h3 className="text-lg font-extrabold text-brand-dark">✏️ {t("Мой ответ", "Javobim")}</h3>
+              {hintsLeft && (
+                <button
+                  type="button"
+                  data-hint-jump
+                  onClick={() =>
+                    document.getElementById("hints")?.scrollIntoView({ behavior: "smooth", block: "center" })
+                  }
+                  className="inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-sun-soft px-3.5 text-sm font-extrabold text-[#7a4b00] lg:hidden"
+                >
+                  💡 {t("Подсказка", "Maslahat")}
+                </button>
+              )}
+            </div>
             <AnswerPanel task={task} hintsLeft={progress.hints < task.hints.length} />
           </section>
         </div>

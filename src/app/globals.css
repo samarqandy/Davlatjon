@@ -265,6 +265,36 @@
 html.i18n-wait body {
   opacity: 0;
 }
+/* Вместо пустой страницы — через четверть секунды появляется спокойный кружок загрузки. */
+html.i18n-wait::after {
+  content: "";
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 50;
+  width: 44px;
+  height: 44px;
+  margin: -22px 0 0 -22px;
+  border: 5px solid #e0e3ff;
+  border-top-color: #4f46e5;
+  border-radius: 50%;
+  animation:
+    splash-in 0.3s 0.25s both,
+    splash-spin 0.9s linear infinite;
+}
+@keyframes splash-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes splash-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
 /*
  * Рамка шахматной доски: буквы снизу, цифры слева (как в уроках: «буква внизу, цифра сбоку»).

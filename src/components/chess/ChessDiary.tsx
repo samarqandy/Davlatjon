@@ -50,7 +50,7 @@ export function ChessDiary() {
         <h1 className="text-3xl font-black">{t("Мои партии", "Mening partiyalarim")}</h1>
         <p className="mt-1 max-w-2xl text-muted">
           {t(
-            "Записывай партии, которые сыграл с папой, мамой, друзьями или в кружке. Самое важное — не результат, а что ты понял.",
+            "Записывай партии, сыгранные с папой, мамой, друзьями или в кружке. Самое важное — не результат, а что стало понятно.",
             "Otang, onang, doʻstlaring bilan yoki toʻgarakda oʻynagan partiyalaringni yozib bor. Eng muhimi — natija emas, balki nimani tushunganing.",
           )}
         </p>
@@ -110,7 +110,7 @@ export function ChessDiary() {
             </fieldset>
           </div>
           <label className="block text-sm font-extrabold text-muted">
-            {t("Что я понял или что было интересного", "Nimani tushundim yoki nima qiziq boʻldi")}
+            {t("Что стало понятно или что было интересного", "Nimani tushundim yoki nima qiziq boʻldi")}
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value.slice(0, 300))}

@@ -263,7 +263,11 @@ function Drill({ mode, onExit }: { mode: DrillMode; onExit: () => void }) {
         <aside className="space-y-3">
           <div className="rounded-2xl bg-white p-4 text-center shadow-card">
             <p className="text-sm font-extrabold text-muted">
-              {running ? t("Время", "Vaqt") : over ? t("Время вышло!", "Vaqt tugadi!") : t("Готов?", "Tayyormisan?")}
+              {running
+                ? t("Время", "Vaqt")
+                : over
+                  ? t("Время вышло!", "Vaqt tugadi!")
+                  : t("Начинаем?", "Boshlaymizmi?")}
             </p>
             <p className={cn("text-5xl font-black tabular-nums", running && left <= 5 && "text-rose")}>{left}</p>
             {(mode === "find" || mode === "read") && running && (

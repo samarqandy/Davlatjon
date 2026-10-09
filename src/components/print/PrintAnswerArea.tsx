@@ -462,7 +462,7 @@ export function PrintAnswerArea({ task }: { task: Task }) {
             </div>
           ))}
           <p>
-            {t("Что я заметил:", "Nimani payqadim:")} <Line w={130} />
+            {t("Что замечено:", "Nimani payqadim:")} <Line w={130} />
           </p>
         </div>
       );

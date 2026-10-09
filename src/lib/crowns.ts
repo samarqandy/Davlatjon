@@ -1,24 +1,27 @@
 /**
- * Короны за победы над роботом и характер каждого робота.
- * 👑👑👑 — победа без подсказок и отмен, 👑👑 — помощь понадобилась не больше трёх раз, 👑 — любая другая победа.
- * Победа с форой (у робота нет фигуры) — не больше двух корон.
+ * Короны за победы над роботом. Помощь ничего не отнимает: победа всегда приносит 👑.
+ * Корону с золотым блеском (три) даёт победа в режиме «Сам» — ребёнок заранее выбрал играть без подсказок и
+ * отмены ходов; с форой (у робота нет фигуры) — две. Подсказка в обычной партии — умный ход, а не потеря.
  */
 import type { Lang } from "./lang";
 import type { ChessGameRecord } from "./state";
 
 export type Crowns = 0 | 1 | 2 | 3;
 
-/** Короны по числу подсказок и отмен ходов в выигранной партии. */
-export function crownsFromHelp(help: number, odds = false): Crowns {
-  const c: Crowns = help === 0 ? 3 : help <= 3 ? 2 : 1;
-  return odds ? (Math.min(c, 2) as Crowns) : c;
+/** Короны за победу: обычная — одна, в режиме «Сам» — три (с форой — две). */
+export function crownsForWin(solo: boolean, odds = false): Crowns {
+  if (!solo) return 1;
+  return odds ? 2 : 3;
 }
 
-/** Сколько корон принесла партия. Старые партии (до подсчёта подсказок) — одна корона за победу. */
-export function crownsFor(g: Pick<ChessGameRecord, "mode" | "result" | "hints" | "undos" | "odds">): Crowns {
+/** Сколько корон принесла партия. Партии, записанные до режима «Сам», считаются по-старому: их короны не отнимаются. */
+export function crownsFor(g: Pick<ChessGameRecord, "mode" | "result" | "hints" | "undos" | "odds" | "solo">): Crowns {
   if (g.mode !== "robot" || g.result !== "win") return 0;
+  if (g.solo !== undefined) return crownsForWin(g.solo, !!g.odds);
   if (g.hints === undefined && g.undos === undefined) return 1;
-  return crownsFromHelp((g.hints ?? 0) + (g.undos ?? 0), !!g.odds);
+  const help = (g.hints ?? 0) + (g.undos ?? 0);
+  const c: Crowns = help === 0 ? 3 : help <= 3 ? 2 : 1;
+  return g.odds ? (Math.min(c, 2) as Crowns) : c;
 }
 
 /** Лучший результат против робота этого уровня. */

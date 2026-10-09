@@ -57,8 +57,8 @@ export function DayFinish({ day, nextDayHref }: { day: Day; nextDayHref: string 
             label={t(`из ${day.tasks.length} задач решено`, `${day.tasks.length} ta masaladan yechildi`)}
             emoji="✅"
           />
-          <Stat value={explained} label={t("объяснил решение", "ta yechimni tushuntirding")} emoji="💬" />
-          <Stat value={anotherWay} label={t("нашёл другой способ", "ta boshqa yoʻl topding")} emoji="🔁" />
+          <Stat value={explained} label={t("решений объяснено", "ta yechimni tushuntirding")} emoji="💬" />
+          <Stat value={anotherWay} label={t("других способов найдено", "ta boshqa yoʻl topding")} emoji="🔁" />
           <Stat
             value={persisted.length}
             label={t("не сдался в трудной", "ta qiyin masalada taslim boʻlmading")}
@@ -105,7 +105,7 @@ export function DayFinish({ day, nextDayHref }: { day: Day; nextDayHref: string 
         <p className="mt-5 rounded-2xl bg-brand-soft px-4 py-3 font-bold text-brand-dark">
           🗣{" "}
           {t(
-            "Расскажи маме или папе: что нового ты сегодня понял?",
+            "Расскажи маме или папе: что нового тебе сегодня открылось?",
             "Oyingga yoki dadangga aytib ber: bugun nimani yangi tushunding?",
           )}
         </p>
