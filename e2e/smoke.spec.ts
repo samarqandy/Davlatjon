@@ -68,7 +68,7 @@ test("робот доходит до флажка по программе", asyn
 
 test("печать: лист заданий без ответов, ответы — только после PIN-кода", async ({ page }) => {
   await page.goto("/week/1/day/1/print");
-  await expect(page.getByText("Davlatjon · задания")).toBeVisible();
+  await expect(page.getByText("Parvoz Edu · задания")).toBeVisible();
   await expect(page.getByText("Ответ:")).toHaveCount(0);
   await page.getByRole("tab", { name: /Ответы/ }).click();
   await expect(page.getByRole("heading", { name: "Раздел для взрослых" })).toBeVisible();

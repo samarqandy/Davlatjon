@@ -126,7 +126,7 @@ describe("в исходниках не осталось имени Давлат�
     const found: string[] = [];
     for (const f of files(root)) {
       if (f.endsWith(path.join("lib", "brand.ts"))) continue;
-      const text = fs.readFileSync(f, "utf8").replace(/davlatjon-(lab|progress)/g, "");
+      const text = fs.readFileSync(f, "utf8").replace(/davlatjon-lab/g, "");
       text.split("\n").forEach((line, i) => {
         if (/давлатжон|davlatjon/i.test(line)) found.push(`${path.relative(root, f)}:${i + 1}`);
       });
