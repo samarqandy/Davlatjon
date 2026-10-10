@@ -66,6 +66,15 @@ export function sqlStore(query: SqlQuery): ProgressStore {
   };
 }
 
+/**
+ * Чей прогресс: аккаунт или один из профилей детей на устройстве (?profile=p3k9x). У первого профиля
+ * запись прежняя — «google:123», у остальных — «google:123#p3k9x».
+ */
+export function progressKey(userId: string, profile: string | null): string | null {
+  if (!profile || profile === "main") return userId;
+  return /^[a-z0-9]{3,12}$/.test(profile) ? `${userId}#${profile}` : null;
+}
+
 const stores = new Map<string, ProgressStore>();
 
 /** Хранилище на Neon; одно на процесс, чтобы таблица проверялась один раз, а не на каждый запрос. */

@@ -5,6 +5,7 @@ import { useAccount } from "@/lib/account";
 import { useT } from "@/lib/i18n";
 import { BRAND, BRAND_TAGLINE } from "@/lib/brand";
 import { LangSwitch } from "./LangSwitch";
+import { ProfileSwitcher } from "./ProfileSwitcher";
 import { LogoMark } from "./Logo";
 
 export function SiteHeader({ active }: { active?: "home" | "chess" | "problems" | "parent" }) {
@@ -54,6 +55,7 @@ export function SiteHeader({ active }: { active?: "home" | "chess" | "problems" 
         >
           <span aria-hidden>🔒</span>
         </Link>
+        <ProfileSwitcher />
         <LangSwitch />
       </div>
     </header>

@@ -34,12 +34,17 @@ export async function sendWeeklyReports(opts: {
   const send = opts.send ?? ((token, chat, text) => sendTelegramMessage(token, chat, text));
   const run: WeeklyRun = { sent: 0, skipped: 0, blocked: 0, failed: 0 };
   for (const { userId, state } of await opts.store.telegramRecipients()) {
-    const text = messageFor(state, today);
+    // «tg:123» — первый профиль, «tg:123#p3k9x» — другие дети на том же аккаунте: письмо идёт в один чат,
+    // а чтобы родитель различал детей, в начале — аватарка профиля.
+    const [account] = userId.split("#");
+    const body = messageFor(state, today);
+    const avatar = sanitize(state).settings.avatar;
+    const text = body && avatar ? `${avatar} ${body}` : body;
     if (!text) {
       run.skipped++;
       continue;
     }
-    const result = await send(opts.botToken, userId.replace(/^tg:/, ""), text);
+    const result = await send(opts.botToken, account.replace(/^tg:/, ""), text);
     if (result === "ok") run.sent++;
     else if (result === "blocked") run.blocked++;
     else run.failed++;

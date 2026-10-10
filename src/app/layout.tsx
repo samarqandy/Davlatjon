@@ -43,7 +43,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
         */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `try{var s=JSON.parse(localStorage.getItem("davlatjon-lab:v1")||"{}").settings||{};var named=s.childName&&["week","parent","my-problems"].indexOf(location.pathname.split("/")[1])>=0;if(s.lang==="uz"||named){var h=document.documentElement;if(s.lang==="uz")h.lang="uz";h.classList.add("i18n-wait");setTimeout(function(){h.classList.remove("i18n-wait")},1500)}}catch(e){}`,
+            __html: `try{var a=(JSON.parse(localStorage.getItem("davlatjon-lab:profiles")||"{}")||{}).active;var s=JSON.parse(localStorage.getItem("davlatjon-lab:v1"+(a&&a!=="main"&&/^[a-z0-9]{3,12}$/.test(a)?":"+a:""))||"{}").settings||{};var named=s.childName&&["week","parent","my-problems"].indexOf(location.pathname.split("/")[1])>=0;if(s.lang==="uz"||named){var h=document.documentElement;if(s.lang==="uz")h.lang="uz";h.classList.add("i18n-wait");setTimeout(function(){h.classList.remove("i18n-wait")},1500)}}catch(e){}`,
           }}
         />
       </head>

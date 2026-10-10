@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ChildNameField } from "@/components/ChildNameField";
+import { Mascot } from "@/components/Mascot";
 import { ListenButton } from "@/components/ListenButton";
 import { Button, cn } from "@/components/ui";
 import { AGE_MAX, AGE_MIN, PROFILES, ageProfile, profileText } from "@/lib/age";
@@ -43,8 +44,8 @@ export function Welcome() {
       <div className="my-auto w-full max-w-lg animate-pop rounded-[2rem] bg-white p-6 shadow-lift sm:p-8">
         {step === 0 ? (
           <div className="space-y-5">
-            <div className="text-6xl" aria-hidden>
-              🤖
+            <div className="flex items-center gap-3" aria-hidden>
+              <Mascot size={88} float />
             </div>
             <h2 id="welcome-title" className="text-3xl font-black">
               {t("Привет! Добро пожаловать в лабораторию!", "Salom! Laboratoriyaga xush kelibsan!")}

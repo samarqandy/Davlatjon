@@ -6,6 +6,7 @@ import { ButtonLink, cn, ProgressBar } from "@/components/ui";
 import { sectionsFor } from "@/content/meta";
 import type { DaySummary, WeekSummary } from "@/content/summary";
 import { ChildNameBanner } from "@/components/home/ChildNameBanner";
+import { PlacementCard } from "@/components/home/PlacementCard";
 import { Welcome } from "@/components/home/Welcome";
 import { TodayCard } from "@/components/progress/TodayCard";
 import { useBoth, useLang, useT, type Both, type T } from "@/lib/i18n";
@@ -110,6 +111,8 @@ export function HomeDashboard({ weeks: both }: { weeks: Both<WeekSummary[]> }) {
 
         <TodayCard />
       </section>
+
+      <PlacementCard />
 
       <ChessHomeCard />
 

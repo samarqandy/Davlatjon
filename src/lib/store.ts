@@ -9,13 +9,13 @@ import { useMemo, useSyncExternalStore } from "react";
  */
 
 import { withActivity, withExtra } from "./activity";
+import { REGISTRY_KEY, readRegistry, storageKeyFor } from "./profiles";
 import { cleanChildName } from "./childName";
 import {
   DEFAULT_STATE,
   EMPTY_CHESS,
   EMPTY_TASK,
   REVIEW_DAYS,
-  STORAGE_KEY,
   isoDay,
   sanitize,
   type AppState,
@@ -37,19 +37,27 @@ export * from "./state";
 
 let state: AppState = DEFAULT_STATE;
 let loaded = false;
+/** Запись выбранного профиля: определяется один раз при загрузке; смена профиля перезагружает страницу. */
+let storageKey = "";
 const listeners = new Set<() => void>();
 
 function ensureLoaded() {
   if (loaded || typeof window === "undefined") return;
   loaded = true;
+  storageKey = storageKeyFor(readRegistry().active);
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
+    const raw = window.localStorage.getItem(storageKey);
     if (raw) state = sanitize(JSON.parse(raw));
   } catch {
     state = DEFAULT_STATE;
   }
   window.addEventListener("storage", (e) => {
-    if (e.key !== STORAGE_KEY) return;
+    // В другой вкладке выбрали другого ребёнка — эта вкладка не должна дальше писать в чужой прогресс.
+    if (e.key === REGISTRY_KEY && storageKeyFor(readRegistry().active) !== storageKey) {
+      window.location.reload();
+      return;
+    }
+    if (e.key !== storageKey) return;
     try {
       state = e.newValue ? sanitize(JSON.parse(e.newValue)) : DEFAULT_STATE;
     } catch {
@@ -61,7 +69,7 @@ function ensureLoaded() {
 
 function persist() {
   try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    window.localStorage.setItem(storageKey, JSON.stringify(state));
   } catch {
     // Хранилище недоступно (приватный режим) — работаем в памяти.
   }

@@ -19,7 +19,9 @@ export const dayHref = (d: Pick<DaySummary, "week" | "day">) => `/week/${d.week}
 
 /** Первый не пройденный день и место в нём, где остановились. */
 export function nextDayStep(days: readonly DaySummary[], s: AppState): NextDayStep | null {
-  const day = days.find((d) => !s.days[d.id]?.completedAt);
+  // Если ребёнок начал не с первой недели (по вводному тесту), более ранние недели в «дальше» не предлагаем.
+  const from = s.settings.startWeek ?? 1;
+  const day = days.find((d) => d.week >= from && !s.days[d.id]?.completedAt);
   if (!day) return null;
   const solved = (id: string) => s.tasks[id]?.status === "solved";
   const started = !!s.days[day.id]?.startedAt || day.tasks.some((t) => s.tasks[t.id]?.status);

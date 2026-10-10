@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { AccountPanel } from "@/components/AccountPanel";
 import { BoardLookPicker } from "@/components/chess/BoardLookPicker";
 import { OnlineControls } from "@/components/parent/OnlineControls";
+import { ProfilesCard } from "@/components/parent/ProfilesCard";
 import { Button, Card, cn } from "@/components/ui";
 import { AGE_MAX, AGE_MIN, profileMeta, profileText } from "@/lib/age";
 import { CHILD_NAME_MAX, cleanChildName, latinize } from "@/lib/childName";
@@ -109,6 +110,8 @@ export function SettingsPanel() {
           onChange={(v) => updateSettings({ chessOpenAll: v })}
         />
       </Card>
+
+      <ProfilesCard />
 
       <Card id="account" className="scroll-mt-24 space-y-3 p-5">
         <h2 className="text-lg font-extrabold">👤 {t("Аккаунт", "Hisob")}</h2>

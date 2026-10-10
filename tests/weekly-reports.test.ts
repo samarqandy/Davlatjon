@@ -79,6 +79,31 @@ describe("сообщение", () => {
 });
 
 describe("рассылка", () => {
+  it("второй ребёнок на том же аккаунте: письмо идёт в тот же чат, в начале — картинка профиля", async () => {
+    const sent: { chat: string; text: string }[] = [];
+    const kid = (avatar: string): AppState => ({
+      ...active(),
+      settings: { ...active().settings, avatar },
+    });
+    const run = await sendWeeklyReports({
+      store: fakeStore([
+        { userId: "tg:77", state: kid("🐣") },
+        { userId: "tg:77#p3k9x", state: kid("🦊") },
+      ]),
+      botToken: "1:abc",
+      now: NOW,
+      send: async (_token, chat, text) => {
+        sent.push({ chat, text });
+        return "ok";
+      },
+    });
+    expect(run.sent).toBe(2);
+    expect(sent.map((m) => m.chat)).toEqual(["77", "77"]);
+    expect(sent[0].text.startsWith("🐣 ")).toBe(true);
+    expect(sent[1].text.startsWith("🦊 ")).toBe(true);
+    expect(sent.every((m) => !m.text.includes("Aziz"))).toBe(true);
+  });
+
   it("шлёт каждому в его чат, считает отправленное, пропущенное и недоставленное", async () => {
     const sent: { chat: string; text: string }[] = [];
     const answers: Record<string, SendResult> = { "1": "ok", "3": "blocked", "4": "error" };

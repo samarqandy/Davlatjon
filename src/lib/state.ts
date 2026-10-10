@@ -85,6 +85,10 @@ export interface Settings {
   dailyLimitMin?: number;
   /** Родитель: приглашение на неделю — сколько дней с занятиями (3–7, по умолчанию 5). */
   goalDays?: number;
+  /** Картинка-аватарка профиля (из AVATARS): ребёнок узнаёт «свой» профиль без чтения. */
+  avatar?: string;
+  /** С какой недели начинать (по результату короткого теста): 1–3. Не задано — с первой. */
+  startWeek?: 1 | 2 | 3;
   /** Родитель: присылать итоги недели в Telegram (работает при входе через Telegram). */
   reportToTelegram?: boolean;
 }
@@ -253,6 +257,9 @@ export interface AppState {
 
 export const STORAGE_KEY = "davlatjon-lab:v1";
 
+/** Аватарки профилей. */
+export const AVATARS = ["🐣", "🦊", "🐼", "🦁", "🐸", "🦄", "🐙", "🚀"] as const;
+
 export const DEFAULT_STATE: AppState = Object.freeze({
   version: 1,
   tasks: {},
@@ -353,6 +360,11 @@ export function sanitize(raw: unknown): AppState {
           ? (settings.childNameAt as number)
           : undefined,
       lang: settings.lang === "uz" ? "uz" : "ru",
+      avatar: (AVATARS as readonly unknown[]).includes(settings.avatar) ? (settings.avatar as string) : undefined,
+      startWeek:
+        settings.startWeek === 1 || settings.startWeek === 2 || settings.startWeek === 3
+          ? settings.startWeek
+          : undefined,
       puzzleLevel:
         settings.puzzleLevel === "easy" || settings.puzzleLevel === "hard" ? settings.puzzleLevel : undefined,
       dailyLimitMin: [0, ...LIMIT_CHOICES].includes(settings.dailyLimitMin as number)
