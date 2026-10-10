@@ -67,8 +67,8 @@ export function ChessLevelView({ levelId }: { levelId: string }) {
             className="h-20 w-20 shrink-0 rounded-3xl bg-[#f0d9b5] p-1.5 sm:h-24 sm:w-24"
           />
           <div className="min-w-0">
-            <p className="text-sm font-extrabold tracking-wide text-white/70 uppercase">
-              {t(`Уровень ${level.order} из ${levels.length}`, `${level.order}-daraja, jami ${levels.length} ta`)}
+            <p className="text-sm font-extrabold tracking-wide text-white/85 uppercase">
+              {t(`Уровень ${level.order} из ${levels.length}`, `${levels.length} ta darajadan ${level.order}-si`)}
             </p>
             <h1 className="text-3xl leading-tight font-black sm:text-4xl">{level.name}</h1>
             {lang === "uz" ? (

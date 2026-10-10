@@ -21,6 +21,8 @@ export function HintLadder({ taskId, hints }: { taskId: string; hints: readonly 
   const pause = useStore((s) => s.settings.hintPause);
   const [cooldown, setCooldown] = useState(0);
   const opened = progress.hints;
+  // Задача решена: новые подсказки не нужны и только отвлекают; уже открытые остаются.
+  const solved = progress.status === "solved";
 
   useEffect(() => {
     if (cooldown <= 0) return;
@@ -32,6 +34,8 @@ export function HintLadder({ taskId, hints }: { taskId: string; hints: readonly 
     openHint(taskId);
     if (pause && opened + 1 < hints.length) setCooldown(PAUSE_SECONDS);
   };
+
+  if (solved && opened === 0) return null;
 
   return (
     <section
@@ -54,7 +58,7 @@ export function HintLadder({ taskId, hints }: { taskId: string; hints: readonly 
         </div>
       </div>
 
-      {opened === 0 && (
+      {opened === 0 && !solved && (
         <p className="mb-3 text-[0.95em] text-[#7a4b00]">
           {t(
             "Трудно? Подсказки открываются по одной. Сначала попробуй подумать — это самое интересное!",
@@ -76,7 +80,7 @@ export function HintLadder({ taskId, hints }: { taskId: string; hints: readonly 
         ))}
       </ol>
 
-      {opened < hints.length ? (
+      {solved ? null : opened < hints.length ? (
         <div className="mt-3 flex items-center gap-3">
           <Button variant="sun" onClick={open} disabled={cooldown > 0}>
             {opened === 0

@@ -90,7 +90,7 @@ const PROFILES_UZ: Record<AgeProfile, { name: string; ages: string; about: strin
     name: "Oʻrta yosh",
     ages: "9–10 yosh",
     about:
-      "Oson topshiriqlar — razminka, asosiylari — 🟡🟠🔴. Shaxmatning uchta darajasi ochiq, robot «Ot», kun masalasi ikki yulduzchadan.",
+      "Qulay topshiriqlar — razminka, asosiylari — 🟡🟠🔴. Shaxmatning uchta darajasi ochiq, robot «Ot», kun masalasi ikki yulduzchadan.",
     robotName: "Ot",
   },
   senior: {

@@ -62,7 +62,7 @@ export function HomeDashboard({ weeks: both }: { weeks: Both<WeekSummary[]> }) {
           </h1>
           {next ? (
             <div className="mt-5 rounded-3xl bg-white/12 p-4 ring-1 ring-white/25 backdrop-blur-sm" data-next-step>
-              <p className="text-sm font-extrabold tracking-wide text-white/75 uppercase">
+              <p className="text-sm font-extrabold tracking-wide text-white/85 uppercase">
                 {step?.started ? t("Продолжим", "Davom etamiz") : t("Сегодняшнее занятие", "Bugungi mashgʻulot")}
               </p>
               <p className="mt-1 text-2xl font-black">

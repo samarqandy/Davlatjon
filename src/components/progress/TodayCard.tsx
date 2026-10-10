@@ -28,7 +28,7 @@ export function XpBar({ className, dark }: { className?: string; dark?: boolean 
           {numbers ? `⭐ ${t(`Уровень ${lvl.level}`, `${lvl.level}-daraja`)}` : `${name.emoji} ${name.name}`}
         </p>
         {numbers && (
-          <p className={cn("text-xs font-bold tabular-nums", dark ? "text-white/75" : "text-muted")}>
+          <p className={cn("text-xs font-bold tabular-nums", dark ? "text-white/85" : "text-muted")}>
             {lvl.into} / {lvl.need} XP
           </p>
         )}
@@ -42,8 +42,8 @@ function goalText(g: QuestGoal, t: ReturnType<typeof useT>): string {
   switch (g.kind) {
     case "puzzles":
       return t(
-        `Реши ${pluralize(g.need, "задачу", "задачи", "задач")} в тренажёре`,
-        `Trenajyorda ${g.need} ta masala yech`,
+        `Реши ${pluralize(g.need, "задачу", "задачи", "задач")} в тренажёре тактики`,
+        `Taktika trenajyorida ${g.need} ta masala yech`,
       );
     case "task":
       return t("Реши задачу по математике", "Matematikadan bitta masala yech");
@@ -114,6 +114,12 @@ export function TodayCard({ className }: { className?: string }) {
         </div>
         <div className="space-y-4">
           <XpBar />
+          <p className="-mt-2 text-xs font-bold text-muted">
+            {t(
+              "Решай задачи и играй — набирай опыт, и значок вырастет: 🌱 → 🔦 → 🧭 → 🔭 …",
+              "Masala yech va oʻyna — tajriba toʻpla, belgi oʻsadi: 🌱 → 🔦 → 🧭 → 🔭 …",
+            )}
+          </p>
           <div className="flex items-center gap-3">
             <span aria-hidden className="inline-block origin-bottom text-3xl" style={{ transform: `scale(${flame})` }}>
               🔥

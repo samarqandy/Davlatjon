@@ -77,6 +77,14 @@ export function LogicGrid({
           ))}
         </tbody>
       </table>
+      {!print && (
+        <p className="mt-1.5 text-sm font-bold text-muted">
+          {t(
+            "Нажми на клетку: ✗ — не подходит, ещё раз — ✓ — подходит, ещё раз — очистить.",
+            "Katakni bos: ✗ — mos emas, yana bossang — ✓ — mos, yana bossang — tozalanadi.",
+          )}
+        </p>
+      )}
     </div>
   );
 }

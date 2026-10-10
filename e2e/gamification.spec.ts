@@ -50,7 +50,7 @@ test("задание дня: три дела, уровень и серия", asy
   await expect(card.locator('[data-level-name="Росточек"]')).toBeVisible();
   await expect(card.getByText(/XP/)).toHaveCount(0);
   await expect(card.getByText("Начни серию сегодня!")).toBeVisible();
-  await expect(card.getByRole("link", { name: /Реши 3 задачи в тренажёре/ })).toHaveAttribute(
+  await expect(card.getByRole("link", { name: /Реши 3 задачи в тренажёре тактики/ })).toHaveAttribute(
     "href",
     "/chess/puzzles#practice",
   );

@@ -121,8 +121,8 @@ export function SettingsPanel() {
         <h2 className="text-lg font-extrabold">💾 {t("Прогресс", "Natijalar")}</h2>
         <p className="text-[0.95rem] text-muted">
           {t(
-            "Всё хранится только в этом браузере. Чтобы перенести прогресс на другое устройство (или сохранить копию), сохраните его в файл, а на другом устройстве загрузите этот файл.",
-            "Hammasi faqat shu brauzerda saqlanadi. Natijalarni boshqa qurilmaga koʻchirish (yoki nusxasini saqlab qoʻyish) uchun ularni faylga saqlang, soʻng boshqa qurilmada shu faylni yuklang.",
+            "Без входа в аккаунт всё хранится только в этом браузере. Чтобы перенести прогресс на другое устройство (или сохранить копию), сохраните его в файл, а на другом устройстве загрузите этот файл.",
+            "Hisobga kirmasangiz, hammasi faqat shu brauzerda saqlanadi. Natijalarni boshqa qurilmaga koʻchirish (yoki nusxasini saqlab qoʻyish) uchun ularni faylga saqlang, soʻng boshqa qurilmada shu faylni yuklang.",
           )}
         </p>
         <div className="flex flex-wrap gap-2">

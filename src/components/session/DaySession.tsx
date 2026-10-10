@@ -52,6 +52,8 @@ export function DaySession({ day: both, nextDayHref }: { day: Both<Day>; nextDay
   const young = useStore((s) => (s.settings.age ?? 0) < 9);
   const router = useRouter();
   const bigText = useStore((s) => s.settings.bigText);
+  const progress = useStore((s) => s.tasks);
+  const solved = (i: number) => progress[day.tasks[i]?.id]?.status === "solved";
 
   useEffect(() => {
     if (step >= 1) startDay(day.id);
@@ -61,9 +63,11 @@ export function DaySession({ day: both, nextDayHref }: { day: Both<Day>; nextDay
     setHash(hashForStep(s, total), { keepScroll: true });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
-  // Малышам после третьей и шестой задачи — спокойная остановка, если дальше ещё есть задачи.
+  // Малышам после третьей и шестой задачи — спокойная остановка, если дальше ещё есть задачи
+  // и они в самом деле поработали: хотя бы две из трёх последних задач решены.
   const forward = () => {
-    if (young && !resting && REST_AFTER.includes(step) && step < total) {
+    const worked = [step - 1, step - 2, step - 3].filter((i) => i >= 0 && solved(i)).length >= 2;
+    if (young && worked && !resting && REST_AFTER.includes(step) && step < total) {
       setHash(`#rest-${step}`, { keepScroll: true });
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else go(step + 1);
@@ -84,7 +88,7 @@ export function DaySession({ day: both, nextDayHref }: { day: Both<Day>; nextDay
             <p className="truncate text-xs font-bold text-muted">
               {t(`Неделя ${day.week} · День ${day.day}`, `${day.week}-hafta · ${day.day}-kun`)}
             </p>
-            <p className="truncate font-black">{day.title}</p>
+            <p className="line-clamp-2 leading-tight font-black">{day.title}</p>
           </div>
           <ButtonLink href={printHref(day)} variant="secondary" size="sm" className="shrink-0">
             🖨 <span className="hidden sm:inline">{t("Распечатать", "Chop etish")}</span>
@@ -109,12 +113,13 @@ export function DaySession({ day: both, nextDayHref }: { day: Both<Day>; nextDay
         >
           <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
             <Button variant="secondary" onClick={() => go(step - 1)}>
-              ← {step === 1 ? t("Начало", "Boshiga") : t("Назад", "Orqaga")}
+              ← {t("Назад", "Orqaga")}
             </Button>
             <span className="text-sm font-bold text-muted">
               {step} / {total}
             </span>
-            <Button onClick={forward}>
+            {/* Пока задача не решена, «Дальше» тише «Проверить»: главным остаётся проверка, но пропустить можно. */}
+            <Button variant={solved(step - 1) || step === total ? "primary" : "secondary"} onClick={forward}>
               {step === total ? t("Итоги дня 🏁", "Kun yakuni 🏁") : t("Дальше →", "Keyingi →")}
             </Button>
           </div>
@@ -131,7 +136,7 @@ function ProgressDots({ day, step, onGo }: { day: Day; step: number; onGo: (s: n
   const tasks = useStore((s) => s.tasks);
   return (
     <ol
-      className="mx-auto flex max-w-6xl gap-1.5 overflow-x-auto px-4 pt-0.5 pb-2.5"
+      className="mx-auto flex max-w-6xl gap-1 overflow-x-auto px-4 pt-0.5 pb-2.5 sm:gap-1.5"
       aria-label={t("Задачи дня", "Kun masalalari")}
     >
       {day.tasks.map((task, i) => {
@@ -139,7 +144,7 @@ function ProgressDots({ day, step, onGo }: { day: Day; step: number; onGo: (s: n
         const current = step === i + 1;
         const solved = p?.status === "solved";
         return (
-          <li key={task.id} className="shrink-0">
+          <li key={task.id} className="min-w-0 flex-1 sm:max-w-12">
             <button
               type="button"
               onClick={() => onGo(i + 1)}
@@ -149,7 +154,7 @@ function ProgressDots({ day, step, onGo }: { day: Day; step: number; onGo: (s: n
                 `${i + 1}-masala: ${task.title}${solved ? " — yechildi" : ""}`,
               )}
               className={cn(
-                "relative flex h-10 min-w-10 shrink-0 items-center justify-center rounded-xl border-2 text-lg transition",
+                "relative flex h-10 w-full min-w-8 items-center justify-center rounded-xl border-2 text-base transition sm:min-w-10 sm:text-lg",
                 current
                   ? "border-brand bg-brand-soft shadow-[0_0_0_3px_rgb(79_70_229/0.18)]"
                   : solved
@@ -161,6 +166,14 @@ function ProgressDots({ day, step, onGo }: { day: Day; step: number; onGo: (s: n
               title={`${i + 1}. ${task.title}`}
             >
               <span aria-hidden>{SECTIONS[task.section].emoji}</span>
+              {!solved && p?.status === "started" && (
+                <span
+                  className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-sun text-[10px] font-black text-ink"
+                  aria-hidden
+                >
+                  …
+                </span>
+              )}
               {solved && (
                 <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-mint text-[10px] font-black text-white">
                   ✓
@@ -170,12 +183,12 @@ function ProgressDots({ day, step, onGo }: { day: Day; step: number; onGo: (s: n
           </li>
         );
       })}
-      <li className="shrink-0">
+      <li className="min-w-0 flex-1 sm:max-w-12">
         <button
           type="button"
           onClick={() => onGo(day.tasks.length + 1)}
           className={cn(
-            "flex h-10 min-w-10 shrink-0 items-center justify-center rounded-xl border-2 text-lg",
+            "flex h-10 w-full min-w-8 items-center justify-center rounded-xl border-2 text-base sm:min-w-10 sm:text-lg",
             step > day.tasks.length ? "border-brand bg-brand-soft" : "border-line bg-white",
           )}
           aria-label={t("Итоги дня", "Kun yakuni")}

@@ -246,14 +246,14 @@ export function ChessSchool() {
             <>
               <PieceIcon piece={rank.piece} className="h-14 w-14 rounded-2xl bg-[#f0d9b5] p-1" />
               <div>
-                <p className="text-sm font-extrabold tracking-wide text-white/70 uppercase">
+                <p className="text-sm font-extrabold tracking-wide text-white/85 uppercase">
                   {t("Твоё звание", "Sening unvoning")}
                 </p>
                 {lang === "uz" ? (
                   <p className="text-2xl font-black">{rank.name}</p>
                 ) : (
                   <p className="text-2xl font-black">
-                    {rank.name} <span className="text-base font-bold text-white/70">· {rank.uz}</span>
+                    {rank.name} <span className="text-base font-bold text-white/85">· {rank.uz}</span>
                   </p>
                 )}
               </div>

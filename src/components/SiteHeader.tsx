@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useAccount } from "@/lib/account";
 import { useT } from "@/lib/i18n";
 import { BRAND, BRAND_TAGLINE } from "@/lib/brand";
 import { LangSwitch } from "./LangSwitch";
@@ -44,6 +45,15 @@ export function SiteHeader({ active }: { active?: "home" | "chess" | "problems" 
           {link("/my-problems", "✍️", t("Мои задачи", "Masalalarim"), "problems")}
           {link("/parent", "🔒", t("Родителям", "Ota-onalarga"), "parent")}
         </nav>
+        {/* На телефоне нижнее меню — детское, поэтому вход для взрослых — маленький замок рядом с языком. */}
+        <Link
+          href="/parent"
+          aria-label={t("Родителям", "Ota-onalarga")}
+          data-parent-lock
+          className="flex min-h-11 min-w-11 items-center justify-center rounded-xl text-lg text-muted hover:bg-black/5 sm:hidden"
+        >
+          <span aria-hidden>🔒</span>
+        </Link>
         <LangSwitch />
       </div>
     </header>
@@ -52,6 +62,7 @@ export function SiteHeader({ active }: { active?: "home" | "chess" | "problems" 
 
 export function SiteFooter() {
   const t = useT();
+  const account = useAccount();
   return (
     <footer className="no-print mt-16 border-t border-line/70">
       <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-6 text-sm text-muted sm:flex-row sm:items-center sm:justify-between">
@@ -61,7 +72,14 @@ export function SiteFooter() {
             "Qiziquvchanlik → Fikrlash → Mulohaza → Kashfiyot → Ishonch",
           )}
         </p>
-        <p>{t("Прогресс хранится только в этом браузере.", "Natijalar faqat shu brauzerda saqlanadi.")}</p>
+        <p>
+          {account.user
+            ? t("Прогресс сохраняется в аккаунте.", "Natijalar hisobda saqlanadi.")
+            : t(
+                "Прогресс хранится в этом браузере. Чтобы он был на всех устройствах, родителю нужно войти в аккаунт.",
+                "Natijalar shu brauzerda saqlanadi. Hamma qurilmada boʻlishi uchun ota-ona hisobga kirishi kerak.",
+              )}
+        </p>
         <Link
           href="/parent"
           data-adults-link
