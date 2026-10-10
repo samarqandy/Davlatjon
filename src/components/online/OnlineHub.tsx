@@ -2,13 +2,17 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AccountPanel } from "@/components/AccountPanel";
 import { Button, cn } from "@/components/ui";
 import { loginAvailable, useAccount } from "@/lib/account";
+import { activityDays } from "@/lib/awards";
 import { useT } from "@/lib/i18n";
 import { TIME_CONTROLS, timeControlLabel, type GameView } from "@/lib/online";
 import { api, errorText, usePoll } from "@/lib/onlineClient";
+import { gentleStreak } from "@/lib/quest";
+import { useStore } from "@/lib/store";
+import { useToday } from "@/lib/useToday";
 import { FriendChat } from "./FriendChat";
 
 interface Profile {
@@ -20,6 +24,7 @@ interface Profile {
 interface Friend {
   username: string;
   online: boolean;
+  streak: number;
   chatOk: boolean;
   unread: number;
 }
@@ -156,6 +161,16 @@ function Dashboard({ profile, onRename }: { profile: Profile; onRename: () => vo
   const [chatWith, setChatWith] = useState<string | null>(null);
   const [challenge, setChallenge] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const today = useToday();
+  const appState = useStore((st) => st);
+  const activity = useMemo(() => activityDays(appState), [appState]);
+  const myStreak = today ? gentleStreak(activity, today).days : 0;
+  // Друзья видят серию дней: отправляем её, когда открыли раздел и когда она изменилась.
+  useEffect(() => {
+    if (!today) return;
+    const last = Object.keys(activity).sort().pop() ?? null;
+    void api("/api/play/streak", { days: myStreak, last: myStreak && last ? last : null });
+  }, [today, myStreak, activity]);
   const { data, reload } = usePoll<Dash>(async () => {
     const [f, g] = await Promise.all([
       api<Omit<Dash, "games">>("/api/play/friends"),
@@ -194,6 +209,11 @@ function Dashboard({ profile, onRename }: { profile: Profile; onRename: () => vo
             {profile.username}
           </p>
         </div>
+        {myStreak > 0 && (
+          <p className="rounded-2xl bg-sun-soft px-3 py-1.5 text-sm font-black" data-my-streak>
+            🔥 {t(`Твоя серия: ${myStreak}`, `Seriyang: ${myStreak}`)}
+          </p>
+        )}
         <Button variant="secondary" size="sm" onClick={() => setRenaming((r) => !r)}>
           {t("Сменить имя", "Ismni oʻzgartirish")}
         </Button>
@@ -302,7 +322,18 @@ function Dashboard({ profile, onRename }: { profile: Profile; onRename: () => vo
                   title={f.online ? t("в сети", "onlayn") : t("не в сети", "oflayn")}
                   aria-label={f.online ? t("в сети", "onlayn") : t("не в сети", "oflayn")}
                 />
-                <span className="mr-auto font-mono font-black">{f.username}</span>
+                <span className="font-mono font-black">{f.username}</span>
+                <span className="mr-auto">
+                  {f.streak > 0 && (
+                    <span
+                      className="rounded-full bg-sun-soft px-2 py-0.5 text-sm font-black"
+                      data-friend-streak
+                      title={t("Серия дней с занятиями", "Ketma-ket shugʻullangan kunlar")}
+                    >
+                      🔥 {f.streak}
+                    </span>
+                  )}
+                </span>
                 <Button
                   size="sm"
                   disabled={!profile.onlineOk}

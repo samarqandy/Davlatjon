@@ -137,6 +137,30 @@ describe("/api/play", () => {
   });
 });
 
+describe("POST /api/play/streak", () => {
+  it("друг видит серию; без имени — 409; мусор и будущее отклоняются", async () => {
+    const me = await import("@/app/api/play/me/route");
+    const friends = await import("@/app/api/play/friends/route");
+    const streak = await import("@/app/api/play/streak/route");
+    const today = new Date().toISOString().slice(0, 10);
+
+    expect((await call(streak, "u2", "POST", "/api/play/streak", { days: 4, last: today })).status).toBe(409);
+    await call(me, "u1", "POST", "/api/play/me", { username: "anna" });
+    await call(me, "u2", "POST", "/api/play/me", { username: "bekzod" });
+    await call(friends, "u1", "POST", "/api/play/friends", { action: "request", username: "bekzod" });
+    await call(friends, "u2", "POST", "/api/play/friends", { action: "accept", username: "anna" });
+
+    expect((await call(streak, "u2", "POST", "/api/play/streak", { days: 4, last: today })).status).toBe(200);
+    expect((await call(friends, "u1", "GET", "/api/play/friends")).json.friends[0].streak).toBe(4);
+    for (const bad of [
+      { days: -1, last: today },
+      { days: 3, last: "2099-01-01" },
+      { days: "3", last: today },
+    ])
+      expect((await call(streak, "u2", "POST", "/api/play/streak", bad)).status).toBe(400);
+  });
+});
+
 describe("DELETE /api/account", () => {
   it("без входа — 401; со входа стирает данные и завершает сеанс; запрос с чужого сайта отклоняется", async () => {
     const me = await import("@/app/api/play/me/route");

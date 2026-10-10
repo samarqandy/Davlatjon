@@ -1,7 +1,7 @@
 /** Друзья, партии и переписка поверх настоящего Postgres (PGlite — тот же SQL, что на Neon). */
 import { PGlite } from "@electric-sql/pglite";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
-import { timeControlOf } from "@/lib/online";
+import { checkStreak, streakAlive, timeControlOf } from "@/lib/online";
 import { playStore, type PlayStore, type Profile } from "@/lib/server/playStore";
 
 let db: PGlite;
@@ -204,5 +204,38 @@ describe("удаление аккаунта", () => {
     // Остальные игроки на месте.
     expect((await store.profileById("u2"))?.username).toBe("bekzod");
     expect((await store.profileById("u10"))?.username).toBe("other_one");
+  });
+});
+
+describe("серия дней у друзей", () => {
+  it("друг видит серию, пока она живая; оборвалась — 0; чужие не друзья не видны", async () => {
+    const ann = await user("u1", "anna");
+    const bek = await user("u2", "bekzod");
+    await user("u3", "carl");
+    await befriend(ann, bek);
+    const today = new Date(now).toISOString().slice(0, 10);
+    await store.setStreak(bek.userId, 6, today);
+    expect((await store.friends(ann)).friends[0].streak).toBe(6);
+    // Прошло четыре дня без занятий — серия оборвалась.
+    now += 4 * 86_400_000;
+    expect((await store.friends(ann)).friends[0].streak).toBe(0);
+    await store.setStreak(bek.userId, 0, null);
+    expect((await store.friends(ann)).friends[0].streak).toBe(0);
+  });
+
+  it("проверка входа: целое число, настоящая дата, не из будущего", () => {
+    const n = 1_800_000_000_000;
+    const day = new Date(n).toISOString().slice(0, 10);
+    expect(checkStreak(5, day, n)).toEqual({ ok: true, days: 5, last: day });
+    expect(checkStreak(0, null, n)).toEqual({ ok: true, days: 0, last: null });
+    expect(checkStreak(-1, day, n).ok).toBe(false);
+    expect(checkStreak(2.5, day, n).ok).toBe(false);
+    expect(checkStreak(99999, day, n).ok).toBe(false);
+    expect(checkStreak(3, "2026-02-30", n).ok).toBe(false);
+    expect(checkStreak(3, "вчера", n).ok).toBe(false);
+    expect(checkStreak(3, "2099-01-01", n).ok).toBe(false);
+    expect(streakAlive(day, n)).toBe(true);
+    expect(streakAlive("2020-01-01", n)).toBe(false);
+    expect(streakAlive(null, n)).toBe(false);
   });
 });

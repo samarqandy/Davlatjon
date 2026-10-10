@@ -42,8 +42,8 @@ export function PrivacyView({ contact }: { contact: string }) {
       title: t("Игра с друзьями по сети", "Doʻstlar bilan onlayn oʻyin"),
       body: [
         t(
-          "Для игры ребёнок выбирает придуманное имя (не настоящее — подсказка об этом есть при выборе). Хранятся: это имя, список друзей и просьб, сыгранные партии, короткие сообщения друзьям (до 200 знаков, без ссылок, телефонов и грубых слов) и время последнего посещения — оно нужно для отметки «в сети».",
-          "Oʻynash uchun bola oʻylab topilgan ismni tanlaydi (haqiqiy emas — tanlashda bu haqda eslatma bor). Saqlanadi: shu ism, doʻstlar va soʻrovlar roʻyxati, oʻynalgan partiyalar, doʻstlarga qisqa xabarlar (200 belgigacha, havola, telefon va qoʻpol soʻzlarsiz) hamda oxirgi kirish vaqti — «onlayn» belgisi uchun kerak.",
+          "Для игры ребёнок выбирает придуманное имя (не настоящее — подсказка об этом есть при выборе). Хранятся: это имя, список друзей и просьб, сыгранные партии, короткие сообщения друзьям (до 200 знаков, без ссылок, телефонов и грубых слов), время последнего посещения — оно нужно для отметки «в сети», и серия дней с занятиями (одно число, его видят только друзья).",
+          "Oʻynash uchun bola oʻylab topilgan ismni tanlaydi (haqiqiy emas — tanlashda bu haqda eslatma bor). Saqlanadi: shu ism, doʻstlar va soʻrovlar roʻyxati, oʻynalgan partiyalar, doʻstlarga qisqa xabarlar (200 belgigacha, havola, telefon va qoʻpol soʻzlarsiz) hamda oxirgi kirish vaqti — «onlayn» belgisi uchun kerak — hamda shugʻullangan kunlar seriyasi (bitta raqam, uni faqat doʻstlar koʻradi).",
         ),
         t(
           "Случайных соперников нет: играть и писать можно только с теми, кого ребёнок добавил в друзья. Родитель в настройках может выключить игру, переписку и поиск по имени.",
