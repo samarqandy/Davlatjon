@@ -15,6 +15,7 @@ const PAGES = [
   "/chess/knight",
   "/chess/puzzles",
   "/chess/play",
+  "/chess/online",
   "/chess/drills",
   "/chess/secrets",
   "/chess/awards",
