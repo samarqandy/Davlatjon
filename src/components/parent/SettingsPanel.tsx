@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { AccountPanel } from "@/components/AccountPanel";
 import { BoardLookPicker } from "@/components/chess/BoardLookPicker";
+import { OnlineControls } from "@/components/parent/OnlineControls";
 import { Button, Card, cn } from "@/components/ui";
 import { AGE_MAX, AGE_MIN, profileMeta, profileText } from "@/lib/age";
 import { CHILD_NAME_MAX, cleanChildName, latinize } from "@/lib/childName";
@@ -113,6 +114,8 @@ export function SettingsPanel() {
         <h2 className="text-lg font-extrabold">👤 {t("Аккаунт", "Hisob")}</h2>
         <AccountPanel />
       </Card>
+
+      <OnlineControls />
 
       <Card className="space-y-3 p-5">
         <h2 className="text-lg font-extrabold">💾 {t("Прогресс", "Natijalar")}</h2>

@@ -97,6 +97,30 @@ function ModeChooser() {
         </p>
       </header>
 
+      <Link
+        href="/chess/online"
+        className="flex items-center gap-4 rounded-3xl bg-brand p-5 text-white shadow-lift transition hover:-translate-y-0.5"
+        data-online-link
+      >
+        <span className="text-4xl" aria-hidden>
+          👥
+        </span>
+        <span className="flex-1">
+          <span className="block text-xl font-black">
+            {t("Играть с друзьями по сети", "Doʻstlar bilan onlayn oʻynash")}
+          </span>
+          <span className="block text-white/85">
+            {t(
+              "Найди друга по имени, подружитесь и играйте партии на расстоянии.",
+              "Doʻstingni ismi bilan top, doʻst boʻling va masofadan turib oʻynang.",
+            )}
+          </span>
+        </span>
+        <span className="text-2xl" aria-hidden>
+          ▶
+        </span>
+      </Link>
+
       <details className="rounded-3xl bg-white p-5 shadow-card" data-board-look-details>
         <summary className="cursor-pointer text-lg font-black">
           🎨 {t("Моя доска и звук", "Mening taxtam va ovozi")}
