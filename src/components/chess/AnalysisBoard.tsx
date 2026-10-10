@@ -11,6 +11,7 @@ import { useSan, useT, type T } from "@/lib/i18n";
 import { useHash } from "@/lib/useHash";
 import { ChessBoard, type PromotionPiece, type SquareMark } from "./ChessBoard";
 import { illegalText, usePromotion } from "./useMoveInput";
+import { sayIllegal } from "@/lib/voice";
 
 const START = new Chess().fen();
 
@@ -135,6 +136,7 @@ export function AnalysisBoard() {
     if (!played) {
       const reason = illegalReason(fen, from, to);
       setIllegal(reason ? illegalText(reason, t) : null);
+      if (reason) sayIllegal(reason);
       return false;
     }
     setIllegal(null);

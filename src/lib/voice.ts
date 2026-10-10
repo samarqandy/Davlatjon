@@ -6,6 +6,7 @@
  * где записи нет, там нет и кнопки «Послушать». Звук выключается в настройках родителя.
  */
 import recorded from "@/content/voice-clips.json";
+import type { IllegalReason } from "./chess";
 import type { Lang } from "./lang";
 import { random } from "./random";
 import { getState } from "./store";
@@ -48,17 +49,57 @@ export const SECRET_IDS = [
 ] as const;
 
 /**
+ * Короткие реплики по ситуации. Реплика зависит от того, что случилось, а не просто «верно/неверно»:
+ * у задач по математике и логике — свои подбадривания (по смыслу совпадают с подсказкой на экране),
+ * у шахмат — свои (шах, взятие, угроза — «Посмотри на доску» уместно только там), похвала — за усилие и
+ * внимательность, а не «ты умный». Внутри ситуации запись выбирается случайно.
+ */
+export const CUES = {
+  "praise-first": ["praise-first-1", "praise-first-2"],
+  "praise-persist": ["praise-persist-1", "praise-persist-2"],
+  "praise-hint": ["praise-hint"],
+  "praise-chess": ["praise-2", "praise-3"],
+  mate: ["mate"],
+  "retry-idea": ["retry-idea"],
+  "retry-small": ["retry-small"],
+  "retry-reread": ["retry-reread"],
+  "retry-steps": ["retry-steps"],
+  "retry-part": ["retry-part"],
+  "retry-close": ["retry-close"],
+  "retry-hint": ["retry-hint"],
+  "retry-adult": ["retry-adult"],
+  "retry-generic": ["retry-1"],
+  "retry-chess": ["retry-2", "chess-checks", "chess-attack"],
+  "chess-king-check": ["chess-king-check"],
+  "chess-pinned": ["chess-pinned"],
+  "chess-king-attacked": ["chess-king-attacked"],
+} as const satisfies Record<string, readonly string[]>;
+
+export type Cue = keyof typeof CUES;
+
+/** Реплики-подсказки: к чему они относятся — в самих названиях (вопрос в «быстрых примерах», шаги знакомства и т. д.). */
+export const QUICK_PROMPT_CLIPS = [
+  "quick-how-many",
+  "quick-missing",
+  "quick-compare",
+  "quick-next",
+  "quick-count",
+  "quick-more",
+  "quick-pattern",
+  "quick-odd",
+  "quick-bigger",
+] as const;
+
+export const SHORT_CLIPS = [...QUICK_PROMPT_CLIPS, "welcome-age", "welcome-name", "day-finish", "rest-stop"] as const;
+
+/**
  * Какие записи есть по-узбекски: приветствие, похвала, легенды всех уровней и все тайны.
  * Пока записи нет, по-узбекски ничего не звучит — русский диктор в узбекском интерфейсе был бы некстати.
  */
 export const UZ_CLIPS: ReadonlySet<string> = new Set<string>([
   "welcome",
-  "praise-1",
-  "praise-2",
-  "praise-3",
-  "retry-1",
-  "retry-2",
-  "mate",
+  ...Object.values(CUES).flat(),
+  ...SHORT_CLIPS,
   ...LEGEND_LEVELS.map((id) => `legend-${id}`),
   ...SECRET_IDS.map((id) => `secret-${id}`),
 ]);
@@ -78,7 +119,12 @@ function clips(lang: Lang, names: string[]): string[] {
  */
 const RECORDED = recorded as Record<Lang, Record<string, string>>;
 
-function recordedClip(lang: Lang, kind: "tasks" | "lessons" | "dyk", key: string, id: string): string | undefined {
+function recordedClip(
+  lang: Lang,
+  kind: "tasks" | "lessons" | "dyk" | "exercises",
+  key: string,
+  id: string,
+): string | undefined {
   return RECORDED[lang][key] ? `/audio/${lang === "uz" ? "uz/" : ""}${kind}/${id}.mp3` : undefined;
 }
 
@@ -89,10 +135,13 @@ export const VOICE_CLIPS = {
   /** «Знаешь ли ты?»: part — вопрос (q) или ответ (a). */
   dyk: (index: number, part: "q" | "a", lang: Lang) =>
     recordedClip(lang, "dyk", `dyk:${index}-${part}`, `${index}-${part}`),
+  /** Условие шахматного упражнения: название и задание. */
+  exercise: (id: string, lang: Lang) => recordedClip(lang, "exercises", `exercise:${id}`, id),
   welcome: (lang: Lang) => clip(lang, "welcome"),
-  mate: (lang: Lang) => clips(lang, ["mate"]),
-  praise: (lang: Lang) => clips(lang, ["praise-1", "praise-2", "praise-3"]),
-  retry: (lang: Lang) => clips(lang, ["retry-1", "retry-2"]),
+  /** Все записи одной реплики на языке интерфейса. */
+  cue: (kind: Cue, lang: Lang) => clips(lang, [...CUES[kind]]),
+  /** Короткая запись по названию («quick-next», «day-finish»…). */
+  short: (name: (typeof SHORT_CLIPS)[number], lang: Lang) => clip(lang, name),
   legend: (levelId: string, lang: Lang) => clip(lang, `legend-${levelId}`),
   secret: (id: string, lang: Lang) => clip(lang, `secret-${id}`),
 };
@@ -149,10 +198,25 @@ export function playClip(src: string, id: string = src) {
   });
 }
 
-/** Короткая похвала или подбадривание после ответа — если звук включён и запись есть на языке интерфейса. */
-export function cheer(kind: "praise" | "retry" | "mate") {
+/** Сказать реплику по ситуации — если звук включён и запись есть на языке интерфейса. */
+export function cue(kind: Cue) {
   if (!soundOn()) return;
   const lang: Lang = getState().settings.lang === "uz" ? "uz" : "ru";
-  const list = VOICE_CLIPS[kind](lang);
-  if (list.length) playClip(list[Math.floor(random() * list.length)], `cheer-${kind}`);
+  const list = VOICE_CLIPS.cue(kind, lang);
+  if (list.length) playClip(list[Math.floor(random() * list.length)], `cue-${kind}`);
+}
+
+const ILLEGAL_CUES: Record<IllegalReason, Cue> = {
+  "in-check": "chess-king-check",
+  pinned: "chess-pinned",
+  "king-attacked": "chess-king-attacked",
+};
+let lastIllegalAt = 0;
+
+/** Голосом объяснить, почему ход нельзя сделать (король под шахом, фигура связана, поле под ударом) — не чаще раза в шесть секунд. */
+export function sayIllegal(reason: IllegalReason) {
+  const now = Date.now();
+  if (now - lastIllegalAt < 6000) return;
+  lastIllegalAt = now;
+  cue(ILLEGAL_CUES[reason]);
 }

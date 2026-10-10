@@ -5,13 +5,13 @@ import { describe, expect, it } from "vitest";
 import { CHESS_LEVELS } from "@/content/chess";
 import { SECRETS } from "@/content/chess/secrets";
 import { sanitize } from "@/lib/store";
-import { LEGEND_LEVELS, SECRET_IDS, UZ_CLIPS, VOICE_CLIPS } from "@/lib/voice";
+import { CUES, LEGEND_LEVELS, SECRET_IDS, SHORT_CLIPS, UZ_CLIPS, VOICE_CLIPS, type Cue } from "@/lib/voice";
 import recorded from "@/content/voice-clips.json";
 import { chessContent } from "@/content/chess/content";
 import { allDays } from "@/content/program";
 import { localizeDay } from "@/content/uz";
 import type { Lang } from "@/lib/lang";
-import { lessonVoiceText, taskVoiceText, textHash } from "@/lib/voiceText";
+import { exerciseVoiceText, lessonVoiceText, taskVoiceText, textHash } from "@/lib/voiceText";
 
 const file = (src: string) => path.join(process.cwd(), "public", src);
 
@@ -22,9 +22,8 @@ describe("озвучка", () => {
     expect([...SECRET_IDS].sort()).toEqual(SECRETS.map((s) => s.id).sort());
     const all = [
       VOICE_CLIPS.welcome("ru"),
-      ...VOICE_CLIPS.mate("ru"),
-      ...VOICE_CLIPS.praise("ru"),
-      ...VOICE_CLIPS.retry("ru"),
+      ...(Object.keys(CUES) as Cue[]).flatMap((k) => VOICE_CLIPS.cue(k, "ru")),
+      ...SHORT_CLIPS.map((n) => VOICE_CLIPS.short(n, "ru")),
       ...LEGEND_LEVELS.map((id) => VOICE_CLIPS.legend(id, "ru")),
       ...SECRET_IDS.map((id) => VOICE_CLIPS.secret(id, "ru")),
       ...[...UZ_CLIPS].map((name) => `/audio/uz/${name}.mp3`),
@@ -40,13 +39,13 @@ describe("озвучка", () => {
   it("по-узбекски звучат только готовые узбекские записи, русский диктор не подменяет их", () => {
     const uz = [
       VOICE_CLIPS.welcome("uz"),
-      ...VOICE_CLIPS.praise("uz"),
-      ...VOICE_CLIPS.retry("uz"),
-      ...VOICE_CLIPS.mate("uz"),
+      ...(Object.keys(CUES) as Cue[]).flatMap((k) => VOICE_CLIPS.cue(k, "uz")),
+      ...SHORT_CLIPS.map((n) => VOICE_CLIPS.short(n, "uz")),
       ...LEGEND_LEVELS.map((id) => VOICE_CLIPS.legend(id, "uz")),
       ...SECRET_IDS.map((id) => VOICE_CLIPS.secret(id, "uz")),
     ].filter(Boolean);
-    expect(uz.length).toBe(UZ_CLIPS.size);
+    const uniq = new Set(uz);
+    expect(uniq.size).toBe(UZ_CLIPS.size);
     for (const src of uz) expect(src).toMatch(/^\/audio\/uz\//);
   });
 
@@ -75,6 +74,7 @@ function voiceTexts(lang: Lang): Record<string, string> {
     for (const t of (lang === "uz" ? localizeDay(d, "uz") : d).tasks) out[`task:${t.id}`] = taskVoiceText(t.body);
   const c = chessContent(lang);
   for (const l of c.levels) l.lesson.forEach((card, i) => (out[`lesson:${l.id}-${i}`] = lessonVoiceText(card)));
+  for (const l of c.levels) for (const e of l.exercises) out[`exercise:${e.id}`] = exerciseVoiceText(e);
   c.didYouKnow.forEach((x, i) => {
     out[`dyk:${i}-q`] = x.q;
     out[`dyk:${i}-a`] = x.a;
@@ -82,7 +82,7 @@ function voiceTexts(lang: Lang): Record<string, string> {
   return out;
 }
 
-const DIRS: Record<string, string> = { task: "tasks", lesson: "lessons", dyk: "dyk" };
+const DIRS: Record<string, string> = { task: "tasks", lesson: "lessons", dyk: "dyk", exercise: "exercises" };
 const clipFile = (lang: Lang, key: string) => {
   const [kind, id] = key.split(":");
   return file(`/audio/${lang === "uz" ? "uz/" : ""}${DIRS[kind]}/${id}.mp3`);

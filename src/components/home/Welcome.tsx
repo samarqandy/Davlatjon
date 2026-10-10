@@ -104,6 +104,7 @@ export function Welcome() {
             <h2 id="welcome-title" className="text-3xl font-black">
               {t("Сколько тебе лет?", "Necha yoshdasan?")}
             </h2>
+            <ListenButton src={VOICE_CLIPS.short("welcome-age", lang)} className="w-full justify-center" />
             <div className="grid grid-cols-5 gap-2" role="group" aria-label={t("Возраст", "Yosh")}>
               {AGES.map((a) => (
                 <button
@@ -125,6 +126,7 @@ export function Welcome() {
                 {t(`${profile.name} профиль`, `«${profile.name}» rejimi`)} · {profile.ages}. {profile.about}
               </p>
             )}
+            <ListenButton src={VOICE_CLIPS.short("welcome-name", lang)} className="w-full justify-center" />
             <ChildNameField
               value={name}
               onChange={setName}

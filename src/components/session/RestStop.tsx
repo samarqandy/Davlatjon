@@ -1,8 +1,10 @@
 "use client";
 
+import { ListenButton } from "@/components/ListenButton";
 import { Mascot } from "@/components/Mascot";
 import { Button } from "@/components/ui";
-import { useT } from "@/lib/i18n";
+import { useLang, useT } from "@/lib/i18n";
+import { VOICE_CLIPS } from "@/lib/voice";
 
 /**
  * Спокойная остановка посреди длинного дня — для малышей, после третьей и шестой задачи.
@@ -11,6 +13,7 @@ import { useT } from "@/lib/i18n";
  */
 export function RestStop({ onRest, onMore }: { onRest: () => void; onMore: () => void }) {
   const t = useT();
+  const lang = useLang();
   return (
     <section
       className="mx-auto max-w-md space-y-5 rounded-3xl border border-line bg-white p-6 text-center shadow-card"
@@ -29,6 +32,8 @@ export function RestStop({ onRest, onMore }: { onRest: () => void; onMore: () =>
           "Hammasi saqlandi. Dam olsa ham boʻladi, davom ettirsa ham — qanday xohlasang.",
         )}
       </p>
+      {/* Голос — только по нажатию: остановка остаётся тихой. */}
+      <ListenButton src={VOICE_CLIPS.short("rest-stop", lang)} className="mx-auto" />
       <div className="grid grid-cols-2 gap-3">
         <Button size="lg" variant="secondary" onClick={onRest}>
           {t("Передохнуть", "Dam olish")}

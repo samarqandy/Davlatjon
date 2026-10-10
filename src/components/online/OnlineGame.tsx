@@ -14,6 +14,7 @@ import { TIME_CONTROLS, replay, timeControlLabel, type GameView, type Side } fro
 import { api, errorText, usePoll } from "@/lib/onlineClient";
 import { formatClock, kingOf } from "@/lib/play";
 import { FriendChat } from "./FriendChat";
+import { sayIllegal } from "@/lib/voice";
 
 const nowMs = () => Date.now();
 
@@ -143,6 +144,7 @@ function Table({ id }: { id: string }) {
     if (!played) {
       const reason = illegalReason(fen, from, to);
       setIllegal(reason ? illegalText(reason, t) : null);
+      if (reason) sayIllegal(reason);
       return false;
     }
     setIllegal(null);

@@ -2,7 +2,11 @@
 
 import { useEffect, useRef } from "react";
 import { cn } from "@/components/ui";
-import { cheer } from "@/lib/voice";
+import { useTaskId } from "@/components/task/TaskContext";
+import { praiseCue, retryCue } from "@/lib/feedback";
+import { useLang } from "@/lib/i18n";
+import { useStore } from "@/lib/store";
+import { cue, type Cue } from "@/lib/voice";
 
 export type FeedbackTone = "success" | "retry" | "info";
 
@@ -10,6 +14,8 @@ export interface FeedbackState {
   tone: FeedbackTone;
   text: string;
   sub?: string;
+  /** Какую реплику сказать вместо выбранной по тексту (например, «почти» для числа, близкого к верному). */
+  voice?: Cue;
 }
 
 const STYLES: Record<FeedbackTone, string> = {
@@ -20,18 +26,43 @@ const STYLES: Record<FeedbackTone, string> = {
 
 const ICONS: Record<FeedbackTone, string> = { success: "🎉", retry: "🤔", info: "💬" };
 
-export function Feedback({ state, className }: { state: FeedbackState | null; className?: string }) {
+export function Feedback({
+  state,
+  className,
+  context = "task",
+}: {
+  state: FeedbackState | null;
+  className?: string;
+  /** Где показан ответ: в задаче по математике и логике или в шахматном упражнении — от этого зависят слова голоса. */
+  context?: "task" | "chess";
+}) {
   const tone = state?.tone;
   const text = state?.text;
+  const sub = state?.sub;
+  const voice = state?.voice;
+  const lang = useLang();
+  const taskId = useTaskId();
+  const hints = useStore((s) => (taskId ? (s.tasks[taskId]?.hints ?? 0) : 0));
   const box = useRef<HTMLDivElement>(null);
+  // Сколько неверных проверок подряд было до этого ответа: от этого зависит, за что хвалим и что советуем.
+  const retries = useRef(0);
   useEffect(() => {
     if (!text) return;
     // Ответ не должен прятаться под нижней панелью: подкручиваем страницу, если он ниже видимого.
     box.current?.scrollIntoView?.({ block: "nearest", behavior: "smooth" });
-    // «мат» — по-русски, «mot» — по-узбекски.
-    if (tone === "success") cheer(/мат|\bmot\b/i.test(text) ? "mate" : "praise");
-    else if (tone === "retry") cheer("retry");
-  }, [tone, text]);
+    if (tone === "success") {
+      // «мат» — по-русски, «mot» — по-узбекски.
+      cue(
+        /мат|\bmot\b/i.test(text) ? "mate" : context === "chess" ? "praise-chess" : praiseCue(retries.current, hints),
+      );
+      retries.current = 0;
+    } else if (tone === "retry") {
+      retries.current += 1;
+      cue(voice ?? (context === "chess" ? "retry-chess" : retryCue(text, sub, lang, retries.current)));
+    }
+    // hints читаем в момент ответа; смена числа подсказок сама по себе реплику не вызывает.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tone, text, sub, voice, lang, context]);
   return (
     <div aria-live="polite" className={className}>
       {state && (

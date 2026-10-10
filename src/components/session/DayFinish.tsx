@@ -2,12 +2,14 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { ListenButton } from "@/components/ListenButton";
 import { MascotSays } from "@/components/Mascot";
 import { ShareButton } from "@/components/ShareButton";
 import { Button, ButtonLink, cn } from "@/components/ui";
 import { SECTIONS } from "@/content/meta";
 import type { Day } from "@/content/types";
 import { weekCertificateHref } from "@/lib/certificate";
+import { VOICE_CLIPS } from "@/lib/voice";
 import { countText, useLang, useT } from "@/lib/i18n";
 import { updateDay, useHydrated, useStore } from "@/lib/store";
 
@@ -60,6 +62,7 @@ export function DayFinish({
             : t("Парвоз рад: отличная работа!", "Parvoz xursand: zoʻr ishlading!")}
         </MascotSays>
         <h1 className="text-3xl font-black">🏁 {t("Итоги дня", "Kun yakuni")}</h1>
+        <ListenButton src={VOICE_CLIPS.short("day-finish", lang)} className="mt-2" />
         <p className="mt-2 text-lg text-muted">
           {t(
             "Хорошая работа! Посмотри, что сегодня получилось.",

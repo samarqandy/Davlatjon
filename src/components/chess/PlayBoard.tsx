@@ -33,7 +33,7 @@ import {
 import { crownsForWin, robotPersona } from "@/lib/crowns";
 import { pluralize } from "@/lib/plural";
 import { random } from "@/lib/random";
-import { cheer } from "@/lib/voice";
+import { cue, sayIllegal } from "@/lib/voice";
 import { recordChessGame, removeChessGame } from "@/lib/store";
 import { ChessBoard, PieceIcon, type PromotionPiece, type SquareMark } from "./ChessBoard";
 import { illegalText, usePromotion } from "./useMoveInput";
@@ -173,7 +173,7 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
   useEffect(() => {
     if (!status.over || recorded.current || plies.length === 0) return;
     recorded.current = true;
-    if (status.mate && (!withRobot || status.winner === config.color)) cheer("mate");
+    if (status.mate && (!withRobot || status.winner === config.color)) cue("mate");
     recordChessGame({
       id: gameId,
       mode: config.mode,
@@ -201,6 +201,7 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
     if (!played) {
       const reason = illegalReason(fen, from, to);
       setIllegal(reason ? illegalText(reason, t) : null);
+      if (reason) sayIllegal(reason);
       return false;
     }
     setIllegal(null);
