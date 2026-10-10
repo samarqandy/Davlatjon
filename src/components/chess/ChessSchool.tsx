@@ -186,8 +186,8 @@ export function ChessSchool() {
       emoji: "🔮",
       title: t("Тайны и легенды", "Sirlar va afsonalar"),
       text: t(
-        "Учёные Хорезма и Бухары, сказания «Шахнаме», машина «Турок», путешествие коня и загадки про фигуры.",
-        "Xorazm va Buxoro olimlari, «Shohnoma» rivoyatlari, «Turk» mashinasi, otning sayohati va donalar haqida topishmoqlar.",
+        "Учёные Хорезма и Бухары, большие шахматы Тимура, Абдусатторов и Самарканд, мысли великих, разговоры и загадки.",
+        "Xorazm va Buxoro olimlari, Temurning katta shaxmati, Abdusattorov va Samarqand, buyuklarning fikrlari, suhbatlar va topishmoqlar.",
       ),
       stat: t(
         `${secrets.length} историй · ${riddles.length} загадок`,

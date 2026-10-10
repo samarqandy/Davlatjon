@@ -152,6 +152,6 @@ test("время вышло посреди дела — карточка ждё�
   await seconds(page, 60);
   await expect.poll(() => activityMs(page)).toBeGreaterThan(20 * 60_000);
   await expect(page.locator("[data-rest-card]")).toHaveCount(0);
-  await page.locator('a[href="/chess"]').first().click();
+  await page.locator('a[href="/chess"]:visible').first().click();
   await expect(page.locator("[data-rest-card]")).toBeVisible();
 });

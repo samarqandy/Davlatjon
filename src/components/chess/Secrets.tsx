@@ -21,6 +21,7 @@ import { useChess, useChessImage } from "@/lib/useChess";
 import { useHash } from "@/lib/useHash";
 import { ChessBoard, PieceIcon, type SquareMark } from "./ChessBoard";
 import { Figure, Portrait } from "./Figure";
+import { Dialogues, NewViews, Thoughts } from "./SecretsMore";
 import { ListenButton } from "@/components/ListenButton";
 import { useLang, useT, type T } from "@/lib/i18n";
 import { VOICE_CLIPS } from "@/lib/voice";
@@ -28,7 +29,7 @@ import { VOICE_CLIPS } from "@/lib/voice";
 /** Страница «Тайны шахмат»: карточки-истории с крючком, картинкой и встроенной игрой; загадки про фигуры. */
 export function Secrets() {
   const t = useT();
-  const { secrets, riddles } = useChess();
+  const { secrets, riddles, thoughts, dialogues, newViews } = useChess();
   const hash = useHash().replace(/^#/, "");
   const profile = useAgeProfile();
   const [opened, setOpened] = useState<Set<string>>(() => new Set());
@@ -64,8 +65,8 @@ export function Secrets() {
         <h1 className="text-3xl font-black">{t("Тайны шахмат", "Shaxmat sirlari")}</h1>
         <p className="mt-1 max-w-2xl text-muted">
           {t(
-            "Учёные Хорезма и Бухары, сказания «Шахнаме», халифы Багдада, машина, которая обманула Европу, и задача, которую не могли решить тысячу лет. Нажми на вопрос — и узнай ответ.",
-            "Xorazm va Buxoro olimlari, «Shohnoma» rivoyatlari, Bagʻdod xalifalari, butun Yevropani aldagan mashina va ming yil davomida hech kim yecha olmagan masala. Savolni bos — javobini bilib olasan.",
+            "Учёные Хорезма и Бухары, сказания «Шахнаме», большие шахматы Тимура, чемпионы из Узбекистана, компьютеры, космос и мысли великих шахматистов. Нажми на вопрос — и узнай ответ.",
+            "Xorazm va Buxoro olimlari, «Shohnoma» rivoyatlari, Temurning katta shaxmati, Oʻzbekistonlik chempionlar, kompyuterlar, kosmos va buyuk shaxmatchilarning fikrlari. Savolni bos — javobini bilib olasan.",
           )}
         </p>
         <nav className="mt-3 flex flex-wrap gap-1.5" aria-label={t("Разделы", "Boʻlimlar")}>
@@ -74,6 +75,21 @@ export function Secrets() {
             className="rounded-xl bg-white px-3 py-1.5 text-sm font-extrabold text-brand-dark shadow-sm"
           >
             🔮 {t(`${secrets.length} историй`, `${secrets.length} ta hikoya`)}
+          </a>
+          <a
+            href="#thoughts"
+            className="rounded-xl bg-white px-3 py-1.5 text-sm font-extrabold text-brand-dark shadow-sm"
+          >
+            💭 {t(`${thoughts.length} мыслей великих`, `${thoughts.length} ta buyuk fikr`)}
+          </a>
+          <a
+            href="#dialogues"
+            className="rounded-xl bg-white px-3 py-1.5 text-sm font-extrabold text-brand-dark shadow-sm"
+          >
+            🗣 {t(`${dialogues.length} разговоров`, `${dialogues.length} ta suhbat`)}
+          </a>
+          <a href="#views" className="rounded-xl bg-white px-3 py-1.5 text-sm font-extrabold text-brand-dark shadow-sm">
+            👀 {t("Новый взгляд", "Yangi nigoh")}
           </a>
           <a
             href="#riddles"
@@ -94,6 +110,45 @@ export function Secrets() {
             deeperOpen={profile.id !== "junior"}
           />
         ))}
+      </section>
+
+      <section id="thoughts" className="scroll-mt-24 space-y-3" aria-labelledby="thoughts-h">
+        <h2 id="thoughts-h" className="text-2xl font-black">
+          {t("💭 Мысли великих", "💭 Buyuklarning fikrlari")}
+        </h2>
+        <p className="max-w-2xl text-muted">
+          {t(
+            "Короткие слова шахматистов и учёных — и что с ними можно сделать. У каждой цитаты указано, откуда она и насколько этому можно верить.",
+            "Shaxmatchilar va olimlarning qisqa soʻzlari — va ular bilan nima qilish mumkin. Har bir iqtibosda u qayerdan olingani va unga qanchalik ishonish mumkinligi koʻrsatilgan.",
+          )}
+        </p>
+        <Thoughts thoughts={thoughts} />
+      </section>
+
+      <section id="dialogues" className="scroll-mt-24 space-y-3" aria-labelledby="dialogues-h">
+        <h2 id="dialogues-h" className="text-2xl font-black">
+          {t("🗣 Разговоры, которые меняют взгляд", "🗣 Nigohni oʻzgartiradigan suhbatlar")}
+        </h2>
+        <p className="max-w-2xl text-muted">
+          {t(
+            "Разговоры придуманы, но факты и слова в них настоящие. Открой — и посмотри, как герой приходит к новой мысли.",
+            "Suhbatlar oʻylab topilgan, ammo ulardagi faktlar va soʻzlar haqiqiy. Och — va qahramon yangi fikrga qanday kelishini koʻr.",
+          )}
+        </p>
+        <Dialogues dialogues={dialogues} />
+      </section>
+
+      <section id="views" className="scroll-mt-24 space-y-3" aria-labelledby="views-h">
+        <h2 id="views-h" className="text-2xl font-black">
+          {t("👀 Новый взгляд на шахматы", "👀 Shaxmatga yangi nigoh")}
+        </h2>
+        <p className="max-w-2xl text-muted">
+          {t(
+            "Что многие думают о шахматах — и что на самом деле показывают факты.",
+            "Koʻpchilik shaxmat haqida nima deb oʻylaydi — va faktlar aslida nimani koʻrsatadi.",
+          )}
+        </p>
+        <NewViews views={newViews} />
       </section>
 
       <section id="riddles" className="scroll-mt-24 space-y-3" aria-labelledby="riddles-h">

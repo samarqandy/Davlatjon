@@ -4,6 +4,8 @@
  * Рассчитано на тех, кто в шахматы ещё не играет: сначала вопрос-крючок, потом история.
  */
 
+import { MORE_SECRETS } from "./stories";
+
 export type SecretWidget = "grains" | "envoy" | "knight-tour" | "dilaram" | "turk" | "sages";
 
 export interface Secret {
@@ -24,7 +26,7 @@ export interface Secret {
   link?: { href: string; label: string };
 }
 
-export const SECRETS: Secret[] = [
+const SECRETS_ORIGINAL: Secret[] = [
   {
     id: "sissa",
     emoji: "🌾",
@@ -257,6 +259,9 @@ export const SECRETS: Secret[] = [
     widget: "sages",
   },
 ];
+
+/** Все истории: сначала первая книга (учёные Востока, «Шахнаме»), потом люди и события, меняющие взгляд на шахматы. */
+export const SECRETS: Secret[] = [...SECRETS_ORIGINAL, ...MORE_SECRETS];
 
 export interface Sage {
   name: string;

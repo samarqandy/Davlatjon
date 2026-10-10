@@ -1,8 +1,9 @@
 import type { Uz } from "../../localize";
+import { storiesUz } from "./stories";
 import type { DID_YOU_KNOW, DILARAM, PIECE_NAMES_RU, RIDDLES, SAGES, SECRETS, TURK_OPTIONS } from "../secrets";
 
 /** «Shaxmat sirlari» — по-узбекски. Крючок и история читаются вслух, поэтому фразы короткие и «сказочные». */
-export const secretsUz: Uz<typeof SECRETS> = {
+const secretsUzFirst: Uz<typeof SECRETS> = {
   sissa: {
     hook: "Donishmand podshodan birinchi katak uchun «atigi» bitta bugʻdoy doni soʻradi. Nega podsho bu haqni toʻlay olmadi?",
     title: "Podshoni xonavayron qilgan don",
@@ -186,6 +187,8 @@ export const secretsUz: Uz<typeof SECRETS> = {
     ],
   },
 };
+
+export const secretsUz: Uz<typeof SECRETS> = { ...secretsUzFirst, ...storiesUz };
 
 export const sagesUz: Uz<typeof SAGES> = [
   {
