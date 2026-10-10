@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import "@fontsource-variable/nunito";
 import "./globals.css";
 import { AccountSync } from "@/components/AccountSync";
+import { BottomNav } from "@/components/BottomNav";
 import { LangSync } from "@/components/LangSwitch";
 import { ServiceWorker } from "@/components/ServiceWorker";
 import { ActivityTracker } from "@/components/progress/ActivityTracker";
@@ -28,6 +29,7 @@ export const viewport: Viewport = {
   themeColor: "#4f46e5",
   width: "device-width",
   initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
@@ -47,6 +49,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
       </head>
       <body className="min-h-dvh">
         {children}
+        <BottomNav />
         <ServiceWorker />
         <LangSync />
         <XpToast />

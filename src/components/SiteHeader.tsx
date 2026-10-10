@@ -13,7 +13,7 @@ export function SiteHeader({ active }: { active?: "home" | "chess" | "problems" 
       href={href}
       aria-label={label}
       title={label}
-      className={`flex items-center gap-1.5 rounded-xl px-2.5 py-2 text-sm font-extrabold transition sm:px-3 sm:text-base ${
+      className={`flex min-h-11 items-center gap-1.5 rounded-xl px-2.5 py-2 text-sm font-extrabold transition sm:px-3 sm:text-base ${
         active === key ? "bg-brand-soft text-brand-dark" : "text-muted hover:bg-black/5 hover:text-ink"
       }`}
     >
@@ -39,7 +39,7 @@ export function SiteHeader({ active }: { active?: "home" | "chess" | "problems" 
             </span>
           </span>
         </Link>
-        <nav className="flex items-center gap-1" aria-label={t("Разделы", "Boʻlimlar")}>
+        <nav className="hidden items-center gap-1 sm:flex" aria-label={t("Разделы", "Boʻlimlar")}>
           {link("/chess", "♞", t("Шахматы", "Shaxmat"), "chess")}
           {link("/my-problems", "✍️", t("Мои задачи", "Masalalarim"), "problems")}
           {link("/parent", "🔒", t("Родителям", "Ota-onalarga"), "parent")}
@@ -62,6 +62,13 @@ export function SiteFooter() {
           )}
         </p>
         <p>{t("Прогресс хранится только в этом браузере.", "Natijalar faqat shu brauzerda saqlanadi.")}</p>
+        <Link
+          href="/parent"
+          data-adults-link
+          className="inline-flex min-h-11 items-center self-start font-extrabold text-muted underline underline-offset-4 hover:text-ink sm:self-auto"
+        >
+          🔒 {t("Для взрослых", "Kattalar uchun")}
+        </Link>
       </div>
     </footer>
   );

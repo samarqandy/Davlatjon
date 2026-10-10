@@ -6,6 +6,7 @@ import { Button } from "@/components/ui";
 import { cleanChildName } from "@/lib/childName";
 import { useT } from "@/lib/i18n";
 import { setChildName, useHydrated, useStore } from "@/lib/store";
+import { nameSkipped, skipName } from "@/lib/welcome";
 
 /**
  * Для тех, кто начал заниматься до того, как Лаборатория стала спрашивать имя:
@@ -16,7 +17,9 @@ export function ChildNameBanner() {
   const hydrated = useHydrated();
   const show = useStore((s) => s.welcomed === true && !s.settings.childName);
   const [name, setName] = useState("");
-  if (!hydrated || !show) return null;
+  const [dismissed, setDismissed] = useState(false);
+  // Пропущенное имя читаем при каждой отрисовке: знакомство записывает «пропустил» уже после появления карточки.
+  if (!hydrated || !show || dismissed || nameSkipped()) return null;
   const save = () => cleanChildName(name) && setChildName(name);
   return (
     <section
@@ -34,9 +37,20 @@ export function ChildNameBanner() {
           "Laboratoriya senga ismingni aytib murojaat qiladi, masalalarning qahramoni esa oʻzing boʻlasan.",
         )}
       />
-      <Button className="mt-2" disabled={!cleanChildName(name)} onClick={save}>
-        {t("Сохранить", "Saqlash")}
-      </Button>
+      <div className="mt-2 flex flex-wrap gap-2">
+        <Button disabled={!cleanChildName(name)} onClick={save}>
+          {t("Сохранить", "Saqlash")}
+        </Button>
+        <Button
+          variant="ghost"
+          onClick={() => {
+            skipName();
+            setDismissed(true);
+          }}
+        >
+          {t("Не сейчас", "Hozir emas")}
+        </Button>
+      </div>
     </section>
   );
 }

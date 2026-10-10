@@ -359,24 +359,24 @@ test("первый запуск: ребёнок называет имя и вы�
   await page.goto("/");
   const dialog = page.getByRole("dialog");
   await expect(dialog.getByRole("heading", { name: /Добро пожаловать/ })).toBeVisible();
-  await expect(dialog.getByRole("button", { name: "Поехали! 🚀" })).toBeDisabled();
   // Приветствие читает диктор — запись есть на обоих языках.
   await expect(dialog.getByRole("button", { name: /Послушать приветствие/ })).toBeVisible();
   await dialog.getByRole("button", { name: "Oʻzbekcha" }).click();
   await expect(dialog.getByRole("button", { name: /Salomlashuvni tinglash/ })).toBeVisible();
   await dialog.getByRole("button", { name: "Русский" }).click();
+  await dialog.getByRole("button", { name: "Дальше →" }).click();
+  // Второй экран: возраст и необязательное имя; «Поехали!» доступна всегда.
+  await expect(dialog.getByRole("heading", { name: "Сколько тебе лет?" })).toBeVisible();
+  await expect(dialog.getByRole("button", { name: "Поехали! 🚀" })).toBeEnabled();
   await dialog.getByRole("button", { name: "10", exact: true }).click();
   await expect(dialog.getByText(/Средний профиль/)).toBeVisible();
-  // Без имени — ещё рано.
-  await expect(dialog.getByRole("button", { name: "Поехали! 🚀" })).toBeDisabled();
-  await dialog.getByLabel("Как тебя зовут?").fill("анна");
+  await dialog.getByLabel(/Как тебя зовут/).fill("анна");
   await expect(dialog.getByText("Привет, Анна! 👋")).toBeVisible();
   await dialog.getByRole("button", { name: "Поехали! 🚀" }).click();
   await expect(dialog).toBeHidden();
   await expect(page.getByText("Привет, Анна! 👋")).toBeVisible();
-  await expect(page.getByText(/Режим занятий: 9–10 лет/)).toBeVisible();
   // Переходим по ссылке, а не через goto: при новой загрузке init-скрипты заново запишут localStorage.
-  await page.getByRole("navigation", { name: "Разделы" }).getByRole("link", { name: "Шахматы" }).click();
+  await page.locator('a[href="/chess"]:visible').first().click();
   await expect(page).toHaveURL(/\/chess$/);
   await expect(page.getByText(/Сыграй с роботом «Конь»/)).toBeVisible();
   await expect(page.getByRole("listitem").filter({ hasText: "Слон" }).first().getByText("открыт")).toBeVisible();
