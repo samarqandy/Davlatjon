@@ -3,6 +3,7 @@
  * Без React и без браузера — поэтому этим пользуются и сервер (синхронизация с аккаунтом), и тесты.
  * Сам стор (localStorage + подписки) — в src/lib/store.ts.
  */
+import { isBoardThemeId, isSoundSetId, type SoundSetId } from "./boardLook";
 import { cleanChildName } from "./childName";
 import type { PuzzleLevel, PuzzleRating } from "./puzzleRating";
 
@@ -66,6 +67,10 @@ export interface Settings {
   sound?: boolean;
   /** Звуки ходов на доске. Настройка устройства, по умолчанию включена. */
   boardSounds?: boolean;
+  /** Цвета доски (id из boardLook.ts), настройка устройства. */
+  boardTheme?: string;
+  /** Набор звуков ходов: записанное дерево или мягкие синтезированные. */
+  boardSoundSet?: SoundSetId;
   /** Язык платформы: русский или узбекский. */
   lang?: "ru" | "uz";
   /** Имя ребёнка — как записали при первом запуске (любой алфавит). */
@@ -339,6 +344,8 @@ export function sanitize(raw: unknown): AppState {
           : undefined,
       sound: settings.sound !== false,
       boardSounds: settings.boardSounds !== false,
+      boardTheme: isBoardThemeId(settings.boardTheme) ? settings.boardTheme : undefined,
+      boardSoundSet: isSoundSetId(settings.boardSoundSet) ? settings.boardSoundSet : undefined,
       childName: cleanChildName(settings.childName),
       childNameUz: cleanChildName(settings.childNameUz),
       childNameAt:

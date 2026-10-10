@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { AccountPanel } from "@/components/AccountPanel";
+import { BoardLookPicker } from "@/components/chess/BoardLookPicker";
 import { Button, Card, cn } from "@/components/ui";
 import { AGE_MAX, AGE_MIN, profileMeta, profileText } from "@/lib/age";
 import { CHILD_NAME_MAX, cleanChildName, latinize } from "@/lib/childName";
@@ -69,15 +70,16 @@ export function SettingsPanel() {
           value={settings.sound !== false}
           onChange={(v) => updateSettings({ sound: v })}
         />
-        <Toggle
-          title={t("Звуки ходов на доске", "Taxtadagi yurish ovozlari")}
-          text={t(
-            "Тихий стук при ходе, взятии и рокировке, сигнал при шахе. Работает и без интернета, диктору не мешает.",
-            "Yurish, olish va rokirovkada yengil taqillash, shaxda signal. Internetsiz ham ishlaydi, diktorga xalaqit bermaydi.",
-          )}
-          value={settings.boardSounds !== false}
-          onChange={(v) => updateSettings({ boardSounds: v })}
-        />
+        <div className="p-5">
+          <p className="font-extrabold">{t("Доска и звуки ходов", "Taxta va yurish ovozlari")}</p>
+          <p className="mb-3 text-[0.95rem] text-muted">
+            {t(
+              "Цвета доски и звук хода: деревянные записи или мягкие. Работает и без интернета, диктору не мешает.",
+              "Taxta ranglari va yurish ovozi: yogʻoch yozuvlari yoki yumshoq. Internetsiz ham ishlaydi, diktorga xalaqit bermaydi.",
+            )}
+          </p>
+          <BoardLookPicker />
+        </div>
         <Toggle
           title={t("Пауза перед следующей подсказкой", "Keyingi maslahatdan oldin pauza")}
           text={t(

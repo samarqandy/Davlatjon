@@ -288,7 +288,7 @@ test("шахматы: звание «Пешка» открывает урове�
   ];
   await chessState(page, pawnIds);
   await page.goto("/chess");
-  await expect(page.locator('a[href="/chess/knight"]')).toBeVisible();
+  await expect(page.locator('a[href="/chess/knight"]').first()).toBeVisible();
   await expect(page.getByText(/Твоё звание/)).toBeVisible();
   await page.goto("/chess/knight#exercise-5");
   for (const sq of ["b3", "c5", "d7", "f8", "g6", "h8"]) await square(page, "st-knight-journey", sq);
