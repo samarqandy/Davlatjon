@@ -80,3 +80,17 @@ test("на телефоне касание с дрожанием пальца �
   // Пешка выбрана: на e4 видна точка «сюда можно».
   await expect(sq(page, "e4").locator("div").first()).toHaveAttribute("style", /radial-gradient/);
 });
+
+test("цвета доски и набор звуков выбираются в «Моя доска и звук» и запоминаются", async ({ page }) => {
+  await page.goto("/chess/play");
+  await page.locator("[data-board-look-details] summary").click();
+  await page.locator('[data-board-theme-pick="violet"]').click();
+  await page.locator('[data-sound-set-pick="soft"]').click();
+  await expect(page.locator('[data-board-theme-pick="violet"]')).toHaveAttribute("aria-checked", "true");
+  await expect(page.locator('[data-sound-set-pick="soft"]')).toHaveAttribute("aria-checked", "true");
+  await page.goto("/chess/analysis");
+  await expect(board(page)).toHaveAttribute("data-board-theme", "violet");
+  const stored = await page.evaluate(() => JSON.parse(localStorage.getItem("davlatjon-lab:v1") ?? "{}").settings);
+  expect(stored.boardTheme).toBe("violet");
+  expect(stored.boardSoundSet).toBe("soft");
+});

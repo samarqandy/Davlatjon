@@ -2,7 +2,7 @@
 
 /**
  * Озвучка — только записи диктора ElevenLabs: по-русски — голос «Svetlana — Children's Storyteller»
- * (public/audio), по-узбекски — голос «Uzbekcha» (public/audio/uz). Голос браузера не используется:
+ * (public/audio; рассказы «Тайн и легенд», добавленные позже, — «Anna Zub»), по-узбекски — голос «Uzbekcha» (public/audio/uz). Голос браузера не используется:
  * где записи нет, там нет и кнопки «Послушать». Звук выключается в настройках родителя.
  */
 import recorded from "@/content/voice-clips.json";
@@ -28,6 +28,23 @@ export const SECRET_IDS = [
   "mad-queen",
   "alfonso",
   "sages",
+  "caissa",
+  "franklin",
+  "timur",
+  "abdusattorov",
+  "samarkand",
+  "polgar",
+  "menchik",
+  "capablanca",
+  "tal",
+  "lasker",
+  "deep-blue",
+  "alphazero",
+  "world-game",
+  "soyuz9",
+  "lewis",
+  "charlemagne",
+  "blindfold",
 ] as const;
 
 /**

@@ -18,6 +18,7 @@ const file = (src: string) => path.join(process.cwd(), "public", src);
 describe("озвучка", () => {
   it("у приветствия, каждого уровня и каждой тайны есть запись, у похвалы — файлы", () => {
     expect([...LEGEND_LEVELS].sort()).toEqual(CHESS_LEVELS.map((l) => l.id).sort());
+    // Каждая тайна и легенда озвучена: у каждой id есть запись по-русски и по-узбекски.
     expect([...SECRET_IDS].sort()).toEqual(SECRETS.map((s) => s.id).sort());
     const all = [
       VOICE_CLIPS.welcome("ru"),

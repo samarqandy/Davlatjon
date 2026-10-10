@@ -45,7 +45,12 @@ self.addEventListener("fetch", (event) => {
   if (url.origin !== self.location.origin) return;
   // Вход и прогресс аккаунта — всегда из сети и никогда не в кэш.
   if (url.pathname.startsWith("/api/")) return;
-  // Звук браузер запрашивает кусками — его не кэшируем.
+  // Короткие звуки доски грузятся целиком (fetch) — их можно держать в кэше для работы без интернета.
+  if (url.pathname.startsWith("/audio/sfx/")) {
+    event.respondWith(cacheFirst(request));
+    return;
+  }
+  // Звук диктора браузер запрашивает кусками — его не кэшируем.
   if (url.pathname.endsWith(".mp3")) return;
   if (url.pathname.startsWith("/_next/static/") || /\.(webp|png|jpg|svg|ico|woff2?)$/.test(url.pathname)) {
     event.respondWith(cacheFirst(request));

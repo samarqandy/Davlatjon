@@ -1,13 +1,13 @@
 /**
- * Название платформы — «Davlatjon», как домен. Одно на оба языка, латиницей.
+ * Название платформы — «Parvoz Edu», как домен parvozedu.uz. Одно на оба языка, латиницей.
  * Имя ребёнка сюда не входит: его записывают при первом запуске (src/lib/childName.ts).
  */
-export const BRAND = "Davlatjon";
+export const BRAND = "Parvoz Edu";
 
 /** Полное название: вкладка браузера, установленное приложение. */
 export const BRAND_TITLE = {
-  ru: "Davlatjon — математика, логика и шахматы",
-  uz: "Davlatjon — matematika, mantiq va shaxmat",
+  ru: "Parvoz Edu — математика, логика и шахматы",
+  uz: "Parvoz Edu — matematika, mantiq va shaxmat",
 } as const;
 
 /** Подпись под логотипом. */

@@ -10,6 +10,7 @@ import { useLang, useT } from "@/lib/i18n";
 import { CLOCKS, ENDGAMES, ODDS_PIECES, clockLabel, endgameText, oddsPieceLabel } from "@/lib/play";
 import { useHydrated, useStore } from "@/lib/store";
 import { setHash, useHash } from "@/lib/useHash";
+import { BoardLookPicker } from "./BoardLookPicker";
 import { PieceIcon } from "./ChessBoard";
 import { PlayBoard, type PlayConfig } from "./PlayBoard";
 
@@ -95,6 +96,13 @@ function ModeChooser() {
           )}
         </p>
       </header>
+
+      <details className="rounded-3xl bg-white p-5 shadow-card" data-board-look-details>
+        <summary className="cursor-pointer text-lg font-black">
+          🎨 {t("Моя доска и звук", "Mening taxtam va ovozi")}
+        </summary>
+        <BoardLookPicker className="mt-4" />
+      </details>
 
       <section className="rounded-3xl bg-white p-5 shadow-card" aria-labelledby="robot">
         <h2 id="robot" className="text-xl font-black">

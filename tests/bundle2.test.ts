@@ -147,7 +147,7 @@ describe("PGN", () => {
     const pgn = gamePgn(g, "ru", "Анна");
     expect(pgn).toContain('[White "Робот «Конь»"]');
     expect(pgn).toContain('[Black "Анна"]');
-    expect(pgn).toContain('[Site "Davlatjon"]');
+    expect(pgn).toContain('[Site "Parvoz Edu"]');
     expect(gamePgn(g)).toContain('[Black "Друг"]');
     expect(pgn).toContain('[Result "1-0"]');
     expect(pgn).toContain('[Date "2026.09.27"]');

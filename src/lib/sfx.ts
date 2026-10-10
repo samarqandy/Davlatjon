@@ -2,12 +2,47 @@
 
 /**
  * Звуки доски: ход, взятие, рокировка, превращение, шах, «так нельзя».
- * Синтезируются Web Audio — без файлов (не нужны лицензии, работают офлайн) и не мешают диктору.
+ * Набор «Деревянные» — короткие записи (ElevenLabs Sound Effects, public/audio/sfx), набор «Мягкие» и запасной
+ * вариант, пока записи не загрузились, — синтез Web Audio. Всё работает офлайн и не мешает диктору.
  * Браузеры (особенно iOS) дают звук только после первого касания: до него звуки просто пропускаются.
  */
 import { getState } from "./store";
 
 export type Sfx = "move" | "capture" | "castle" | "promote" | "collect" | "check" | "illegal";
+
+/** Записанные звуки (набор «Деревянные»). У «collect» записи нет — он всегда синтезируется. */
+const SAMPLES: Partial<Record<Sfx, string>> = {
+  move: "/audio/sfx/move.mp3",
+  capture: "/audio/sfx/capture.mp3",
+  castle: "/audio/sfx/castle.mp3",
+  promote: "/audio/sfx/promote.mp3",
+  check: "/audio/sfx/check.mp3",
+  illegal: "/audio/sfx/illegal.mp3",
+};
+const buffers: Partial<Record<Sfx, AudioBuffer>> = {};
+/** Во сколько раз усилить запись, чтобы все звуки были одной громкости (illegal записан очень тихо). */
+const boost: Partial<Record<Sfx, number>> = {};
+const TARGET_PEAK: Partial<Record<Sfx, number>> = { check: 0.55, promote: 0.55, illegal: 0.5 };
+let loading = false;
+
+/** Один раз подгрузить и раскодировать записи; не вышло — звучит синтез. */
+function loadSamples(c: AudioContext) {
+  if (loading || typeof fetch === "undefined") return;
+  loading = true;
+  for (const [kind, url] of Object.entries(SAMPLES) as [Sfx, string][]) {
+    void fetch(url)
+      .then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(String(r.status)))))
+      .then((data) => c.decodeAudioData(data))
+      .then((buf) => {
+        let peak = 0;
+        const data = buf.getChannelData(0);
+        for (let i = 0; i < data.length; i++) peak = Math.max(peak, Math.abs(data[i]));
+        boost[kind] = peak > 0.01 ? Math.min(8, (TARGET_PEAK[kind] ?? 0.8) / peak) : 1;
+        buffers[kind] = buf;
+      })
+      .catch(() => undefined);
+  }
+}
 
 let ctx: AudioContext | null = null;
 let master: GainNode | null = null;
@@ -34,7 +69,9 @@ function context(): AudioContext | null {
 /** Разрешить звук: вызывается при касании или нажатии клавиши. */
 export function sfxUnlock() {
   const c = context();
-  if (c && c.state === "suspended") void c.resume().catch(() => undefined);
+  if (!c) return;
+  if (c.state === "suspended") void c.resume().catch(() => undefined);
+  loadSamples(c);
 }
 
 if (typeof document !== "undefined") {
@@ -85,6 +122,21 @@ function knock(c: AudioContext, at: number, vol: number, pitch: number) {
   tone(c, at, "sine", 220 * pitch, 140 * pitch, 0.06, vol * 0.8);
 }
 
+/** Сыграть запись; false — записи нет (ещё не загрузилась), тогда играет синтез. */
+function sample(c: AudioContext, kind: Sfx, at: number): boolean {
+  const buf = buffers[kind];
+  if (!buf) return false;
+  const src = c.createBufferSource();
+  src.buffer = buf;
+  // Лёгкая разница в высоте — чтобы подряд идущие ходы не звучали как копии.
+  src.playbackRate.value = 0.97 + Math.random() * 0.06;
+  const gain = c.createGain();
+  gain.gain.value = boost[kind] ?? 1;
+  src.connect(gain).connect(c.destination);
+  src.start(at);
+  return true;
+}
+
 const PRIORITY: Record<Sfx, number> = { illegal: 6, promote: 5, castle: 4, capture: 3, collect: 2, move: 1, check: 0 };
 let lastAt = 0;
 let lastPriority = 0;
@@ -103,6 +155,7 @@ export function playSfx(kind: Sfx) {
     lastPriority = PRIORITY[kind];
   }
   const at = now + (kind === "check" ? 0.07 : 0);
+  if (getState().settings.boardSoundSet !== "soft" && sample(c, kind, at)) return;
   switch (kind) {
     case "move":
       knock(c, at, 0.9, 1);

@@ -25,10 +25,18 @@ test.beforeEach(async ({ page }) => {
   await skipWelcome(page);
 });
 
+/** «Весь путь» на главной у малыша свёрнут: открываем, если закрыт. */
+async function openPath(page: Page) {
+  const path = page.locator("[data-path]");
+  await expect(path).toBeVisible();
+  if (!(await path.evaluate((el) => (el as HTMLDetailsElement).open))) await path.locator("summary").click();
+}
+
 test("главная: неделя из 7 дней и сегодняшнее занятие", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { name: /Математика — это место/ })).toBeVisible();
-  await expect(page.getByText("День 1. Смотри внимательно")).toBeVisible();
+  await expect(page.getByText("День 1. Смотри внимательно").first()).toBeVisible();
+  await openPath(page);
   for (let d = 1; d <= 7; d++) await expect(page.locator(`a[href="/week/1/day/${d}"]`).first()).toBeVisible();
 });
 
@@ -60,7 +68,7 @@ test("робот доходит до флажка по программе", asyn
 
 test("печать: лист заданий без ответов, ответы — только после PIN-кода", async ({ page }) => {
   await page.goto("/week/1/day/1/print");
-  await expect(page.getByText("Davlatjon · задания")).toBeVisible();
+  await expect(page.getByText("Parvoz Edu · задания")).toBeVisible();
   await expect(page.getByText("Ответ:")).toHaveCount(0);
   await page.getByRole("tab", { name: /Ответы/ }).click();
   await expect(page.getByRole("heading", { name: "Раздел для взрослых" })).toBeVisible();
@@ -92,6 +100,7 @@ test("мои задачи: можно записать свою задачу", a
 
 test("главная: вторая неделя «Неделя инструментов»", async ({ page }) => {
   await page.goto("/");
+  await openPath(page);
   await expect(page.getByRole("heading", { name: /Неделя инструментов/ })).toBeVisible();
   for (let d = 1; d <= 7; d++) await expect(page.locator(`a[href="/week/2/day/${d}"]`).first()).toBeVisible();
 });
@@ -141,6 +150,7 @@ test("переправа: волк, коза и капуста за 7 поезд
 
 test("главная: третья неделя «Неделя логики»", async ({ page }) => {
   await page.goto("/");
+  await openPath(page);
   await expect(page.getByRole("heading", { name: /Неделя логики/ })).toBeVisible();
   for (let d = 1; d <= 7; d++) await expect(page.locator(`a[href="/week/3/day/${d}"]`).first()).toBeVisible();
 });
@@ -249,7 +259,7 @@ test("шахматная школа: шесть уровней, открыт т�
   await expect(page.getByRole("heading", { name: "Шахматная школа" })).toBeVisible();
   for (const name of ["Пешка", "Конь", "Слон", "Ладья", "Ферзь", "Король"])
     await expect(page.getByText(name, { exact: true }).first()).toBeVisible();
-  await expect(page.locator('a[href="/chess/pawn"]')).toBeVisible();
+  await expect(page.locator('a[href="/chess/pawn"]').first()).toBeVisible();
   await expect(page.locator('a[href="/chess/knight"]')).toHaveCount(0);
 });
 
@@ -278,7 +288,7 @@ test("шахматы: звание «Пешка» открывает урове�
   ];
   await chessState(page, pawnIds);
   await page.goto("/chess");
-  await expect(page.locator('a[href="/chess/knight"]')).toBeVisible();
+  await expect(page.locator('a[href="/chess/knight"]').first()).toBeVisible();
   await expect(page.getByText(/Твоё звание/)).toBeVisible();
   await page.goto("/chess/knight#exercise-5");
   for (const sq of ["b3", "c5", "d7", "f8", "g6", "h8"]) await square(page, "st-knight-journey", sq);
@@ -359,24 +369,24 @@ test("первый запуск: ребёнок называет имя и вы�
   await page.goto("/");
   const dialog = page.getByRole("dialog");
   await expect(dialog.getByRole("heading", { name: /Добро пожаловать/ })).toBeVisible();
-  await expect(dialog.getByRole("button", { name: "Поехали! 🚀" })).toBeDisabled();
   // Приветствие читает диктор — запись есть на обоих языках.
   await expect(dialog.getByRole("button", { name: /Послушать приветствие/ })).toBeVisible();
   await dialog.getByRole("button", { name: "Oʻzbekcha" }).click();
   await expect(dialog.getByRole("button", { name: /Salomlashuvni tinglash/ })).toBeVisible();
   await dialog.getByRole("button", { name: "Русский" }).click();
+  await dialog.getByRole("button", { name: "Дальше →" }).click();
+  // Второй экран: возраст и необязательное имя; «Поехали!» доступна всегда.
+  await expect(dialog.getByRole("heading", { name: "Сколько тебе лет?" })).toBeVisible();
+  await expect(dialog.getByRole("button", { name: "Поехали! 🚀" })).toBeEnabled();
   await dialog.getByRole("button", { name: "10", exact: true }).click();
   await expect(dialog.getByText(/Средний профиль/)).toBeVisible();
-  // Без имени — ещё рано.
-  await expect(dialog.getByRole("button", { name: "Поехали! 🚀" })).toBeDisabled();
-  await dialog.getByLabel("Как тебя зовут?").fill("анна");
+  await dialog.getByLabel(/Как тебя зовут/).fill("анна");
   await expect(dialog.getByText("Привет, Анна! 👋")).toBeVisible();
   await dialog.getByRole("button", { name: "Поехали! 🚀" }).click();
   await expect(dialog).toBeHidden();
   await expect(page.getByText("Привет, Анна! 👋")).toBeVisible();
-  await expect(page.getByText(/Режим занятий: 9–10 лет/)).toBeVisible();
   // Переходим по ссылке, а не через goto: при новой загрузке init-скрипты заново запишут localStorage.
-  await page.getByRole("navigation", { name: "Разделы" }).getByRole("link", { name: "Шахматы" }).click();
+  await page.locator('a[href="/chess"]:visible').first().click();
   await expect(page).toHaveURL(/\/chess$/);
   await expect(page.getByText(/Сыграй с роботом «Конь»/)).toBeVisible();
   await expect(page.getByRole("listitem").filter({ hasText: "Слон" }).first().getByText("открыт")).toBeVisible();

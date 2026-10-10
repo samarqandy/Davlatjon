@@ -42,6 +42,16 @@ export function ChessSchool() {
     ? state.chessGames.filter((g) => (g.mode === "robot" || g.mode === "two") && (g.ucis?.length ?? 0) > 1).length
     : 0;
 
+  // «Продолжить»: первый открытый уровень, где ещё есть что решать, и первое нерешённое упражнение в нём.
+  const nextIndex = hydrated ? statuses.findIndex((s) => s.unlocked && !s.passed) : -1;
+  const nextLevel = nextIndex >= 0 ? levels[nextIndex] : null;
+  const nextExercise = nextLevel ? nextLevel.exercises.findIndex((e) => !state.chess[e.id]?.solvedAt) : -1;
+  const continueHref = nextLevel
+    ? `${chessLevelHref(nextLevel.id)}${
+        statuses[nextIndex].solved > 0 && nextExercise >= 0 ? `#exercise-${nextExercise + 1}` : ""
+      }`
+    : null;
+
   const sections = [
     {
       href: "/chess/play",
@@ -176,8 +186,8 @@ export function ChessSchool() {
       emoji: "🔮",
       title: t("Тайны и легенды", "Sirlar va afsonalar"),
       text: t(
-        "Учёные Хорезма и Бухары, сказания «Шахнаме», машина «Турок», путешествие коня и загадки про фигуры.",
-        "Xorazm va Buxoro olimlari, «Shohnoma» rivoyatlari, «Turk» mashinasi, otning sayohati va donalar haqida topishmoqlar.",
+        "Учёные Хорезма и Бухары, большие шахматы Тимура, Абдусатторов и Самарканд, мысли великих, разговоры и загадки.",
+        "Xorazm va Buxoro olimlari, Temurning katta shaxmati, Abdusattorov va Samarqand, buyuklarning fikrlari, suhbatlar va topishmoqlar.",
       ),
       stat: t(
         `${secrets.length} историй · ${riddles.length} загадок`,
@@ -207,6 +217,13 @@ export function ChessSchool() {
           ? t(`${state.chessDiary.length} записей`, `${state.chessDiary.length} ta yozuv`)
           : t("Пока пусто", "Hozircha boʻsh"),
     },
+  ];
+
+  // Сначала то, с чего ребёнок обычно начинает; остальное — под «Ещё разделы».
+  const first = ["/chess/play", "/chess/puzzles", "/chess/secrets", "/chess/drills"];
+  const ordered = [
+    ...first.map((href) => sections.find((x) => x.href === href)!),
+    ...sections.filter((x) => !first.includes(x.href)),
   ];
 
   return (
@@ -257,29 +274,31 @@ export function ChessSchool() {
           </div>
         </div>
       </section>
-      <TodayCard />
+      {nextLevel && continueHref && (
+        <Link
+          href={continueHref}
+          data-chess-continue
+          className="flex items-center gap-4 rounded-[2rem] bg-white p-4 shadow-lift ring-2 ring-brand/30 transition hover:-translate-y-0.5 sm:p-5"
+        >
+          <PieceIcon piece={nextLevel.piece} className="h-16 w-16 shrink-0 rounded-2xl bg-[#f0d9b5] p-1" />
+          <span className="min-w-0 flex-1">
+            <span className="block text-sm font-extrabold tracking-wide text-muted uppercase">
+              {statuses[nextIndex].solved > 0 ? t("Продолжим", "Davom etamiz") : t("Начнём", "Boshlaymiz")}
+            </span>
+            <span className="block text-xl leading-tight font-black">
+              {t(`Уровень ${nextLevel.order}. ${nextLevel.name}`, `${nextLevel.order}-daraja. ${nextLevel.name}`)}
+            </span>
+            <span className="mt-1 block">
+              <ProgressBar value={statuses[nextIndex].solved} max={statuses[nextIndex].total} />
+            </span>
+          </span>
+          <span className="shrink-0 rounded-2xl bg-sun px-4 py-3 text-lg font-black text-ink shadow-[0_4px_0_0_#b45309]">
+            ▶
+          </span>
+        </Link>
+      )}
 
-      <section aria-labelledby="chess-sections">
-        <h2 id="chess-sections" className="mb-3 text-2xl font-black">
-          {t("Разделы школы", "Maktab boʻlimlari")}
-        </h2>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {sections.map((s) => (
-            <Link
-              key={s.href}
-              href={s.href}
-              className="flex flex-col rounded-3xl border-2 border-transparent bg-white p-4 shadow-card transition hover:-translate-y-0.5 hover:border-brand/30"
-            >
-              <p className="text-3xl" aria-hidden>
-                {s.emoji}
-              </p>
-              <p className="mt-1 text-xl font-black">{s.title}</p>
-              <p className="mt-1 flex-1 text-sm text-muted">{s.text}</p>
-              <p className="mt-3 text-xs font-extrabold text-brand-dark">{s.stat}</p>
-            </Link>
-          ))}
-        </div>
-      </section>
+      <TodayCard />
 
       <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]" aria-labelledby="daily-home">
         <div>
@@ -459,6 +478,49 @@ export function ChessSchool() {
           </details>
         </aside>
       </section>
+
+      <section aria-labelledby="chess-sections">
+        <h2 id="chess-sections" className="mb-3 text-2xl font-black">
+          {t("Разделы школы", "Maktab boʻlimlari")}
+        </h2>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {ordered.slice(0, MAIN_SECTIONS).map((s) => (
+            <SectionCard key={s.href} s={s} />
+          ))}
+        </div>
+        <details className="group mt-3 rounded-3xl border border-line bg-white p-3 shadow-card" data-more-sections>
+          <summary className="flex min-h-12 cursor-pointer list-none items-center gap-2 rounded-2xl px-3 text-lg font-black select-none [&::-webkit-details-marker]:hidden">
+            <span className="flex-1">{t("Ещё разделы", "Yana boʻlimlar")}</span>
+            <span aria-hidden className="text-muted transition group-open:rotate-180">
+              ▾
+            </span>
+          </summary>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {ordered.slice(MAIN_SECTIONS).map((s) => (
+              <SectionCard key={s.href} s={s} />
+            ))}
+          </div>
+        </details>
+      </section>
     </div>
+  );
+}
+
+/** Сколько разделов видно сразу; остальные — под «Ещё разделы». */
+const MAIN_SECTIONS = 4;
+
+function SectionCard({ s }: { s: { href: string; emoji: string; title: string; text: string; stat: string } }) {
+  return (
+    <Link
+      href={s.href}
+      className="flex flex-col rounded-3xl border-2 border-transparent bg-white p-4 shadow-card transition hover:-translate-y-0.5 hover:border-brand/30"
+    >
+      <p className="text-3xl" aria-hidden>
+        {s.emoji}
+      </p>
+      <p className="mt-1 text-xl font-black">{s.title}</p>
+      <p className="mt-1 flex-1 text-sm text-muted">{s.text}</p>
+      <p className="mt-3 text-xs font-extrabold text-brand-dark">{s.stat}</p>
+    </Link>
   );
 }

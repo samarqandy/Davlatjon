@@ -21,6 +21,7 @@ import { CHESS_IMAGES, type ChessImage } from "./images";
 import { CHESS_LEVELS, CHESS_SCHOOL, LEVEL_EXTRAS } from "./index";
 import { OPENINGS, OPENING_CATEGORIES, OPENING_PRINCIPLES } from "./openings";
 import { PUZZLES, PUZZLE_THEMES } from "./puzzles";
+import { DIALOGUES, NEW_VIEWS, THOUGHTS } from "./insights";
 import { DID_YOU_KNOW, DILARAM, PIECE_NAMES_RU, RIDDLES, SAGES, SECRETS, TURK_OPTIONS, TURK_REVEAL } from "./secrets";
 import { CHESS_UZ } from "./uz";
 
@@ -37,6 +38,9 @@ export const CHESS_RU = {
   secrets: SECRETS,
   sages: SAGES,
   riddles: RIDDLES,
+  thoughts: THOUGHTS,
+  dialogues: DIALOGUES,
+  newViews: NEW_VIEWS,
   didYouKnow: DID_YOU_KNOW,
   dilaram: DILARAM,
   pieceNames: PIECE_NAMES_RU,

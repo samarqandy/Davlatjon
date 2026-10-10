@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { TaskView } from "@/components/task/TaskView";
 import { Button, ButtonLink, cn } from "@/components/ui";
@@ -13,9 +14,21 @@ import { startDay, useHydrated, useStore } from "@/lib/store";
 import { setHash, useHash } from "@/lib/useHash";
 import { DayFinish } from "./DayFinish";
 import { DayIntro } from "./DayIntro";
+import { RestStop } from "./RestStop";
+
+/** После каких задач малышам предлагаем передохнуть. */
+export const REST_AFTER = [3, 6];
+
+/** Номер задачи, после которой показана остановка («#rest-3»), иначе 0. */
+function restFromHash(hash: string): number {
+  const m = hash.match(/^#rest-(\d+)$/);
+  return m && REST_AFTER.includes(Number(m[1])) ? Number(m[1]) : 0;
+}
 
 function stepFromHash(hash: string, total: number): number {
   if (hash === "#finish") return total + 1;
+  const rest = restFromHash(hash);
+  if (rest) return Math.min(rest, total);
   const m = hash.match(/^#task-(\d+)$/);
   if (!m) return 0;
   return Math.min(Math.max(Number(m[1]), 1), total);
@@ -35,6 +48,9 @@ export function DaySession({ day: both, nextDayHref }: { day: Both<Day>; nextDay
   const total = day.tasks.length;
   const hash = useHash();
   const step = stepFromHash(hash, total);
+  const resting = restFromHash(hash) > 0 && step < total;
+  const young = useStore((s) => (s.settings.age ?? 0) < 9);
+  const router = useRouter();
   const bigText = useStore((s) => s.settings.bigText);
 
   useEffect(() => {
@@ -44,6 +60,13 @@ export function DaySession({ day: both, nextDayHref }: { day: Both<Day>; nextDay
   const go = (s: number) => {
     setHash(hashForStep(s, total), { keepScroll: true });
     window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+  // Малышам после третьей и шестой задачи — спокойная остановка, если дальше ещё есть задачи.
+  const forward = () => {
+    if (young && !resting && REST_AFTER.includes(step) && step < total) {
+      setHash(`#rest-${step}`, { keepScroll: true });
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } else go(step + 1);
   };
 
   return (
@@ -72,13 +95,14 @@ export function DaySession({ day: both, nextDayHref }: { day: Both<Day>; nextDay
 
       <main className="mx-auto max-w-6xl px-4 pt-5">
         {step === 0 && <DayIntro day={day} onStart={() => go(1)} />}
-        {step >= 1 && step <= total && (
+        {resting && <RestStop onRest={() => router.push("/")} onMore={() => go(step + 1)} />}
+        {step >= 1 && step <= total && !resting && (
           <TaskView key={day.tasks[step - 1].id} task={day.tasks[step - 1]} number={step} total={total} />
         )}
         {step > total && <DayFinish day={day} nextDayHref={nextDayHref} />}
       </main>
 
-      {step >= 1 && step <= total && (
+      {step >= 1 && step <= total && !resting && (
         <nav
           className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-white/95 backdrop-blur"
           aria-label={t("Переход между задачами", "Masalalar orasida oʻtish")}
@@ -90,7 +114,7 @@ export function DaySession({ day: both, nextDayHref }: { day: Both<Day>; nextDay
             <span className="text-sm font-bold text-muted">
               {step} / {total}
             </span>
-            <Button onClick={() => go(step + 1)}>
+            <Button onClick={forward}>
               {step === total ? t("Итоги дня 🏁", "Kun yakuni 🏁") : t("Дальше →", "Keyingi →")}
             </Button>
           </div>

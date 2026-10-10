@@ -6,14 +6,14 @@ Kirilsa, natijalar hisobda ham saqlanadi va telefon, planshet, kompyuterda bir x
 Kirish tugmalari faqat quyidagi sozlamalar berilganda koʻrinadi (Vercel → Project → Settings →
 Environment Variables). Birortasi boʻlmasa, sayt avvalgidek hisobsiz ishlayveradi.
 
-| Oʻzgaruvchi                                | Nima uchun                                                                                        |
-| ------------------------------------------ | ------------------------------------------------------------------------------------------------- |
-| `AUTH_SECRET`                              | Sessiya cookie imzosi uchun tasodifiy satr, kamida 32 belgi (`openssl rand -base64 48`).          |
-| `DATABASE_URL`                             | Neon bazasiga ulanish satri (`postgresql://…`). Vercel orqali ulansa, oʻzi qoʻshiladi (pastda).   |
-| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Google orqali kirish uchun (pastda).                                                              |
-| `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_NAME`  | Telegram orqali kirish uchun (pastda).                                                            |
-| `CRON_SECRET`                              | Haftalik hisobot uchun tasodifiy satr, kamida 16 belgi (pastda, 5-boʻlim).                        |
-| `APP_URL`                                  | Ixtiyoriy: sayt manzili, masalan `https://davlatjon.vercel.app` (proksi xost nomini almashtirsa). |
+| Oʻzgaruvchi                                | Nima uchun                                                                                      |
+| ------------------------------------------ | ----------------------------------------------------------------------------------------------- |
+| `AUTH_SECRET`                              | Sessiya cookie imzosi uchun tasodifiy satr, kamida 32 belgi (`openssl rand -base64 48`).        |
+| `DATABASE_URL`                             | Neon bazasiga ulanish satri (`postgresql://…`). Vercel orqali ulansa, oʻzi qoʻshiladi (pastda). |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Google orqali kirish uchun (pastda).                                                            |
+| `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_NAME`  | Telegram orqali kirish uchun (pastda).                                                          |
+| `CRON_SECRET`                              | Haftalik hisobot uchun tasodifiy satr, kamida 16 belgi (pastda, 5-boʻlim).                      |
+| `APP_URL`                                  | Ixtiyoriy: sayt manzili, masalan `https://parvozedu.uz` (proksi xost nomini almashtirsa).       |
 
 Kamida bitta kirish usuli kerak: Google yoki Telegram. Oʻzgaruvchilarni qoʻshgandan keyin saytni qayta
 joylang (**Deployments → Redeploy**) — Vercel ularni faqat yangi joylashda oladi.
@@ -22,10 +22,10 @@ joylang (**Deployments → Redeploy**) — Vercel ularni faqat yangi joylashda o
 
 Eng oson yoʻli — Vercel’ning oʻzida:
 
-1. Vercel → `davlatjon` loyihasi → **Storage** → **Create Database** → **Neon**, tarif **Free**.
+1. Vercel → loyiha → **Storage** → **Create Database** → **Neon**, tarif **Free**.
    Hududni Vercel funksiyalari turgan joyga yaqin tanlang (**Settings → Functions → Region**;
    odatda bu Washington — `iad1`, Neon’da unga **US East (N. Virginia)** mos keladi).
-2. Baza tayyor boʻlgach, **Connect Project** → `davlatjon` (Production va Preview).
+2. Baza tayyor boʻlgach, **Connect Project** → loyihangiz (Production va Preview).
    Vercel `DATABASE_URL` ni oʻzi qoʻshadi. Agar ulashda prefiks yozilgan boʻlsa
    (masalan, `STORAGE_DATABASE_URL`), shu qiymatni `DATABASE_URL` nomi bilan qoʻlda ham qoʻshing.
 
@@ -51,18 +51,18 @@ create table if not exists lab_progress (
 2. **Authorized redirect URIs**: `https://<sayt-manzili>/api/auth/google/callback`
    (sinov uchun `http://localhost:3000/api/auth/google/callback` ham qoʻshsa boʻladi).
 3. Client ID va Client secret’ni `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` ga yozing.
-4. OAuth consent screen’da ilova nomi: «Davlatjon», scopes: `openid`, `email`, `profile`.
+4. OAuth consent screen’da ilova nomi: «Parvoz Edu», scopes: `openid`, `email`, `profile`.
 
 ## 3. Telegram orqali kirish
 
-1. Telegram’da [@BotFather](https://t.me/BotFather) → `/newbot` → bot nomi va username (masalan `davlatjon_lab_bot`).
+1. Telegram’da [@BotFather](https://t.me/BotFather) → `/newbot` → bot nomi va username (masalan `parvozedu_bot`).
 2. Token’ni `TELEGRAM_BOT_TOKEN` ga, username’ni (`@`siz) `TELEGRAM_BOT_NAME` ga yozing.
-3. BotFather’da `/setdomain` → botni tanlang → sayt domeni (masalan `davlatjon.vercel.app`).
+3. BotFather’da `/setdomain` → botni tanlang → sayt domeni (masalan `parvozedu.uz`).
    Domen koʻrsatilmasa, Telegram tugmasi «Bot domain invalid» deydi.
 
 ## 4. Tekshirish
 
-Qayta joylangandan keyin `https://davlatjon.vercel.app/api/auth/me` ni oching. `"google": true` yoki
+Qayta joylangandan keyin `https://parvozedu.uz/api/auth/me` ni oching. `"google": true` yoki
 `"telegram": true` koʻrinsa, hammasi ulangan. `false` boʻlsa: `AUTH_SECRET` 32 belgidan qisqa emasmi,
 `DATABASE_URL` bormi, kirish usulining ikkala oʻzgaruvchisi ham yozilganmi — va sayt qayta joylanganmi.
 
@@ -80,7 +80,7 @@ baholar va foizlar yoʻq; mashgʻulot boʻlmagan haftada xabar yuborilmaydi.
    chiqib, qaytadan kiring yoki botga `/start` yuboring.
 4. Sahifada «Sinov xabarini yuborish» tugmasi bor — xabar darhol sizning Telegram’ingizga keladi.
 
-Tekshirish: `https://davlatjon.vercel.app/api/auth/me` javobida `"reports": true` boʻlishi kerak.
+Tekshirish: `https://parvozedu.uz/api/auth/me` javobida `"reports": true` boʻlishi kerak.
 
 ## Qanday ishlaydi
 

@@ -60,6 +60,6 @@ test("родитель меняет имя в настройках", async ({ pa
   await expect(field).toHaveValue("Aziz");
   await field.fill("Bek");
   await field.press("Enter");
-  await page.getByRole("link", { name: /Davlatjon — на главную/ }).click();
+  await page.getByRole("link", { name: /Parvoz Edu — на главную/ }).click();
   await expect(page.getByText("Привет, Bek! 👋")).toBeVisible();
 });

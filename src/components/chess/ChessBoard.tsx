@@ -4,8 +4,10 @@ import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { Chessboard, defaultPieces, type PieceRenderObject, type PositionDataType } from "react-chessboard";
 import { cn } from "@/components/ui";
 import { COORDS_MIN_WIDTH, classifyChange, coordLabels, snapshotOf, type Snapshot } from "@/lib/board";
+import { boardThemeOf } from "@/lib/boardLook";
 import { useT } from "@/lib/i18n";
 import { playSfx, sfxUnlock } from "@/lib/sfx";
+import { useStore } from "@/lib/store";
 
 /** Как подсветить клетку. */
 export type SquareMark =
@@ -154,6 +156,8 @@ export function ChessBoard({
   };
 
   // Звук хода: сравниваем новую расстановку с прошлой.
+  const themeId = useStore((s) => s.settings.boardTheme);
+  const theme = boardThemeOf(themeId);
   const key = positionKey(position);
   const withSound = sounds ?? (maxWidth >= 300 && frame !== "print");
   const seen = useRef<{ id: string; now: Snapshot; before: Snapshot | null } | null>(null);
@@ -190,10 +194,11 @@ export function ChessBoard({
     <div
       className={cn(
         "board-frame mx-auto w-full touch-manipulation overflow-hidden select-none",
-        frame === "print" ? "rounded-md bg-white ring-1 ring-black" : "rounded-xl bg-[#7c5a33] shadow-card",
+        frame === "print" ? "rounded-md bg-white ring-1 ring-black" : "rounded-xl shadow-card",
         className,
       )}
-      style={{ maxWidth }}
+      style={{ maxWidth, backgroundColor: frame === "print" ? undefined : theme.frame }}
+      data-board-theme={frame === "print" ? undefined : theme.id}
       role="group"
       aria-label={label ?? t("Шахматная доска", "Shaxmat taxtasi")}
       data-board={id}
@@ -234,6 +239,12 @@ export function ChessBoard({
                 : arrows.map((a) => ({ startSquare: a.from, endSquare: a.to, color: a.color ?? "#16a34a" })),
               animationDurationInMs: 180,
               showNotation: false,
+              ...(frame === "print"
+                ? {}
+                : {
+                    lightSquareStyle: { backgroundColor: theme.light },
+                    darkSquareStyle: { backgroundColor: theme.dark },
+                  }),
               onSquareClick: onSquare
                 ? ({ square }) => {
                     // Щелчок мышью после «перетаскивания» на ту же клетку — уже учтён при начале перетаскивания.

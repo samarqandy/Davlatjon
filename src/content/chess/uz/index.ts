@@ -23,6 +23,7 @@ import { puzzlesUz, themesUz } from "./puzzles";
 import { queenUz } from "./queen";
 import { rookUz } from "./rook";
 import { extrasUz, schoolUz } from "./school";
+import { dialoguesUz, newViewsUz, thoughtsUz } from "./insights";
 import {
   didYouKnowUz,
   dilaramUz,
@@ -47,6 +48,9 @@ export const CHESS_UZ: ChessContentUz = {
   secrets: secretsUz,
   sages: sagesUz,
   riddles: riddlesUz,
+  thoughts: thoughtsUz,
+  dialogues: dialoguesUz,
+  newViews: newViewsUz,
   didYouKnow: didYouKnowUz,
   dilaram: dilaramUz,
   pieceNames: pieceNamesUz,
