@@ -29,6 +29,7 @@ const PAGES = [
   "/chess/diary",
   "/my-problems",
   "/about",
+  "/quick",
   "/chess/collection",
   "/certificate/week/1",
   "/privacy",

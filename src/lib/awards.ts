@@ -270,6 +270,11 @@ export function activityDays(s: AppState): Record<string, number> {
   for (const c of Object.values(s.chess)) add(c.solvedAt);
   for (const v of Object.values(s.chessOpenings)) add(v);
   for (const v of Object.values(s.chessOwnPuzzles)) add(v);
+  // «Быстрые примеры»: день записан в ключе.
+  for (const k of Object.keys(s.quick)) {
+    const day = k.split(":")[0];
+    out[day] = (out[day] ?? 0) + 1;
+  }
   return out;
 }
 

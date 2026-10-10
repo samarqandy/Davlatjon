@@ -160,6 +160,7 @@ export function mergeStates(localRaw: unknown, remoteRaw: unknown): AppState {
       x.score / (x.max || 1) >= y.score / (y.max || 1) ? x : y,
     ),
     chessDrills: mergeRecords(a.chessDrills, b.chessDrills, largest),
+    quick: mergeRecords(a.quick, b.quick, largest),
     chessEndgames: mergeRecords(a.chessEndgames, b.chessEndgames, earliest),
     // Время считаем на каждом устройстве по-своему; берём большее за день, чтобы ничего не терялось.
     activity: mergeRecords(a.activity, b.activity, (x, y) => {

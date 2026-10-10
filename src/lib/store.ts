@@ -10,6 +10,7 @@ import { useMemo, useSyncExternalStore } from "react";
 
 import { withActivity, withExtra } from "./activity";
 import { REGISTRY_KEY, readRegistry, storageKeyFor } from "./profiles";
+import { quickKey, type Deck } from "./quick";
 import { cleanChildName } from "./childName";
 import {
   DEFAULT_STATE,
@@ -284,6 +285,12 @@ export function chessDrillRecord(mode: string, score: number) {
   setState((s) =>
     (s.chessDrills[mode] ?? 0) >= score ? s : { ...s, chessDrills: { ...s.chessDrills, [mode]: score } },
   );
+}
+
+/** Результат серии «быстрых примеров»: за день на колоду хранится лучший. */
+export function quickRecord(day: string, deck: Deck, score: number) {
+  const key = quickKey(day, deck);
+  setState((s) => ((s.quick[key] ?? -1) >= score ? s : { ...s, quick: { ...s.quick, [key]: score } }));
 }
 
 /**

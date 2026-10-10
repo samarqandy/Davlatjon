@@ -17,6 +17,8 @@ import {
   piecesInDanger,
   safetyQuestion,
 } from "@/lib/miniDrills";
+import { activityDays } from "@/lib/awards";
+import { mergeStates } from "@/lib/sync";
 import { gentleStreak, questDone, questFor, questStars, weekActiveDays } from "@/lib/quest";
 import { DEFAULT_STATE, isoDay, type AppState, type ChessGameRecord, type TaskProgress } from "@/lib/state";
 import { levelName, showsNumbers } from "@/lib/workshop";
@@ -368,5 +370,31 @@ describe("коллекция героев", () => {
     expect(newCardAt(1, 6, 23)).toBe(false);
     expect(newCardAt(0, 500, 23)).toBe(false);
     expect(newCardAt(XP_PER_CARD + 5, XP_PER_CARD - 5, 23)).toBe(false);
+  });
+});
+
+describe("быстрые примеры в прогрессе", () => {
+  it("опыт — за серии с зачётом, раз в день на колоду; дни серий идут в календарь занятий", () => {
+    const s = state({
+      quick: {
+        "2026-10-01:numbers": 7,
+        "2026-10-01:little": 6,
+        "2026-10-02:numbers": 10,
+        "2026-10-03:numbers": 3,
+      },
+    });
+    expect(xpTotal(s)).toBe(2 * XP.quick);
+    expect(Object.keys(activityDays(s)).sort()).toEqual(["2026-10-01", "2026-10-02", "2026-10-03"]);
+    expect(activityDays(s)["2026-10-01"]).toBe(2);
+  });
+
+  it("при слиянии устройств остаётся лучший результат дня", () => {
+    const a = { ...structuredClone(DEFAULT_STATE), quick: { "2026-10-01:numbers": 6, "2026-10-02:numbers": 9 } };
+    const b = { ...structuredClone(DEFAULT_STATE), quick: { "2026-10-01:numbers": 8, "2026-10-03:little": 5 } };
+    expect(mergeStates(a, b).quick).toEqual({
+      "2026-10-01:numbers": 8,
+      "2026-10-02:numbers": 9,
+      "2026-10-03:little": 5,
+    });
   });
 });

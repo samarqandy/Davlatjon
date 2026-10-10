@@ -5,6 +5,7 @@ import { ChessHomeCard } from "@/components/chess/ChessHomeCard";
 import { ButtonLink, cn, ProgressBar } from "@/components/ui";
 import { sectionsFor } from "@/content/meta";
 import type { DaySummary, WeekSummary } from "@/content/summary";
+import { QuickCard } from "@/components/home/QuickCard";
 import { ChildNameBanner } from "@/components/home/ChildNameBanner";
 import { PlacementCard } from "@/components/home/PlacementCard";
 import { Welcome } from "@/components/home/Welcome";
@@ -34,6 +35,8 @@ export function HomeDashboard({ weeks: both }: { weeks: Both<WeekSummary[]> }) {
   const step = hydrated ? nextDayStep(allDays, state) : null;
   const next = hydrated ? (step?.day ?? null) : allDays[0];
   const junior = useStore((st) => (st.settings.age ?? 0) < 9);
+  // Дошкольники (4–5 лет): вместо занятий по неделям — картинки и счёт без чтения.
+  const little = useStore((st) => st.settings.age !== undefined && st.settings.age <= 5);
   const solvedIn = (d: DaySummary) => d.tasks.filter((t) => state.tasks[t.id]?.status === "solved").length;
 
   const tasks = Object.values(state.tasks);
@@ -62,7 +65,19 @@ export function HomeDashboard({ weeks: both }: { weeks: Both<WeekSummary[]> }) {
           <h1 className="mt-1 text-2xl leading-tight font-black sm:text-3xl">
             {t("Математика — это место, где происходят интересные вещи", "Matematika — qiziqarli kashfiyotlar olami")}
           </h1>
-          {next ? (
+          {little ? (
+            <div className="mt-5 rounded-3xl bg-white/12 p-4 ring-1 ring-white/25 backdrop-blur-sm" data-little-step>
+              <p className="text-sm font-extrabold tracking-wide text-white/85 uppercase">
+                {t("Играем!", "Oʻynaymiz!")}
+              </p>
+              <p className="mt-1 text-2xl font-black">
+                <span aria-hidden>🍎 ⭐ 🐟</span> {t("Считаем и угадываем", "Sanaymiz va topamiz")}
+              </p>
+              <ButtonLink href="/quick" variant="sun" size="lg" className="mt-4 w-full sm:w-auto">
+                {t("Играть ▶", "Oʻynash ▶")}
+              </ButtonLink>
+            </div>
+          ) : next ? (
             <div className="mt-5 rounded-3xl bg-white/12 p-4 ring-1 ring-white/25 backdrop-blur-sm" data-next-step>
               <p className="text-sm font-extrabold tracking-wide text-white/85 uppercase">
                 {step?.started ? t("Продолжим", "Davom etamiz") : t("Сегодняшнее занятие", "Bugungi mashgʻulot")}
@@ -112,6 +127,8 @@ export function HomeDashboard({ weeks: both }: { weeks: Both<WeekSummary[]> }) {
 
         <TodayCard />
       </section>
+
+      {!little && <QuickCard />}
 
       <PlacementCard />
 

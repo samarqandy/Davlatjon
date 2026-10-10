@@ -9,6 +9,7 @@ import { sanitize } from "@/lib/store";
 describe("возраст и профиль занятий", () => {
   it("возраст переводится в профиль, без возраста — младший", () => {
     expect(ageProfile(undefined)).toBe("junior");
+    expect(ageProfile(4)).toBe("junior");
     expect(ageProfile(6)).toBe("junior");
     expect(ageProfile(8)).toBe("junior");
     expect(ageProfile(9)).toBe("middle");
@@ -26,9 +27,10 @@ describe("возраст и профиль занятий", () => {
     expect(profileMeta(12).openLevels).toBe(CHESS_LEVELS.length);
   });
 
-  it("возраст сохраняется только целым числом от 6 до 15", () => {
+  it("возраст сохраняется только целым числом от 4 до 15", () => {
     expect(sanitize({ settings: { age: 10 } }).settings.age).toBe(10);
     expect(sanitize({ settings: { age: 15 } }).settings.age).toBe(15);
+    expect(sanitize({ settings: { age: 4 } }).settings.age).toBe(4);
     expect(sanitize({ settings: { age: 3 } }).settings.age).toBeUndefined();
     expect(sanitize({ settings: { age: 40 } }).settings.age).toBeUndefined();
     expect(sanitize({ settings: { age: "9" } }).settings.age).toBeUndefined();

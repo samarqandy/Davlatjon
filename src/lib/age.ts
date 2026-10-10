@@ -9,7 +9,7 @@ import { useStore } from "./store";
  */
 export type AgeProfile = "junior" | "middle" | "senior";
 
-export const AGE_MIN = 6;
+export const AGE_MIN = 4;
 export const AGE_MAX = 15;
 
 export interface ProfileMeta {
@@ -32,7 +32,7 @@ export const PROFILES: Record<AgeProfile, ProfileMeta> = {
   junior: {
     id: "junior",
     name: "Младший",
-    ages: "6–8 лет",
+    ages: "4–8 лет",
     about:
       "Всё по порядку: задания дня одно за другим, шахматные уровни открываются по очереди, робот «Пешка», задача дня с одной звезды.",
     robotLevel: 1,
@@ -81,7 +81,7 @@ export function profileMeta(age: number | undefined): ProfileMeta {
 const PROFILES_UZ: Record<AgeProfile, { name: string; ages: string; about: string; robotName: string }> = {
   junior: {
     name: "Kichiklar",
-    ages: "6–8 yosh",
+    ages: "4–8 yosh",
     about:
       "Hammasi tartib bilan: kunning topshiriqlari birin-ketin, shaxmat darajalari navbat bilan ochiladi, robot «Piyoda», kun masalasi bir yulduzchadan.",
     robotName: "Piyoda",

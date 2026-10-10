@@ -4,6 +4,7 @@
  */
 import { CHESS_LEVELS } from "@/content/chess";
 import type { AppState } from "./state";
+import { QUICK_PASS } from "./quick";
 
 /** Сколько опыта за что. */
 export const XP = {
@@ -21,6 +22,8 @@ export const XP = {
   /** Первый рекорд в тренажёре «Кто в опасности?», «Запомни» или «Путь коня». */
   drill: 10,
   rank: 50,
+  /** Серия «быстрых примеров» с зачётом — раз в день на колоду. */
+  quick: 5,
 } as const;
 
 const DRILLS = ["safety", "memory", "knight"];
@@ -37,6 +40,7 @@ export function xpTotal(s: AppState): number {
   xp += new Set(Object.keys(s.chessOpenings).map((k) => k.split(":")[0])).size * XP.opening;
   xp += Object.keys(s.chessGamesViewed).length * XP.famousGame;
   xp += Object.keys(s.chessEndgames).length * XP.endgame;
+  xp += Object.values(s.quick).filter((score) => score >= QUICK_PASS).length * XP.quick;
   xp += DRILLS.filter((d) => s.chessDrills[d]).length * XP.drill;
   // Звание: все упражнения уровня решены.
   for (const level of CHESS_LEVELS) if (level.exercises.every((e) => s.chess[e.id]?.solvedAt)) xp += XP.rank;
