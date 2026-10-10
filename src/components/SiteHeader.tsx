@@ -31,7 +31,7 @@ export function SiteHeader({ active }: { active?: "home" | "chess" | "problems" 
           className="mr-auto flex items-center gap-2.5 rounded-xl pr-2"
           aria-label={t(`${BRAND} — на главную`, `${BRAND} — bosh sahifaga`)}
         >
-          <LogoMark size={40} />
+          <LogoMark size={50} />
           <span className="leading-tight">
             <span className="block text-[15px] font-black sm:text-lg">{BRAND}</span>
             <span className="hidden text-xs font-bold text-muted sm:block">
