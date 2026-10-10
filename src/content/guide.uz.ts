@@ -24,7 +24,7 @@ export const guideUz: Uz<typeof GUIDE> = {
   levels: {
     title: "Qiyinlik darajalari",
     list: [
-      "🟢 **Oson** — bola mustaqil yechadi.",
+      "🟢 **Qulay** — bola mustaqil yechadi.",
       "🟡 **Oʻylash kerak** — biroz mulohaza yuritish kerak.",
       "🟠 **Gʻayrioddiy** — yangi gʻoya kerak.",
       "🔴 **Olimpiada** — chuqur mulohaza (shu yosh uchun olimpiada darajasi).",

@@ -20,7 +20,9 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   now = 1_800_000_000_000;
-  await db.exec("truncate lab_profiles, lab_friends, lab_games, lab_messages, lab_reads restart identity");
+  await db.exec(
+    "truncate lab_profiles, lab_friends, lab_games, lab_messages, lab_reads, lab_progress restart identity",
+  );
 });
 
 afterAll(async () => {
@@ -174,5 +176,33 @@ describe("переписка", () => {
     expect(await store.sendMessage(ann, "bekzod", "ещё")).toEqual({ error: "rate" });
     await store.setPrefs("u2", { chatOk: false });
     expect(await store.sendMessage(ann, "bekzod", "hello")).toEqual({ error: "chat-off" });
+  });
+});
+
+describe("удаление аккаунта", () => {
+  it("стирает прогресс всех профилей, имя, друзей, партии и переписку; чужое и похожие id не трогает", async () => {
+    const ann = await user("u1", "anna");
+    const bek = await user("u2", "bekzod");
+    await user("u10", "other_one");
+    await befriend(ann, bek);
+    const made = await store.createGame(ann, "bekzod", "w", timeControlOf("none")!);
+    if (!("game" in made)) throw new Error("no game");
+    await store.sendMessage(ann, "bekzod", "Salom!");
+    await store.sendMessage(bek, "anna", "Salom, Anna!");
+    for (const id of ["u1", "u1#p3k9x", "u2", "u10", "u10#abc12"])
+      await db.query("insert into lab_progress (user_id, state) values ($1, '{}'::jsonb)", [id]);
+
+    expect(await store.deleteAccount("u1")).toBe(2);
+    const left = (await db.query("select user_id from lab_progress order by user_id")).rows.map(
+      (r) => (r as { user_id: string }).user_id,
+    );
+    expect(left).toEqual(["u10", "u10#abc12", "u2"]);
+    expect(await store.profileById("u1")).toBeNull();
+    expect((await store.friends(bek)).friends).toEqual([]);
+    expect((await db.query("select count(*)::int as n from lab_games")).rows[0]).toEqual({ n: 0 });
+    expect((await db.query("select count(*)::int as n from lab_messages")).rows[0]).toEqual({ n: 0 });
+    // Остальные игроки на месте.
+    expect((await store.profileById("u2"))?.username).toBe("bekzod");
+    expect((await store.profileById("u10"))?.username).toBe("other_one");
   });
 });

@@ -2,9 +2,12 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { MascotSays } from "@/components/Mascot";
+import { ShareButton } from "@/components/ShareButton";
 import { Button, ButtonLink, cn } from "@/components/ui";
 import { SECTIONS } from "@/content/meta";
 import type { Day } from "@/content/types";
+import { weekCertificateHref } from "@/lib/certificate";
 import { countText, useLang, useT } from "@/lib/i18n";
 import { updateDay, useHydrated, useStore } from "@/lib/store";
 
@@ -15,7 +18,15 @@ const MOODS = [
   { emoji: "😕", ru: "Было трудно", uz: "Qiyin boʻldi" },
 ];
 
-export function DayFinish({ day, nextDayHref }: { day: Day; nextDayHref: string | null }) {
+export function DayFinish({
+  day,
+  nextDayHref,
+  weekDayIds,
+}: {
+  day: Day;
+  nextDayHref: string | null;
+  weekDayIds: string[];
+}) {
   const router = useRouter();
   const t = useT();
   const lang = useLang();
@@ -31,23 +42,27 @@ export function DayFinish({ day, nextDayHref }: { day: Day; nextDayHref: string 
     (x) => x.p?.status === "solved" && (x.p.hints >= 2 || x.p.missed >= 2 || x.p.marks.hard),
   );
   const done = Boolean(progress?.completedAt);
+  // Последний день недели: после него открываем сертификат недели.
+  const completesWeek = useStore((s) => weekDayIds.every((id) => id === day.id || s.days[id]?.completedAt));
   const left = countText(lang, day.tasks.length - solved, ["задача", "задачи", "задач"], "ta masala");
 
   const finish = () => {
     updateDay(day.id, { completedAt: progress?.completedAt ?? Date.now() });
-    router.push("/");
+    router.push(completesWeek ? weekCertificateHref(day.week) : "/");
   };
 
   return (
     <div className="mx-auto max-w-3xl space-y-5">
       <section className="animate-pop rounded-[2rem] border border-line bg-white p-6 text-center shadow-card sm:p-8">
-        <div className="mb-2 text-6xl" aria-hidden>
-          🏁
-        </div>
-        <h1 className="text-3xl font-black">{t("Итоги дня", "Kun yakuni")}</h1>
+        <MascotSays className="mx-auto mb-3 w-fit" size={80}>
+          {solved === day.tasks.length
+            ? t("Парвоз гордится тобой! Все задачи решены!", "Parvoz sen bilan faxrlanadi! Hamma masala yechildi!")
+            : t("Парвоз рад: отличная работа!", "Parvoz xursand: zoʻr ishlading!")}
+        </MascotSays>
+        <h1 className="text-3xl font-black">🏁 {t("Итоги дня", "Kun yakuni")}</h1>
         <p className="mt-2 text-lg text-muted">
           {t(
-            "Ты хорошо поработал! Посмотри, что сегодня получилось.",
+            "Хорошая работа! Посмотри, что сегодня получилось.",
             "Yaxshi ishlading! Qani, bugun nimalarni uddalaganingni koʻramiz.",
           )}
         </p>
@@ -61,7 +76,7 @@ export function DayFinish({ day, nextDayHref }: { day: Day; nextDayHref: string 
           <Stat value={anotherWay} label={t("других способов найдено", "ta boshqa yoʻl topding")} emoji="🔁" />
           <Stat
             value={persisted.length}
-            label={t("не сдался в трудной", "ta qiyin masalada taslim boʻlmading")}
+            label={t("трудных задач доведено до конца", "ta qiyin masala oxirigacha yechildi")}
             emoji="🧗"
           />
         </div>
@@ -121,6 +136,17 @@ export function DayFinish({ day, nextDayHref }: { day: Day; nextDayHref: string 
         <Button size="lg" variant="success" onClick={finish}>
           {done ? t("На главную", "Bosh sahifaga") : t("Завершить день ✓", "Kunni yakunlash ✓")}
         </Button>
+        <ShareButton
+          text={t(
+            `Сегодня на Parvoz Edu: ${solved} из ${day.tasks.length} задач решено! ⭐`,
+            `Bugun Parvoz Edu da: ${day.tasks.length} ta masaladan ${solved} tasi yechildi! ⭐`,
+          )}
+        />
+        {done && completesWeek && (
+          <ButtonLink href={weekCertificateHref(day.week)} size="lg" variant="sun" data-week-certificate-link>
+            📜 {t("Сертификат недели", "Hafta sertifikati")}
+          </ButtonLink>
+        )}
         {nextDayHref && done && (
           <ButtonLink href={nextDayHref} size="lg" variant="secondary">
             {t("Следующий день →", "Keyingi kun →")}

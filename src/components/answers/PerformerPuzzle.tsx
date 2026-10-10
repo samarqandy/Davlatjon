@@ -236,26 +236,6 @@ export function PerformerPuzzle({
             <NumberLine puzzle={puzzle} values={values} />
           </div>
         )}
-        {program.length > 0 && (
-          <p
-            className="mt-3 flex flex-wrap items-center gap-x-1 gap-y-1.5 text-lg font-extrabold"
-            aria-label={t("Числа по дороге", "Yoʻldagi sonlar")}
-          >
-            {values.map((v, i) => (
-              <Fragment key={i}>
-                {i > 0 && (
-                  <span className="inline-flex items-center text-sm text-brand">
-                    <span className="rounded-md bg-brand-soft px-1.5 py-0.5">
-                      {commandLabel(puzzle.commands[program[i - 1]])}
-                    </span>
-                    <span aria-hidden>→</span>
-                  </span>
-                )}
-                <span className={cn("tabular rounded-lg px-1.5", i === values.length - 1 && "bg-sun-soft")}>{v}</span>
-              </Fragment>
-            ))}
-          </p>
-        )}
       </div>
 
       <div className="flex flex-wrap items-stretch gap-2" role="group" aria-label={t("Команды", "Buyruqlar")}>
@@ -281,6 +261,26 @@ export function PerformerPuzzle({
         </div>
       </div>
 
+      {program.length > 0 && (
+        <p
+          className="flex flex-wrap items-center gap-x-1 gap-y-1.5 text-lg font-extrabold"
+          aria-label={t("Числа по дороге", "Yoʻldagi sonlar")}
+        >
+          {values.map((v, i) => (
+            <Fragment key={i}>
+              {i > 0 && (
+                <span className="inline-flex items-center text-sm text-brand">
+                  <span className="rounded-md bg-brand-soft px-1.5 py-0.5">
+                    {commandLabel(puzzle.commands[program[i - 1]])}
+                  </span>
+                  <span aria-hidden>→</span>
+                </span>
+              )}
+              <span className={cn("tabular rounded-lg px-1.5", i === values.length - 1 && "bg-sun-soft")}>{v}</span>
+            </Fragment>
+          ))}
+        </p>
+      )}
       <p className="text-sm font-bold text-muted">
         {t("Программа:", "Dastur:")}{" "}
         {program.length === 0 ? (

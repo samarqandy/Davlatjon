@@ -1,5 +1,6 @@
 "use client";
 
+import { Mascot } from "@/components/Mascot";
 import { Button } from "@/components/ui";
 import { useT } from "@/lib/i18n";
 
@@ -16,8 +17,8 @@ export function RestStop({ onRest, onMore }: { onRest: () => void; onMore: () =>
       aria-labelledby="rest-stop-title"
       data-rest-stop
     >
-      <div className="text-6xl" aria-hidden>
-        🌿
+      <div className="flex justify-center" aria-hidden>
+        <Mascot size={96} float />
       </div>
       <h2 id="rest-stop-title" className="text-3xl font-black">
         {t("Передохнём?", "Dam olamizmi?")}

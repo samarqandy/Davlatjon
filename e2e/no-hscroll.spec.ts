@@ -28,6 +28,9 @@ const PAGES = [
   "/chess/analysis",
   "/chess/diary",
   "/my-problems",
+  "/about",
+  "/certificate/week/1",
+  "/privacy",
 ];
 
 for (const lang of ["ru", "uz"] as const) {

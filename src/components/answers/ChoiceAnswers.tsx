@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { Button, cn } from "@/components/ui";
 import { PolyominoVisual, ShapeIcon } from "@/components/visuals/shapes";
 import type { AnswerSpec, Option } from "@/content/types";
-import { checkAssign, checkChoice, checkOrder, orderMatches } from "@/lib/checks";
+import { checkAssign, checkChoice, checkOrder, isOneToOne, orderMatches } from "@/lib/checks";
 import { askExplain, praise, retrySub, retryTitle } from "@/lib/feedback";
 import { useLang, useT } from "@/lib/i18n";
 import { recordCheck, saveTaskInput, useTask } from "@/lib/store";
@@ -131,8 +131,12 @@ export function AssignAnswer({ taskId, spec, hintsLeft }: { taskId: string; spec
   const [feedback, setFeedback] = useState<FeedbackState | null>(null);
   const attempts = useRef(0);
 
+  const oneToOne = isOneToOne(spec);
   const set = (item: string, option: string) => {
     const next = { ...values, [item]: option };
+    // Каждому своё: карточка, уже стоявшая в другой строке, переезжает сюда.
+    if (oneToOne)
+      for (const other of Object.keys(next)) if (other !== item && next[other] === option) delete next[other];
     setValues(next);
     setFeedback(null);
     saveTaskInput(taskId, { assign: next });
@@ -146,10 +150,9 @@ export function AssignAnswer({ taskId, spec, hintsLeft }: { taskId: string; spec
     else
       setFeedback({
         tone: "retry",
-        text: t(
-          `Сходится: ${res.correctCount} из ${res.total}.`,
-          `${res.total} tadan ${res.correctCount} tasi toʻgʻri.`,
-        ),
+        text: oneToOne
+          ? t("Пока не всё сходится с условиями.", "Hozircha hamma shart bilan mos kelmayapti.")
+          : t(`Сходится: ${res.correctCount} из ${res.total}.`, `${res.total} tadan ${res.correctCount} tasi toʻgʻri.`),
         sub: retrySub(n, hintsLeft, lang),
       });
   };

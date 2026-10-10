@@ -13,6 +13,7 @@ Environment Variables). Birortasi boʻlmasa, sayt avvalgidek hisobsiz ishlayvera
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Google orqali kirish uchun (pastda).                                                            |
 | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_NAME`  | Telegram orqali kirish uchun (pastda).                                                          |
 | `CRON_SECRET`                              | Haftalik hisobot uchun tasodifiy satr, kamida 16 belgi (pastda, 5-boʻlim).                      |
+| `NEXT_PUBLIC_CONTACT`                      | Ixtiyoriy: maxfiylik sahifasida koʻrsatiladigan aloqa (email yoki Telegram).                    |
 | `APP_URL`                                  | Ixtiyoriy: sayt manzili, masalan `https://parvozedu.uz` (proksi xost nomini almashtirsa).       |
 
 Kamida bitta kirish usuli kerak: Google yoki Telegram. Oʻzgaruvchilarni qoʻshgandan keyin saytni qayta

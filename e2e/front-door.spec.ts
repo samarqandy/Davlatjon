@@ -77,7 +77,9 @@ test("главная для малыша короткая: путь свёрну
 test("малыш после третьей задачи видит спокойную остановку; «Ещё» идёт дальше, «Передохнуть» — на главную", async ({
   page,
 }) => {
-  await prepare(page);
+  // Остановка — после настоящей работы: две из трёх последних задач решены.
+  const solved = { status: "solved", hints: 0, checks: 1, missed: 0, timeMs: 1, marks: {}, solvedAt: 1 };
+  await prepare(page, { tasks: { w1d1t1: solved, w1d1t2: solved } });
   await page.goto("/week/1/day/1#task-3");
   await page.getByRole("button", { name: "Дальше →" }).click();
   const rest = page.locator("[data-rest-stop]");

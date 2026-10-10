@@ -10,8 +10,10 @@ import { ActivityTracker } from "@/components/progress/ActivityTracker";
 import { RestCard } from "@/components/progress/RestCard";
 import { XpToast } from "@/components/progress/XpToast";
 import { BRAND, BRAND_TITLE } from "@/lib/brand";
+import { SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: {
     default: BRAND_TITLE.ru,
     template: `%s · ${BRAND}`,
@@ -21,6 +23,17 @@ export const metadata: Metadata = {
   applicationName: BRAND,
   // Личная учебная платформа ребёнка: поисковикам её показывать не нужно.
   robots: { index: false, follow: false },
+  openGraph: {
+    type: "website",
+    siteName: BRAND,
+    title: BRAND_TITLE.ru,
+    description:
+      "Математика, логика и шахматы для детей 6–12 лет: короткие ежедневные занятия, подсказки, шахматная школа и раздел для родителей.",
+    locale: "ru_RU",
+    alternateLocale: ["uz_UZ"],
+    images: [{ url: "/og.png", width: 1200, height: 630, alt: BRAND }],
+  },
+  twitter: { card: "summary_large_image", images: ["/og.png"] },
   appleWebApp: { capable: true, title: BRAND, statusBarStyle: "default" },
   formatDetection: { telephone: false },
 };
@@ -43,7 +56,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
         */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `try{var s=JSON.parse(localStorage.getItem("davlatjon-lab:v1")||"{}").settings||{};var named=s.childName&&["week","parent","my-problems"].indexOf(location.pathname.split("/")[1])>=0;if(s.lang==="uz"||named){var h=document.documentElement;if(s.lang==="uz")h.lang="uz";h.classList.add("i18n-wait");setTimeout(function(){h.classList.remove("i18n-wait")},1500)}}catch(e){}`,
+            __html: `try{var a=(JSON.parse(localStorage.getItem("davlatjon-lab:profiles")||"{}")||{}).active;var s=JSON.parse(localStorage.getItem("davlatjon-lab:v1"+(a&&a!=="main"&&/^[a-z0-9]{3,12}$/.test(a)?":"+a:""))||"{}").settings||{};var named=s.childName&&["week","parent","my-problems"].indexOf(location.pathname.split("/")[1])>=0;if(s.lang==="uz"||named){var h=document.documentElement;if(s.lang==="uz")h.lang="uz";h.classList.add("i18n-wait");setTimeout(function(){h.classList.remove("i18n-wait")},1500)}}catch(e){}`,
           }}
         />
       </head>

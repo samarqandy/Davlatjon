@@ -50,7 +50,7 @@ test("задание дня: три дела, уровень и серия", asy
   await expect(card.locator('[data-level-name="Росточек"]')).toBeVisible();
   await expect(card.getByText(/XP/)).toHaveCount(0);
   await expect(card.getByText("Начни серию сегодня!")).toBeVisible();
-  await expect(card.getByRole("link", { name: /Реши 3 задачи в тренажёре/ })).toHaveAttribute(
+  await expect(card.getByRole("link", { name: /Реши 3 задачи в тренажёре тактики/ })).toHaveAttribute(
     "href",
     "/chess/puzzles#practice",
   );
@@ -236,4 +236,46 @@ test("тренажёр «Кто в опасности?» загружает по
   await page.getByRole("button", { name: /Готово/ }).click();
   await expect(page.locator("[data-safety]")).toBeVisible();
   await expect(page.getByRole("button", { name: "Дальше →" })).toBeVisible();
+});
+
+test("награда: звон за решённую задачу и фанфара с плашкой «Новый уровень», когда опыта хватает на следующий", async ({
+  page,
+}) => {
+  const done = Object.fromEntries(["w1d2t1", "w1d2t2", "w1d2t3"].map((id) => [id, { solvedAt: "NOW", misses: 0 }]));
+  await prepare(page, { tasks: done }, "ru");
+  await page.addInitScript(() => {
+    (window as unknown as { __rewards: string[] }).__rewards = [];
+    window.addEventListener("reward-sfx", (e) =>
+      (window as unknown as { __rewards: string[] }).__rewards.push((e as CustomEvent<string>).detail),
+    );
+  });
+  await page.goto("/week/1/day/1#task-1");
+  await page.locator('input[inputmode], input[type="number"], input[type="text"]').first().fill("57");
+  await page.getByRole("button", { name: "Проверить" }).first().click();
+  await expect(page.locator("[data-level-toast]")).toBeVisible();
+  const rewards = await page.evaluate(() => (window as unknown as { __rewards: string[] }).__rewards);
+  expect(rewards).toEqual(["level"]);
+});
+
+test("сертификат недели: закрыт, пока не пройдены все дни; потом — лист с именем и ссылка на главной", async ({
+  page,
+}) => {
+  await prepare(page, {}, "ru");
+  await page.goto("/certificate/week/1");
+  await expect(page.locator('[data-week-certificate="locked"]')).toBeVisible();
+  await expect(page.locator("[data-week-certificate-link]")).toHaveCount(0);
+
+  const days = Object.fromEntries([1, 2, 3, 4, 5, 6, 7].map((n) => [`w1d${n}`, { completedAt: "NOW" }]));
+  const named = { settings: { hintPause: false, bigText: false, age: 9, lang: "ru", childName: "Анна" } };
+  await page.evaluate(
+    ([key, d, s]) => localStorage.setItem(key, JSON.stringify({ version: 1, welcomed: true, ...s, days: d })),
+    [KEY, Object.fromEntries(Object.entries(days).map(([k]) => [k, { completedAt: Date.now() }])), named] as const,
+  );
+  await page.goto("/certificate/week/1");
+  const sheet = page.locator('[data-week-certificate="earned"]');
+  await expect(sheet).toBeVisible();
+  await expect(sheet.locator("[data-certificate-name]")).toHaveText("Анна");
+  await page.goto("/");
+  await page.getByText("Весь путь: все дни").click();
+  await expect(page.locator("[data-week-certificate-link]")).toHaveCount(1);
 });

@@ -25,7 +25,9 @@ beforeAll(async () => {
 }, 60_000);
 
 beforeEach(async () => {
-  await db.exec("truncate lab_profiles, lab_friends, lab_games, lab_messages, lab_reads restart identity");
+  await db.exec(
+    "truncate lab_profiles, lab_friends, lab_games, lab_messages, lab_reads, lab_progress restart identity",
+  );
 });
 
 afterAll(async () => {
@@ -132,5 +134,33 @@ describe("/api/play", () => {
     });
     const res = await me.POST(req);
     expect(res.status).toBe(403);
+  });
+});
+
+describe("DELETE /api/account", () => {
+  it("без входа — 401; со входа стирает данные и завершает сеанс; запрос с чужого сайта отклоняется", async () => {
+    const me = await import("@/app/api/play/me/route");
+    const account = await import("@/app/api/account/route");
+    await call(me, "u1", "POST", "/api/play/me", { username: "anna" });
+    await db.query("insert into lab_progress (user_id, state) values ('u1', '{}'::jsonb), ('u1#p3k9x', '{}'::jsonb)");
+
+    const anon = new NextRequest("http://localhost:3000/api/account", { method: "DELETE" });
+    expect((await account.DELETE(anon)).status).toBe(401);
+    const foreign = new NextRequest("http://localhost:3000/api/account", {
+      method: "DELETE",
+      headers: { cookie: cookieFor("u1"), origin: "https://evil.example" },
+    });
+    expect((await account.DELETE(foreign)).status).toBe(403);
+    expect((await call(me, "u1", "GET", "/api/play/me")).json.profile).not.toBeNull();
+
+    const real = new NextRequest("http://localhost:3000/api/account", {
+      method: "DELETE",
+      headers: { cookie: cookieFor("u1") },
+    });
+    const res = await account.DELETE(real);
+    expect(res.status).toBe(200);
+    expect(res.headers.get("set-cookie")).toContain(`${SESSION_COOKIE}=;`);
+    expect((await call(me, "u1", "GET", "/api/play/me")).json.profile).toBeNull();
+    expect((await db.query("select count(*)::int as n from lab_progress")).rows[0]).toEqual({ n: 0 });
   });
 });

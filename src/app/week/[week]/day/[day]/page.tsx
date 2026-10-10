@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { DaySession } from "@/components/session/DaySession";
-import { allDays, dayHref, getDay } from "@/content/program";
+import { allDays, dayHref, getDay, getWeek } from "@/content/program";
 import type { Day } from "@/content/types";
 import { localizeDay } from "@/content/uz";
 
@@ -36,6 +36,7 @@ export default async function DayPage({ params }: Props) {
     <DaySession
       day={{ ru: forChild(d), uz: forChild(localizeDay(d, "uz")) }}
       nextDayHref={next ? dayHref(next) : null}
+      weekDayIds={(getWeek(d.week)?.days ?? []).map((x) => x.id)}
     />
   );
 }

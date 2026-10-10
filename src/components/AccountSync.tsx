@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useAccount } from "@/lib/account";
+import { activeProfileId } from "@/lib/profiles";
 import { getState, onStateChange, replaceState, useHydrated } from "@/lib/store";
 import { mergeStates, sameProgress } from "@/lib/sync";
 
@@ -21,6 +22,7 @@ export function AccountSync() {
 
   useEffect(() => {
     if (!hydrated || !userKey) return;
+    const profile = activeProfileId();
     let timer: ReturnType<typeof setTimeout> | undefined;
     let applying = false;
     let stopped = false;
@@ -31,7 +33,7 @@ export function AccountSync() {
       dirty = false;
       const body = JSON.stringify({ state: getState() });
       try {
-        const res = await fetch("/api/progress", {
+        const res = await fetch(`/api/progress?profile=${encodeURIComponent(profile)}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body,

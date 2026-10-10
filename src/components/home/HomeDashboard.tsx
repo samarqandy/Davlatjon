@@ -6,8 +6,10 @@ import { ButtonLink, cn, ProgressBar } from "@/components/ui";
 import { sectionsFor } from "@/content/meta";
 import type { DaySummary, WeekSummary } from "@/content/summary";
 import { ChildNameBanner } from "@/components/home/ChildNameBanner";
+import { PlacementCard } from "@/components/home/PlacementCard";
 import { Welcome } from "@/components/home/Welcome";
 import { TodayCard } from "@/components/progress/TodayCard";
+import { weekCertificateHref, weekEarnedAt } from "@/lib/certificate";
 import { useBoth, useLang, useT, type Both, type T } from "@/lib/i18n";
 import { nextDayStep } from "@/lib/nextStep";
 import { useHydrated, useStore, type AppState } from "@/lib/store";
@@ -62,7 +64,7 @@ export function HomeDashboard({ weeks: both }: { weeks: Both<WeekSummary[]> }) {
           </h1>
           {next ? (
             <div className="mt-5 rounded-3xl bg-white/12 p-4 ring-1 ring-white/25 backdrop-blur-sm" data-next-step>
-              <p className="text-sm font-extrabold tracking-wide text-white/75 uppercase">
+              <p className="text-sm font-extrabold tracking-wide text-white/85 uppercase">
                 {step?.started ? t("Продолжим", "Davom etamiz") : t("Сегодняшнее занятие", "Bugungi mashgʻulot")}
               </p>
               <p className="mt-1 text-2xl font-black">
@@ -111,6 +113,8 @@ export function HomeDashboard({ weeks: both }: { weeks: Both<WeekSummary[]> }) {
         <TodayCard />
       </section>
 
+      <PlacementCard />
+
       <ChessHomeCard />
 
       <details
@@ -137,6 +141,15 @@ export function HomeDashboard({ weeks: both }: { weeks: Both<WeekSummary[]> }) {
                     {w.title}: {w.subtitle.toLowerCase()}
                   </h2>
                 </div>
+                {hydrated && weekEarnedAt(w, state) && (
+                  <Link
+                    href={weekCertificateHref(w.number)}
+                    data-week-certificate-link
+                    className="rounded-xl bg-sun-soft px-3 py-2 text-sm font-extrabold text-ink hover:bg-sun/40"
+                  >
+                    📜 {t("Сертификат недели", "Hafta sertifikati")}
+                  </Link>
+                )}
                 <Link
                   href={`/week/${w.number}/print`}
                   className="rounded-xl px-3 py-2 text-sm font-extrabold text-brand hover:bg-brand-soft"

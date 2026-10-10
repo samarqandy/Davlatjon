@@ -70,6 +70,9 @@ test.describe("oʻzbek tili", () => {
     "/chess/drills",
     "/chess/drills#knight",
     "/chess/certificate/pawn",
+    "/about",
+    "/certificate/week/1",
+    "/privacy",
   ];
 
   for (const url of pages) {

@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Button } from "@/components/ui";
-import { loginAvailable, logout, useAccount } from "@/lib/account";
+import { loginAvailable, logout, refreshAccount, useAccount } from "@/lib/account";
 import { useT } from "@/lib/i18n";
 
 const noop = () => () => {};
@@ -69,6 +69,7 @@ export function AccountPanel({ back = "/parent/settings" }: { back?: string }) {
           <Button variant="secondary" onClick={() => void logout()}>
             {t("Выйти из аккаунта", "Hisobdan chiqish")}
           </Button>
+          <DeleteAccount />
         </>
       ) : (
         <>
@@ -142,5 +143,60 @@ function GoogleMark() {
         d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"
       />
     </svg>
+  );
+}
+
+/** Удалить всё, что лежит в аккаунте. Два нажатия: случайно не получится. */
+function DeleteAccount() {
+  const t = useT();
+  const [confirm, setConfirm] = useState(false);
+  const [state, setState] = useState<"idle" | "busy" | "done" | "error">("idle");
+  const run = async () => {
+    setState("busy");
+    try {
+      const res = await fetch("/api/account", { method: "DELETE" });
+      setState(res.ok ? "done" : "error");
+      if (res.ok) await refreshAccount();
+    } catch {
+      setState("error");
+    }
+  };
+  if (state === "done")
+    return (
+      <p className="rounded-2xl bg-mint-soft px-3 py-2 text-sm font-bold text-[#047857]" role="status">
+        {t(
+          "Данные аккаунта удалены, вход завершён. Прогресс на этом устройстве остался — его можно стереть кнопкой «Сбросить прогресс».",
+          "Hisob maʼlumotlari oʻchirildi, seans tugadi. Bu qurilmadagi natijalar qoldi — ularni «Natijalarni oʻchirish» tugmasi bilan tozalash mumkin.",
+        )}
+      </p>
+    );
+  return (
+    <div className="space-y-2 border-t border-line pt-3" data-delete-account>
+      <p className="text-sm text-muted">
+        {t(
+          "Удалить данные аккаунта: прогресс всех профилей, имя в игре, друзей, партии и переписку. Сначала можно сохранить прогресс файлом (ниже).",
+          "Hisob maʼlumotlarini oʻchirish: barcha profillar natijalari, oʻyindagi ism, doʻstlar, partiyalar va yozishma. Avval natijalarni faylga saqlab qoʻyish mumkin (pastda).",
+        )}
+      </p>
+      {confirm ? (
+        <div className="flex flex-wrap gap-2">
+          <Button variant="sun" onClick={() => void run()} disabled={state === "busy"}>
+            {t("Да, удалить данные аккаунта", "Ha, hisob maʼlumotlarini oʻchirish")}
+          </Button>
+          <Button variant="ghost" onClick={() => setConfirm(false)}>
+            {t("Отмена", "Bekor qilish")}
+          </Button>
+        </div>
+      ) : (
+        <Button variant="ghost" size="sm" onClick={() => setConfirm(true)}>
+          🗑 {t("Удалить данные аккаунта", "Hisob maʼlumotlarini oʻchirish")}
+        </Button>
+      )}
+      {state === "error" && (
+        <p className="text-sm font-bold text-[#b42318]" role="alert">
+          {t("Не получилось. Попробуйте ещё раз.", "Amalga oshmadi. Yana urinib koʻring.")}
+        </p>
+      )}
+    </div>
   );
 }

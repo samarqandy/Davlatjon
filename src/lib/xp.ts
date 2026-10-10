@@ -60,3 +60,10 @@ export function xpLevel(xp: number): XpLevel {
   while (xp >= xpForLevel(level + 1)) level++;
   return { level, into: xp - xpForLevel(level), need: xpForLevel(level + 1) - xpForLevel(level) };
 }
+
+/** Какой звук-награда нужен, когда опыт вырос с `prev` до `next`: новый уровень — фанфара, иначе короткий звон. Большие скачки (синхронизация, сброс) — без звука. */
+export function rewardFor(prev: number, next: number): "win" | "level" | null {
+  const gain = next - prev;
+  if (gain <= 0 || gain > 100) return null;
+  return xpLevel(next).level > xpLevel(prev).level ? "level" : "win";
+}

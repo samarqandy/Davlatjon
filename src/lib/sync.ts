@@ -136,6 +136,8 @@ export function mergeStates(localRaw: unknown, remoteRaw: unknown): AppState {
       dailyLimitMin: a.settings.dailyLimitMin ?? b.settings.dailyLimitMin,
       goalDays: a.settings.goalDays ?? b.settings.goalDays,
       reportToTelegram: a.settings.reportToTelegram ?? b.settings.reportToTelegram,
+      avatar: a.settings.avatar ?? b.settings.avatar,
+      startWeek: a.settings.startWeek ?? b.settings.startWeek,
       childName: named.settings.childName,
       childNameUz: named.settings.childNameUz,
       childNameAt: named.settings.childNameAt,
@@ -192,6 +194,8 @@ export function sameProgress(a: AppState, b: AppState): boolean {
         dailyLimitMin: s.settings.dailyLimitMin,
         goalDays: s.settings.goalDays,
         reportToTelegram: s.settings.reportToTelegram,
+        avatar: s.settings.avatar,
+        startWeek: s.settings.startWeek,
       },
     });
   return strip(a) === strip(b);

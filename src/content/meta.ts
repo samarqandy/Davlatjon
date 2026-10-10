@@ -207,7 +207,7 @@ const SECTIONS_UZ: Record<SectionId, { name: string; about: string }> = {
 };
 
 const LEVELS_UZ: Record<Level, { name: string; about: string }> = {
-  1: { name: "Oson", about: "Mustaqil yechsa boʻladi." },
+  1: { name: "Qulay", about: "Mustaqil yechsa boʻladi." },
   2: { name: "Oʻylash kerak", about: "Biroz mulohaza yuritish kerak." },
   3: { name: "Gʻayrioddiy", about: "Yangi gʻoya kerak." },
   4: { name: "Olimpiada", about: "Shu yosh uchun olimpiada masalasi — chuqur mulohaza talab qiladi." },

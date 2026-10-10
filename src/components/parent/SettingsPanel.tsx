@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { AccountPanel } from "@/components/AccountPanel";
 import { BoardLookPicker } from "@/components/chess/BoardLookPicker";
 import { OnlineControls } from "@/components/parent/OnlineControls";
+import { ProfilesCard } from "@/components/parent/ProfilesCard";
 import { Button, Card, cn } from "@/components/ui";
 import { AGE_MAX, AGE_MIN, profileMeta, profileText } from "@/lib/age";
 import { CHILD_NAME_MAX, cleanChildName, latinize } from "@/lib/childName";
@@ -75,8 +76,8 @@ export function SettingsPanel() {
           <p className="font-extrabold">{t("Доска и звуки ходов", "Taxta va yurish ovozlari")}</p>
           <p className="mb-3 text-[0.95rem] text-muted">
             {t(
-              "Цвета доски и звук хода: деревянные записи или мягкие. Работает и без интернета, диктору не мешает.",
-              "Taxta ranglari va yurish ovozi: yogʻoch yozuvlari yoki yumshoq. Internetsiz ham ishlaydi, diktorga xalaqit bermaydi.",
+              "Цвета доски и звук хода: деревянные записи или мягкие. Тот же переключатель включает короткие звуки наград за решённые задачи и новый уровень. Работает и без интернета, диктору не мешает.",
+              "Taxta ranglari va yurish ovozi: yogʻoch yozuvlari yoki yumshoq. Shu tugma yechilgan masala va yangi daraja uchun qisqa mukofot ovozlarini ham yoqadi. Internetsiz ham ishlaydi, diktorga xalaqit bermaydi.",
             )}
           </p>
           <BoardLookPicker />
@@ -110,6 +111,8 @@ export function SettingsPanel() {
         />
       </Card>
 
+      <ProfilesCard />
+
       <Card id="account" className="scroll-mt-24 space-y-3 p-5">
         <h2 className="text-lg font-extrabold">👤 {t("Аккаунт", "Hisob")}</h2>
         <AccountPanel />
@@ -121,8 +124,8 @@ export function SettingsPanel() {
         <h2 className="text-lg font-extrabold">💾 {t("Прогресс", "Natijalar")}</h2>
         <p className="text-[0.95rem] text-muted">
           {t(
-            "Всё хранится только в этом браузере. Чтобы перенести прогресс на другое устройство (или сохранить копию), сохраните его в файл, а на другом устройстве загрузите этот файл.",
-            "Hammasi faqat shu brauzerda saqlanadi. Natijalarni boshqa qurilmaga koʻchirish (yoki nusxasini saqlab qoʻyish) uchun ularni faylga saqlang, soʻng boshqa qurilmada shu faylni yuklang.",
+            "Без входа в аккаунт всё хранится только в этом браузере. Чтобы перенести прогресс на другое устройство (или сохранить копию), сохраните его в файл, а на другом устройстве загрузите этот файл.",
+            "Hisobga kirmasangiz, hammasi faqat shu brauzerda saqlanadi. Natijalarni boshqa qurilmaga koʻchirish (yoki nusxasini saqlab qoʻyish) uchun ularni faylga saqlang, soʻng boshqa qurilmada shu faylni yuklang.",
           )}
         </p>
         <div className="flex flex-wrap gap-2">

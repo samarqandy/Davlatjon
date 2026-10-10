@@ -18,13 +18,14 @@ import {
   type GameView,
   type TimeControl,
 } from "@/lib/online";
-import type { SqlQuery } from "./progressStore";
+import { SCHEMA as PROGRESS_SCHEMA, type SqlQuery } from "./progressStore";
 
 /**
  * Игра по сети: профили с именами, друзья, партии и переписка. Всё лежит в той же базе Neon, что и прогресс.
  * Таблицы создаются сами при первом обращении. Только для сервера.
  */
 const SCHEMA = [
+  PROGRESS_SCHEMA,
   `create table if not exists lab_profiles (
     user_id text primary key,
     username text not null,
@@ -256,6 +257,26 @@ export function playStore(query: SqlQuery, clock: () => number = Date.now) {
 
   return {
     ensure,
+    /**
+     * Удалить всё, что связано с аккаунтом: прогресс всех профилей, имя в игре, друзей, партии и переписку.
+     * Возвращает, сколько записей прогресса стёрто (для проверки).
+     */
+    async deleteAccount(userId: string): Promise<number> {
+      await q(
+        `delete from lab_messages where sender = $1
+           or pair in (select pair from lab_friends where a = $1 or b = $1)`,
+        [userId],
+      );
+      await q("delete from lab_friends where a = $1 or b = $1", [userId]);
+      await q("delete from lab_games where white = $1 or black = $1", [userId]);
+      await q("delete from lab_reads where user_id = $1", [userId]);
+      await q("delete from lab_profiles where user_id = $1", [userId]);
+      const gone = await q(
+        "delete from lab_progress where user_id = $1 or left(user_id, length($1) + 1) = $1 || '#' returning user_id",
+        [userId],
+      );
+      return gone.length;
+    },
     profileById,
     profileByName,
 

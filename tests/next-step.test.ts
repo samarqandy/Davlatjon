@@ -40,3 +40,13 @@ describe("следующий шаг", () => {
     expect(nextDayStep(days, base({ days: all }))).toBeNull();
   });
 });
+
+describe("начало не с первой недели (по вводному тесту)", () => {
+  it("«дальше» предлагает дни не раньше выбранной недели, а пройденное раньше не мешает", () => {
+    const s = base({ settings: { ...DEFAULT_STATE.settings, startWeek: 2 } });
+    const step = nextDayStep(days, s)!;
+    expect(step.day.week).toBe(2);
+    expect(step.href).toBe("/week/2/day/1");
+    expect(nextDayStep(days, base({ settings: { ...DEFAULT_STATE.settings, startWeek: 1 } }))!.day.week).toBe(1);
+  });
+});

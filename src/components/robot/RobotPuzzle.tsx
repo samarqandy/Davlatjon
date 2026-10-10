@@ -361,67 +361,6 @@ export function RobotPuzzle({
         </div>
 
         <div className="space-y-3">
-          <div>
-            <div className="mb-1.5 flex items-center justify-between gap-2">
-              <span className="text-sm font-extrabold text-muted">
-                {t("Программа", "Dastur")}
-                {program.length > 0 &&
-                  t(
-                    ` · ${program.length} ${plural(program.length, "команда", "команды", "команд")}`,
-                    ` · ${program.length} ta buyruq`,
-                  )}
-              </span>
-              {puzzle.mode === "debug" && (
-                <span className="text-xs font-bold text-muted">
-                  {t("Нажми на команду, чтобы заменить её", "Almashtirish uchun buyruqni bos")}
-                </span>
-              )}
-            </div>
-            <div
-              className="flex min-h-14 flex-wrap items-center gap-1.5 rounded-2xl border-2 border-dashed border-brand/30 bg-white p-2"
-              aria-label={t("Программа робота", "Robot dasturi")}
-            >
-              {program.length === 0 && (
-                <span className="px-2 text-sm text-muted">
-                  {t(
-                    "Нажимай стрелки ниже — команды появятся здесь",
-                    "Pastdagi strelkalarni bos — buyruqlar shu yerda paydo boʻladi",
-                  )}
-                </span>
-              )}
-              {program.map((d, i) => {
-                const active = running || exec.pc > 0 ? i === exec.pc - 1 : false;
-                const changed = puzzle.mode === "debug" && puzzle.program && d !== puzzle.program[i];
-                return (
-                  <button
-                    key={i}
-                    type="button"
-                    disabled={!editable || running}
-                    onClick={() => setSelected(selected === i ? null : i)}
-                    className={cn(
-                      "flex h-10 w-10 items-center justify-center rounded-xl border-2 text-xl font-black transition",
-                      selected === i
-                        ? "border-sun bg-sun-soft"
-                        : changed
-                          ? "border-mint bg-mint-soft"
-                          : "border-line bg-brand-soft",
-                      active && "ring-4 ring-brand/40",
-                      exec.crash && i === exec.pc && "border-rose bg-rose/10",
-                    )}
-                    aria-label={t(`Команда ${i + 1}: ${dirName(d)}`, `${i + 1}-buyruq: ${dirName(d, "uz")}`)}
-                  >
-                    {ARROW[d]}
-                  </button>
-                );
-              })}
-            </div>
-            {program.length > 1 && (
-              <p className="mt-1.5 text-sm text-muted">
-                {t("Короткая запись:", "Qisqa yozuv:")} <span className="font-extrabold text-ink">{shortForm}</span>
-              </p>
-            )}
-          </div>
-
           {editable && (
             <div className="flex flex-wrap items-center gap-2">
               <div className="grid grid-cols-3 gap-1.5" role="group" aria-label={t("Стрелки", "Strelkalar")}>
@@ -507,6 +446,66 @@ export function RobotPuzzle({
             <Button variant="ghost" onClick={resetExec} disabled={exec.pc === 0 && !exec.crash}>
               ↺ {t("На старт", "Boshiga")}
             </Button>
+          </div>
+          <div>
+            <div className="mb-1.5 flex items-center justify-between gap-2">
+              <span className="text-sm font-extrabold text-muted">
+                {t("Программа", "Dastur")}
+                {program.length > 0 &&
+                  t(
+                    ` · ${program.length} ${plural(program.length, "команда", "команды", "команд")}`,
+                    ` · ${program.length} ta buyruq`,
+                  )}
+              </span>
+              {puzzle.mode === "debug" && (
+                <span className="text-xs font-bold text-muted">
+                  {t("Нажми на команду, чтобы заменить её", "Almashtirish uchun buyruqni bos")}
+                </span>
+              )}
+            </div>
+            <div
+              className="flex min-h-14 flex-wrap items-center gap-1.5 rounded-2xl border-2 border-dashed border-brand/30 bg-white p-2"
+              aria-label={t("Программа робота", "Robot dasturi")}
+            >
+              {program.length === 0 && (
+                <span className="px-2 text-sm text-muted">
+                  {t(
+                    "Нажимай стрелки выше — команды появятся здесь",
+                    "Yuqoridagi strelkalarni bos — buyruqlar shu yerda paydo boʻladi",
+                  )}
+                </span>
+              )}
+              {program.map((d, i) => {
+                const active = running || exec.pc > 0 ? i === exec.pc - 1 : false;
+                const changed = puzzle.mode === "debug" && puzzle.program && d !== puzzle.program[i];
+                return (
+                  <button
+                    key={i}
+                    type="button"
+                    disabled={!editable || running}
+                    onClick={() => setSelected(selected === i ? null : i)}
+                    className={cn(
+                      "flex h-10 w-10 items-center justify-center rounded-xl border-2 text-xl font-black transition",
+                      selected === i
+                        ? "border-sun bg-sun-soft"
+                        : changed
+                          ? "border-mint bg-mint-soft"
+                          : "border-line bg-brand-soft",
+                      active && "ring-4 ring-brand/40",
+                      exec.crash && i === exec.pc && "border-rose bg-rose/10",
+                    )}
+                    aria-label={t(`Команда ${i + 1}: ${dirName(d)}`, `${i + 1}-buyruq: ${dirName(d, "uz")}`)}
+                  >
+                    {ARROW[d]}
+                  </button>
+                );
+              })}
+            </div>
+            {program.length > 1 && (
+              <p className="mt-1.5 text-sm text-muted">
+                {t("Короткая запись:", "Qisqa yozuv:")} <span className="font-extrabold text-ink">{shortForm}</span>
+              </p>
+            )}
           </div>
         </div>
       </div>

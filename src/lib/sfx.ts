@@ -183,3 +183,32 @@ export function playSfx(kind: Sfx) {
       break;
   }
 }
+
+export type Reward = "win" | "level";
+
+/** Колокольчик: чистый тон с обертоном, мягкий «звон» с долгим затуханием. */
+function bell(c: AudioContext, at: number, freq: number, dur: number, vol: number) {
+  tone(c, at, "sine", freq, freq, dur, vol);
+  tone(c, at, "triangle", freq * 2, freq * 2, dur * 0.6, vol * 0.25);
+}
+
+/**
+ * Награда за решение: «win» — короткий весёлый звон (два тона вверх), «level» — фанфара нового уровня.
+ * Включается тем же переключателем, что и звуки доски; до первого касания (политика браузеров) молчит.
+ */
+export function playReward(kind: Reward) {
+  if (!boardSoundsOn()) return;
+  if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent("reward-sfx", { detail: kind }));
+  const c = context();
+  if (!c || c.state !== "running" || !master) return;
+  const at = c.currentTime + 0.05;
+  if (kind === "win") {
+    bell(c, at, 988, 0.22, 0.28);
+    bell(c, at + 0.1, 1319, 0.4, 0.3);
+    return;
+  }
+  // До-ми-соль-до-ми: восходящая фанфара, последний тон — долгий.
+  [523, 659, 784, 1047].forEach((f, i) => bell(c, at + i * 0.11, f, 0.3, 0.3));
+  bell(c, at + 0.5, 1319, 0.9, 0.34);
+  bell(c, at + 0.5, 988, 0.9, 0.18);
+}

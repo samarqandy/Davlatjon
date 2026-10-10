@@ -25,6 +25,8 @@ export function FieldsAnswer({ taskId, fields, hintsLeft }: { taskId: string; fi
     const next = { ...values, [id]: v };
     setValues(next);
     setMarks((m) => ({ ...m, [id]: null }));
+    // Подсказка «сначала впиши ответ» устарела, как только ребёнок начал писать.
+    setFeedback((f) => (f?.tone === "info" ? null : f));
     saveTaskInput(taskId, { fields: next });
   };
 
@@ -75,7 +77,10 @@ export function FieldsAnswer({ taskId, fields, hintsLeft }: { taskId: string; fi
                   inputMode="numeric"
                   autoComplete="off"
                   value={values[f.id] ?? ""}
-                  onChange={(e) => set(f.id, e.target.value.replace(/[^\d-]/g, "").slice(0, 5))}
+                  onChange={(e) =>
+                    // Минус нужен только там, где ответ — отрицательное число.
+                    set(f.id, e.target.value.replace(f.answer < 0 ? /[^\d-]/g : /[^\d]/g, "").slice(0, 5))
+                  }
                   onKeyDown={(e) => e.key === "Enter" && allFilled && check()}
                   className="tabular h-12 w-28 rounded-xl border-2 border-line bg-paper px-3 text-center text-2xl font-extrabold outline-none focus:border-brand"
                   placeholder="?"

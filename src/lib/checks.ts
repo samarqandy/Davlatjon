@@ -121,6 +121,16 @@ export interface AssignResult {
   filled: number;
 }
 
+/**
+ * «Каждому — своё»: ответов столько же, сколько строк, и все разные (кто в каком домике, кто что делает).
+ * Тогда одну и ту же карточку нельзя поставить в две строки, а счёт «сходится N из M» не выдаём:
+ * по нему можно подобрать ответ, не думая.
+ */
+export function isOneToOne(spec: AssignSpec): boolean {
+  const answers = spec.items.map((i) => spec.correct[i.id]);
+  return spec.options.length === spec.items.length && new Set(answers).size === answers.length;
+}
+
 export function checkAssign(spec: AssignSpec, values: Record<string, string>): AssignResult {
   let correctCount = 0;
   let filled = 0;
