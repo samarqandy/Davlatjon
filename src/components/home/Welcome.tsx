@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { ChildNameField } from "@/components/ChildNameField";
 import { Mascot } from "@/components/Mascot";
@@ -92,6 +93,11 @@ export function Welcome() {
             <Button size="lg" className="w-full" onClick={() => setStep(1)}>
               {t("Дальше →", "Keyingisi →")}
             </Button>
+            <p className="text-center text-sm text-muted">
+              <Link href="/about" data-welcome-parents className="font-bold underline underline-offset-4">
+                {t("Родителям: о платформе и данных", "Ota-onalarga: platforma va maʼlumotlar haqida")}
+              </Link>
+            </p>
           </div>
         ) : (
           <div className="space-y-5">

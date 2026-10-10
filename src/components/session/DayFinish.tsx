@@ -7,6 +7,7 @@ import { ShareButton } from "@/components/ShareButton";
 import { Button, ButtonLink, cn } from "@/components/ui";
 import { SECTIONS } from "@/content/meta";
 import type { Day } from "@/content/types";
+import { weekCertificateHref } from "@/lib/certificate";
 import { countText, useLang, useT } from "@/lib/i18n";
 import { updateDay, useHydrated, useStore } from "@/lib/store";
 
@@ -17,7 +18,15 @@ const MOODS = [
   { emoji: "😕", ru: "Было трудно", uz: "Qiyin boʻldi" },
 ];
 
-export function DayFinish({ day, nextDayHref }: { day: Day; nextDayHref: string | null }) {
+export function DayFinish({
+  day,
+  nextDayHref,
+  weekDayIds,
+}: {
+  day: Day;
+  nextDayHref: string | null;
+  weekDayIds: string[];
+}) {
   const router = useRouter();
   const t = useT();
   const lang = useLang();
@@ -33,11 +42,13 @@ export function DayFinish({ day, nextDayHref }: { day: Day; nextDayHref: string 
     (x) => x.p?.status === "solved" && (x.p.hints >= 2 || x.p.missed >= 2 || x.p.marks.hard),
   );
   const done = Boolean(progress?.completedAt);
+  // Последний день недели: после него открываем сертификат недели.
+  const completesWeek = useStore((s) => weekDayIds.every((id) => id === day.id || s.days[id]?.completedAt));
   const left = countText(lang, day.tasks.length - solved, ["задача", "задачи", "задач"], "ta masala");
 
   const finish = () => {
     updateDay(day.id, { completedAt: progress?.completedAt ?? Date.now() });
-    router.push("/");
+    router.push(completesWeek ? weekCertificateHref(day.week) : "/");
   };
 
   return (
@@ -131,6 +142,11 @@ export function DayFinish({ day, nextDayHref }: { day: Day; nextDayHref: string 
             `Bugun Parvoz Edu da: ${day.tasks.length} ta masaladan ${solved} tasi yechildi! ⭐`,
           )}
         />
+        {done && completesWeek && (
+          <ButtonLink href={weekCertificateHref(day.week)} size="lg" variant="sun" data-week-certificate-link>
+            📜 {t("Сертификат недели", "Hafta sertifikati")}
+          </ButtonLink>
+        )}
         {nextDayHref && done && (
           <ButtonLink href={nextDayHref} size="lg" variant="secondary">
             {t("Следующий день →", "Keyingi kun →")}

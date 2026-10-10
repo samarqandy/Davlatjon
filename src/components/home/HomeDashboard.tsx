@@ -9,6 +9,7 @@ import { ChildNameBanner } from "@/components/home/ChildNameBanner";
 import { PlacementCard } from "@/components/home/PlacementCard";
 import { Welcome } from "@/components/home/Welcome";
 import { TodayCard } from "@/components/progress/TodayCard";
+import { weekCertificateHref, weekEarnedAt } from "@/lib/certificate";
 import { useBoth, useLang, useT, type Both, type T } from "@/lib/i18n";
 import { nextDayStep } from "@/lib/nextStep";
 import { useHydrated, useStore, type AppState } from "@/lib/store";
@@ -140,6 +141,15 @@ export function HomeDashboard({ weeks: both }: { weeks: Both<WeekSummary[]> }) {
                     {w.title}: {w.subtitle.toLowerCase()}
                   </h2>
                 </div>
+                {hydrated && weekEarnedAt(w, state) && (
+                  <Link
+                    href={weekCertificateHref(w.number)}
+                    data-week-certificate-link
+                    className="rounded-xl bg-sun-soft px-3 py-2 text-sm font-extrabold text-ink hover:bg-sun/40"
+                  >
+                    📜 {t("Сертификат недели", "Hafta sertifikati")}
+                  </Link>
+                )}
                 <Link
                   href={`/week/${w.number}/print`}
                   className="rounded-xl px-3 py-2 text-sm font-extrabold text-brand hover:bg-brand-soft"

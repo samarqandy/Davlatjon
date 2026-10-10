@@ -41,7 +41,16 @@ function hashForStep(step: number, total: number): string {
 }
 
 /** День приходит с сервера на обоих языках (id задач одинаковые) — показываем нужный. */
-export function DaySession({ day: both, nextDayHref }: { day: Both<Day>; nextDayHref: string | null }) {
+export function DaySession({
+  day: both,
+  nextDayHref,
+  weekDayIds,
+}: {
+  day: Both<Day>;
+  nextDayHref: string | null;
+  /** Все дни этой недели — чтобы после последнего дня показать сертификат недели. */
+  weekDayIds: string[];
+}) {
   const t = useT();
   const day = useBoth(both);
   useTitleTranslation(`День ${both.ru.day}. ${both.ru.title}`, `${both.uz.day}-kun. ${both.uz.title}`);
@@ -103,7 +112,7 @@ export function DaySession({ day: both, nextDayHref }: { day: Both<Day>; nextDay
         {step >= 1 && step <= total && !resting && (
           <TaskView key={day.tasks[step - 1].id} task={day.tasks[step - 1]} number={step} total={total} />
         )}
-        {step > total && <DayFinish day={day} nextDayHref={nextDayHref} />}
+        {step > total && <DayFinish day={day} nextDayHref={nextDayHref} weekDayIds={weekDayIds} />}
       </main>
 
       {step >= 1 && step <= total && !resting && (

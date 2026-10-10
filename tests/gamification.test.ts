@@ -2,7 +2,7 @@
 import { describe, expect, it } from "vitest";
 import { CHESS_LEVELS } from "@/content/chess";
 import { allDays } from "@/content/program";
-import { longDate, rankEarnedAt } from "@/lib/certificate";
+import { longDate, rankEarnedAt, weekCertificateHref, weekEarnedAt } from "@/lib/certificate";
 import { loadPosition } from "@/lib/chess";
 import { bestCrowns, crownsFor, crownsForWin, robotPersona } from "@/lib/crowns";
 import {
@@ -20,7 +20,7 @@ import {
 import { gentleStreak, questDone, questFor, questStars, weekActiveDays } from "@/lib/quest";
 import { DEFAULT_STATE, isoDay, type AppState, type ChessGameRecord, type TaskProgress } from "@/lib/state";
 import { levelName, showsNumbers } from "@/lib/workshop";
-import { XP, xpForLevel, xpLevel, xpTotal } from "@/lib/xp";
+import { XP, rewardFor, xpForLevel, xpLevel, xpTotal } from "@/lib/xp";
 
 const at = (day: string, hour = 12) => new Date(`${day}T${String(hour).padStart(2, "0")}:00:00`).getTime();
 const state = (patch: Partial<AppState> = {}): AppState => ({ ...structuredClone(DEFAULT_STATE), ...patch });
@@ -301,5 +301,33 @@ describe("названия уровней", () => {
     expect(showsNumbers(undefined)).toBe(false);
     expect(showsNumbers(9)).toBe(false);
     expect(showsNumbers(10)).toBe(true);
+  });
+});
+
+describe("звук-награда", () => {
+  it("обычный рост опыта — короткий звон, переход через порог уровня — фанфара", () => {
+    expect(rewardFor(10, 20)).toBe("win");
+    expect(rewardFor(45, 55)).toBe("level");
+    expect(rewardFor(xpForLevel(3) - 1, xpForLevel(3))).toBe("level");
+  });
+  it("без роста и при больших скачках (синхронизация, сброс) звука нет", () => {
+    expect(rewardFor(20, 20)).toBeNull();
+    expect(rewardFor(50, 10)).toBeNull();
+    expect(rewardFor(0, 101)).toBeNull();
+  });
+});
+
+describe("сертификат недели", () => {
+  const week = { days: [{ id: "a" }, { id: "b" }, { id: "c" }] };
+
+  it("дата — день последнего завершённого дня; пока не все дни пройдены — null", () => {
+    const days = { a: { completedAt: 100 }, b: { completedAt: 300 }, c: { completedAt: 200 } };
+    expect(weekEarnedAt(week, { days } as never)).toBe(300);
+    expect(weekEarnedAt(week, { days: { a: days.a, b: days.b } } as never)).toBeNull();
+    expect(weekEarnedAt({ days: [] }, { days } as never)).toBeNull();
+  });
+
+  it("ссылка ведёт на лист недели", () => {
+    expect(weekCertificateHref(2)).toBe("/certificate/week/2");
   });
 });

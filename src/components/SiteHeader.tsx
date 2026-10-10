@@ -82,6 +82,22 @@ export function SiteFooter() {
                 "Natijalar shu brauzerda saqlanadi. Hamma qurilmada boʻlishi uchun ota-ona hisobga kirishi kerak.",
               )}
         </p>
+        <nav aria-label={t("О сайте", "Sayt haqida")} className="flex flex-wrap gap-x-4 gap-y-1">
+          <Link
+            href="/about"
+            data-about-link
+            className="inline-flex min-h-11 items-center font-extrabold underline underline-offset-4 hover:text-ink"
+          >
+            {t("О платформе", "Platforma haqida")}
+          </Link>
+          <Link
+            href="/privacy"
+            data-privacy-link
+            className="inline-flex min-h-11 items-center font-extrabold underline underline-offset-4 hover:text-ink"
+          >
+            {t("Конфиденциальность", "Maxfiylik")}
+          </Link>
+        </nav>
         <Link
           href="/parent"
           data-adults-link

@@ -56,4 +56,17 @@ export function longDate(ms: number, lang: Lang): string {
     : `${day} ${MONTHS_RU[d.getMonth()]} ${year} г.`;
 }
 
+/** Когда закончена неделя (завершён последний из её дней) или null, если дни ещё не все пройдены. */
+export function weekEarnedAt(week: { days: { id: string }[] }, s: Pick<AppState, "days">): number | null {
+  let last = 0;
+  for (const d of week.days) {
+    const at = s.days[d.id]?.completedAt;
+    if (!at) return null;
+    last = Math.max(last, at);
+  }
+  return week.days.length ? last : null;
+}
+
+export const weekCertificateHref = (week: number) => `/certificate/week/${week}`;
+
 export const certificateHref = (levelId: string) => `/chess/certificate/${levelId}`;
