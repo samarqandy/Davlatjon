@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
+import { COLLECTION_HREF, COLLECTION_TOTAL, newCardAt } from "@/lib/collection";
 import { useT } from "@/lib/i18n";
 import { getState, onStateChange, useStore } from "@/lib/store";
 import { showsNumbers } from "@/lib/workshop";
@@ -12,7 +14,7 @@ import { rewardFor, xpLevel, xpTotal } from "@/lib/xp";
  * Большие скачки (синхронизация с аккаунтом, сброс) не показываем.
  */
 export function XpToast() {
-  const [toast, setToast] = useState<{ id: number; gain: number; level: number | null } | null>(null);
+  const [toast, setToast] = useState<{ id: number; gain: number; level: number | null; card: boolean } | null>(null);
   const t = useT();
   const numbers = useStore((s) => showsNumbers(s.settings.age));
 
@@ -23,12 +25,13 @@ export function XpToast() {
       const xp = xpTotal(getState());
       const gain = xp - prev;
       const reward = rewardFor(prev, xp);
+      const card = newCardAt(prev, xp, COLLECTION_TOTAL);
       prev = xp;
       if (!reward) return;
       playReward(reward);
-      setToast({ id: Date.now(), gain, level: reward === "level" ? xpLevel(xp).level : null });
+      setToast({ id: Date.now(), gain, level: reward === "level" ? xpLevel(xp).level : null, card });
       clearTimeout(hide);
-      hide = setTimeout(() => setToast(null), reward === "level" ? 2800 : 1800);
+      hide = setTimeout(() => setToast(null), reward === "level" || card ? 3200 : 1800);
     });
     return () => {
       off();
@@ -37,6 +40,15 @@ export function XpToast() {
   }, []);
 
   if (!toast) return null;
+  const cardLink = toast.card && (
+    <Link
+      href={COLLECTION_HREF}
+      data-card-toast
+      className="pointer-events-auto mt-2 block rounded-xl bg-white/90 px-3 py-1 text-base font-black text-ink"
+    >
+      🃏 {t("Новая карточка героя!", "Yangi qahramon kartochkasi!")}
+    </Link>
+  );
   if (toast.level)
     return (
       <div
@@ -47,6 +59,7 @@ export function XpToast() {
       >
         🎉 {t("Новый уровень!", "Yangi daraja!")}
         {numbers && <span className="ml-2 rounded-xl bg-white/20 px-2">{toast.level}</span>}
+        {cardLink}
       </div>
     );
   return (
@@ -57,6 +70,7 @@ export function XpToast() {
       className="pointer-events-none fixed top-20 right-4 z-50 animate-pop rounded-2xl bg-sun px-4 py-2 text-lg font-black text-ink shadow-lift"
     >
       {numbers ? `+${toast.gain} XP ⭐` : "⭐"}
+      {cardLink}
     </div>
   );
 }

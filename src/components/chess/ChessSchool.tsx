@@ -9,11 +9,13 @@ import { dailyPuzzleFor } from "@/content/chess/puzzles";
 import { profileText, useAgeProfile } from "@/lib/age";
 import { awards, earned } from "@/lib/awards";
 import { currentRank, levelStatuses } from "@/lib/chessProgress";
+import { COLLECTION_TOTAL, cardsOpen } from "@/lib/collection";
 import { useLang, useT } from "@/lib/i18n";
 import { plural, thousands } from "@/lib/plural";
 import { PUZZLE_TOTAL, solvedCount } from "@/lib/puzzleStats";
 import { useHydrated, useStore } from "@/lib/store";
 import { useChess } from "@/lib/useChess";
+import { xpTotal } from "@/lib/xp";
 import { ChessBoard, PieceIcon } from "./ChessBoard";
 import { DidYouKnow } from "./DidYouKnow";
 
@@ -165,6 +167,21 @@ export function ChessSchool() {
         hydrated && (state.chessDrills.safety || state.chessDrills.memory || state.chessDrills.knight)
           ? t("Побей свои рекорды", "Oʻz rekordlaringni yangila")
           : t("Три новые тренировки", "Uchta yangi mashgʻulot"),
+    },
+    {
+      href: "/chess/collection",
+      emoji: "🃏",
+      title: t("Коллекция героев", "Qahramonlar kolleksiyasi"),
+      text: t(
+        "Мудрецы Востока и чемпионы мира: карточки открываются сами, пока ты занимаешься.",
+        "Sharq donishmandlari va jahon chempionlari: shugʻullanishing bilan kartochkalar oʻzi ochiladi.",
+      ),
+      stat: hydrated
+        ? t(
+            `Открыто ${cardsOpen(xpTotal(state), COLLECTION_TOTAL)} из ${COLLECTION_TOTAL}`,
+            `${COLLECTION_TOTAL} tadan ${cardsOpen(xpTotal(state), COLLECTION_TOTAL)} tasi ochiq`,
+          )
+        : t("Собери всех героев", "Hamma qahramonni yigʻ"),
     },
     {
       href: "/chess/awards",

@@ -20,6 +20,8 @@ import {
 import { gentleStreak, questDone, questFor, questStars, weekActiveDays } from "@/lib/quest";
 import { DEFAULT_STATE, isoDay, type AppState, type ChessGameRecord, type TaskProgress } from "@/lib/state";
 import { levelName, showsNumbers } from "@/lib/workshop";
+import { chessContent } from "@/content/chess/content";
+import { COLLECTION_TOTAL, XP_PER_CARD, cardsOpen, heroCards, newCardAt, xpToNextCard } from "@/lib/collection";
 import { XP, rewardFor, xpForLevel, xpLevel, xpTotal } from "@/lib/xp";
 
 const at = (day: string, hour = 12) => new Date(`${day}T${String(hour).padStart(2, "0")}:00:00`).getTime();
@@ -329,5 +331,42 @@ describe("сертификат недели", () => {
 
   it("ссылка ведёт на лист недели", () => {
     expect(weekCertificateHref(2)).toBe("/certificate/week/2");
+  });
+});
+
+describe("коллекция героев", () => {
+  const content = chessContent("ru");
+  const cards = heroCards(content);
+
+  it("число карточек совпадает с константой; номера идут подряд, мудрецы первыми", () => {
+    expect(cards).toHaveLength(COLLECTION_TOTAL);
+    expect(cards.map((c) => c.no)).toEqual(cards.map((_, i) => i + 1));
+    expect(cards.slice(0, content.sages.length).every((c) => c.kind === "sage")).toBe(true);
+    expect(new Set(cards.map((c) => c.id)).size).toBe(cards.length);
+  });
+
+  it("у каждой карточки есть имя, текст и картинка из набора; на узбекском то же число", () => {
+    const ids = new Set(content.images.map((i) => i.id));
+    for (const c of cards) {
+      expect(c.name && c.note && c.where).toBeTruthy();
+      expect(c.image && ids.has(c.image)).toBe(true);
+    }
+    expect(heroCards(chessContent("uz"))).toHaveLength(cards.length);
+  });
+
+  it("открытие: одна карточка за каждые XP_PER_CARD, не больше всех", () => {
+    expect(cardsOpen(0, 23)).toBe(0);
+    expect(cardsOpen(XP_PER_CARD - 1, 23)).toBe(0);
+    expect(cardsOpen(XP_PER_CARD, 23)).toBe(1);
+    expect(cardsOpen(10_000, 23)).toBe(23);
+    expect(xpToNextCard(10, 23)).toBe(XP_PER_CARD - 10);
+    expect(xpToNextCard(10_000, 23)).toBeNull();
+  });
+
+  it("новая карточка — только при обычном росте опыта через порог", () => {
+    expect(newCardAt(XP_PER_CARD - 5, XP_PER_CARD + 5, 23)).toBe(true);
+    expect(newCardAt(1, 6, 23)).toBe(false);
+    expect(newCardAt(0, 500, 23)).toBe(false);
+    expect(newCardAt(XP_PER_CARD + 5, XP_PER_CARD - 5, 23)).toBe(false);
   });
 });

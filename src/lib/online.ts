@@ -420,6 +420,32 @@ export function checkUsername(raw: unknown): { ok: true; name: string } | { ok: 
   return { ok: true, name };
 }
 
+export const MAX_STREAK = 3700;
+
+/**
+ * Серия дней, которую ребёнок показывает друзьям: число дней и последний день занятий (ГГГГ-ММ-ДД).
+ * Серия не может быть из будущего: последний день — не позже, чем через сутки с небольшим от сейчас (часовые пояса).
+ */
+export function checkStreak(
+  days: unknown,
+  last: unknown,
+  now: number,
+): { ok: true; days: number; last: string | null } | { ok: false } {
+  if (typeof days !== "number" || !Number.isInteger(days) || days < 0 || days > MAX_STREAK) return { ok: false };
+  if (days === 0) return { ok: true, days: 0, last: null };
+  if (typeof last !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(last)) return { ok: false };
+  const at = Date.parse(`${last}T12:00:00Z`);
+  if (Number.isNaN(at) || new Date(at).toISOString().slice(0, 10) !== last) return { ok: false };
+  if (at > now + 36 * 3_600_000) return { ok: false };
+  return { ok: true, days, last };
+}
+
+/** Серия друга ещё живёт, если последний день занятий — не раньше, чем позавчера (с запасом на часовые пояса). */
+export function streakAlive(last: string | null, now: number): boolean {
+  if (!last) return false;
+  return Date.parse(`${last}T12:00:00Z`) >= now - 60 * 3_600_000;
+}
+
 export const MAX_MESSAGE = 200;
 
 export type MessageError = "empty" | "link" | "contact" | "word";

@@ -10,6 +10,7 @@ import {
   newGameRow,
   pairKey,
   settle,
+  streakAlive,
   sideOf,
   viewOf,
   type Action,
@@ -35,6 +36,8 @@ const SCHEMA = [
     last_seen timestamptz not null default now(),
     created_at timestamptz not null default now()
   )`,
+  `alter table lab_profiles add column if not exists streak int not null default 0`,
+  `alter table lab_profiles add column if not exists streak_day text`,
   `create unique index if not exists lab_profiles_username on lab_profiles (username)`,
   `create table if not exists lab_friends (
     pair text primary key,
@@ -103,6 +106,8 @@ export interface Profile {
 export interface FriendEntry {
   username: string;
   online: boolean;
+  /** Серия дней с занятиями (0 — нет или оборвалась). */
+  streak: number;
   chatOk: boolean;
   unread: number;
 }
@@ -343,9 +348,14 @@ export function playStore(query: SqlQuery, clock: () => number = Date.now) {
       }));
     },
 
+    /** Запомнить серию дней, чтобы друзья её видели. */
+    async setStreak(userId: string, days: number, last: string | null): Promise<void> {
+      await q("update lab_profiles set streak = $2, streak_day = $3 where user_id = $1", [userId, days, last]);
+    },
+
     async friends(me: Profile): Promise<FriendsView> {
       const rows = await q(
-        `select f.pair, f.status, f.by, p.username, p.chat_ok, p.last_seen,
+        `select f.pair, f.status, f.by, p.username, p.chat_ok, p.last_seen, p.streak, p.streak_day,
            (select count(*) from lab_messages m where m.pair = f.pair and m.sender <> $1
               and m.id > coalesce((select last_id from lab_reads r where r.user_id = $1 and r.pair = f.pair), 0)) as unread
          from lab_friends f
@@ -362,6 +372,7 @@ export function playStore(query: SqlQuery, clock: () => number = Date.now) {
           out.friends.push({
             username,
             online: now - new Date(r.last_seen as string | Date).getTime() < ONLINE_MS,
+            streak: streakAlive(r.streak_day ? String(r.streak_day) : null, now) ? num(r.streak) : 0,
             chatOk: bool(r.chat_ok),
             unread: num(r.unread),
           });

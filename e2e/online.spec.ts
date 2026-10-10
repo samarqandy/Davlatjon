@@ -23,6 +23,7 @@ class FakeServer {
   requests: { from: string; to: string }[] = [];
   games = new Map<string, GameRow>();
   messages: { id: number; from: string; to: string; text: string }[] = [];
+  streaks = new Map<string, number>();
   nextGame = 1;
 
   idOf(name: string) {
@@ -67,6 +68,10 @@ class FakeServer {
         }));
       return ok({ users });
     }
+    if (path === "/api/play/streak") {
+      this.streaks.set(me, Number(body.days) || 0);
+      return ok({ ok: true });
+    }
     if (path === "/api/play/friends") {
       if (method === "POST") {
         const other = this.idOf(String(body.username));
@@ -82,6 +87,7 @@ class FakeServer {
         .filter((p) => p.split("|").includes(me))
         .map((p) => ({
           username: this.nameOf(p.split("|").find((x) => x !== me)!),
+          streak: this.streaks.get(p.split("|").find((x) => x !== me)!) ?? 0,
           online: true,
           chatOk: true,
           unread: 0,
@@ -149,19 +155,38 @@ class FakeServer {
   }
 }
 
-async function login(context: BrowserContext, server: FakeServer, userId: string, extra: Record<string, unknown> = {}) {
-  await context.addInitScript((extraSettings) => {
-    const key = "davlatjon-lab:v1";
-    if (!localStorage.getItem(key))
-      localStorage.setItem(
-        key,
-        JSON.stringify({
-          version: 1,
-          welcomed: true,
-          settings: { hintPause: false, bigText: false, age: 9, sound: false, ...extraSettings },
-        }),
-      );
-  }, extra);
+async function login(
+  context: BrowserContext,
+  server: FakeServer,
+  userId: string,
+  extra: Record<string, unknown> = {},
+  state: Record<string, unknown> = {},
+) {
+  await context.addInitScript(
+    ([extraSettings, more]) => {
+      const key = "davlatjon-lab:v1";
+      // «NOW» и «YESTERDAY» — время в браузере.
+      const fill = (x: unknown): unknown =>
+        x === "NOW"
+          ? Date.now()
+          : x === "YESTERDAY"
+            ? Date.now() - 86_400_000
+            : x && typeof x === "object"
+              ? Object.fromEntries(Object.entries(x).map(([k, v]) => [k, fill(v)]))
+              : x;
+      if (!localStorage.getItem(key))
+        localStorage.setItem(
+          key,
+          JSON.stringify({
+            version: 1,
+            welcomed: true,
+            settings: { hintPause: false, bigText: false, age: 9, sound: false, ...(extraSettings as object) },
+            ...(fill(more) as object),
+          }),
+        );
+    },
+    [extra, state] as const,
+  );
   await context.route("**/api/**", async (route) => {
     const request = route.request();
     const url = new URL(request.url());
@@ -369,4 +394,34 @@ test("по-узбекски друзья, партия и переписка б�
   await expect(page.locator("[data-online-status]")).toContainText("Navbat senda", { timeout: 15_000 });
   await noCyrillic();
   await ctx.close();
+});
+
+test("серия друга: друг видит 🔥 с числом дней после того, как ты открыл раздел", async ({ browser }, testInfo) => {
+  test.skip(testInfo.project.name === "phone", "Сценарий на двух экранах — достаточно настольного");
+  const server = new FakeServer();
+  server.names.set("google:anna", "anna_k");
+  server.names.set("google:bek", "bek_zod");
+  server.friends.add(pairKey("google:anna", "google:bek"));
+  const done = (at: string) => ({
+    status: "solved",
+    hints: 0,
+    checks: 1,
+    missed: 0,
+    solvedAt: at,
+    timeMs: 1000,
+    marks: {},
+  });
+  const annaCtx = await browser.newContext();
+  const bekCtx = await browser.newContext();
+  await login(annaCtx, server, "google:anna");
+  await login(bekCtx, server, "google:bek", {}, { tasks: { w1d1t1: done("NOW"), w1d1t2: done("YESTERDAY") } });
+  const anna = await annaCtx.newPage();
+  const bek = await bekCtx.newPage();
+  await bek.goto("/chess/online");
+  await expect(bek.locator("[data-my-streak]")).toContainText("2");
+  await expect.poll(() => server.streaks.get("google:bek")).toBe(2);
+  await anna.goto("/chess/online");
+  await expect(anna.locator('[data-friend="bek_zod"] [data-friend-streak]')).toContainText("2", { timeout: 15_000 });
+  await annaCtx.close();
+  await bekCtx.close();
 });

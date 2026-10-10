@@ -39,6 +39,9 @@ async function prepare(page: Page, state: Record<string, unknown> = {}, lang: "r
   );
 }
 
+/** Решённая задача целиком — в том виде, в каком её хранит приложение. */
+const solvedTask = { status: "solved", hints: 0, checks: 1, missed: 0, solvedAt: "NOW", timeMs: 1000, marks: {} };
+
 const solvedToday = (ids: string[]) => Object.fromEntries(ids.map((id) => [id, { solvedAt: "NOW", misses: 0 }]));
 
 test("задание дня: три дела, уровень и серия", async ({ page }) => {
@@ -241,7 +244,7 @@ test("тренажёр «Кто в опасности?» загружает по
 test("награда: звон за решённую задачу и фанфара с плашкой «Новый уровень», когда опыта хватает на следующий", async ({
   page,
 }) => {
-  const done = Object.fromEntries(["w1d2t1", "w1d2t2", "w1d2t3"].map((id) => [id, { solvedAt: "NOW", misses: 0 }]));
+  const done = Object.fromEntries(["w1d2t1", "w1d2t2", "w1d2t3"].map((id) => [id, solvedTask]));
   await prepare(page, { tasks: done }, "ru");
   await page.addInitScript(() => {
     (window as unknown as { __rewards: string[] }).__rewards = [];
@@ -278,4 +281,29 @@ test("сертификат недели: закрыт, пока не пройд�
   await page.goto("/");
   await page.getByText("Весь путь: все дни").click();
   await expect(page.locator("[data-week-certificate-link]")).toHaveCount(1);
+});
+
+test("коллекция героев: открыто столько карточек, сколько набрано опыта; остальные закрыты", async ({ page }) => {
+  // 4 задачи × 15 XP = 60 XP → две карточки (по 30 XP).
+  const done = Object.fromEntries(["w1d2t1", "w1d2t2", "w1d2t3", "w1d2t4"].map((id) => [id, solvedTask]));
+  await prepare(page, { tasks: done }, "ru");
+  await page.goto("/chess/collection");
+  await expect(page.locator("[data-collection-count]")).toHaveText("2/23");
+  await expect(page.locator('[data-hero-card="open"]')).toHaveCount(2);
+  await expect(page.locator('[data-hero-card="locked"]')).toHaveCount(21);
+  await expect(page.locator('[data-hero-id="sage-1"]')).toContainText("Ибн Сина");
+  await page.goto("/chess");
+  await page.locator("[data-more-sections] summary").click();
+  await expect(page.locator('a[href="/chess/collection"]')).toBeVisible();
+});
+
+test("новая карточка: плашка со ссылкой, когда опыт переходит порог", async ({ page }) => {
+  // Одна решённая задача (15 XP) + ещё одна (15) = 30 XP — ровно порог первой карточки.
+  await prepare(page, { tasks: { w1d2t1: solvedTask } }, "ru");
+  await page.goto("/week/1/day/1#task-1");
+  await page.locator('input[inputmode], input[type="number"], input[type="text"]').first().fill("57");
+  await page.getByRole("button", { name: "Проверить" }).first().click();
+  await expect(page.locator("[data-card-toast]")).toBeVisible();
+  await page.locator("[data-card-toast]").click();
+  await expect(page).toHaveURL(/\/chess\/collection$/);
 });
