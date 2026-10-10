@@ -248,6 +248,8 @@ export interface AppState {
   chessGuess: Record<string, { score: number; max: number }>;
   /** Тренажёр координат: режим → рекорд. */
   chessDrills: Record<string, number>;
+  /** «Быстрые примеры»: «день:колода» → лучший результат за день (из десяти). */
+  quick: Record<string, number>;
   /** Школа эндшпиля: задание → когда решено. */
   chessEndgames: Record<string, number>;
   /** Активное время по дням «ГГГГ-ММ-ДД» — для отчёта и дневного ограничения. */
@@ -277,6 +279,7 @@ export const DEFAULT_STATE: AppState = Object.freeze({
   chessOwnPuzzles: {},
   chessGuess: {},
   chessDrills: {},
+  quick: {},
   chessEndgames: {},
   activity: {},
 }) as AppState;
@@ -346,7 +349,7 @@ export function sanitize(raw: unknown): AppState {
       bigText: typeof settings.bigText === "boolean" ? settings.bigText : false,
       chessOpenAll: settings.chessOpenAll === true,
       age:
-        Number.isInteger(settings.age) && (settings.age as number) >= 6 && (settings.age as number) <= 15
+        Number.isInteger(settings.age) && (settings.age as number) >= 4 && (settings.age as number) <= 15
           ? (settings.age as number)
           : undefined,
       sound: settings.sound !== false,
@@ -390,6 +393,7 @@ export function sanitize(raw: unknown): AppState {
     chessOwnPuzzles: isObject(raw.chessOwnPuzzles) ? (raw.chessOwnPuzzles as AppState["chessOwnPuzzles"]) : {},
     chessGuess: isObject(raw.chessGuess) ? (raw.chessGuess as AppState["chessGuess"]) : {},
     chessDrills: isObject(raw.chessDrills) ? (raw.chessDrills as AppState["chessDrills"]) : {},
+    quick: isObject(raw.quick) ? (raw.quick as AppState["quick"]) : {},
     chessEndgames: isObject(raw.chessEndgames) ? (raw.chessEndgames as AppState["chessEndgames"]) : {},
     activity: activityOf(raw.activity),
     welcomed: raw.welcomed === true,

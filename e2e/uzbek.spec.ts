@@ -71,6 +71,7 @@ test.describe("oʻzbek tili", () => {
     "/chess/drills#knight",
     "/chess/certificate/pawn",
     "/about",
+    "/quick",
     "/chess/collection",
     "/certificate/week/1",
     "/privacy",
