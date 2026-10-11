@@ -1,5 +1,5 @@
 /* Офлайн-режим: страницы — сначала из сети, без сети — из кэша; картинки и файлы сборки — из кэша. */
-const CACHE = "davlatjon-lab-v1";
+const CACHE = "davlatjon-lab-v2";
 
 self.addEventListener("install", () => self.skipWaiting());
 self.addEventListener("activate", (event) => {
@@ -52,7 +52,9 @@ self.addEventListener("fetch", (event) => {
   }
   // Звук диктора браузер запрашивает кусками — его не кэшируем.
   if (url.pathname.endsWith(".mp3")) return;
-  if (url.pathname.startsWith("/_next/static/") || /\.(webp|png|jpg|svg|ico|woff2?)$/.test(url.pathname)) {
+  // WASM-движки анимации (/vendor/…?v=версия) — адрес меняется вместе с версией, поэтому их можно держать в кэше навсегда.
+  // Сами файлы анимации (.riv, .lottie) идут через networkFirst: свежие из сети, без сети — из кэша.
+  if (url.pathname.startsWith("/_next/static/") || /\.(webp|png|jpg|svg|ico|woff2?|wasm)$/.test(url.pathname)) {
     event.respondWith(cacheFirst(request));
     return;
   }

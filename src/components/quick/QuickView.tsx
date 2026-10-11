@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Mascot } from "@/components/Mascot";
+import { Confetti } from "@/components/rewards/Confetti";
 import { Button, ButtonLink, ProgressBar, cn } from "@/components/ui";
 import { useTitleTranslation } from "@/lib/docTitle";
 import { useLang, useT } from "@/lib/i18n";
@@ -113,7 +114,7 @@ export function QuickView() {
       {phase.name === "idle" && (
         <section className="space-y-5 rounded-3xl bg-white p-6 shadow-card" data-quick="idle">
           <div className="flex items-center gap-3">
-            <Mascot size={72} />
+            <Mascot size={72} mood="happy" />
             <div>
               <h1 className="text-3xl font-black">⚡ {t("Быстрые примеры", "Tez mashq")}</h1>
               <p className="text-muted">
@@ -162,7 +163,12 @@ export function QuickView() {
 
       {phase.name === "done" && (
         <section className="space-y-4 rounded-3xl bg-white p-6 text-center shadow-card" data-quick="done">
-          <Mascot size={88} className="mx-auto" />
+          {phase.score >= QUICK_PASS && <Confetti />}
+          <Mascot
+            size={88}
+            mood={phase.score >= QUICK_PASS ? "celebration" : phase.score >= 4 ? "happy" : "idle"}
+            className="mx-auto"
+          />
           <h1 className="text-3xl font-black">
             {phase.score >= QUICK_PASS
               ? t("Отлично! 🎉", "Zoʻr! 🎉")
