@@ -88,12 +88,30 @@ test("родитель выключил анимации: то же самое �
   await expect(page.locator('[data-mascot][data-motion="on"]')).toHaveCount(0);
 });
 
-test("пока файла Rive нет, птица — запасная (логотип + CSS), а не пустое место", async ({ page }) => {
+test("птица Rive: файл загружается, WASM — с нашего домена, без сторонних запросов", async ({ page }) => {
+  const external: string[] = [];
+  const own: string[] = [];
+  page.on("request", (r) => {
+    const u = r.url();
+    if (/\.wasm|\.riv/.test(u)) own.push(u);
+    if (/unpkg|jsdelivr/.test(u)) external.push(u);
+  });
   await prepare(page);
   await page.goto("/quick");
   const bird = page.locator("[data-mascot]").first();
-  await expect(bird).toHaveAttribute("data-engine", "fallback");
-  await expect(bird.locator("img")).toBeVisible();
+  await expect(bird).toHaveAttribute("data-engine", "rive", { timeout: 15000 });
+  expect(own.some((u) => u.includes("/vendor/rive/rive.wasm"))).toBe(true);
+  expect(own.some((u) => u.includes("/animations/mascot.riv"))).toBe(true);
+  expect(external).toEqual([]);
+});
+
+test("если анимации выключены, файл Rive и WASM даже не запрашиваются", async ({ page }) => {
+  const asked: string[] = [];
+  page.on("request", (r) => /\.wasm|\.riv/.test(r.url()) && asked.push(r.url()));
+  await prepare(page, { settings: { animations: false } });
+  await page.goto("/quick");
+  await expect(page.locator("[data-mascot]").first()).toHaveAttribute("data-engine", "fallback");
+  expect(asked).toEqual([]);
 });
 
 test("настройки родителя: переключатель «Анимации» сохраняется", async ({ page }) => {

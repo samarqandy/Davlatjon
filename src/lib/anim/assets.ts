@@ -11,7 +11,7 @@ export interface AnimAsset {
 
 export const ANIM_ASSETS = {
   /** Птица Парвоз: артборд `Parvoz`, state machine `Mascot`. */
-  mascot: { src: "/animations/mascot.riv", available: false, artboard: "Parvoz", stateMachine: "Mascot" },
+  mascot: { src: "/animations/mascot.riv", available: true, artboard: "Parvoz", stateMachine: "Mascot" },
   /** Разовый салют для конца занятия и нового уровня. */
   confetti: { src: "/animations/confetti.lottie", available: false },
 } as const satisfies Record<string, AnimAsset & Record<string, unknown>>;
