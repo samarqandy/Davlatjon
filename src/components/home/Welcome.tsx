@@ -46,7 +46,7 @@ export function Welcome() {
         {step === 0 ? (
           <div className="space-y-5">
             <div className="flex items-center gap-3" aria-hidden>
-              <Mascot size={88} float />
+              <Mascot size={88} mood="happy" />
             </div>
             <h2 id="welcome-title" className="text-3xl font-black">
               {t("Привет! Добро пожаловать в лабораторию!", "Salom! Laboratoriyaga xush kelibsan!")}

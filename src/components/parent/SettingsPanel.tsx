@@ -101,6 +101,15 @@ export function SettingsPanel() {
           onChange={(v) => updateSettings({ bigText: v })}
         />
         <Toggle
+          title={t("Анимации", "Animatsiyalar")}
+          text={t(
+            "Птица Парвоз реагирует на ответы, за награды вылетает конфетти. Выключите, если ребёнка это отвлекает или телефон тормозит. Если в системе включено «уменьшить движение», анимаций не будет в любом случае.",
+            "Parvoz qushi javoblarga javob beradi, mukofotlarda konfetti uchadi. Farzandingizni chalgʻitsa yoki telefon sekin ishlasa, oʻchirib qoʻying. Tizimda «harakatni kamaytirish» yoqilgan boʻlsa, animatsiyalar baribir koʻrinmaydi.",
+          )}
+          value={settings.animations !== false}
+          onChange={(v) => updateSettings({ animations: v })}
+        />
+        <Toggle
           title={t("Открыть все уровни шахматной школы", "Shaxmat maktabining barcha darajalarini ochish")}
           text={t(
             "Обычно следующий шахматный уровень открывается, когда решены все упражнения предыдущего. Включите, если ребёнок уже знает шахматы.",

@@ -67,6 +67,8 @@ export interface Settings {
   sound?: boolean;
   /** Звуки ходов на доске. Настройка устройства, по умолчанию включена. */
   boardSounds?: boolean;
+  /** Анимации: птица, конфетти, взлёт опыта. Настройка устройства, по умолчанию включена; «уменьшить движение» в системе её перекрывает. */
+  animations?: boolean;
   /** Цвета доски (id из boardLook.ts), настройка устройства. */
   boardTheme?: string;
   /** Набор звуков ходов: записанное дерево или мягкие синтезированные. */
@@ -354,6 +356,7 @@ export function sanitize(raw: unknown): AppState {
           : undefined,
       sound: settings.sound !== false,
       boardSounds: settings.boardSounds !== false,
+      animations: settings.animations !== false,
       boardTheme: isBoardThemeId(settings.boardTheme) ? settings.boardTheme : undefined,
       boardSoundSet: isSoundSetId(settings.boardSoundSet) ? settings.boardSoundSet : undefined,
       childName: cleanChildName(settings.childName),

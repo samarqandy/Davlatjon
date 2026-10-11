@@ -1,11 +1,14 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { Mascot } from "@/components/Mascot";
 import { cn } from "@/components/ui";
 import { useTaskId } from "@/components/task/TaskContext";
+import { feedbackMood } from "@/lib/anim/mood";
 import { praiseCue, retryCue } from "@/lib/feedback";
 import { useLang } from "@/lib/i18n";
 import { useStore } from "@/lib/store";
+import { useMotionAllowed } from "@/lib/useMotion";
 import { cue, type Cue } from "@/lib/voice";
 
 export type FeedbackTone = "success" | "retry" | "info";
@@ -24,7 +27,8 @@ const STYLES: Record<FeedbackTone, string> = {
   info: "border-brand/25 bg-brand-soft text-brand-dark",
 };
 
-const ICONS: Record<FeedbackTone, string> = { success: "🎉", retry: "🤔", info: "💬" };
+/** Смайлик остаётся только у нейтральных сообщений: за верный ответ и «подумаем ещё» реагирует птица Парвоз. */
+const INFO_ICON = "💬";
 
 export function Feedback({
   state,
@@ -43,6 +47,7 @@ export function Feedback({
   const lang = useLang();
   const taskId = useTaskId();
   const hints = useStore((s) => (taskId ? (s.tasks[taskId]?.hints ?? 0) : 0));
+  const motion = useMotionAllowed();
   const box = useRef<HTMLDivElement>(null);
   // Сколько неверных проверок подряд было до этого ответа: от этого зависит, за что хвалим и что советуем.
   const retries = useRef(0);
@@ -71,10 +76,16 @@ export function Feedback({
           ref={box}
           className={cn("flex animate-pop scroll-mb-28 gap-3 rounded-2xl border-2 px-4 py-3", STYLES[state.tone])}
         >
-          <span className="relative text-2xl leading-none" aria-hidden>
-            {ICONS[state.tone]}
-            {state.tone === "success" && <Sparkles />}
-          </span>
+          {state.tone === "info" ? (
+            <span className="relative text-2xl leading-none" aria-hidden>
+              {INFO_ICON}
+            </span>
+          ) : (
+            <span className="relative shrink-0" aria-hidden>
+              <Mascot mood={feedbackMood(state.tone)} size={context === "chess" ? 36 : 44} />
+              {state.tone === "success" && motion && <Sparkles />}
+            </span>
+          )}
           <div className="space-y-0.5">
             <p className="font-extrabold">{state.text}</p>
             {state.sub && <p className="text-[0.95em] font-semibold opacity-90">{state.sub}</p>}

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ListenButton } from "@/components/ListenButton";
 import { MascotSays } from "@/components/Mascot";
 import { ShareButton } from "@/components/ShareButton";
+import { Confetti } from "@/components/rewards/Confetti";
 import { Button, ButtonLink, cn } from "@/components/ui";
 import { SECTIONS } from "@/content/meta";
 import type { Day } from "@/content/types";
@@ -48,6 +49,8 @@ export function DayFinish({
   const completesWeek = useStore((s) => weekDayIds.every((id) => id === day.id || s.days[id]?.completedAt));
   const left = countText(lang, day.tasks.length - solved, ["задача", "задачи", "задач"], "ta masala");
 
+  const allSolved = solved === day.tasks.length;
+
   const finish = () => {
     updateDay(day.id, { completedAt: progress?.completedAt ?? Date.now() });
     router.push(completesWeek ? weekCertificateHref(day.week) : "/");
@@ -55,9 +58,11 @@ export function DayFinish({
 
   return (
     <div className="mx-auto max-w-3xl space-y-5">
+      {/* Все задачи решены — салют (один раз на открытие страницы; без анимаций ничего не рисует). */}
+      {allSolved && <Confetti />}
       <section className="animate-pop rounded-[2rem] border border-line bg-white p-6 text-center shadow-card sm:p-8">
-        <MascotSays className="mx-auto mb-3 w-fit" size={80}>
-          {solved === day.tasks.length
+        <MascotSays className="mx-auto mb-3 w-fit" size={80} mood={allSolved ? "celebration" : "happy"}>
+          {allSolved
             ? t("Парвоз гордится тобой! Все задачи решены!", "Parvoz sen bilan faxrlanadi! Hamma masala yechildi!")
             : t("Парвоз рад: отличная работа!", "Parvoz xursand: zoʻr ishlading!")}
         </MascotSays>
