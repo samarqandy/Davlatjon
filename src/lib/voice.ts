@@ -121,7 +121,7 @@ const RECORDED = recorded as Record<Lang, Record<string, string>>;
 
 function recordedClip(
   lang: Lang,
-  kind: "tasks" | "lessons" | "dyk" | "exercises",
+  kind: "tasks" | "lessons" | "dyk" | "exercises" | "hints",
   key: string,
   id: string,
 ): string | undefined {
@@ -135,6 +135,8 @@ export const VOICE_CLIPS = {
   /** «Знаешь ли ты?»: part — вопрос (q) или ответ (a). */
   dyk: (index: number, part: "q" | "a", lang: Lang) =>
     recordedClip(lang, "dyk", `dyk:${index}-${part}`, `${index}-${part}`),
+  /** Подсказка задачи (n — номер ступени с нуля). */
+  hint: (taskId: string, n: number, lang: Lang) => recordedClip(lang, "hints", `hint:${taskId}-${n}`, `${taskId}-${n}`),
   /** Условие шахматного упражнения: название и задание. */
   exercise: (id: string, lang: Lang) => recordedClip(lang, "exercises", `exercise:${id}`, id),
   welcome: (lang: Lang) => clip(lang, "welcome"),

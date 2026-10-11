@@ -71,7 +71,10 @@ describe("озвучка", () => {
 function voiceTexts(lang: Lang): Record<string, string> {
   const out: Record<string, string> = {};
   for (const d of allDays())
-    for (const t of (lang === "uz" ? localizeDay(d, "uz") : d).tasks) out[`task:${t.id}`] = taskVoiceText(t.body);
+    for (const t of (lang === "uz" ? localizeDay(d, "uz") : d).tasks) {
+      out[`task:${t.id}`] = taskVoiceText(t.body);
+      t.hints.forEach((h, i) => (out[`hint:${t.id}-${i}`] = h));
+    }
   const c = chessContent(lang);
   for (const l of c.levels) l.lesson.forEach((card, i) => (out[`lesson:${l.id}-${i}`] = lessonVoiceText(card)));
   for (const l of c.levels) for (const e of l.exercises) out[`exercise:${e.id}`] = exerciseVoiceText(e);
@@ -82,13 +85,28 @@ function voiceTexts(lang: Lang): Record<string, string> {
   return out;
 }
 
-const DIRS: Record<string, string> = { task: "tasks", lesson: "lessons", dyk: "dyk", exercise: "exercises" };
+const DIRS: Record<string, string> = {
+  task: "tasks",
+  lesson: "lessons",
+  dyk: "dyk",
+  exercise: "exercises",
+  hint: "hints",
+};
 const clipFile = (lang: Lang, key: string) => {
   const [kind, id] = key.split(":");
   return file(`/audio/${lang === "uz" ? "uz/" : ""}${DIRS[kind]}/${id}.mp3`);
 };
 
 describe("записи условий задач, уроков и «Знаешь ли ты?»", () => {
+  // WRITE_HINT_DUMP=файл.json npx vitest run tests/voice.test.ts — тексты подсказок для scripts/hint-voice-scripts.py.
+  it.runIf(!!process.env.WRITE_HINT_DUMP)("тексты подсказок выписаны", () => {
+    const out: Record<string, Record<string, readonly string[]>> = { ru: {}, uz: {} };
+    for (const d of allDays())
+      for (const lang of ["ru", "uz"] as const)
+        for (const t of (lang === "uz" ? localizeDay(d, "uz") : d).tasks) out[lang][t.id] = t.hints;
+    fs.writeFileSync(process.env.WRITE_HINT_DUMP!, JSON.stringify(out));
+  });
+
   // WRITE_VOICE_MANIFEST=1 npx vitest run tests/voice.test.ts — после записи новых файлов: оглавление по тому, что лежит в public/audio.
   it.runIf(!!process.env.WRITE_VOICE_MANIFEST)("оглавление записей переписано", () => {
     const manifest: Record<string, Record<string, string>> = {};
