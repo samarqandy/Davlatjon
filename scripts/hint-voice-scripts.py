@@ -103,7 +103,12 @@ def convert(text: str, lang: str) -> str:
     return s
 
 
+UZ_LETTERS = {"A": "a", "B": "be", "C": "se", "D": "de", "E": "e", "F": "ef", "G": "ge", "H": "ha"}
+
+
 def uz_digits(s: str) -> str:
+    # Названия клеток «B5» — буква и число отдельными словами: «be besh».
+    s = re.sub(r"\b([A-H])(\d)\b", lambda m: f"{UZ_LETTERS[m.group(1)]} {m.group(2)}", s)
     def ordinal(m: re.Match) -> str:
         return uz_ordinal(int(m.group(1))) + " " + m.group(2)
     # «2-kun» → «ikkinchi kun»; «5-» перед пробелом оставляем числом.
