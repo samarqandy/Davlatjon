@@ -11,7 +11,7 @@ import { bestMoves, kingCatches, moveOutcome, pawnSquare, robotMove } from "@/li
 import { useLang, useSan, useT } from "@/lib/i18n";
 import { chessEndgameSolved, useHydrated, useStore } from "@/lib/store";
 import { useChess } from "@/lib/useChess";
-import { cheer } from "@/lib/voice";
+import { cue } from "@/lib/voice";
 import { ChessBoard, PieceIcon, type SquareMark } from "./ChessBoard";
 
 /** Школа эндшпиля: король и пешка против короля — правило квадрата, оппозиция, ключевые поля, игра с роботом. */
@@ -178,8 +178,8 @@ function SquareDrill({ drill, solved }: { drill: EndgameDrill; solved: boolean }
     setAnswer(catches);
     if (catches === truth) {
       chessEndgameSolved(drill.id);
-      cheer("praise");
-    } else cheer("retry");
+      cue("praise-chess");
+    } else cue("retry-chess");
   };
   return (
     <DrillFrame solved={solved} title={drill.prompt}>
@@ -231,8 +231,8 @@ function FindDrill({ drill, solved }: { drill: EndgameDrill; solved: boolean }) 
     setSelected(null);
     if (ok) {
       chessEndgameSolved(drill.id);
-      cheer("praise");
-    } else cheer("retry");
+      cue("praise-chess");
+    } else cue("retry-chess");
     return true;
   };
   const tap = (sq: string) => {
@@ -366,7 +366,7 @@ function PlayDrill({ drill, solved }: { drill: EndgameDrill; solved: boolean }) 
   const win = () => {
     setState("won");
     chessEndgameSolved(drill.id);
-    cheer("praise");
+    cue("praise-chess");
   };
   const tap = (sq: string) => {
     if (state !== "playing" || turn !== me) return;

@@ -98,6 +98,25 @@ export function checkFields(fields: Field[], values: Record<string, string>): Fi
   return { allCorrect: fields.every((f) => perField[f.id] === true), perField, filled };
 }
 
+/**
+ * Неверный ответ «почти»: все неверные числовые поля отличаются от верного совсем немного (на 1 или до 10%).
+ * Так голос может сказать «Почти! Проверь вычисления», а не общее «пока не сходится».
+ */
+export function isCloseMiss(
+  fields: Field[],
+  values: Record<string, string>,
+  perField: Record<string, boolean | null>,
+): boolean {
+  const wrong = fields.filter((f) => perField[f.id] === false);
+  if (!wrong.length) return false;
+  return wrong.every((f) => {
+    if (f.type !== "number") return false;
+    const n = parseNumber(values[f.id] ?? "");
+    if (n === null || Number.isNaN(n)) return false;
+    return Math.abs(n - f.answer) <= Math.max(1, Math.abs(f.answer) * 0.1);
+  });
+}
+
 export interface ChoiceResult {
   correct: boolean;
   /** Сколько верных вариантов не отмечено. */

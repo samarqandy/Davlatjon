@@ -3,7 +3,7 @@
  * (src/content/voice-clips.json): для каждой записи — отпечаток текста, с которого её записали.
  * Изменился текст задачи или урока — тест скажет, что запись устарела и её надо перезаписать.
  */
-import type { ChessLessonCard } from "@/content/chess/types";
+import type { ChessExercise, ChessLessonCard } from "@/content/chess/types";
 import type { Block } from "@/content/types";
 
 /** Условие задачи — то, что озвучивает кнопка «Прочитать» (метки имени остаются как есть). */
@@ -24,6 +24,11 @@ export function taskVoiceText(body: readonly Block[]): string {
 
 export function lessonVoiceText(card: Pick<ChessLessonCard, "title" | "text">): string {
   return [card.title, ...card.text].join("\n");
+}
+
+/** Условие упражнения: название и задание — так их читает диктор. */
+export function exerciseVoiceText(ex: Pick<ChessExercise, "title" | "prompt">): string {
+  return `${ex.title.replace(/[.!?:\s]+$/, "")}. ${ex.prompt}`;
 }
 
 /** Отпечаток текста (FNV-1a, 32 бита) — короткий и одинаковый везде. */

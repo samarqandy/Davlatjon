@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { Mascot } from "@/components/Mascot";
 import { Button, ButtonLink, ProgressBar, cn } from "@/components/ui";
 import { useTitleTranslation } from "@/lib/docTitle";
-import { useT } from "@/lib/i18n";
+import { useLang, useT } from "@/lib/i18n";
 import {
   QUICK_COUNT,
   QUICK_PASS,
@@ -19,9 +19,27 @@ import {
   type QuestionKind,
 } from "@/lib/quick";
 import { playSfx } from "@/lib/sfx";
+import { QUICK_PROMPT_CLIPS, VOICE_CLIPS, playClip, soundOn } from "@/lib/voice";
+import { ListenButton } from "@/components/ListenButton";
 import { isoDay, quickRecord, useHydrated, useStore } from "@/lib/store";
 import { useToday } from "@/lib/useToday";
 import { showsNumbers } from "@/lib/workshop";
+
+/** Какая запись произносит вопрос: примеры на «сколько будет» делят одну. */
+const PROMPT_CLIP: Record<QuestionKind, (typeof QUICK_PROMPT_CLIPS)[number]> = {
+  add: "quick-how-many",
+  sub: "quick-how-many",
+  times: "quick-how-many",
+  div: "quick-how-many",
+  missing: "quick-missing",
+  compare: "quick-compare",
+  next: "quick-next",
+  count: "quick-count",
+  more: "quick-more",
+  pattern: "quick-pattern",
+  odd: "quick-odd",
+  bigger: "quick-bigger",
+};
 
 const PROMPTS: Record<QuestionKind, { ru: string; uz: string }> = {
   add: { ru: "Сколько будет?", uz: "Nechta boʻladi?" },
@@ -140,7 +158,7 @@ export function QuickView() {
         </section>
       )}
 
-      {phase.name === "play" && <Play phase={phase} onPick={pick} />}
+      {phase.name === "play" && <Play phase={phase} onPick={pick} autoplay={deck === "little"} />}
 
       {phase.name === "done" && (
         <section className="space-y-4 rounded-3xl bg-white p-6 text-center shadow-card" data-quick="done">
@@ -177,9 +195,23 @@ export function QuickView() {
   );
 }
 
-function Play({ phase, onPick }: { phase: Extract<Phase, { name: "play" }>; onPick: (index: number) => void }) {
+function Play({
+  phase,
+  onPick,
+  autoplay,
+}: {
+  phase: Extract<Phase, { name: "play" }>;
+  onPick: (index: number) => void;
+  /** Малышам вопрос читается сам, остальным — по кнопке. */
+  autoplay: boolean;
+}) {
   const t = useT();
+  const lang = useLang();
   const q = phase.quiz[phase.i];
+  const promptSrc = VOICE_CLIPS.short(PROMPT_CLIP[q.kind], lang);
+  useEffect(() => {
+    if (autoplay && promptSrc && soundOn()) playClip(promptSrc, "quick-question");
+  }, [autoplay, promptSrc, phase.i]);
   const prompt = PROMPTS[q.kind];
   const answered = phase.picked !== null;
   const wide = q.options.length > 4;
@@ -195,7 +227,10 @@ function Play({ phase, onPick }: { phase: Extract<Phase, { name: "play" }>; onPi
           {phase.i + 1}/{phase.quiz.length}
         </span>
       </div>
-      <p className="text-center text-lg font-extrabold text-muted">{t(prompt.ru, prompt.uz)}</p>
+      <div className="flex flex-wrap items-center justify-center gap-2">
+        <p className="text-center text-lg font-extrabold text-muted">{t(prompt.ru, prompt.uz)}</p>
+        <ListenButton src={promptSrc} label={t("Ещё раз", "Yana")} data-quick-listen />
+      </div>
       {q.show && (
         <p className="text-center text-4xl leading-snug font-black break-words sm:text-5xl" data-quick-show>
           {q.show}

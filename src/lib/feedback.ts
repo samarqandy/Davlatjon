@@ -4,6 +4,7 @@
  * Узбекские фразы — свои, живые, а не перевод русских (docs/uzbek-style.md).
  */
 import type { Both, Lang } from "./lang";
+import type { Cue } from "./voice";
 
 const PRAISE: Both<string[]> = {
   ru: ["Ответ совпадает! 🎉", "Так и есть! ✨", "Сошлось! 🌟", "Точно! 👏"],
@@ -72,4 +73,38 @@ export function retrySub(n: number, hintsLeft: boolean, lang: Lang = "ru"): stri
       : `${base} Masalani kattalar bilan birga koʻrib chiq — birgalikda albatta uddalaysizlar.`;
   }
   return hintsLeft ? `${base} Можно открыть подсказку 💡` : `${base} Обсуди задачу со взрослым — вместе разберётесь.`;
+}
+
+/** Какой стратегии из RETRY_SUB соответствует подсказка на экране (0–3) — по тексту, чтобы голос говорил то же, что написано. */
+function strategyOf(sub: string | undefined, lang: Lang): number {
+  if (!sub) return -1;
+  return RETRY_SUB[lang].findIndex((line) => sub.startsWith(line));
+}
+
+const STRATEGY_CUES: Cue[] = ["retry-idea", "retry-small", "retry-reread", "retry-steps"];
+
+/** Часть ответа верна: так говорят и надпись на экране, и голос. */
+const PART_RE = /Часть ответа сходится|Javobning bir qismi/;
+
+/**
+ * Какую реплику сказать после неверной проверки: она совпадает с тем, что показано на экране.
+ * `retries` — сколько неверных проверок подряд (с единицы): на третьей, шестой… голос предлагает подсказку или взрослого,
+ * а между ними советует по стратегиям — чтобы одно и то же не звучало каждый раз.
+ */
+export function retryCue(text: string, sub: string | undefined, lang: Lang, retries: number): Cue {
+  if (PART_RE.test(text)) return "retry-part";
+  const offersHint = !!sub && /подсказку 💡|Maslahatni ochsang/.test(sub);
+  const offersAdult = !!sub && /со взрослым|kattalar bilan/.test(sub);
+  if ((offersHint || offersAdult) && retries % 3 === 0) return offersHint ? "retry-hint" : "retry-adult";
+  const i = strategyOf(sub, lang);
+  return i >= 0 ? STRATEGY_CUES[i] : "retry-generic";
+}
+
+/**
+ * Какую похвалу сказать после верного ответа: хвалим за усилие, а не за «ум».
+ * Были неверные проверки — «упорство»; ответ с первого раза — «внимательность»; помогла подсказка — «умение просить помощь».
+ */
+export function praiseCue(retries: number, hints: number): Cue {
+  if (retries > 0) return "praise-persist";
+  return hints > 0 ? "praise-hint" : "praise-first";
 }

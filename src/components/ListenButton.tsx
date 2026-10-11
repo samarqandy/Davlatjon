@@ -15,12 +15,15 @@ export function ListenButton({
   label,
   className,
   large,
+  iconOnly,
 }: {
   src?: string;
   label?: string;
   className?: string;
   /** Крупная кнопка (56 px) для тех, кто ещё читает с трудом. */
   large?: boolean;
+  /** Только значок (44 px) — для узких мест, например рядом с подсказкой. Название остаётся для чтения с экрана. */
+  iconOnly?: boolean;
 }) {
   const id = useId();
   const t = useT();
@@ -37,15 +40,20 @@ export function ListenButton({
       type="button"
       onClick={() => (playing ? stopVoice() : playClip(src, id))}
       aria-pressed={playing}
+      aria-label={iconOnly ? (playing ? t("Стоп", "Toʻxtatish") : (label ?? t("Послушать", "Tinglash"))) : undefined}
       className={cn(
         "inline-flex items-center gap-1.5 rounded-xl font-extrabold transition",
-        large ? "min-h-14 gap-2 rounded-2xl px-5 text-base" : "min-h-11 px-3.5 py-1 text-sm",
+        iconOnly
+          ? "min-h-11 min-w-11 justify-center px-2 text-base"
+          : large
+            ? "min-h-14 gap-2 rounded-2xl px-5 text-base"
+            : "min-h-11 px-3.5 py-1 text-sm",
         playing ? "bg-brand text-white" : "bg-brand-soft text-brand-dark hover:bg-[#e0e3ff]",
         className,
       )}
     >
       <span aria-hidden>{playing ? "⏹" : "🔊"}</span>
-      {playing ? t("Стоп", "Toʻxtatish") : (label ?? t("Послушать", "Tinglash"))}
+      {!iconOnly && (playing ? t("Стоп", "Toʻxtatish") : (label ?? t("Послушать", "Tinglash")))}
     </button>
   );
 }

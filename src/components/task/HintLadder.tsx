@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { ListenButton } from "@/components/ListenButton";
 import { RichText } from "@/components/RichText";
 import { Button, cn } from "@/components/ui";
 import { hintSteps } from "@/content/meta";
 import { useLang, useT } from "@/lib/i18n";
 import { openHint, useStore, useTask } from "@/lib/store";
+import { VOICE_CLIPS } from "@/lib/voice";
 
 const PAUSE_SECONDS = 15;
 
@@ -17,7 +19,8 @@ const PAUSE_SECONDS = 15;
 export function HintLadder({ taskId, hints }: { taskId: string; hints: readonly string[] }) {
   const progress = useTask(taskId);
   const t = useT();
-  const steps = hintSteps(useLang());
+  const lang = useLang();
+  const steps = hintSteps(lang);
   const pause = useStore((s) => s.settings.hintPause);
   const [cooldown, setCooldown] = useState(0);
   const opened = progress.hints;
@@ -73,9 +76,17 @@ export function HintLadder({ taskId, hints }: { taskId: string; hints: readonly 
             <span className="mb-0.5 block text-xs font-extrabold tracking-wide text-[#b45309] uppercase">
               {i + 1}. {steps[i]}
             </span>
-            <span className="child-text leading-relaxed">
-              <RichText text={h} />
-            </span>
+            <div className="flex items-start gap-2">
+              <span className="child-text min-w-0 flex-1 leading-relaxed">
+                <RichText text={h} />
+              </span>
+              <ListenButton
+                iconOnly
+                src={VOICE_CLIPS.hint(taskId, i, lang)}
+                label={t("Послушать подсказку", "Maslahatni tinglash")}
+                className="shrink-0"
+              />
+            </div>
           </li>
         ))}
       </ol>

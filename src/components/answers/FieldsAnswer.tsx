@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { cn } from "@/components/ui";
 import type { Field } from "@/content/types";
-import { checkFields } from "@/lib/checks";
+import { checkFields, isCloseMiss } from "@/lib/checks";
 import { askExplain, praise, retrySub, retryTitle } from "@/lib/feedback";
 import { useLang, useT } from "@/lib/i18n";
 import { recordCheck, saveTaskInput, useTask } from "@/lib/store";
@@ -41,6 +41,7 @@ export function FieldsAnswer({ taskId, fields, hintsLeft }: { taskId: string; fi
       setFeedback({ tone: "success", text: praise(n, lang), sub: askExplain(n, lang) });
     } else {
       const some = Object.values(res.perField).some((v) => v === true);
+      const close = isCloseMiss(fields, values, res.perField);
       setFeedback({
         tone: "retry",
         text:
@@ -49,8 +50,11 @@ export function FieldsAnswer({ taskId, fields, hintsLeft }: { taskId: string; fi
                 "Часть ответа сходится ✓ — проверь остальное.",
                 "Javobning bir qismi toʻgʻri ✓ — qolganini tekshirib koʻr.",
               )
-            : retryTitle(n, lang),
+            : close
+              ? t("Почти! Совсем чуть-чуть.", "Deyarli! Bir oz qoldi.")
+              : retryTitle(n, lang),
         sub: retrySub(n, hintsLeft, lang),
+        ...(close && !(some && fields.length > 1) ? { voice: "retry-close" as const } : {}),
       });
     }
   };

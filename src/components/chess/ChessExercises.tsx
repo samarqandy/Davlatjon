@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Feedback, type FeedbackState } from "@/components/answers/Feedback";
+import { ListenButton } from "@/components/ListenButton";
 import { RichText } from "@/components/RichText";
 import { Button } from "@/components/ui";
 import type { ChessExercise } from "@/content/chess/types";
@@ -16,6 +17,7 @@ import {
 } from "@/lib/chess";
 import { askExplain, praise } from "@/lib/feedback";
 import { useLang, useSan, useT, type T } from "@/lib/i18n";
+import { VOICE_CLIPS } from "@/lib/voice";
 import { pluralize } from "@/lib/plural";
 import { chessFound, chessMiss, chessSolved, useChessExercise } from "@/lib/store";
 import { ChessBoard, type SquareMark } from "./ChessBoard";
@@ -37,6 +39,7 @@ function ExerciseShell({
   feedback: FeedbackState | null;
 }) {
   const t = useT();
+  const lang = useLang();
   const [hint, setHint] = useState(false);
   return (
     <div className="space-y-4">
@@ -52,9 +55,10 @@ function ExerciseShell({
         <p className="text-lg leading-relaxed">
           <RichText text={ex.prompt} />
         </p>
+        <ListenButton src={VOICE_CLIPS.exercise(ex.id, lang)} />
       </div>
       {children}
-      <Feedback state={feedback} />
+      <Feedback state={feedback} context="chess" />
       {solved ? (
         <div className="rounded-2xl border-2 border-mint/40 bg-mint-soft/60 px-4 py-3">
           <p className="text-sm font-extrabold text-[#065f46]">{t("Почему так", "Nega shunday")}</p>
