@@ -29,7 +29,7 @@ test("тактика: четыре темы, урок листается, упр
   await page.locator("[data-more-sections] summary").click();
   await page.locator('a[href="/chess/tactics"]').first().click();
   await expect(page.getByRole("heading", { name: /Тактика/ })).toBeVisible();
-  for (const id of ["fork", "pin", "skewer", "discover"])
+  for (const id of ["fork", "pin", "skewer", "discover", "mates", "traps"])
     await expect(page.locator(`[data-tactic="${id}"]`)).toBeVisible();
 
   await page.locator('[data-tactic="fork"]').click();
@@ -75,4 +75,17 @@ test("тактика по-узбекски: темы и упражнения б�
   await square(page, "tac-skewer-bishop", "h3");
   await square(page, "tac-skewer-bishop", "g2");
   await expect(page.getByText(/Nega shunday/)).toBeVisible();
+});
+
+test("мат: пешка ставит мат, а в дебюте — детский мат и вопрос о защите", async ({ page }) => {
+  await prepare(page);
+  await page.goto("/chess/tactics#mates-exercise-2");
+  await square(page, "tac-mates-pawn", "g6");
+  await square(page, "tac-mates-pawn", "g7");
+  await expect(page.getByText(/Почему так/)).toBeVisible();
+  await expect(page.getByText(/мат!/i).first()).toBeVisible();
+  await page.goto("/chess/tactics#traps-exercise-1");
+  await square(page, "tac-traps-scholar", "h5");
+  await square(page, "tac-traps-scholar", "f7");
+  await expect(page.getByText(/Почему так/)).toBeVisible();
 });

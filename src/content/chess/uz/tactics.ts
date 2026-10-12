@@ -3,9 +3,9 @@ import type { TACTICS, TACTICS_SCHOOL } from "../tactics";
 
 export const tacticsSchoolUz: Uz<typeof TACTICS_SCHOOL> = {
   title: "Taktika",
-  subtitle: "Donalarni yutib beradigan toʻrtta usul",
+  subtitle: "Donalarni yutib beradigan usullar va mot usullari",
   about:
-    "Vilka, bogʻlash, rentgen va ochiq shoh. Har bir mavzuda — qisqa dars va haqiqiy shaxmat taxtasidagi mashqlar. Hamma pozitsiyalar shaxmat dvigateli bilan tekshirilgan.",
+    "Vilka, bogʻlash, rentgen va ochiq shoh, shuningdek, turli donalar bilan mot va debyutdagi tezkor motlar. Har bir mavzuda — qisqa dars va haqiqiy shaxmat taxtasidagi mashqlar. Hamma pozitsiyalar shaxmat dvigateli bilan tekshirilgan.",
 };
 
 export const tacticsUz: Uz<typeof TACTICS> = {
@@ -367,6 +367,184 @@ export const tacticsUz: Uz<typeof TACTICS> = {
           {
             text: "Ochiq shohda shohni qaysi dona beradi?",
             options: ["Joyida qolgani: ketgan dona ortidagi rux, fil yoki farzin", "Har doim yurgan dona", "Shoh"],
+          },
+        ],
+      },
+    },
+  },
+  mates: {
+    title: "Turli donalar bilan mot",
+    idea: "Mot qoʻyishni hamma dona biladi, hatto piyoda ham: shohning ketadigan joyi qolmasin, shohni esa bartaraf etib boʻlmasin.",
+    lesson: [
+      {
+        title: "Mot uchun uchta shart",
+        text: [
+          "Mot boʻlishi uchun uchta narsa kerak: **shoh**; shohning **ketadigan joyi yoʻq** (yonidagi kataklar oʻz donalari bilan band yoki zarba ostida); shohni **bartaraf etib boʻlmaydi** — shoh bergan donani urib ham, undan toʻsilib ham boʻlmaydi.",
+          "Mana bu yerda c4 dagi fil mot qoʻydi: g8 dagi shoh oʻz donalari bilan qisilgan, f7 katagi esa filning zarbasi ostida.",
+        ],
+      },
+      {
+        title: "Piyoda ham mot qoʻyadi",
+        text: [
+          "Piyoda oldinga diagonal boʻylab shoh beradi. Uni boshqa dona himoya qilishi kerak — aks holda shoh uni oddiygina urib oladi.",
+          "Mana bu yerda g7 dagi piyodani g1 dagi rux himoya qilyapti: h8 dagi shoh piyodani ura olmaydi, ketadigan joyi ham yoʻq.",
+        ],
+      },
+      {
+        title: "Tayanchli farzin",
+        text: [
+          "Himoyasiz farzin shohning yonida — shunchaki sovgʻa: shoh uni urib oladi. Shuning uchun farzin sherik bilan birga mot qoʻyadi.",
+          "Mana bu yerda d3 dagi fil h7 dagi farzinni himoya qilyapti, shuning uchun g8 dagi shoh uni ura olmaydi.",
+        ],
+      },
+      {
+        title: "Aylanish bilan mot",
+        text: [
+          "Oxirgidan oldingi gorizontalda turgan piyoda farzinga yoki ruxga aylanib, darrov mot qoʻyishi mumkin.",
+          "Har doim tekshirib koʻr: aylanish bilan mot yoʻqmi? Uni payqamay qolish oson.",
+        ],
+      },
+    ],
+    terms: [
+      {
+        term: "Mot",
+        text: "Himoyalanib boʻlmaydigan shoh: shohning ketadigan joyi yoʻq, shohni esa bartaraf etib boʻlmaydi.",
+      },
+      {
+        term: "Tayanch",
+        text: "Boshqa donani himoya qiladigan dona: tayanchsiz shoh ham farzinni, ham piyodani urib oladi.",
+      },
+    ],
+    exercises: {
+      "tac-mates-bishop": {
+        title: "Fil bilan mot",
+        prompt: "Fil bilan mot qoʻyadigan yurishni top: qora shoh g8 ga oʻz donalari xalaqit beryapti.",
+        hint: "Shoh g8 ga diagonal boʻylab, f7 katagi orqali shoh berish kerak. Fil shu diagonalga qayerdan chiqa oladi?",
+        why: "Fil c4 ga boradi: f7 orqali diagonal boʻylab shoh. Shohning ketadigan joyi yoʻq: f8 va h8 band, g7 va h7 da piyodalar turibdi, f7 katagi esa filning zarbasi ostida. Toʻsiladigan narsa yoʻq — bu mot.",
+      },
+      "tac-mates-pawn": {
+        title: "Piyoda bilan mot",
+        prompt: "Piyoda bilan mot qoʻyadigan yurishni top.",
+        hint: "Piyoda oldinga diagonal boʻylab shoh beradi. U qaysi katakka tursa, h8 ga hujum qiladi va uni rux himoya qiladi?",
+        why: "Piyoda g7 ga boradi: h8 dagi shohga shoh. Piyodani g1 dagi rux himoya qiladi, shuning uchun shoh uni ura olmaydi, g8 dagi fil esa faqat diagonal boʻylab yuradi va g7 ni urmaydi. Shohning ketadigan joyi yoʻq: g8 va h7 oʻz donalari bilan band.",
+      },
+      "tac-mates-queen": {
+        title: "Tayanchli farzin",
+        prompt: "Farzin bilan mot qoʻyadigan yurishni top. Unga fil yordam beradi.",
+        hint: "d3 dagi fil h7 katagiga qarab turibdi. Farzin oʻsha yerga tursa, shoh uni ura oladimi?",
+        why: "Farzin h7 dagi piyodani oladi: shoh farzinni ura olmaydi, chunki uni d3 dagi fil himoya qiladi. h8 katagi farzin zarbasi ostida, f8 ruxga band, f7 va g7 da piyodalar. Bu mot.",
+      },
+      "tac-mates-promotion": {
+        title: "Aylanish bilan mot",
+        prompt: "Shunday yurish top: piyoda aylanib, mot qoʻysin. Farzin ham, rux ham toʻgʻri keladi.",
+        hint: "b7 dagi piyoda oxirgidan oldingi gorizontalda turibdi. U aylanib, qayerga tursa, g8 dagi shohga nima boʻladi?",
+        why: "Piyoda b8 ga boradi va farzinga (yoki ruxga) aylanadi: sakkizinchi gorizontal boʻylab shoh. g8 dagi shohning ketadigan joyi yoʻq — f7, g7, h7 piyodalari uni yopib turibdi, shohdan toʻsilib boʻlmaydi. Mot!",
+      },
+      "tac-mates-quiz": {
+        title: "Mot nima",
+        prompt: "Oʻylab koʻr va javob ber.",
+        hint: "Motning uchta shartini esla: shoh, ketadigan joy yoʻq, shohni bartaraf etib boʻlmaydi.",
+        why: "Mot — qutulib boʻlmaydigan shoh. Shoh yonidagi dona esa himoya qilingan boʻlishi kerak, aks holda shoh uni urib oladi.",
+        questions: [
+          {
+            text: "Mot boʻlishi uchun nima kerak?",
+            options: [
+              "Chiqib boʻlmaydigan shoh: shohning ketadigan joyi yoʻq va shohni bartaraf etib boʻlmaydi",
+              "Shunchaki shohga shoh berish",
+              "Farzinni urib olish",
+            ],
+          },
+          {
+            text: "Piyoda mot qoʻya oladimi?",
+            options: [
+              "Ha, agar uni boshqa dona himoya qilsa va shohning ketadigan joyi boʻlmasa",
+              "Yoʻq, piyodalar shoh bermaydi",
+              "Faqat bir katak yurganda",
+            ],
+          },
+          {
+            text: "Nega himoyasiz farzinni shoh yoniga qoʻyib boʻlmaydi?",
+            options: [
+              "Shoh farzinni oddiygina urib oladi",
+              "Farzin yonma-yon shoh bera olmaydi",
+              "Qoidalar buni taqiqlaydi",
+            ],
+          },
+        ],
+      },
+    },
+  },
+  traps: {
+    title: "Debyutdagi mot",
+    idea: "Eng tezkor motlar — va ularga yoʻl qoʻymaslik usuli.",
+    lesson: [
+      {
+        title: "Bolalar moti",
+        text: [
+          "Eng mashhur tezkor mot — **bolalar moti**. Farzin va fil f7 piyodasiga qaratiladi: partiya boshida uni faqat shoh himoya qiladi.",
+          "Oqlar e4 piyodasini yuradi, keyin farzinni h5 ga, filni c4 ga chiqaradi — va f7 da farzin bilan mot qoʻyishga tahdid qiladi.",
+        ],
+      },
+      {
+        title: "Qanday himoyalanish kerak",
+        text: [
+          "Bolalar motini qaytarish oson. f7 ni himoya qilish yoki farzinni haydab yuborish kerak. Yaxshi yurishlar: g7 piyodasini g6 ga yurish (u farzinga hujum qiladi), farzinni e7 ga yoki otni h6 ga qoʻyish.",
+          "Ammo g8 dagi otni f6 ga yurish — xato: farzin baribir f7 ni urib, mot qoʻyadi.",
+        ],
+      },
+      {
+        title: "Ahmoq moti",
+        text: [
+          "**Ahmoq moti** atigi ikki yurishda qoʻyiladi: oqlar oʻz shohiga diagonalni oʻzlari ochib beradi, qoralarning farzini esa h4 ga uradi.",
+          "Shohni asra: f va g piyodalarini keraksiz yurma.",
+        ],
+      },
+    ],
+    terms: [
+      {
+        term: "Bolalar moti",
+        text: "Farzin bilan f7 da, c4 dagi fil yordamida qoʻyiladigan mot — eng mashhur tezkor mot.",
+      },
+      { term: "Ahmoq moti", text: "Eng tezkor mot: f3 va g4 yurishlaridan keyin qora farzin h4 da mot qoʻyadi." },
+      {
+        term: "f7 — zaif nuqta",
+        text: "Partiya boshida f7 piyodasini faqat shoh himoya qiladi — shuning uchun unga farzin va filni qaratishadi.",
+      },
+    ],
+    exercises: {
+      "tac-traps-scholar": {
+        title: "Bolalar moti",
+        prompt: "Oqlar yuradi. Farzin bilan f7 da mot qoʻyadigan yurishni top.",
+        hint: "Farzin va fil f7 piyodasiga qaratilgan. Farzin uni oladi, c4 dagi fil esa farzinni himoya qiladi.",
+        why: "Farzin f7 ni oladi: c4 dagi fil uni himoya qiladi, shuning uchun e8 dagi shoh farzinni ura olmaydi. Shoh atrofidagi kataklar band yoki zarba ostida — bu mot.",
+      },
+      "tac-traps-fool": {
+        title: "Ahmoq moti",
+        prompt: "Qoralar yuradi. Oqlar oʻz shohiga diagonalni ochib qoʻydi. Mot qoʻyadigan yurishni top.",
+        hint: "Farzin diagonal boʻylab yuradi. d8 dan h4 ga, u yerdan esa e1 dagi shohga toʻgʻri qaraydi.",
+        why: "Farzin h4 ga boradi: h4–e1 diagonali boʻylab shoh. f3 va g4 piyodalari uning yoʻlini oʻzlari ochib berdi. e1 dagi shohning ketadigan joyi yoʻq, f2 va g3 kataklariga esa oqlar toʻsish uchun hech narsa qoʻya olmaydi.",
+      },
+      "tac-traps-quiz": {
+        title: "Tuzoqqa tushmaslik",
+        prompt: "Oʻylab koʻr va javob ber.",
+        hint: "Oʻylab koʻr: farzin f7 ni urib, mot qoʻya olmasligi uchun nima qilish kerak?",
+        why: "g6 piyodasi farzinni haydaydi, mot yoʻq. Ot f6 yordam bermaydi: farzin f7 ni urib, mot qoʻyadi.",
+        questions: [
+          {
+            text: "Qoralar yuradi. Oqlar f7 da farzin bilan mot qoʻyishga tahdid qilyapti. Qaysi yurish qutqaradi?",
+            options: ["g7 piyodasi g6 ga: u farzinga hujum qiladi", "g8 dagi ot f6 ga", "a7 piyodasi a6 ga"],
+          },
+          {
+            text: "Partiya boshida qoralarning eng zaif katagi qaysi?",
+            options: ["f7: uni faqat shoh himoya qiladi", "a7", "d7"],
+          },
+          {
+            text: "Ahmoq motiga tushmaslik uchun nima yordam beradi?",
+            options: [
+              "f va g piyodalarini keraksiz yurmaslik",
+              "Farzinni darrov chiqarish",
+              "Hech qachon rokirovka qilmaslik",
+            ],
           },
         ],
       },

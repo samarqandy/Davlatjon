@@ -6,6 +6,7 @@ import { describe, expect, it } from "vitest";
 import { CHESS_LEVELS } from "@/content/chess";
 import { chessContent } from "@/content/chess/content";
 import { TACTICS } from "@/content/chess/tactics";
+import { matingMoves } from "@/lib/chess";
 import { tacticMoves } from "@/lib/tactics";
 
 const exercises = TACTICS.flatMap((t) => t.exercises);
@@ -28,7 +29,7 @@ function legal(fen: string): boolean {
 
 describe("тактика: структура", () => {
   it("темы: четыре, у каждой урок, словарик и упражнения; id не повторяются и не пересекаются с уровнями", () => {
-    expect(TACTICS.map((t) => t.id)).toEqual(["fork", "pin", "skewer", "discover"]);
+    expect(TACTICS.map((t) => t.id)).toEqual(["fork", "pin", "skewer", "discover", "mates", "traps"]);
     const ids = exercises.map((e) => e.id);
     expect(new Set(ids).size).toBe(ids.length);
     const levelIds = new Set(CHESS_LEVELS.flatMap((l) => l.exercises.map((e) => e.id)));
@@ -36,7 +37,7 @@ describe("тактика: структура", () => {
     for (const t of TACTICS) {
       expect(t.lesson.length, t.id).toBeGreaterThanOrEqual(3);
       expect(t.terms.length, t.id).toBeGreaterThan(0);
-      expect(t.exercises.filter((e) => e.kind === "move").length, t.id).toBeGreaterThanOrEqual(4);
+      expect(t.exercises.filter((e) => e.kind === "move").length, t.id).toBeGreaterThanOrEqual(2);
       expect(
         t.exercises.some((e) => e.kind === "quiz"),
         t.id,
@@ -70,14 +71,15 @@ describe("тактика: ответы", () => {
 
   it("ответ — ровно те ходы, которые подходят под приём (двойной удар, связка, сквозной удар, открытый шах)", () => {
     for (const e of moves) {
-      expect(["double", "pin", "skewer", "discover"], e.id).toContain(e.goal);
-      const goal = e.goal as "double" | "pin" | "skewer" | "discover";
-      expect([...e.solutions].sort(), e.id).toEqual(tacticMoves(e.fen, goal).sort());
+      expect(["double", "pin", "skewer", "discover", "mate"], e.id).toContain(e.goal);
+      const expected =
+        e.goal === "mate" ? matingMoves(e.fen) : tacticMoves(e.fen, e.goal as "double" | "pin" | "skewer" | "discover");
+      expect([...e.solutions].sort(), e.id).toEqual([...expected].sort());
     }
   });
 
-  it("после правильного хода позиция не заканчивается матом: приём — выигрыш материала, а не мат", () => {
-    for (const e of moves)
+  it("в приёмах (не в матовых темах) правильный ход не ставит мат: приём — выигрыш материала", () => {
+    for (const e of moves.filter((x) => x.goal !== "mate"))
       for (const s of e.solutions) {
         const c = new Chess(e.fen);
         c.move({ from: s.slice(0, 2), to: s.slice(2, 4), promotion: s[4] });
