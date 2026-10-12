@@ -23,7 +23,7 @@ export function ChessSchool() {
   const hydrated = useHydrated();
   const t = useT();
   const lang = useLang();
-  const { levels, school, puzzles, openings, games, secrets, riddles, endgames, tactics } = useChess();
+  const { levels, school, puzzles, openings, games, secrets, riddles, endgames, tactics, tests } = useChess();
   const state = useStore((s) => s);
   const statuses = levelStatuses(levels, state);
   const rank = hydrated ? currentRank(levels, state) : null;
@@ -40,6 +40,10 @@ export function ChessSchool() {
   const tacticsTotal = tactics.reduce((n, x) => n + x.exercises.length, 0);
   const tacticsSolved = hydrated
     ? tactics.reduce((n, x) => n + x.exercises.filter((e) => state.chess[e.id]?.solvedAt).length, 0)
+    : 0;
+  const testsTotal = tests.reduce((n, x) => n + x.exercises.length, 0);
+  const testsDone = hydrated
+    ? tests.reduce((n, x) => n + x.exercises.filter((e) => state.chess[e.id]?.solvedAt).length, 0)
     : 0;
   const gamesViewed = hydrated ? Object.keys(state.chessGamesViewed).length : 0;
   const played = hydrated ? state.chessGames.length : 0;
@@ -120,6 +124,18 @@ export function ChessSchool() {
       stat: reviewable
         ? t(`${reviewable} партий можно разобрать`, `${reviewable} ta partiyani tahlil qilsa boʻladi`)
         : t("Сыграй — и разбери партию", "Oʻyna — keyin partiyangni tahlil qil"),
+    },
+    {
+      href: "/chess/tests",
+      emoji: "📝",
+      title: t("Контрольные тесты", "Nazorat testlari"),
+      text: t(
+        "Три теста по двенадцать вопросов без подсказок: фигуры и ходы, шах и мат, тактика. За каждый тест — до трёх звёзд.",
+        "Oʻn ikki savoldan iborat uchta test, maslahatsiz: donalar va yurishlar, shoh va mot, taktika. Har bir test uchun — uchtagacha yulduz.",
+      ),
+      stat: hydrated
+        ? t(`${testsDone} из ${testsTotal} вопросов`, `${testsTotal} ta savoldan ${testsDone} tasi`)
+        : t("Проверь себя", "Oʻzingni sinab koʻr"),
     },
     {
       href: "/chess/tactics",

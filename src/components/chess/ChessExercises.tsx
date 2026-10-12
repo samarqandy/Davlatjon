@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { Feedback, type FeedbackState } from "@/components/answers/Feedback";
 import { ListenButton } from "@/components/ListenButton";
 import { RichText } from "@/components/RichText";
@@ -26,6 +26,9 @@ type Of<K extends ChessExercise["kind"]> = Extract<ChessExercise, { kind: K }>;
 
 const movesWord = (n: number) => pluralize(n, "ход", "хода", "ходов");
 
+/** В контрольном тесте подсказок нет: ребёнок отвечает сам. */
+const TestModeContext = createContext(false);
+
 /** Оболочка упражнения: условие, доска, подсказка и объяснение после решения. */
 function ExerciseShell({
   ex,
@@ -41,6 +44,7 @@ function ExerciseShell({
   const t = useT();
   const lang = useLang();
   const [hint, setHint] = useState(false);
+  const test = useContext(TestModeContext);
   return (
     <div className="space-y-4">
       <div className="space-y-1.5">
@@ -73,7 +77,7 @@ function ExerciseShell({
             <RichText text={ex.hint} />
           </p>
         </div>
-      ) : (
+      ) : test ? null : (
         <Button variant="ghost" size="sm" onClick={() => setHint(true)}>
           {t("💡 Подсказка", "💡 Maslahat")}
         </Button>
@@ -856,7 +860,16 @@ function boardFen(pieces: Record<string, string>): string {
   return `${rows.join("/")} w - - 0 1`;
 }
 
-export function ChessExerciseView({ exercise }: { exercise: ChessExercise }) {
+/** Упражнение; в режиме `test` — без подсказок (контрольные тесты). */
+export function ChessExerciseView({ exercise, test = false }: { exercise: ChessExercise; test?: boolean }) {
+  return (
+    <TestModeContext.Provider value={test}>
+      <ExerciseByKind exercise={exercise} />
+    </TestModeContext.Provider>
+  );
+}
+
+function ExerciseByKind({ exercise }: { exercise: ChessExercise }) {
   switch (exercise.kind) {
     case "squares":
       return <SquaresExercise ex={exercise} />;

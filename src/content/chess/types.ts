@@ -139,3 +139,12 @@ export interface ChessTactic {
   terms: ChessTerm[];
   exercises: ChessExercise[];
 }
+
+/** Контрольный тест: двенадцать вопросов подряд без подсказок; прогресс хранится как у упражнений (по id). */
+export interface ChessTest {
+  id: string;
+  emoji: string;
+  title: string;
+  intro: string;
+  exercises: ChessExercise[];
+}

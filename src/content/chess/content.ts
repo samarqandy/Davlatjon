@@ -24,6 +24,7 @@ import { PUZZLES, PUZZLE_THEMES } from "./puzzles";
 import { DIALOGUES, NEW_VIEWS, THOUGHTS } from "./insights";
 import { DID_YOU_KNOW, DILARAM, PIECE_NAMES_RU, RIDDLES, SAGES, SECRETS, TURK_OPTIONS, TURK_REVEAL } from "./secrets";
 import { TACTICS, TACTICS_SCHOOL } from "./tactics";
+import { CHESS_TESTS } from "./tests";
 import { CHESS_UZ } from "./uz";
 
 export const CHESS_RU = {
@@ -62,6 +63,7 @@ export const CHESS_RU = {
   endgameMates: ENDGAME_MATES,
   tactics: TACTICS,
   tacticsSchool: TACTICS_SCHOOL,
+  tests: CHESS_TESTS,
 };
 
 export type ChessContent = typeof CHESS_RU;

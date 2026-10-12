@@ -24,6 +24,7 @@ import { queenUz } from "./queen";
 import { rookUz } from "./rook";
 import { extrasUz, schoolUz } from "./school";
 import { tacticsSchoolUz, tacticsUz } from "./tactics";
+import { chessTestsUz } from "./tests";
 import { dialoguesUz, newViewsUz, thoughtsUz } from "./insights";
 import {
   didYouKnowUz,
@@ -72,4 +73,5 @@ export const CHESS_UZ: ChessContentUz = {
   endgameMates: endgameMatesUz,
   tactics: tacticsUz,
   tacticsSchool: tacticsSchoolUz,
+  tests: chessTestsUz,
 };

@@ -5,6 +5,7 @@
 import { Chess, type Square } from "chess.js";
 import { describe, expect, it } from "vitest";
 import { CHESS_LEVELS, allChessExercises, chessGlossary } from "@/content/chess";
+import { CHESS_TESTS } from "@/content/chess/tests";
 import type { ChessExercise } from "@/content/chess/types";
 import {
   PIECE_VALUE,
@@ -24,7 +25,7 @@ import {
 import { tacticMoves } from "@/lib/tactics";
 
 type Of<K extends ChessExercise["kind"]> = Extract<ChessExercise, { kind: K }>;
-const exercises = allChessExercises().map((x) => x.exercise);
+const exercises = [...allChessExercises().map((x) => x.exercise), ...CHESS_TESTS.flatMap((t) => t.exercises)];
 const byKind = <K extends ChessExercise["kind"]>(kind: K) => exercises.filter((e): e is Of<K> => e.kind === kind);
 const exercise = <K extends ChessExercise["kind"]>(id: string, kind: K) => {
   const e = exercises.find((x) => x.id === id);
