@@ -29,7 +29,7 @@ test("тактика: четыре темы, урок листается, упр
   await page.locator("[data-more-sections] summary").click();
   await page.locator('a[href="/chess/tactics"]').first().click();
   await expect(page.getByRole("heading", { name: /Тактика/ })).toBeVisible();
-  for (const id of ["fork", "pin", "skewer", "discover", "mates", "traps"])
+  for (const id of ["fork", "pin", "skewer", "discover", "mates", "traps", "defence", "rules"])
     await expect(page.locator(`[data-tactic="${id}"]`)).toBeVisible();
 
   await page.locator('[data-tactic="fork"]').click();
@@ -87,5 +87,17 @@ test("мат: пешка ставит мат, а в дебюте — детск�
   await page.goto("/chess/tactics#traps-exercise-1");
   await square(page, "tac-traps-scholar", "h5");
   await square(page, "tac-traps-scholar", "f7");
+  await expect(page.getByText(/Почему так/)).toBeVisible();
+});
+
+test("правила: взятие на проходе и защита от шаха уходом короля", async ({ page }) => {
+  await prepare(page);
+  await page.goto("/chess/tactics#rules-exercise-1");
+  await square(page, "tac-rules-ep-white", "e5");
+  await square(page, "tac-rules-ep-white", "d6");
+  await expect(page.getByText(/Почему так/)).toBeVisible();
+  await page.goto("/chess/tactics#defence-exercise-4");
+  await square(page, "tac-defence-run", "g1");
+  await square(page, "tac-defence-run", "f2");
   await expect(page.getByText(/Почему так/)).toBeVisible();
 });

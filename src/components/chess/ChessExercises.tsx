@@ -461,6 +461,43 @@ const GOAL_RETRY: Record<Of<"move">["goal"], (m: NonNullable<ReturnType<typeof p
       "Donani shunday surki, uning ortida rux yoki fil shohga ochilsin.",
     ),
   }),
+  take: (_m, t) => ({
+    tone: "retry",
+    text: t("Шахующую фигуру так не взять.", "Shoh bergan donani bunday urib boʻlmaydi."),
+    sub: t(
+      "Найди свою фигуру, которая может побить ту, что объявила шах.",
+      "Oʻz donalaringdan qaysi biri shoh bergan donani ura olishini top.",
+    ),
+  }),
+  block: (_m, t) => ({
+    tone: "retry",
+    text: t("Шах пока остался.", "Shoh hali ham bor."),
+    sub: t(
+      "Поставь свою фигуру между шахующей фигурой и королём.",
+      "Oʻz donangni shoh bergan dona bilan shoh orasiga qoʻy.",
+    ),
+  }),
+  run: (_m, t) => ({
+    tone: "retry",
+    text: t("Королю нужно уйти на безопасную клетку.", "Shoh xavfsiz katakka ketishi kerak."),
+    sub: t(
+      "Выбери клетку, которую не бьёт ни одна фигура соперника.",
+      "Raqibning hech bir donasi urmaydigan katakni tanla.",
+    ),
+  }),
+  enpassant: (_m, t) => ({
+    tone: "retry",
+    text: t("Это обычный ход.", "Bu oddiy yurish."),
+    sub: t(
+      "Взятие на проходе: пешка бьёт пешку, которая только что прошла мимо через клетку.",
+      "Oʻtib ketayotganda olish: piyoda hozirgina yonidan oʻtib ketgan piyodani uradi.",
+    ),
+  }),
+  stalemate: (_m, t) => ({
+    tone: "retry",
+    text: t("Пока не пат: у соперника ещё есть ход.", "Hali pat emas: raqibning yurishi bor."),
+    sub: t("Нужно, чтобы шаха не было, а ходить было нечем.", "Shoh boʻlmasin, lekin yuradigan narsa ham qolmasin."),
+  }),
   castle: (_m, t) => ({
     tone: "retry",
     text: t("Это обычный ход.", "Bu oddiy yurish."),

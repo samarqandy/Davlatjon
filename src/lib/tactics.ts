@@ -8,7 +8,8 @@ import { Chess, type Color, type Move, type PieceSymbol, type Square } from "che
 
 const VALUE: Record<PieceSymbol, number> = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 100 };
 
-export type TacticGoal = "double" | "pin" | "skewer" | "discover";
+export type TacticGoal =
+  "double" | "pin" | "skewer" | "discover" | "take" | "block" | "run" | "enpassant" | "stalemate";
 
 const other = (c: Color): Color => (c === "w" ? "b" : "w");
 
@@ -85,7 +86,23 @@ function isDiscovered(after: Chess, m: Move): boolean {
   return !after.attackers(kingSquare(after, other(m.color)), m.color).includes(m.to);
 }
 
-const CHECKS: Record<TacticGoal, (after: Chess, m: Move) => boolean> = {
+/** Клетки фигур соперника, которые сейчас дают шах (до хода). */
+function checkersOf(before: Chess, mover: Color): Square[] {
+  return before.attackers(kingSquare(before, mover), other(mover));
+}
+
+const CHECKS: Record<TacticGoal, (after: Chess, m: Move, before: Chess) => boolean> = {
+  take: (_a, m, before) => {
+    const c = checkersOf(before, m.color);
+    return c.length === 1 && !!m.captured && m.to === c[0];
+  },
+  block: (_a, m, before) => {
+    const c = checkersOf(before, m.color);
+    return c.length === 1 && m.piece !== "k" && !m.captured && !!before.inCheck();
+  },
+  run: (_a, m, before) => m.piece === "k" && !m.captured && before.inCheck(),
+  enpassant: (_a, m) => m.isEnPassant(),
+  stalemate: (after) => after.isStalemate(),
   double: isDouble,
   pin: isPin,
   skewer: isSkewer,
@@ -98,7 +115,7 @@ export function tacticMoves(fen: string, goal: TacticGoal): string[] {
   for (const m of new Chess(fen).moves({ verbose: true })) {
     const after = new Chess(fen);
     after.move(m);
-    if (CHECKS[goal](after, m)) out.push(`${m.from}${m.to}${m.promotion ?? ""}`);
+    if (CHECKS[goal](after, m, new Chess(fen))) out.push(`${m.from}${m.to}${m.promotion ?? ""}`);
   }
   return out;
 }

@@ -305,6 +305,11 @@ describe("шахматная школа: ответы", () => {
         case "pin":
         case "skewer":
         case "discover":
+        case "take":
+        case "block":
+        case "run":
+        case "enpassant":
+        case "stalemate":
           expected = tacticMoves(e.fen, e.goal);
           break;
       }

@@ -7,7 +7,7 @@ import { CHESS_LEVELS } from "@/content/chess";
 import { chessContent } from "@/content/chess/content";
 import { TACTICS } from "@/content/chess/tactics";
 import { matingMoves } from "@/lib/chess";
-import { tacticMoves } from "@/lib/tactics";
+import { tacticMoves, type TacticGoal } from "@/lib/tactics";
 
 const exercises = TACTICS.flatMap((t) => t.exercises);
 const ALL = "abcdefgh".split("").flatMap((f) => [1, 2, 3, 4, 5, 6, 7, 8].map((r) => `${f}${r}`));
@@ -29,7 +29,16 @@ function legal(fen: string): boolean {
 
 describe("тактика: структура", () => {
   it("темы: четыре, у каждой урок, словарик и упражнения; id не повторяются и не пересекаются с уровнями", () => {
-    expect(TACTICS.map((t) => t.id)).toEqual(["fork", "pin", "skewer", "discover", "mates", "traps"]);
+    expect(TACTICS.map((t) => t.id)).toEqual([
+      "fork",
+      "pin",
+      "skewer",
+      "discover",
+      "mates",
+      "traps",
+      "defence",
+      "rules",
+    ]);
     const ids = exercises.map((e) => e.id);
     expect(new Set(ids).size).toBe(ids.length);
     const levelIds = new Set(CHESS_LEVELS.flatMap((l) => l.exercises.map((e) => e.id)));
@@ -71,9 +80,11 @@ describe("тактика: ответы", () => {
 
   it("ответ — ровно те ходы, которые подходят под приём (двойной удар, связка, сквозной удар, открытый шах)", () => {
     for (const e of moves) {
-      expect(["double", "pin", "skewer", "discover", "mate"], e.id).toContain(e.goal);
-      const expected =
-        e.goal === "mate" ? matingMoves(e.fen) : tacticMoves(e.fen, e.goal as "double" | "pin" | "skewer" | "discover");
+      expect(
+        ["double", "pin", "skewer", "discover", "mate", "take", "block", "run", "enpassant", "stalemate"],
+        e.id,
+      ).toContain(e.goal);
+      const expected = e.goal === "mate" ? matingMoves(e.fen) : tacticMoves(e.fen, e.goal as TacticGoal);
       expect([...e.solutions].sort(), e.id).toEqual([...expected].sort());
     }
   });

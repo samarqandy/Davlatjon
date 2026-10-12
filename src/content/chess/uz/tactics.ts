@@ -3,9 +3,9 @@ import type { TACTICS, TACTICS_SCHOOL } from "../tactics";
 
 export const tacticsSchoolUz: Uz<typeof TACTICS_SCHOOL> = {
   title: "Taktika",
-  subtitle: "Donalarni yutib beradigan usullar va mot usullari",
+  subtitle: "Usullar, mot naqshlari va maxsus qoidalar",
   about:
-    "Vilka, bogʻlash, rentgen va ochiq shoh, shuningdek, turli donalar bilan mot va debyutdagi tezkor motlar. Har bir mavzuda — qisqa dars va haqiqiy shaxmat taxtasidagi mashqlar. Hamma pozitsiyalar shaxmat dvigateli bilan tekshirilgan.",
+    "Vilka, bogʻlash, rentgen va ochiq shoh, turli donalar bilan mot, debyutdagi tezkor motlar, shohdan himoya va maxsus qoidalar: oʻtib ketayotganda olish, pat va durranglar. Har bir mavzuda — qisqa dars va haqiqiy shaxmat taxtasidagi mashqlar. Hamma pozitsiyalar shaxmat dvigateli bilan tekshirilgan.",
 };
 
 export const tacticsUz: Uz<typeof TACTICS> = {
@@ -545,6 +545,176 @@ export const tacticsUz: Uz<typeof TACTICS> = {
               "Farzinni darrov chiqarish",
               "Hech qachon rokirovka qilmaslik",
             ],
+          },
+        ],
+      },
+    },
+  },
+  defence: {
+    title: "Shohdan himoya",
+    idea: "Shohdan qutulishning uchta yoʻli: shoh bergan donani urish, toʻsilish yoki shoh bilan ketish.",
+    lesson: [
+      {
+        title: "Uchta yoʻl",
+        text: [
+          "Shohga shoh berilsa, darrov himoyalanish kerak. Uchta yoʻl bor: shoh bergan donani **urib olish**, oʻz donang bilan **toʻsilish** yoki shoh bilan xavfsiz katakka **ketish**.",
+          "Uchalasini ham tekshirib koʻr — ba'zan eng yaxshi yurish umuman shoh bilan emas.",
+        ],
+      },
+      {
+        title: "Toʻsilish",
+        text: [
+          "Rux, fil va farzindan toʻsilsa boʻladi: oʻz donangni ular bilan shoh orasidagi chiziqqa qoʻyish kerak. Ot va piyodaning shohidan toʻsilib boʻlmaydi — ular toʻgʻridan-toʻgʻri uradi.",
+          "Mana bu yerda a1 dagi rux birinchi gorizontal boʻylab shoh beryapti. Fil b1 ga yoki f1 ga turib, shohni toʻsishi mumkin.",
+        ],
+      },
+      {
+        title: "Shoh bilan ketish va qoʻsh shoh",
+        text: [
+          "Shoh raqibning hech bir donasi urmaydigan katakka ketadi. Esingda boʻlsin: shoh bergan rux yoki filning chizigʻi shohdan keyin ham davom etadi.",
+          "Agar shohni bir yoʻla ikkita dona bersa — **qoʻsh shoh** — urib ham, toʻsilib ham boʻlmaydi: faqat shoh ketishi mumkin.",
+        ],
+      },
+    ],
+    terms: [
+      {
+        term: "Qoʻsh shoh",
+        text: "Ikkita donadan bir yoʻla berilgan shoh: undan faqat shohning yurishi bilan qutulish mumkin.",
+      },
+      { term: "Toʻsilish", text: "Oʻz donangni shoh bergan dona bilan shoh orasiga qoʻyish." },
+    ],
+    exercises: {
+      "tac-defence-take-pawn": {
+        title: "Shoh bergan donani urish",
+        prompt: "Oqlarga shoh berildi. Piyoda bilan shoh bergan filni uradigan yurishni top.",
+        hint: "b4 dagi fil shohga diagonal boʻylab shoh beryapti. Sening qaysi donang uni ura oladi?",
+        why: "a3 dagi piyoda b4 dagi filni oladi: shoh beradigan dona qolmadi, shoh ham yoʻq. Shoh bergan donani oddiygina urish mumkin boʻlsa, bu koʻpincha eng yaxshi javob.",
+      },
+      "tac-defence-take-queen": {
+        title: "Farzin otni uradi",
+        prompt: "Oqlarga ot shoh berdi. Uni uradigan yurishni top.",
+        hint: "Otning shohidan toʻsilib boʻlmaydi — u sakraydi. Lekin otni urib olsa boʻladi. Uni kim koʻryapti?",
+        why: "Farzin diagonal boʻylab f3 dagi otni oladi. Otning shohidan toʻsilib boʻlmaydi, shuning uchun uni urish yoki shoh bilan ketish qoladi.",
+      },
+      "tac-defence-block": {
+        title: "Fil bilan toʻsilish",
+        prompt: "Oqlarga rux shoh berdi. Fil bilan shohni toʻsadigan yurishni top.",
+        hint: "a1 dagi rux birinchi gorizontal boʻylab shoh beryapti. Filni shu gorizontalga, rux bilan shoh orasiga qoʻy.",
+        why: "Fil f1 ga (yoki b1 ga) boradi va shohni toʻsadi. Ikkala yurish ham toʻgʻri: fil rux bilan shoh orasidagi chiziqqa turadi.",
+      },
+      "tac-defence-run": {
+        title: "Shoh ketadi",
+        prompt: "Oqlarga rux shoh berdi. Qutulishning yagona yoʻlini top.",
+        hint: "Toʻsilish ham, urish ham mumkin emas. Shoh bilan ketish qoladi — rux urmaydigan katakka.",
+        why: "Shoh f2 ga boradi: d1 dagi rux birinchi gorizontalni uradi, f2 esa uning chizigʻidan tashqarida. f1 va h1 da shoh shoh ostida qolardi, g2 va h2 kataklari esa piyodalar bilan band.",
+      },
+      "tac-defence-quiz": {
+        title: "Shohdan qanday himoyalanish",
+        prompt: "Oʻylab koʻr va javob ber.",
+        hint: "Oʻylab koʻr: shoh bergan donaga nima qilish mumkin va shohga nima?",
+        why: "Shohdan uch yoʻl bilan himoyalanishadi. Qoʻsh shohda faqat shohning yurishi qoladi, hech bir yoʻl yordam bermasa — bu mot.",
+        questions: [
+          {
+            text: "Shohdan nechta usul bilan himoyalanish mumkin?",
+            options: [
+              "Uchta: shoh bergan donani urish, toʻsilish yoki shoh bilan ketish",
+              "Bitta: shoh bilan ketish",
+              "Ikkita: toʻsilish yoki urish",
+            ],
+          },
+          {
+            text: "Oqlarga rux shoh berdi. Bu yerda ular qanday himoyalana oladi?",
+            options: ["Faqat shoh bilan: f2 ga ketish", "Piyoda bilan toʻsilish", "Ruxni urish"],
+          },
+          {
+            text: "Shoh qoʻsh shoh ostida. Nima bilan himoyalanish mumkin?",
+            options: [
+              "Faqat shohning yurishi bilan",
+              "Shoh bergan donalardan birini urish",
+              "Istalgan dona bilan toʻsilish",
+            ],
+          },
+        ],
+      },
+    },
+  },
+  rules: {
+    title: "Maxsus qoidalar va durranglar",
+    idea: "Oʻtib ketayotganda olish, pat va uchta durrang usuli: yutgan partiyani yoʻqotmaslik uchun ularni bilish kerak.",
+    lesson: [
+      {
+        title: "Oʻtib ketayotganda olish",
+        text: [
+          "Piyoda **ikki katak** yurib, raqib piyodasi yoniga kelib tursa, uni xuddi bir katak yurganday olish mumkin: sening piyodang oʻtib ketilgan katakka turadi.",
+          "Oʻtib ketayotganda faqat darrov, keyingi yurishda olinadi. Ulgurmasang — huquq yoʻqoladi. Mana bu yerda qora piyoda d7–d5 yurdi va oq e5 uni d6 da oladi.",
+        ],
+      },
+      {
+        title: "Pat: shoshilma!",
+        text: [
+          "**Pat** — shohga shoh berilmagan, lekin hech bir dona yura olmaydigan holat. Bu durrang, hatto bir tomonda donalar ancha koʻp boʻlsa ham.",
+          "Yutayotganingda doim tekshir: yurishingdan keyin raqibda yurish bormi? Yoʻq va shoh ham yoʻq boʻlsa — bu mot emas, pat.",
+        ],
+      },
+      {
+        title: "Boshqa durranglar",
+        text: [
+          "**Uch marta takrorlanish**: bir xil pozitsiya bir xil yurish navbati bilan uch marta takrorlansa, durrang talab qilish mumkin.",
+          "**50 yurish qoidasi**: har bir tomon 50 yurish davomida dona urmasa va piyoda yurmasa, durrang talab qilish mumkin.",
+          "**Material yetarli emas**: yolgʻiz shoh yoki shoh va ot yoxud fil bilan mot qoʻyib boʻlmaydi — bu durrang.",
+        ],
+      },
+    ],
+    terms: [
+      {
+        term: "Oʻtib ketayotganda olish",
+        text: "Piyoda hozirgina ikki katak yurib, yoniga kelib turgan piyodani xuddi bir katak yurganday olishi.",
+      },
+      { term: "Pat", text: "Shohga shoh yoʻq, lekin yurishga dona ham yoʻq: durrang." },
+      { term: "Uch marta takrorlanish", text: "Bir xil pozitsiya uch marta: durrang talab qilish mumkin." },
+    ],
+    exercises: {
+      "tac-rules-ep-white": {
+        title: "Oʻtib ketayotganda olish",
+        prompt: "Oqlar yuradi. Qora piyoda hozirgina ikki katak yurdi. Oʻtib ketayotganda olishni top.",
+        hint: "e5 dagi oq piyoda d5 dagi piyodani diagonal boʻylab oladi — u sakrab oʻtgan katakka.",
+        why: "e5 dagi piyoda d6 ga boradi va d5 dagi qora piyodani oladi, xuddi u bir katak yurganday. Oʻtib ketayotganda faqat darrov olinadi.",
+      },
+      "tac-rules-ep-black": {
+        title: "Qoralar oʻtib ketayotganda oladi",
+        prompt: "Qoralar yuradi. Oq piyoda hozirgina e2–e4 yurdi. Oʻtib ketayotganda olishni top.",
+        hint: "d4 dagi qora piyoda pastga diagonal boʻylab uradi. Oq piyoda e3 ustidan sakrab oʻtdi.",
+        why: "d4 dagi piyoda e3 ga boradi va e4 dagi piyodani oladi. Oʻtib ketayotganda olish ikkala tomon uchun ham ishlaydi.",
+      },
+      "tac-rules-mate-not-stale": {
+        title: "Mot, pat emas",
+        prompt: "Oqlar yuradi va yutadi. Mot top — lekin patdan ehtiyot boʻl!",
+        hint: "Farzin shoh bersin, f6 dagi shoh esa uni himoya qilsin. Farzinning g6 ga yurishi pat beradi: qoralarda yurish ham, shoh ham yoʻq.",
+        why: "Farzin g7 ga boradi: shoh, h8 dagi shoh farzinni ura olmaydi (uni f6 dagi shoh himoya qiladi) va ketadigan joyi ham yoʻq — bu mot. g6 ga yurish esa pat, durrang.",
+      },
+      "tac-rules-find-stalemate": {
+        title: "Patni top",
+        prompt: "Oqlar yutyapti, lekin farzinning bitta yurishi — pat. Uni top, hech qachon shunday yurmaslik uchun.",
+        hint: "Shunday yurish kerak: qora shohga shoh yoʻq, lekin bitta ham boʻsh katak qolmaydi.",
+        why: "b6 dagi farzin a8 dagi shohning hamma kataklarini yopadi, lekin shoh bermaydi: bu pat, durrang. Yutuq yoʻli — farzin b7 ga mot bilan.",
+      },
+      "tac-rules-quiz": {
+        title: "Qoidalar va durranglar",
+        prompt: "Oʻylab koʻr va javob ber.",
+        hint: "Qoidalarni esla: oʻtib ketayotganda darrov olinadi, takrorlanish — uch marta, mot uchun material kerak.",
+        why: "Oʻtib ketayotganda darrov olinadi. Takrorlanish bilan durrang — uchinchi martada. Yolgʻiz shoh va bitta ot (yoki fil) bilan mot qoʻyib boʻlmaydi.",
+        questions: [
+          {
+            text: "e5 da oq piyoda, d5 dagi qora piyoda esa anchadan beri turibdi. Uni hozir oʻtib ketayotganda olsa boʻladimi?",
+            options: ["Yoʻq: oʻtib ketayotganda faqat hozirgina ikki katak yurgan piyodani olishadi", "Ha, doim"],
+          },
+          {
+            text: "Durrang talab qilish uchun pozitsiya necha marta takrorlanishi kerak?",
+            options: ["Uch marta", "Ikki marta", "Oʻn marta"],
+          },
+          {
+            text: "Shoh va ot yolgʻiz shohga mot qoʻyishga yetadimi?",
+            options: ["Yoʻq, mot chiqmaydi — bu durrang", "Ha, doim", "Faqat oqlar yurganda"],
           },
         ],
       },

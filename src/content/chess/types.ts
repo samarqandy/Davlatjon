@@ -62,12 +62,28 @@ export type ChessExercise =
   /**
    * Найти ход. goal: mate — любой мат, остальные — ход из solutions (запись «e2e4», «e7e8q»).
    * double — безопасный двойной удар (вилка без шаха), pin — связка с королём, skewer — шах, за которым стоит ценная фигура,
-   * discover — открытый шах, при котором ходившая фигура ещё и берёт фигуру.
+   * discover — открытый шах, при котором ходившая фигура ещё и берёт фигуру,
+   * take / block / run — три способа защиты от шаха (взять шахующую фигуру, закрыться, уйти королём),
+   * enpassant — взятие на проходе, stalemate — ход, после которого пат.
    */
   | (ExerciseBase & {
       kind: "move";
       fen: string;
-      goal: "mate" | "capture" | "promote" | "fork" | "castle" | "double" | "pin" | "skewer" | "discover";
+      goal:
+        | "mate"
+        | "capture"
+        | "promote"
+        | "fork"
+        | "castle"
+        | "double"
+        | "pin"
+        | "skewer"
+        | "discover"
+        | "take"
+        | "block"
+        | "run"
+        | "enpassant"
+        | "stalemate";
       solutions: string[];
     })
   /** Нажать на нужную клетку (фигуру или звёздочку). */
