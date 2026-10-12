@@ -429,6 +429,38 @@ const GOAL_RETRY: Record<Of<"move">["goal"], (m: NonNullable<ReturnType<typeof p
             "Shoh berish kerak — va shu bilan birga ikkinchi donaga hujum qilish.",
           ),
         },
+  double: (_m, t) => ({
+    tone: "retry",
+    text: t("Пока нападение только на одну цель.", "Hozircha faqat bitta nishonga hujum qilyapsan."),
+    sub: t(
+      "Ищи клетку, откуда фигура видит сразу две незащищённые цели — и сама остаётся в безопасности.",
+      "Shunday katak izla: u yerdan dona bir vaqtda ikkita himoyasiz nishonni koʻrsin va oʻzi xavfsiz boʻlsin.",
+    ),
+  }),
+  pin: (_m, t) => ({
+    tone: "retry",
+    text: t("Связки пока нет.", "Hozircha bogʻlash yoʻq."),
+    sub: t(
+      "За связанной фигурой на той же линии должен стоять король: тогда она не сможет сойти с места.",
+      "Bogʻlanayotgan dona ortida, xuddi shu chiziqda shoh turishi kerak: shunda u joyidan qoʻzgala olmaydi.",
+    ),
+  }),
+  skewer: (_m, t) => ({
+    tone: "retry",
+    text: t("Это не сквозной удар.", "Bu «rentgen» emas."),
+    sub: t(
+      "Объяви шах так, чтобы за королём на той же линии стояла ценная фигура.",
+      "Shunday shoh ber: shoh ortida, xuddi shu chiziqda qimmatli dona tursin.",
+    ),
+  }),
+  discover: (_m, t) => ({
+    tone: "retry",
+    text: t("Открытого шаха не получилось.", "Ochiq shoh chiqmadi."),
+    sub: t(
+      "Сдвинь фигуру так, чтобы за ней открылась линия ладьи или слона на короля.",
+      "Donani shunday surki, uning ortida rux yoki fil shohga ochilsin.",
+    ),
+  }),
   castle: (_m, t) => ({
     tone: "retry",
     text: t("Это обычный ход.", "Bu oddiy yurish."),

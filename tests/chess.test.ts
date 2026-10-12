@@ -21,6 +21,7 @@ import {
   squareName,
   type PieceType,
 } from "@/lib/chess";
+import { tacticMoves } from "@/lib/tactics";
 
 type Of<K extends ChessExercise["kind"]> = Extract<ChessExercise, { kind: K }>;
 const exercises = allChessExercises().map((x) => x.exercise);
@@ -299,6 +300,12 @@ describe("шахматная школа: ответы", () => {
                 );
             })
             .map(uci);
+          break;
+        case "double":
+        case "pin":
+        case "skewer":
+        case "discover":
+          expected = tacticMoves(e.fen, e.goal);
           break;
       }
       expect([...e.solutions].sort(), e.id).toEqual(expected.sort());

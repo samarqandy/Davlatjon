@@ -59,11 +59,15 @@ export type ChessExercise =
       blocks?: string[];
       optimal: number;
     })
-  /** Найти ход. goal: mate — любой мат, остальные — ход из solutions (запись «e2e4», «e7e8q»). */
+  /**
+   * Найти ход. goal: mate — любой мат, остальные — ход из solutions (запись «e2e4», «e7e8q»).
+   * double — безопасный двойной удар (вилка без шаха), pin — связка с королём, skewer — шах, за которым стоит ценная фигура,
+   * discover — открытый шах, при котором ходившая фигура ещё и берёт фигуру.
+   */
   | (ExerciseBase & {
       kind: "move";
       fen: string;
-      goal: "mate" | "capture" | "promote" | "fork" | "castle";
+      goal: "mate" | "capture" | "promote" | "fork" | "castle" | "double" | "pin" | "skewer" | "discover";
       solutions: string[];
     })
   /** Нажать на нужную клетку (фигуру или звёздочку). */
@@ -105,5 +109,17 @@ export interface ChessLevel {
   rules: string[];
   terms: ChessTerm[];
   facts: string[];
+  exercises: ChessExercise[];
+}
+
+/** Тема тактики: короткий урок и упражнения «найди ход». Прогресс упражнений хранится как у уровней (по id). */
+export interface ChessTactic {
+  id: string;
+  emoji: string;
+  title: string;
+  /** Главная мысль одной строкой. */
+  idea: string;
+  lesson: ChessLessonCard[];
+  terms: ChessTerm[];
   exercises: ChessExercise[];
 }

@@ -31,6 +31,8 @@ const PAGES = [
   "/about",
   "/quick",
   "/chess/collection",
+  "/chess/tactics",
+  "/chess/tactics#pin-exercise-3",
   "/certificate/week/1",
   "/privacy",
 ];

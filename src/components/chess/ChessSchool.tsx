@@ -23,7 +23,7 @@ export function ChessSchool() {
   const hydrated = useHydrated();
   const t = useT();
   const lang = useLang();
-  const { levels, school, puzzles, openings, games, secrets, riddles, endgames } = useChess();
+  const { levels, school, puzzles, openings, games, secrets, riddles, endgames, tactics } = useChess();
   const state = useStore((s) => s);
   const statuses = levelStatuses(levels, state);
   const rank = hydrated ? currentRank(levels, state) : null;
@@ -37,6 +37,10 @@ export function ChessSchool() {
   const daily = puzzles.find((p) => p.id === dailyRu.id) ?? dailyRu;
   const puzzlesSolved = hydrated ? solvedCount(state.chessPuzzles) : 0;
   const openingsLearned = hydrated ? new Set(Object.keys(state.chessOpenings).map((k) => k.split(":")[0])).size : 0;
+  const tacticsTotal = tactics.reduce((n, x) => n + x.exercises.length, 0);
+  const tacticsSolved = hydrated
+    ? tactics.reduce((n, x) => n + x.exercises.filter((e) => state.chess[e.id]?.solvedAt).length, 0)
+    : 0;
   const gamesViewed = hydrated ? Object.keys(state.chessGamesViewed).length : 0;
   const played = hydrated ? state.chessGames.length : 0;
   const wins = hydrated ? state.chessGames.filter((g) => g.mode === "robot" && g.result === "win").length : 0;
@@ -116,6 +120,18 @@ export function ChessSchool() {
       stat: reviewable
         ? t(`${reviewable} партий можно разобрать`, `${reviewable} ta partiyani tahlil qilsa boʻladi`)
         : t("Сыграй — и разбери партию", "Oʻyna — keyin partiyangni tahlil qil"),
+    },
+    {
+      href: "/chess/tactics",
+      emoji: "⚔️",
+      title: t("Тактика", "Taktika"),
+      text: t(
+        "Вилка, связка, сквозной удар и открытый шах: короткие уроки и упражнения, в которых нужно найти выигрывающий ход.",
+        "Vilka, bogʻlash, rentgen va ochiq shoh: qisqa darslar va yutuqli yurishni topish kerak boʻlgan mashqlar.",
+      ),
+      stat: hydrated
+        ? t(`${tacticsSolved} из ${tacticsTotal} упражнений`, `${tacticsTotal} ta mashqdan ${tacticsSolved} tasi`)
+        : t("Начни с вилки", "Vilkadan boshla"),
     },
     {
       href: "/chess/endgames",
