@@ -53,12 +53,15 @@ export function PuzzlePlayer({
   onFailed,
   next,
   rated = true,
+  quiet = false,
 }: {
   puzzle: AnyPuzzle;
   onSolved?: (misses: number) => void;
   onFailed?: () => void;
   next?: { label: string; onClick: () => void };
   rated?: boolean;
+  /** Без реплик диктора — для «Шторма», где задачи сменяются за секунды. */
+  quiet?: boolean;
 }) {
   const t = useT();
   const san = useSan();
@@ -337,7 +340,7 @@ export function PuzzlePlayer({
           arrows={hintTo && hintFrom && !done ? [{ from: hintFrom, to: hintTo, color: "#10b981" }] : []}
           maxWidth={480}
         />
-        <Feedback state={feedback} />
+        <Feedback state={feedback} silent={quiet} />
       </div>
       <aside className="space-y-3">
         <div className="rounded-2xl bg-white p-4 shadow-card">

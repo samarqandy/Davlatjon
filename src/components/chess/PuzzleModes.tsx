@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button, cn } from "@/components/ui";
 import { PUZZLES, getPuzzle } from "@/content/chess/puzzles";
 import { useT } from "@/lib/i18n";
+import { stopVoice } from "@/lib/voice";
 import { pluralize } from "@/lib/plural";
 import { ladderOrder, useBank } from "@/lib/puzzleBank";
 import { targetRating } from "@/lib/puzzleRating";
@@ -47,6 +48,7 @@ export function StormView() {
   const [score, setScore] = useState(0);
   const [endsAt, setEndsAt] = useState<number | null>(null);
   const [now, setNow] = useState(0);
+  const advance = useRef<ReturnType<typeof setTimeout> | null>(null);
   const running = endsAt !== null && now < endsAt && index < order.length;
   const over = endsAt !== null && !running;
   const left = endsAt === null ? STORM_SECONDS : Math.max(0, Math.ceil((endsAt - now) / 1000));
@@ -61,7 +63,20 @@ export function StormView() {
     if (over) chessDrillRecord("storm", score);
   }, [over, score]);
 
+  // Отложенный переход к следующей задаче не должен пережить конец шторма или новый старт.
+  useEffect(() => () => void (advance.current && clearTimeout(advance.current)), []);
+  const later = (ms: number) => {
+    if (advance.current) clearTimeout(advance.current);
+    advance.current = setTimeout(() => setIndex((i) => i + 1), ms);
+  };
+
+  // Шторм идёт быстро: диктор, начатый до него, не должен звучать поверх задач.
+  useEffect(() => {
+    if (running) stopVoice();
+  }, [running]);
+
   const start = () => {
+    if (advance.current) clearTimeout(advance.current);
     const at = Date.now();
     setOrder(
       Array.isArray(mix)
@@ -133,13 +148,14 @@ export function StormView() {
           key={`${puzzleKey(puzzle)}-${index}`}
           puzzle={puzzle}
           rated={false}
+          quiet
           onSolved={(misses) => {
             if (misses === 0) setScore((s) => s + 1);
-            setTimeout(() => setIndex((i) => i + 1), 600);
+            later(600);
           }}
           onFailed={() => {
             setEndsAt((e) => (e === null ? e : e - STORM_PENALTY * 1000));
-            setTimeout(() => setIndex((i) => i + 1), 900);
+            later(900);
           }}
         />
       )}

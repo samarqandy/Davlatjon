@@ -34,11 +34,14 @@ export function Feedback({
   state,
   className,
   context = "task",
+  silent = false,
 }: {
   state: FeedbackState | null;
   className?: string;
   /** Где показан ответ: в задаче по математике и логике или в шахматном упражнении — от этого зависят слова голоса. */
   context?: "task" | "chess";
+  /** Без реплики голосом: в быстрых режимах (шторм) задача сменяется раньше, чем договорит диктор. */
+  silent?: boolean;
 }) {
   const tone = state?.tone;
   const text = state?.text;
@@ -53,6 +56,7 @@ export function Feedback({
   const retries = useRef(0);
   useEffect(() => {
     if (!text) return;
+    if (silent) return;
     // Ответ не должен прятаться под нижней панелью: подкручиваем страницу, если он ниже видимого.
     box.current?.scrollIntoView?.({ block: "nearest", behavior: "smooth" });
     if (tone === "success") {
@@ -67,7 +71,7 @@ export function Feedback({
     }
     // hints читаем в момент ответа; смена числа подсказок сама по себе реплику не вызывает.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tone, text, sub, voice, lang, context]);
+  }, [tone, text, sub, voice, lang, context, silent]);
   return (
     <div aria-live="polite" className={className}>
       {state && (
