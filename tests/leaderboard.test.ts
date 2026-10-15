@@ -71,3 +71,23 @@ describe("рейтинг: чистая логика", () => {
     expect(sanitize({ ...DEFAULT_STATE, settings: { ...DEFAULT_STATE.settings, leaderboard: "yes" } }).settings.leaderboard).toBeUndefined();
   });
 });
+
+describe("sanitize: испорченные записи не роняют страницы", () => {
+  it("выбрасывает null и числа из словарей, достраивает marks", () => {
+    const s = sanitize({
+      version: 99,
+      tasks: { a: null, b: 1, c: { status: "solved" } },
+      chess: { x: null, y: { solvedAt: 1, misses: 0 } },
+      chessOpenings: { o: "no", p: 3 },
+      quick: { q: NaN, r: 2 },
+      myProblems: [null, 5, { id: "m" }],
+    });
+    expect(Object.keys(s.tasks)).toEqual(["c"]);
+    expect(s.tasks.c.marks).toEqual({});
+    expect(Object.keys(s.chess)).toEqual(["y"]);
+    expect(s.chessOpenings).toEqual({ p: 3 });
+    expect(s.quick).toEqual({ r: 2 });
+    expect(s.myProblems).toHaveLength(1);
+    expect(() => xpBreakdown(s)).not.toThrow();
+  });
+});

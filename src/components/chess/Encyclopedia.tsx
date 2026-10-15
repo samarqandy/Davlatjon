@@ -100,7 +100,7 @@ export function Encyclopedia() {
   ] as const;
   return (
     <div className="space-y-8">
-      <Link href="/chess" className="inline-flex items-center gap-1 text-sm font-extrabold text-brand hover:underline">
+      <Link href="/chess" className="inline-flex min-h-11 items-center gap-1 text-sm font-extrabold text-brand hover:underline">
         {t("← Шахматная школа", "← Shaxmat maktabi")}
       </Link>
       <header>
@@ -195,7 +195,7 @@ export function Encyclopedia() {
         <h2 id="champ-h" className="text-2xl font-black">
           {t("🏆 Чемпионы мира", "🏆 Jahon chempionlari")}
         </h2>
-        <div className="overflow-x-auto rounded-3xl bg-white p-2 shadow-card">
+        <div tabIndex={0} role="region" aria-labelledby="champ-h" className="overflow-x-auto rounded-3xl bg-white p-2 shadow-card">
           <table className="w-full text-left text-sm">
             <thead>
               <tr className="text-xs font-extrabold tracking-wide text-muted uppercase">

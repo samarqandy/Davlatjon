@@ -36,7 +36,7 @@ export function CertificateView({ levelId }: { levelId: string }) {
   const back = (
     <Link
       href={chessLevelHref(level.id)}
-      className="no-print inline-flex items-center gap-1 text-sm font-extrabold text-brand hover:underline"
+      className="no-print inline-flex min-h-11 items-center gap-1 text-sm font-extrabold text-brand hover:underline"
     >
       ← {t(`Уровень «${level.name}»`, `«${level.name}» darajasi`)}
     </Link>

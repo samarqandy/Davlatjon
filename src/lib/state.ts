@@ -339,15 +339,33 @@ function activityOf(x: unknown): AppState["activity"] {
   );
 }
 
+/** Словарь записей: всё, что не объект (null, число), выбрасываем — иначе одна испорченная запись роняет страницы. */
+function entriesOf<V>(v: unknown, fix: (e: Record<string, unknown>) => V = (e) => e as V): Record<string, V> {
+  const out: Record<string, V> = {};
+  if (!isObject(v)) return out;
+  for (const [k, e] of Object.entries(v)) if (isObject(e)) out[k] = fix(e);
+  return out;
+}
+
+function numbersOf(v: unknown): Record<string, number> {
+  const out: Record<string, number> = {};
+  if (!isObject(v)) return out;
+  for (const [k, n] of Object.entries(v)) if (typeof n === "number" && Number.isFinite(n)) out[k] = n;
+  return out;
+}
+
 export function sanitize(raw: unknown): AppState {
   if (!isObject(raw)) return DEFAULT_STATE;
   const settings = isObject(raw.settings) ? raw.settings : {};
   return {
     version: 1,
-    tasks: isObject(raw.tasks) ? (raw.tasks as AppState["tasks"]) : {},
-    days: isObject(raw.days) ? (raw.days as AppState["days"]) : {},
-    myProblems: Array.isArray(raw.myProblems) ? (raw.myProblems as MyProblem[]) : [],
-    reviews: isObject(raw.reviews) ? (raw.reviews as AppState["reviews"]) : {},
+    tasks: entriesOf<TaskProgress>(raw.tasks, (e) => ({
+      ...(e as unknown as TaskProgress),
+      marks: isObject(e.marks) ? (e.marks as TaskMarks) : {},
+    })),
+    days: entriesOf(raw.days) as AppState["days"],
+    myProblems: Array.isArray(raw.myProblems) ? (raw.myProblems.filter(isObject) as unknown as MyProblem[]) : [],
+    reviews: entriesOf(raw.reviews) as AppState["reviews"],
     settings: {
       hintPause: typeof settings.hintPause === "boolean" ? settings.hintPause : true,
       bigText: typeof settings.bigText === "boolean" ? settings.bigText : false,
@@ -387,20 +405,20 @@ export function sanitize(raw: unknown): AppState {
       reportToTelegram: typeof settings.reportToTelegram === "boolean" ? settings.reportToTelegram : undefined,
       leaderboard: typeof settings.leaderboard === "boolean" ? settings.leaderboard : undefined,
     },
-    chess: isObject(raw.chess) ? (raw.chess as AppState["chess"]) : {},
-    chessGames: Array.isArray(raw.chessGames) ? (raw.chessGames as ChessGameRecord[]) : [],
-    chessPuzzles: isObject(raw.chessPuzzles) ? (raw.chessPuzzles as AppState["chessPuzzles"]) : {},
+    chess: entriesOf(raw.chess) as AppState["chess"],
+    chessGames: Array.isArray(raw.chessGames) ? (raw.chessGames.filter(isObject) as unknown as ChessGameRecord[]) : [],
+    chessPuzzles: entriesOf(raw.chessPuzzles) as AppState["chessPuzzles"],
     chessRating: ratingOf(raw.chessRating),
     chessWoodpecker: woodpeckerOf(raw.chessWoodpecker),
     chessStreak: typeof raw.chessStreak === "number" ? raw.chessStreak : 0,
-    chessOpenings: isObject(raw.chessOpenings) ? (raw.chessOpenings as AppState["chessOpenings"]) : {},
-    chessGamesViewed: isObject(raw.chessGamesViewed) ? (raw.chessGamesViewed as AppState["chessGamesViewed"]) : {},
-    chessDiary: Array.isArray(raw.chessDiary) ? (raw.chessDiary as ChessDiaryEntry[]) : [],
-    chessOwnPuzzles: isObject(raw.chessOwnPuzzles) ? (raw.chessOwnPuzzles as AppState["chessOwnPuzzles"]) : {},
-    chessGuess: isObject(raw.chessGuess) ? (raw.chessGuess as AppState["chessGuess"]) : {},
-    chessDrills: isObject(raw.chessDrills) ? (raw.chessDrills as AppState["chessDrills"]) : {},
-    quick: isObject(raw.quick) ? (raw.quick as AppState["quick"]) : {},
-    chessEndgames: isObject(raw.chessEndgames) ? (raw.chessEndgames as AppState["chessEndgames"]) : {},
+    chessOpenings: numbersOf(raw.chessOpenings),
+    chessGamesViewed: numbersOf(raw.chessGamesViewed),
+    chessDiary: Array.isArray(raw.chessDiary) ? (raw.chessDiary.filter(isObject) as unknown as ChessDiaryEntry[]) : [],
+    chessOwnPuzzles: numbersOf(raw.chessOwnPuzzles),
+    chessGuess: entriesOf(raw.chessGuess) as AppState["chessGuess"],
+    chessDrills: numbersOf(raw.chessDrills),
+    quick: numbersOf(raw.quick),
+    chessEndgames: numbersOf(raw.chessEndgames),
     activity: activityOf(raw.activity),
     welcomed: raw.welcomed === true,
   };

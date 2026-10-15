@@ -37,7 +37,7 @@ export function WeekCertificateView({ week: both, weeksTotal }: { week: Both<Wee
   const back = (
     <Link
       href="/"
-      className="no-print inline-flex items-center gap-1 text-sm font-extrabold text-brand hover:underline"
+      className="no-print inline-flex min-h-11 items-center gap-1 text-sm font-extrabold text-brand hover:underline"
     >
       ← {t("На главную", "Bosh sahifaga")}
     </Link>

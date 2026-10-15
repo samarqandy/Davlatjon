@@ -21,7 +21,7 @@ export const STORM_PENALTY = 10;
 function Back() {
   const t = useT();
   return (
-    <button type="button" onClick={() => setHash("#all")} className="text-sm font-extrabold text-brand hover:underline">
+    <button type="button" onClick={() => setHash("#all")} className="inline-flex min-h-11 items-center text-sm font-extrabold text-brand hover:underline">
       ← {t("Все задачи", "Barcha masalalar")}
     </button>
   );

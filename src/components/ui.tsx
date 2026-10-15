@@ -106,12 +106,23 @@ export function Pill({ children, className }: { children: ReactNode; className?:
   );
 }
 
-export function ProgressBar({ value, max, className }: { value: number; max: number; className?: string }) {
+export function ProgressBar({
+  value,
+  max,
+  className,
+  label,
+}: {
+  value: number;
+  max: number;
+  className?: string;
+  label?: string;
+}) {
   const pct = max === 0 ? 0 : Math.round((value / max) * 100);
   return (
     <div
       className={cn("h-2.5 w-full overflow-hidden rounded-full bg-black/[0.07]", className)}
       role="progressbar"
+      aria-label={label ?? `${value} / ${max}`}
       aria-valuemin={0}
       aria-valuemax={max}
       aria-valuenow={value}
