@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { Feedback, type FeedbackState } from "@/components/answers/Feedback";
 import { ListenButton } from "@/components/ListenButton";
 import { RichText } from "@/components/RichText";
@@ -26,6 +26,9 @@ type Of<K extends ChessExercise["kind"]> = Extract<ChessExercise, { kind: K }>;
 
 const movesWord = (n: number) => pluralize(n, "ход", "хода", "ходов");
 
+/** В контрольном тесте подсказок нет: ребёнок отвечает сам. */
+const TestModeContext = createContext(false);
+
 /** Оболочка упражнения: условие, доска, подсказка и объяснение после решения. */
 function ExerciseShell({
   ex,
@@ -41,6 +44,7 @@ function ExerciseShell({
   const t = useT();
   const lang = useLang();
   const [hint, setHint] = useState(false);
+  const test = useContext(TestModeContext);
   return (
     <div className="space-y-4">
       <div className="space-y-1.5">
@@ -73,7 +77,7 @@ function ExerciseShell({
             <RichText text={ex.hint} />
           </p>
         </div>
-      ) : (
+      ) : test ? null : (
         <Button variant="ghost" size="sm" onClick={() => setHint(true)}>
           {t("💡 Подсказка", "💡 Maslahat")}
         </Button>
@@ -429,6 +433,75 @@ const GOAL_RETRY: Record<Of<"move">["goal"], (m: NonNullable<ReturnType<typeof p
             "Shoh berish kerak — va shu bilan birga ikkinchi donaga hujum qilish.",
           ),
         },
+  double: (_m, t) => ({
+    tone: "retry",
+    text: t("Пока нападение только на одну цель.", "Hozircha faqat bitta nishonga hujum qilyapsan."),
+    sub: t(
+      "Ищи клетку, откуда фигура видит сразу две незащищённые цели — и сама остаётся в безопасности.",
+      "Shunday katak izla: u yerdan dona bir vaqtda ikkita himoyasiz nishonni koʻrsin va oʻzi xavfsiz boʻlsin.",
+    ),
+  }),
+  pin: (_m, t) => ({
+    tone: "retry",
+    text: t("Связки пока нет.", "Hozircha bogʻlash yoʻq."),
+    sub: t(
+      "За связанной фигурой на той же линии должен стоять король: тогда она не сможет сойти с места.",
+      "Bogʻlanayotgan dona ortida, xuddi shu chiziqda shoh turishi kerak: shunda u joyidan qoʻzgala olmaydi.",
+    ),
+  }),
+  skewer: (_m, t) => ({
+    tone: "retry",
+    text: t("Это не сквозной удар.", "Bu «rentgen» emas."),
+    sub: t(
+      "Объяви шах так, чтобы за королём на той же линии стояла ценная фигура.",
+      "Shunday shoh ber: shoh ortida, xuddi shu chiziqda qimmatli dona tursin.",
+    ),
+  }),
+  discover: (_m, t) => ({
+    tone: "retry",
+    text: t("Открытого шаха не получилось.", "Ochiq shoh chiqmadi."),
+    sub: t(
+      "Сдвинь фигуру так, чтобы за ней открылась линия ладьи или слона на короля.",
+      "Donani shunday surki, uning ortida rux yoki fil shohga ochilsin.",
+    ),
+  }),
+  take: (_m, t) => ({
+    tone: "retry",
+    text: t("Шахующую фигуру так не взять.", "Shoh bergan donani bunday urib boʻlmaydi."),
+    sub: t(
+      "Найди свою фигуру, которая может побить ту, что объявила шах.",
+      "Oʻz donalaringdan qaysi biri shoh bergan donani ura olishini top.",
+    ),
+  }),
+  block: (_m, t) => ({
+    tone: "retry",
+    text: t("Шах пока остался.", "Shoh hali ham bor."),
+    sub: t(
+      "Поставь свою фигуру между шахующей фигурой и королём.",
+      "Oʻz donangni shoh bergan dona bilan shoh orasiga qoʻy.",
+    ),
+  }),
+  run: (_m, t) => ({
+    tone: "retry",
+    text: t("Королю нужно уйти на безопасную клетку.", "Shoh xavfsiz katakka ketishi kerak."),
+    sub: t(
+      "Выбери клетку, которую не бьёт ни одна фигура соперника.",
+      "Raqibning hech bir donasi urmaydigan katakni tanla.",
+    ),
+  }),
+  enpassant: (_m, t) => ({
+    tone: "retry",
+    text: t("Это обычный ход.", "Bu oddiy yurish."),
+    sub: t(
+      "Взятие на проходе: пешка бьёт пешку, которая только что прошла мимо через клетку.",
+      "Oʻtib ketayotganda olish: piyoda hozirgina yonidan oʻtib ketgan piyodani uradi.",
+    ),
+  }),
+  stalemate: (_m, t) => ({
+    tone: "retry",
+    text: t("Пока не пат: у соперника ещё есть ход.", "Hali pat emas: raqibning yurishi bor."),
+    sub: t("Нужно, чтобы шаха не было, а ходить было нечем.", "Shoh boʻlmasin, lekin yuradigan narsa ham qolmasin."),
+  }),
   castle: (_m, t) => ({
     tone: "retry",
     text: t("Это обычный ход.", "Bu oddiy yurish."),
@@ -787,7 +860,16 @@ function boardFen(pieces: Record<string, string>): string {
   return `${rows.join("/")} w - - 0 1`;
 }
 
-export function ChessExerciseView({ exercise }: { exercise: ChessExercise }) {
+/** Упражнение; в режиме `test` — без подсказок (контрольные тесты). */
+export function ChessExerciseView({ exercise, test = false }: { exercise: ChessExercise; test?: boolean }) {
+  return (
+    <TestModeContext.Provider value={test}>
+      <ExerciseByKind exercise={exercise} />
+    </TestModeContext.Provider>
+  );
+}
+
+function ExerciseByKind({ exercise }: { exercise: ChessExercise }) {
   switch (exercise.kind) {
     case "squares":
       return <SquaresExercise ex={exercise} />;
