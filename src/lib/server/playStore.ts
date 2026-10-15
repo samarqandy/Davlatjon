@@ -20,6 +20,17 @@ import {
   type TimeControl,
 } from "@/lib/online";
 import { SCHEMA as PROGRESS_SCHEMA, type SqlQuery } from "./progressStore";
+import {
+  bestCategory,
+  nextBase,
+  weekKey,
+  weeklyGain,
+  type AgeBand,
+  type LeaderResponse,
+  type LeaderRow,
+  type Query as LeaderQuery,
+} from "@/lib/leaderboard";
+import { xpLevel, type XpBreakdown } from "@/lib/xp";
 
 /**
  * Игра по сети: профили с именами, друзья, партии и переписка. Всё лежит в той же базе Neon, что и прогресс.
@@ -39,6 +50,17 @@ const SCHEMA = [
   `alter table lab_profiles add column if not exists streak int not null default 0`,
   `alter table lab_profiles add column if not exists streak_day text`,
   `create unique index if not exists lab_profiles_username on lab_profiles (username)`,
+  `create table if not exists lab_scores (
+    key text primary key,
+    user_id text not null,
+    avatar text,
+    age text not null,
+    week text not null,
+    totals jsonb not null,
+    base jsonb not null,
+    updated_at timestamptz not null default now()
+  )`,
+  `create index if not exists lab_scores_user on lab_scores (user_id)`,
   `create table if not exists lab_friends (
     pair text primary key,
     a text not null,
@@ -155,6 +177,7 @@ export interface Message {
 
 const bool = (v: unknown) => v === true || v === "t" || v === "true";
 const num = (v: unknown) => Number(v);
+const json = <T>(v: unknown): T => (typeof v === "string" ? JSON.parse(v) : v) as T;
 const newId = () => randomBytes(8).toString("base64url").replace(/[-_]/g, "x").toLowerCase().slice(0, 10);
 
 function rowToGame(r: Record<string, unknown>): GameRow {
@@ -275,6 +298,7 @@ export function playStore(query: SqlQuery, clock: () => number = Date.now) {
       await q("delete from lab_friends where a = $1 or b = $1", [userId]);
       await q("delete from lab_games where white = $1 or black = $1", [userId]);
       await q("delete from lab_reads where user_id = $1", [userId]);
+      await q("delete from lab_scores where user_id = $1", [userId]);
       await q("delete from lab_profiles where user_id = $1", [userId]);
       const gone = await q(
         "delete from lab_progress where user_id = $1 or left(user_id, length($1) + 1) = $1 || '#' returning user_id",
@@ -346,6 +370,78 @@ export function playStore(query: SqlQuery, clock: () => number = Date.now) {
               ? "outgoing"
               : "incoming",
       }));
+    },
+
+    /**
+     * Записать очки ребёнка в общий рейтинг. Очки считает сервер по сохранённому прогрессу.
+     * «Начало недели» запоминается при первой записи новой недели.
+     */
+    async recordScore(
+      key: string,
+      userId: string,
+      info: { avatar: string | null; age: AgeBand; totals: XpBreakdown },
+    ): Promise<void> {
+      const week = weekKey(clock());
+      const prev = (await q("select week, totals, base from lab_scores where key = $1", [key]))[0];
+      const base = nextBase(
+        prev ? { week: String(prev.week), totals: json<XpBreakdown>(prev.totals), base: json<XpBreakdown>(prev.base) } : null,
+        info.totals,
+        week,
+      );
+      await q(
+        `insert into lab_scores (key, user_id, avatar, age, week, totals, base, updated_at)
+         values ($1, $2, $3, $4, $5, $6::jsonb, $7::jsonb, now())
+         on conflict (key) do update set avatar = excluded.avatar, age = excluded.age, week = excluded.week,
+           totals = excluded.totals, base = excluded.base, updated_at = now()`,
+        [key, userId, info.avatar, info.age, week, JSON.stringify(info.totals), JSON.stringify(base)],
+      );
+    },
+
+    /** Убрать ребёнка из рейтинга (родитель выключил участие). */
+    async removeScore(key: string): Promise<void> {
+      await q("delete from lab_scores where key = $1", [key]);
+    },
+
+    /** Таблица лидеров: первые строки и места моих детей. Показываются только имя в игре, аватарка и очки. */
+    async leaderboard(userId: string, query: LeaderQuery, limit = 50): Promise<LeaderResponse> {
+      const week = weekKey(clock());
+      const rows = await q(
+        `select s.key, s.user_id, s.avatar, s.age, s.week, s.totals, s.base, p.username
+         from lab_scores s join lab_profiles p on p.user_id = s.user_id
+         where ($1 = 'all' or s.age = $1)
+         order by s.updated_at asc limit 2000`,
+        [query.age],
+      );
+      const scored = rows
+        .map((r) => {
+          const totals = json<XpBreakdown>(r.totals);
+          const base = json<XpBreakdown>(r.base);
+          const value =
+            query.scope === "all"
+              ? totals[query.category]
+              : String(r.week) === week
+                ? weeklyGain(totals, base, query.category)
+                : 0;
+          return { r, totals, value };
+        })
+        .filter((x) => x.value > 0)
+        .sort((a, b) => b.value - a.value);
+      const all: LeaderRow[] = scored.map((x, i) => ({
+        rank: i + 1,
+        username: String(x.r.username),
+        avatar: x.r.avatar ? String(x.r.avatar) : null,
+        value: x.value,
+        level: xpLevel(x.totals.total).level,
+        best: bestCategory(x.totals),
+        mine: String(x.r.user_id) === userId,
+      }));
+      return {
+        week,
+        query,
+        rows: all.slice(0, limit),
+        mine: all.filter((x) => x.mine && x.rank > limit),
+        count: all.length,
+      };
     },
 
     /** Запомнить серию дней, чтобы друзья её видели. */

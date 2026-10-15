@@ -6,10 +6,10 @@ import { cn } from "@/components/ui";
 import { useT } from "@/lib/i18n";
 
 /** Корни разделов: нижнее меню показываем только там, а внутри задач и партий оно не отвлекает. */
-const ROOTS = ["/", "/chess", "/my-problems"];
+const ROOTS = ["/", "/chess", "/my-problems", "/leaderboard"];
 
 /**
- * Нижнее меню на телефоне: три больших кнопки под большой палец («Главная», «Шахматы», «Мои задачи»).
+ * Нижнее меню на телефоне: четыре больших кнопки под большой палец («Главная», «Шахматы», «Мои задачи», «Рейтинг»).
  * Взрослым — ссылка «Для взрослых» внизу страницы, а не в шапке.
  */
 export function BottomNav() {
@@ -20,6 +20,7 @@ export function BottomNav() {
     { href: "/", emoji: "🏠", label: t("Главная", "Bosh sahifa") },
     { href: "/chess", emoji: "♞", label: t("Шахматы", "Shaxmat") },
     { href: "/my-problems", emoji: "✍️", label: t("Мои задачи", "Masalalarim") },
+    { href: "/leaderboard", emoji: "🏆", label: t("Рейтинг", "Reyting") },
   ];
   return (
     <>
@@ -29,7 +30,7 @@ export function BottomNav() {
         aria-label={t("Нижнее меню", "Pastki menyu")}
         className="no-print fixed inset-x-0 bottom-0 z-30 border-t border-line bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur sm:hidden"
       >
-        <ul className="mx-auto grid max-w-md grid-cols-3">
+        <ul className="mx-auto grid max-w-md grid-cols-4">
           {tabs.map((tab) => {
             const active = tab.href === path;
             return (

@@ -40,13 +40,13 @@ test("знакомство: язык → возраст; без имени и в
   await expect(page.locator("[data-name-banner]")).toHaveCount(0);
 });
 
-test("нижнее меню на телефоне: три раздела; ссылка «Для взрослых» внизу страницы", async ({ page, isMobile }) => {
+test("нижнее меню на телефоне: четыре раздела; ссылка «Для взрослых» внизу страницы", async ({ page, isMobile }) => {
   await prepare(page);
   await page.goto("/");
   const bar = page.locator("[data-bottom-nav]");
   if (isMobile) {
     await expect(bar).toBeVisible();
-    await expect(bar.getByRole("link")).toHaveCount(3);
+    await expect(bar.getByRole("link")).toHaveCount(4);
     await expect(bar.getByRole("link", { name: /Главная/ })).toHaveAttribute("aria-current", "page");
     // Внутри задач меню не отвлекает.
     await page.goto("/week/1/day/1#task-1");

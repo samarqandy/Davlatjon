@@ -2,7 +2,10 @@ import type { NextRequest } from "next/server";
 import { authConfig } from "@/lib/server/config";
 import { neonStore, progressKey } from "@/lib/server/progressStore";
 import { sameOrigin, sessionFrom } from "@/lib/server/request";
+import { neonPlayStore } from "@/lib/server/playStore";
+import { ageBand } from "@/lib/leaderboard";
 import { mergeStates } from "@/lib/sync";
+import { xpBreakdown } from "@/lib/xp";
 
 /** Прогресс не больше 3 МБ — с запасом на 200 партий с разбором. */
 const MAX_BYTES = 3_000_000;
@@ -11,6 +14,24 @@ const noStore = { "Cache-Control": "no-store" };
 /** Ошибка базы — в журнал сервера, но без строки подключения: в ней пароль. */
 function logStorageError(error: unknown) {
   console.error("progress storage:", String(error).replace(/postgres(ql)?:\/\/\S+/g, "postgresql://***"));
+}
+
+/**
+ * Рейтинг: очки считает сервер по сохранённому прогрессу, а не по числам от клиента.
+ * Попадают только дети, чьи родители включили участие и у аккаунта есть имя в игре. Сбой рейтинга не мешает сохранению.
+ */
+async function publishScore(databaseUrl: string, userId: string, key: string, state: ReturnType<typeof mergeStates>) {
+  try {
+    const play = neonPlayStore(databaseUrl);
+    if (state.settings.leaderboard !== true || !(await play.profileById(userId))) return await play.removeScore(key);
+    await play.recordScore(key, userId, {
+      avatar: state.settings.avatar ?? null,
+      age: ageBand(state.settings.age),
+      totals: xpBreakdown(state),
+    });
+  } catch (error) {
+    logStorageError(error);
+  }
 }
 
 function setup(request: NextRequest) {
@@ -56,6 +77,7 @@ export async function PUT(request: NextRequest) {
     const saved = await store.get(key);
     const merged = mergeStates(body.state, saved?.state ?? {});
     await store.put(key, merged);
+    await publishScore(cfg.storage!.databaseUrl, user.id, key, merged);
     return Response.json({ state: merged }, { headers: noStore });
   } catch (error) {
     logStorageError(error);

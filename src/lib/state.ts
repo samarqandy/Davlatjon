@@ -87,6 +87,8 @@ export interface Settings {
   dailyLimitMin?: number;
   /** Родитель: приглашение на неделю — сколько дней с занятиями (3–7, по умолчанию 5). */
   goalDays?: number;
+  /** Родитель разрешил показывать ребёнка в рейтинге (только имя в игре, аватарка и очки). Нужен вход в аккаунт. */
+  leaderboard?: boolean;
   /** Картинка-аватарка профиля (из AVATARS): ребёнок узнаёт «свой» профиль без чтения. */
   avatar?: string;
   /** С какой недели начинать (по результату короткого теста): 1–3. Не задано — с первой. */
@@ -383,6 +385,7 @@ export function sanitize(raw: unknown): AppState {
           ? (settings.goalDays as number)
           : undefined,
       reportToTelegram: typeof settings.reportToTelegram === "boolean" ? settings.reportToTelegram : undefined,
+      leaderboard: typeof settings.leaderboard === "boolean" ? settings.leaderboard : undefined,
     },
     chess: isObject(raw.chess) ? (raw.chess as AppState["chess"]) : {},
     chessGames: Array.isArray(raw.chessGames) ? (raw.chessGames as ChessGameRecord[]) : [],

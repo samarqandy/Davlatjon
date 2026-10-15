@@ -49,8 +49,8 @@ export function AboutView({ stats }: { stats: AboutStats }) {
       emoji: "🔒",
       title: t("Безопасно для детей", "Bolalar uchun xavfsiz"),
       text: t(
-        "Нет рекламы и чужих трекеров. Нет рейтингов, которые давят на ребёнка. Играть и писать по сети можно только с друзьями, которых он добавил сам; родитель может всё это выключить.",
-        "Reklama ham, begona kuzatuvchilar ham yoʻq. Bolaga bosim qiladigan reytinglar yoʻq. Onlayn oʻynash va yozishish faqat oʻzi qoʻshgan doʻstlar bilan; ota-ona buning hammasini oʻchirib qoʻyishi mumkin.",
+        "Нет рекламы и чужих трекеров. Общий рейтинг — только с разрешения родителя, в нём виден лишь ник и очки. Играть и писать по сети можно только с друзьями, которых он добавил сам; родитель может всё это выключить.",
+        "Reklama ham, begona kuzatuvchilar ham yoʻq. Umumiy reyting faqat ota-ona ruxsati bilan, unda faqat laqab va ballar koʻrinadi. Onlayn oʻynash va yozishish faqat oʻzi qoʻshgan doʻstlar bilan; ota-ona buning hammasini oʻchirib qoʻyishi mumkin.",
       ),
     },
     {

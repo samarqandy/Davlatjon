@@ -28,23 +28,42 @@ export const XP = {
 
 const DRILLS = ["safety", "memory", "knight"];
 
+/** Опыт по направлениям: для рейтинга «кто в чём силён». Сумма — весь опыт. */
+export interface XpBreakdown {
+  total: number;
+  /** Задачи по математике и логике, итоги дней. */
+  math: number;
+  /** Шахматная школа, партии, дебюты, эндшпиль, тренажёры, звания. */
+  chess: number;
+  /** Шахматные задачи (школы, базы и свои). */
+  puzzles: number;
+  /** «Быстрые примеры». */
+  quick: number;
+}
+
+export function xpBreakdown(s: AppState): XpBreakdown {
+  let math = 0;
+  for (const t of Object.values(s.tasks)) if (t.solvedAt) math += XP.task;
+  for (const d of Object.values(s.days)) if (d.completedAt) math += XP.day;
+  let chess = 0;
+  for (const e of Object.values(s.chess)) if (e.solvedAt) chess += XP.exercise;
+  for (const g of s.chessGames) chess += XP.game + (g.result === "win" ? XP.win : 0);
+  chess += new Set(Object.keys(s.chessOpenings).map((k) => k.split(":")[0])).size * XP.opening;
+  chess += Object.keys(s.chessGamesViewed).length * XP.famousGame;
+  chess += Object.keys(s.chessEndgames).length * XP.endgame;
+  chess += DRILLS.filter((d) => s.chessDrills[d]).length * XP.drill;
+  // Звание: все упражнения уровня решены.
+  for (const level of CHESS_LEVELS) if (level.exercises.every((e) => s.chess[e.id]?.solvedAt)) chess += XP.rank;
+  let puzzles = 0;
+  for (const p of Object.values(s.chessPuzzles)) if (p.solvedAt) puzzles += XP.puzzle;
+  puzzles += Object.keys(s.chessOwnPuzzles).length * XP.ownPuzzle;
+  const quick = Object.values(s.quick).filter((score) => score >= QUICK_PASS).length * XP.quick;
+  return { total: math + chess + puzzles + quick, math, chess, puzzles, quick };
+}
+
 /** Весь опыт: по занятиям математикой и шахматами. */
 export function xpTotal(s: AppState): number {
-  let xp = 0;
-  for (const t of Object.values(s.tasks)) if (t.solvedAt) xp += XP.task;
-  for (const d of Object.values(s.days)) if (d.completedAt) xp += XP.day;
-  for (const e of Object.values(s.chess)) if (e.solvedAt) xp += XP.exercise;
-  for (const p of Object.values(s.chessPuzzles)) if (p.solvedAt) xp += XP.puzzle;
-  xp += Object.keys(s.chessOwnPuzzles).length * XP.ownPuzzle;
-  for (const g of s.chessGames) xp += XP.game + (g.result === "win" ? XP.win : 0);
-  xp += new Set(Object.keys(s.chessOpenings).map((k) => k.split(":")[0])).size * XP.opening;
-  xp += Object.keys(s.chessGamesViewed).length * XP.famousGame;
-  xp += Object.keys(s.chessEndgames).length * XP.endgame;
-  xp += Object.values(s.quick).filter((score) => score >= QUICK_PASS).length * XP.quick;
-  xp += DRILLS.filter((d) => s.chessDrills[d]).length * XP.drill;
-  // Звание: все упражнения уровня решены.
-  for (const level of CHESS_LEVELS) if (level.exercises.every((e) => s.chess[e.id]?.solvedAt)) xp += XP.rank;
-  return xp;
+  return xpBreakdown(s).total;
 }
 
 /** Опыт, нужный для уровня n (с первого): 0, 50, 150, 300, 500… — каждый следующий чуть дольше. */

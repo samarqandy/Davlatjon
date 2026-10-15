@@ -5,6 +5,7 @@ import { Card, cn } from "@/components/ui";
 import { useAccount } from "@/lib/account";
 import { useT } from "@/lib/i18n";
 import { api, errorText, usePoll } from "@/lib/onlineClient";
+import { updateSettings, useStore } from "@/lib/store";
 
 interface Profile {
   username: string;
@@ -18,6 +19,7 @@ export function OnlineControls() {
   const t = useT();
   const account = useAccount();
   const [error, setError] = useState<string | null>(null);
+  const ranked = useStore((s) => s.settings.leaderboard === true);
   const { data, set } = usePoll<{ profile: Profile | null }>(
     async () => {
       const res = await api<{ profile: Profile | null }>("/api/play/me");
@@ -117,6 +119,34 @@ export function OnlineControls() {
               </label>
             ))}
           </div>
+          <label className="flex cursor-pointer items-start gap-4 rounded-2xl border-2 border-line p-4" data-leaderboard-switch>
+            <span className="flex-1">
+              <span className="block font-extrabold">🏆 {t("Участвовать в общем рейтинге", "Umumiy reytingda qatnashish")}</span>
+              <span className="block text-[0.95rem] text-muted">
+                {t(
+                  "Другие дети увидят только имя в игре, аватарку и очки этого ребёнка — настоящего имени и возраста никто не увидит. Выключите — запись из рейтинга сразу исчезнет. Настройка относится к выбранному сейчас ребёнку.",
+                  "Boshqa bolalar faqat shu farzandning oʻyindagi ismi, avatari va ballarini koʻradi — haqiqiy ism va yoshni hech kim koʻrmaydi. Oʻchirsangiz, reytingdagi yozuv darhol yoʻqoladi. Sozlama hozir tanlangan farzandga tegishli.",
+                )}
+              </span>
+            </span>
+            <input
+              type="checkbox"
+              className="peer sr-only"
+              checked={ranked}
+              onChange={(e) => updateSettings({ leaderboard: e.target.checked })}
+            />
+            <span
+              className={cn(
+                "relative mt-1 h-7 w-12 shrink-0 rounded-full transition peer-focus-visible:ring-4 peer-focus-visible:ring-brand/30",
+                ranked ? "bg-brand" : "bg-black/15",
+              )}
+              aria-hidden
+            >
+              <span
+                className={cn("absolute top-1 h-5 w-5 rounded-full bg-white shadow transition-[left]", ranked ? "left-6" : "left-1")}
+              />
+            </span>
+          </label>
         </>
       )}
       {error && (
