@@ -3,6 +3,7 @@ import { PGlite } from "@electric-sql/pglite";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { checkStreak, streakAlive, timeControlOf } from "@/lib/online";
 import { playStore, type PlayStore, type Profile } from "@/lib/server/playStore";
+import type { XpBreakdown } from "@/lib/xp";
 
 let db: PGlite;
 let now: number;
@@ -21,7 +22,7 @@ beforeAll(async () => {
 beforeEach(async () => {
   now = 1_800_000_000_000;
   await db.exec(
-    "truncate lab_profiles, lab_friends, lab_games, lab_messages, lab_reads, lab_progress restart identity",
+    "truncate lab_profiles, lab_friends, lab_games, lab_messages, lab_reads, lab_scores, lab_progress restart identity",
   );
 });
 
@@ -237,5 +238,59 @@ describe("серия дней у друзей", () => {
     expect(streakAlive(day, n)).toBe(true);
     expect(streakAlive("2020-01-01", n)).toBe(false);
     expect(streakAlive(null, n)).toBe(false);
+  });
+});
+
+describe("рейтинг", () => {
+  const totals = (total: number, chess = total): XpBreakdown => ({ total, math: total - chess, chess, puzzles: 0, quick: 0 });
+  const WEEK = 7 * 86_400_000;
+
+  it("показывает только записанных детей, по убыванию очков, с фильтром по возрасту", async () => {
+    await user("u1", "anna_chess");
+    await user("u2", "bek_king");
+    await user("u3", "no_score");
+    await store.recordScore("u1", "u1", { avatar: "🦊", age: "7-9", totals: totals(100) });
+    await store.recordScore("u2", "u2", { avatar: null, age: "4-6", totals: totals(300, 0) });
+    const all = await store.leaderboard("u1", { scope: "all", category: "total", age: "all" });
+    expect(all.rows.map((r) => [r.rank, r.username, r.value, r.mine])).toEqual([
+      [1, "bek_king", 300, false],
+      [2, "anna_chess", 100, true],
+    ]);
+    expect(all.rows[1].best).toBe("chess");
+    expect(all.rows[0].avatar).toBeNull();
+    const chess = await store.leaderboard("u1", { scope: "all", category: "chess", age: "all" });
+    expect(chess.rows.map((r) => r.username)).toEqual(["anna_chess"]);
+    const small = await store.leaderboard("u1", { scope: "all", category: "total", age: "4-6" });
+    expect(small.rows.map((r) => r.username)).toEqual(["bek_king"]);
+  });
+
+  it("за неделю считает прирост; новая неделя обнуляет, пропущенная — тоже", async () => {
+    await user("u1", "anna_chess");
+    await user("u2", "bek_king");
+    await store.recordScore("u1", "u1", { avatar: null, age: "7-9", totals: totals(100) });
+    await store.recordScore("u2", "u2", { avatar: null, age: "7-9", totals: totals(100) });
+    await store.recordScore("u1", "u1", { avatar: null, age: "7-9", totals: totals(130) });
+    let week = await store.leaderboard("u1", { scope: "week", category: "total", age: "all" });
+    expect(week.rows.map((r) => [r.username, r.value])).toEqual([["anna_chess", 30]]);
+    now += WEEK;
+    week = await store.leaderboard("u1", { scope: "week", category: "total", age: "all" });
+    expect(week.rows).toEqual([]);
+    await store.recordScore("u1", "u1", { avatar: null, age: "7-9", totals: totals(150) });
+    week = await store.leaderboard("u1", { scope: "week", category: "total", age: "all" });
+    expect(week.rows.map((r) => [r.username, r.value])).toEqual([["anna_chess", 20]]);
+  });
+
+  it("убирает ребёнка по выключению и вместе с аккаунтом; свои места вне первых строк видны", async () => {
+    await user("u1", "anna_chess");
+    await user("u2", "bek_king");
+    await store.recordScore("u1", "u1", { avatar: null, age: "7-9", totals: totals(10) });
+    await store.recordScore("u2", "u2", { avatar: null, age: "7-9", totals: totals(20) });
+    const cut = await store.leaderboard("u1", { scope: "all", category: "total", age: "all" }, 1);
+    expect(cut.rows.map((r) => r.username)).toEqual(["bek_king"]);
+    expect(cut.mine.map((r) => [r.username, r.rank])).toEqual([["anna_chess", 2]]);
+    await store.removeScore("u2");
+    expect((await store.leaderboard("u1", { scope: "all", category: "total", age: "all" })).count).toBe(1);
+    await store.deleteAccount("u1");
+    expect((await store.leaderboard("u2", { scope: "all", category: "total", age: "all" })).count).toBe(0);
   });
 });

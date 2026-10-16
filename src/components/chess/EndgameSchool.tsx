@@ -25,7 +25,7 @@ export function EndgameSchool() {
 
   return (
     <div className="space-y-8">
-      <Link href="/chess" className="inline-flex items-center gap-1 text-sm font-extrabold text-brand hover:underline">
+      <Link href="/chess" className="inline-flex min-h-11 items-center gap-1 text-sm font-extrabold text-brand hover:underline">
         ← {t("Шахматная школа", "Shaxmat maktabi")}
       </Link>
       <header className="flex flex-wrap items-end justify-between gap-4">

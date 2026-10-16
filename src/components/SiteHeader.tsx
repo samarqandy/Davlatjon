@@ -8,7 +8,7 @@ import { LangSwitch } from "./LangSwitch";
 import { ProfileSwitcher } from "./ProfileSwitcher";
 import { LogoMark } from "./Logo";
 
-export function SiteHeader({ active }: { active?: "home" | "chess" | "problems" | "parent" }) {
+export function SiteHeader({ active }: { active?: "home" | "chess" | "problems" | "parent" | "leaderboard" }) {
   const t = useT();
   const link = (href: string, emoji: string, label: string, key: typeof active) => (
     <Link
@@ -44,6 +44,7 @@ export function SiteHeader({ active }: { active?: "home" | "chess" | "problems" 
         <nav className="hidden items-center gap-1 sm:flex" aria-label={t("Разделы", "Boʻlimlar")}>
           {link("/chess", "♞", t("Шахматы", "Shaxmat"), "chess")}
           {link("/my-problems", "✍️", t("Мои задачи", "Masalalarim"), "problems")}
+          {link("/leaderboard", "🏆", t("Рейтинг", "Reyting"), "leaderboard")}
           {link("/parent", "🔒", t("Родителям", "Ota-onalarga"), "parent")}
         </nav>
         {/* На телефоне нижнее меню — детское, поэтому вход для взрослых — маленький замок рядом с языком. */}

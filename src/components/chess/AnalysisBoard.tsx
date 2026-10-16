@@ -233,7 +233,7 @@ export function AnalysisBoard() {
 
   return (
     <div className="space-y-5">
-      <Link href="/chess" className="inline-flex items-center gap-1 text-sm font-extrabold text-brand hover:underline">
+      <Link href="/chess" className="inline-flex min-h-11 items-center gap-1 text-sm font-extrabold text-brand hover:underline">
         ← {t("Шахматная школа", "Shaxmat maktabi")}
       </Link>
       <header>

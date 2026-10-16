@@ -74,7 +74,7 @@ export function MiniDrills() {
     <div className="space-y-6">
       <Link
         href={current ? "/chess/drills" : "/chess"}
-        className="inline-flex items-center gap-1 text-sm font-extrabold text-brand hover:underline"
+        className="inline-flex min-h-11 items-center gap-1 text-sm font-extrabold text-brand hover:underline"
       >
         ← {current ? t("Все тренажёры", "Barcha trenajyorlar") : t("Шахматная школа", "Shaxmat maktabi")}
       </Link>

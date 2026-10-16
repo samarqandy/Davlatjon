@@ -48,7 +48,7 @@ export function FamousGamesList() {
   const viewed = useStore((s) => s.chessGamesViewed);
   return (
     <div className="space-y-6">
-      <Link href="/chess" className="inline-flex items-center gap-1 text-sm font-extrabold text-brand hover:underline">
+      <Link href="/chess" className="inline-flex min-h-11 items-center gap-1 text-sm font-extrabold text-brand hover:underline">
         ← {t("Шахматная школа", "Shaxmat maktabi")}
       </Link>
       <header>
@@ -164,7 +164,7 @@ export function GameReplay({ game: ruGame }: { game: FamousGame }) {
     <div className="space-y-5">
       <Link
         href="/chess/games"
-        className="inline-flex items-center gap-1 text-sm font-extrabold text-brand hover:underline"
+        className="inline-flex min-h-11 items-center gap-1 text-sm font-extrabold text-brand hover:underline"
       >
         ← {t("Все партии", "Barcha partiyalar")}
       </Link>

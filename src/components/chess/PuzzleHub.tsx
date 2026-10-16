@@ -91,7 +91,7 @@ export function PuzzleHub() {
 
   return (
     <div className="space-y-6">
-      <Link href="/chess" className="inline-flex items-center gap-1 text-sm font-extrabold text-brand hover:underline">
+      <Link href="/chess" className="inline-flex min-h-11 items-center gap-1 text-sm font-extrabold text-brand hover:underline">
         ← {t("Шахматная школа", "Shaxmat maktabi")}
       </Link>
       <header className="flex flex-wrap items-end justify-between gap-3">
@@ -366,7 +366,7 @@ function Stat({ value, label }: { value: number; label: string }) {
 function Back({ label }: { label?: string }) {
   const t = useT();
   return (
-    <button type="button" onClick={() => setHash("#all")} className="text-sm font-extrabold text-brand hover:underline">
+    <button type="button" onClick={() => setHash("#all")} className="inline-flex min-h-11 items-center text-sm font-extrabold text-brand hover:underline">
       {label ?? t("← Все задачи", "← Barcha masalalar")}
     </button>
   );

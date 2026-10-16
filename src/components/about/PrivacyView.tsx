@@ -49,6 +49,10 @@ export function PrivacyView({ contact }: { contact: string }) {
           "Случайных соперников нет: играть и писать можно только с теми, кого ребёнок добавил в друзья. Родитель в настройках может выключить игру, переписку и поиск по имени.",
           "Tasodifiy raqiblar yoʻq: faqat bola doʻstlar roʻyxatiga qoʻshganlar bilan oʻynash va yozish mumkin. Ota-ona sozlamalarda oʻyin, yozishma va ism boʻyicha qidiruvni oʻchirishi mumkin.",
         ),
+        t(
+          "Общий рейтинг включает только родитель, для каждого ребёнка отдельно. Тогда в таблице видны имя в игре, аватарка, уровень и очки (за неделю и за всё время). Настоящее имя и возраст не показываются; возраст нужен только для группы 4–6, 7–9 или 10+. Выключили участие или удалили аккаунт — запись из рейтинга исчезает сразу.",
+          "Umumiy reytingni faqat ota-ona yoqadi, har bir farzand uchun alohida. Shunda jadvalda oʻyindagi ism, avatar, daraja va ballar (hafta va butun davr uchun) koʻrinadi. Haqiqiy ism va yosh koʻrsatilmaydi; yosh faqat 4–6, 7–9 yoki 10+ guruhi uchun kerak. Ishtirokni oʻchirsangiz yoki hisobni oʻchirsangiz, reytingdagi yozuv darhol yoʻqoladi.",
+        ),
       ],
     },
     {

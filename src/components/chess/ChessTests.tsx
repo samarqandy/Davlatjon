@@ -66,7 +66,7 @@ function Overview() {
   const state = useStore((s) => s);
   return (
     <>
-      <Link href="/chess" className="inline-flex items-center gap-1 text-sm font-extrabold text-brand hover:underline">
+      <Link href="/chess" className="inline-flex min-h-11 items-center gap-1 text-sm font-extrabold text-brand hover:underline">
         {t("← Шахматная школа", "← Shaxmat maktabi")}
       </Link>
       <header className="rounded-[2rem] bg-linear-to-br from-[#3b2f23] via-[#5b4632] to-[#7c5a33] p-6 text-white shadow-lift sm:p-8">
@@ -133,7 +133,7 @@ function TestRun({ test, index }: { test: ChessTest; index: number | null }) {
       <button
         type="button"
         onClick={() => setHash("#")}
-        className="inline-flex items-center gap-1 text-sm font-extrabold text-brand hover:underline"
+        className="inline-flex min-h-11 items-center gap-1 text-sm font-extrabold text-brand hover:underline"
       >
         {t("← Все тесты", "← Barcha testlar")}
       </button>

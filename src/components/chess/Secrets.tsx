@@ -55,7 +55,7 @@ export function Secrets() {
 
   return (
     <div className="space-y-8">
-      <Link href="/chess" className="inline-flex items-center gap-1 text-sm font-extrabold text-brand hover:underline">
+      <Link href="/chess" className="inline-flex min-h-11 items-center gap-1 text-sm font-extrabold text-brand hover:underline">
         {t("← Шахматная школа", "← Shaxmat maktabi")}
       </Link>
       <header>
@@ -69,7 +69,7 @@ export function Secrets() {
             "Xorazm va Buxoro olimlari, «Shohnoma» rivoyatlari, Temurning katta shaxmati, Oʻzbekistonlik chempionlar, kompyuterlar, kosmos va buyuk shaxmatchilarning fikrlari. Savolni bos — javobini bilib olasan.",
           )}
         </p>
-        <nav className="mt-3 flex flex-wrap gap-1.5" aria-label={t("Разделы", "Boʻlimlar")}>
+        <nav className="mt-3 flex flex-wrap gap-1.5" aria-label={t("Разделы тайн", "Sirlar boʻlimlari")}>
           <a
             href="#stories"
             className="rounded-xl bg-white px-3 py-1.5 text-sm font-extrabold text-brand-dark shadow-sm"

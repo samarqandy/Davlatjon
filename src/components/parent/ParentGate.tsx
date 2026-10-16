@@ -88,7 +88,7 @@ function PinForm({ mode, compact }: { mode: "create" | "enter"; compact: boolean
         <div className="text-5xl" aria-hidden>
           🔒
         </div>
-        <h2 className="mt-2 text-2xl font-black">{t("Раздел для взрослых", "Kattalar uchun boʻlim")}</h2>
+        <h1 className="mt-2 text-2xl font-black">{t("Раздел для взрослых", "Kattalar uchun boʻlim")}</h1>
         <p className="mt-1 text-muted">
           {mode === "create"
             ? t(

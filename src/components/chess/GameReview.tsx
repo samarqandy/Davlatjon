@@ -95,7 +95,7 @@ function ReviewList({ notFound }: { notFound: boolean }) {
   const list = hydrated ? games.filter(canReview) : [];
   return (
     <div className="space-y-6">
-      <Link href="/chess" className="inline-flex items-center gap-1 text-sm font-extrabold text-brand hover:underline">
+      <Link href="/chess" className="inline-flex min-h-11 items-center gap-1 text-sm font-extrabold text-brand hover:underline">
         ← {t("Шахматная школа", "Shaxmat maktabi")}
       </Link>
       <header>
@@ -406,7 +406,7 @@ function ReviewBody({
           <MoveComment cur={cur} hero={hero} />
           <Link
             href={`/chess/analysis#fen=${encodeURIComponent(fen)}`}
-            className="inline-flex items-center gap-1 text-sm font-extrabold text-brand hover:underline"
+            className="inline-flex min-h-11 items-center gap-1 text-sm font-extrabold text-brand hover:underline"
           >
             🧪 {t("Разобрать эту позицию на доске анализа", "Bu pozitsiyani tahlil taxtasida koʻrib chiqish")}
           </Link>
