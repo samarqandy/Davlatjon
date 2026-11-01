@@ -9,7 +9,7 @@ import { Chess, type Color, type Move, type PieceSymbol, type Square } from "che
 const VALUE: Record<PieceSymbol, number> = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 100 };
 
 export type TacticGoal =
-  "double" | "pin" | "skewer" | "discover" | "take" | "block" | "run" | "enpassant" | "stalemate";
+  "double" | "pin" | "skewer" | "discover" | "take" | "block" | "run" | "enpassant" | "stalemate" | "check";
 
 const other = (c: Color): Color => (c === "w" ? "b" : "w");
 
@@ -103,6 +103,7 @@ const CHECKS: Record<TacticGoal, (after: Chess, m: Move, before: Chess) => boole
   run: (_a, m, before) => m.piece === "k" && !m.captured && before.inCheck(),
   enpassant: (_a, m) => m.isEnPassant(),
   stalemate: (after) => after.isStalemate(),
+  check: (after) => after.inCheck(),
   double: isDouble,
   pin: isPin,
   skewer: isSkewer,

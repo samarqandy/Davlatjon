@@ -23,8 +23,10 @@ import { OPENINGS, OPENING_CATEGORIES, OPENING_PRINCIPLES } from "./openings";
 import { PUZZLES, PUZZLE_THEMES } from "./puzzles";
 import { DIALOGUES, NEW_VIEWS, THOUGHTS } from "./insights";
 import { DID_YOU_KNOW, DILARAM, PIECE_NAMES_RU, RIDDLES, SAGES, SECRETS, TURK_OPTIONS, TURK_REVEAL } from "./secrets";
+import { COURSE_1, COURSE_1_LESSONS, COURSE_1_MODULES } from "./course";
 import { TACTICS, TACTICS_SCHOOL } from "./tactics";
 import { CHESS_TESTS } from "./tests";
+import type { ChessExercise, ChessTactic } from "./types";
 import { CHESS_UZ } from "./uz";
 
 export const CHESS_RU = {
@@ -64,6 +66,9 @@ export const CHESS_RU = {
   tactics: TACTICS,
   tacticsSchool: TACTICS_SCHOOL,
   tests: CHESS_TESTS,
+  course1: COURSE_1,
+  course1Modules: COURSE_1_MODULES,
+  course1Lessons: COURSE_1_LESSONS,
 };
 
 export type ChessContent = typeof CHESS_RU;
@@ -89,4 +94,18 @@ export function chessImageIn(lang: Lang, id: string | undefined): ChessImage | u
 /** Картинки по списку id — те, что есть на диске, с подписями на нужном языке. */
 export function chessImagesIn(lang: Lang, ids: string[] | undefined): ChessImage[] {
   return (ids ?? []).map((id) => chessImageIn(lang, id)).filter((i): i is ChessImage => !!i);
+}
+
+/**
+ * Уроки курса с готовым списком упражнений: сначала подключённые по id (refs) из уровней и тактики — на том же языке,
+ * потом собственные упражнения урока. Неизвестный id — ошибка контента, её ловят тесты.
+ */
+export function courseLessons(content: ChessContent): ChessTactic[] {
+  const pool = new Map<string, ChessExercise>();
+  for (const l of content.levels) for (const e of l.exercises) pool.set(e.id, e);
+  for (const t of content.tactics) for (const e of t.exercises) pool.set(e.id, e);
+  return content.course1Lessons.map(({ refs, ...lesson }) => ({
+    ...lesson,
+    exercises: [...refs.flatMap((id) => pool.get(id) ?? []), ...lesson.exercises],
+  }));
 }

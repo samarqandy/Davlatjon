@@ -1,5 +1,6 @@
 "use client";
 
+import { courseLessons } from "@/content/chess/content";
 import Link from "next/link";
 import { ChildNameBanner } from "@/components/home/ChildNameBanner";
 import { TodayCard } from "@/components/progress/TodayCard";
@@ -23,7 +24,8 @@ export function ChessSchool() {
   const hydrated = useHydrated();
   const t = useT();
   const lang = useLang();
-  const { levels, school, puzzles, openings, games, secrets, riddles, endgames, tactics, tests } = useChess();
+  const content = useChess();
+  const { levels, school, puzzles, openings, games, secrets, riddles, endgames, tactics, tests } = content;
   const state = useStore((s) => s);
   const statuses = levelStatuses(levels, state);
   const rank = hydrated ? currentRank(levels, state) : null;
@@ -40,6 +42,11 @@ export function ChessSchool() {
   const tacticsTotal = tactics.reduce((n, x) => n + x.exercises.length, 0);
   const tacticsSolved = hydrated
     ? tactics.reduce((n, x) => n + x.exercises.filter((e) => state.chess[e.id]?.solvedAt).length, 0)
+    : 0;
+  const course = courseLessons(content);
+  const courseTotal = course.reduce((n, x) => n + x.exercises.length, 0);
+  const courseSolved = hydrated
+    ? course.reduce((n, x) => n + x.exercises.filter((e) => state.chess[e.id]?.solvedAt).length, 0)
     : 0;
   const testsTotal = tests.reduce((n, x) => n + x.exercises.length, 0);
   const testsDone = hydrated
@@ -63,6 +70,18 @@ export function ChessSchool() {
     : null;
 
   const sections = [
+    {
+      href: "/chess/course",
+      emoji: "🪜",
+      title: content.course1.title,
+      text: t(
+        "Урок за уроком: доска и запись ходов, каждая фигура, ценность фигур, шах и защита от шаха.",
+        "Darsma-dars: taxta va yurishlarni yozish, har bir dona, donalar qiymati, shoh berish va undan himoya.",
+      ),
+      stat: hydrated
+        ? t(`${courseSolved} из ${courseTotal} упражнений`, `${courseTotal} ta mashqdan ${courseSolved} tasi`)
+        : t(`${course.length} уроков`, `${course.length} ta dars`),
+    },
     {
       href: "/chess/play",
       emoji: "🤖",
@@ -269,7 +288,7 @@ export function ChessSchool() {
   ];
 
   // Сначала то, с чего ребёнок обычно начинает; остальное — под «Ещё разделы».
-  const first = ["/chess/play", "/chess/puzzles", "/chess/secrets", "/chess/drills"];
+  const first = ["/chess/course", "/chess/play", "/chess/puzzles", "/chess/secrets"];
   const ordered = [
     ...first.map((href) => sections.find((x) => x.href === href)!),
     ...sections.filter((x) => !first.includes(x.href)),

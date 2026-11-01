@@ -64,7 +64,7 @@ export type ChessExercise =
    * double — безопасный двойной удар (вилка без шаха), pin — связка с королём, skewer — шах, за которым стоит ценная фигура,
    * discover — открытый шах, при котором ходившая фигура ещё и берёт фигуру,
    * take / block / run — три способа защиты от шаха (взять шахующую фигуру, закрыться, уйти королём),
-   * enpassant — взятие на проходе, stalemate — ход, после которого пат.
+   * enpassant — взятие на проходе, stalemate — ход, после которого пат, check — любой ход, который объявляет шах.
    */
   | (ExerciseBase & {
       kind: "move";
@@ -83,7 +83,8 @@ export type ChessExercise =
         | "block"
         | "run"
         | "enpassant"
-        | "stalemate";
+        | "stalemate"
+        | "check";
       solutions: string[];
     })
   /** Нажать на нужную клетку (фигуру или звёздочку). */
@@ -138,6 +139,21 @@ export interface ChessTactic {
   lesson: ChessLessonCard[];
   terms: ChessTerm[];
   exercises: ChessExercise[];
+}
+
+/**
+ * Урок курса по ступеням: как тема тактики, плюс refs — упражнения из уровней и тактики, которые уже подходят к уроку.
+ * Они показываются первыми и делят с исходным уроком прогресс (он хранится по id упражнения).
+ */
+export interface ChessCourseLesson extends ChessTactic {
+  refs: string[];
+}
+
+/** Модуль курса: несколько уроков подряд под одним заголовком. */
+export interface ChessCourseModule {
+  id: string;
+  title: string;
+  lessons: string[];
 }
 
 /** Контрольный тест: двенадцать вопросов подряд без подсказок; прогресс хранится как у упражнений (по id). */

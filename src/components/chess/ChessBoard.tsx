@@ -188,7 +188,12 @@ export function ChessBoard({
   const coords = notation === "auto" ? maxWidth >= COORDS_MIN_WIDTH : notation;
   const { files, ranks } = coordLabels(cols, rows, orientation);
   const turn = typeof position === "string" ? position.split(" ")[1] : undefined;
-  const turnSide = showTurn && cols === 8 && rows === 8 && (turn === "w" || turn === "b") ? turn : null;
+  // Без обоих королей это учебная расстановка, а не позиция партии: «чей ход» там не важен.
+  const placement = typeof position === "string" ? position.split(" ")[0] : "";
+  const turnSide =
+    showTurn && cols === 8 && rows === 8 && (turn === "w" || turn === "b") && /K/.test(placement) && /k/.test(placement)
+      ? turn
+      : null;
   const turnText = turnSide === "w" ? t("ходят белые", "oqlar yuradi") : t("ходят чёрные", "qoralar yuradi");
   const dragAllowed = (square: string, piece: string) => {
     if (piece === "star") return false;

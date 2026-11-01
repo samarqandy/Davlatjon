@@ -6,17 +6,21 @@ import { Button, cn, ProgressBar } from "@/components/ui";
 import type { ChessTactic } from "@/content/chess/types";
 import { useTitleTranslation } from "@/lib/docTitle";
 import { useLang, useT } from "@/lib/i18n";
+import { useEffect, useRef } from "react";
 import { useStore } from "@/lib/store";
 import { useChess } from "@/lib/useChess";
 import { setHash, useHash } from "@/lib/useHash";
 import { ChessExerciseView } from "./ChessExercises";
 import { ChessLesson } from "./ChessLesson";
 
-type Tab = "lesson" | "exercises" | "dictionary";
+export type Tab = "lesson" | "exercises" | "dictionary";
 
 /** Адрес вида «#fork», «#fork-exercises», «#fork-exercise-3», «#fork-dictionary». */
-function parseHash(hash: string, tactics: ChessTactic[]): { topic: ChessTactic | null; tab: Tab; exercise: number } {
-  const m = hash.match(/^#([a-z-]+?)(?:-(exercises|dictionary)|-exercise-(\d+))?$/);
+export function parseHash(
+  hash: string,
+  tactics: ChessTactic[],
+): { topic: ChessTactic | null; tab: Tab; exercise: number } {
+  const m = hash.match(/^#([a-z0-9-]+?)(?:-(exercises|dictionary)|-exercise-(\d+))?$/);
   const topic = m ? (tactics.find((x) => x.id === m[1]) ?? null) : null;
   if (!m || !topic) return { topic: null, tab: "lesson", exercise: 0 };
   if (m[3])
@@ -27,18 +31,30 @@ function parseHash(hash: string, tactics: ChessTactic[]): { topic: ChessTactic |
 }
 
 export function TacticsSchool() {
+  const t = useT();
   const { tactics, tacticsSchool } = useChess();
   const hash = useHash();
   const parsed = parseHash(hash, tactics);
   useTitleTranslation("Тактика", tacticsSchool.title);
   return (
     <div className="space-y-6">
-      {parsed.topic ? <TopicView topic={parsed.topic} tab={parsed.tab} exercise={parsed.exercise} /> : <Overview />}
+      {parsed.topic ? (
+        <TopicView
+          topic={parsed.topic}
+          tab={parsed.tab}
+          exercise={parsed.exercise}
+          siblings={tactics}
+          backLabel={t("← Вся тактика", "← Butun taktika")}
+          lessonKeyPrefix="tac-"
+        />
+      ) : (
+        <Overview />
+      )}
     </div>
   );
 }
 
-function useSolved(topic: ChessTactic): { ids: Set<string>; count: number } {
+export function useSolved(topic: ChessTactic): { ids: Set<string>; count: number } {
   const state = useStore((s) => s);
   const ids = new Set(topic.exercises.filter((e) => state.chess[e.id]?.solvedAt).map((e) => e.id));
   return { ids, count: ids.size };
@@ -95,18 +111,46 @@ function TopicCard({ topic }: { topic: ChessTactic }) {
   );
 }
 
-function TopicView({ topic, tab, exercise }: { topic: ChessTactic; tab: Tab; exercise: number }) {
+/**
+ * Тема с уроком, упражнениями и словариком. Общая для тактики и курса по ступеням:
+ * siblings — соседние темы (для кнопки «Следующая тема»), lessonKeyPrefix — ключ прогресса карточек урока.
+ */
+export function TopicView({
+  topic,
+  tab,
+  exercise,
+  siblings,
+  backLabel,
+  lessonKeyPrefix,
+  kicker,
+}: {
+  topic: ChessTactic;
+  tab: Tab;
+  exercise: number;
+  siblings: ChessTactic[];
+  backLabel: string;
+  lessonKeyPrefix: string;
+  /** Строка над заголовком, например «Урок 4». */
+  kicker?: string;
+}) {
   const t = useT();
   const lang = useLang();
-  const { tactics } = useChess();
   const { ids, count } = useSolved(topic);
   const total = topic.exercises.length;
-  const index = tactics.findIndex((x) => x.id === topic.id);
-  const next = tactics[index + 1];
+  const index = siblings.findIndex((x) => x.id === topic.id);
+  const next = siblings[index + 1];
 
+  // К упражнениям, а не к началу страницы — после отрисовки (из урока блока упражнений ещё нет).
+  const scrollToExercises = useRef(false);
+  useEffect(() => {
+    if (!scrollToExercises.current || tab !== "exercises") return;
+    scrollToExercises.current = false;
+    const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    document.getElementById("exercises-top")?.scrollIntoView({ block: "start", behavior: reduce ? "auto" : "smooth" });
+  }, [tab, exercise]);
   const goExercise = (i: number) => {
+    scrollToExercises.current = true;
     setHash(`#${topic.id}-exercise-${i + 1}`, { keepScroll: true });
-    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
@@ -116,12 +160,13 @@ function TopicView({ topic, tab, exercise }: { topic: ChessTactic; tab: Tab; exe
         onClick={() => setHash("#")}
         className="inline-flex min-h-11 items-center gap-1 text-sm font-extrabold text-brand hover:underline"
       >
-        {t("← Вся тактика", "← Butun taktika")}
+        {backLabel}
       </button>
       <header className="rounded-[2rem] bg-linear-to-br from-[#3b2f23] via-[#5b4632] to-[#7c5a33] p-5 text-white shadow-lift sm:p-7">
         <p className="text-4xl" aria-hidden>
           {topic.emoji}
         </p>
+        {kicker && <p className="text-sm font-extrabold tracking-wide text-white/80 uppercase">{kicker}</p>}
         <h1 className="text-3xl leading-tight font-black sm:text-4xl">{topic.title}</h1>
         <p className="mt-2 text-lg text-white/90">{topic.idea}</p>
         <div className="mt-4 flex items-center gap-3">
@@ -148,7 +193,10 @@ function TopicView({ topic, tab, exercise }: { topic: ChessTactic; tab: Tab; exe
           <button
             key={id}
             type="button"
-            onClick={() => setHash(href, { keepScroll: true })}
+            onClick={() => {
+              if (id === "exercises") scrollToExercises.current = true;
+              setHash(href, { keepScroll: true });
+            }}
             aria-current={tab === id ? "page" : undefined}
             className={cn(
               "rounded-xl px-2 py-2.5 text-sm leading-tight font-extrabold transition sm:px-4 sm:text-base",
@@ -161,12 +209,12 @@ function TopicView({ topic, tab, exercise }: { topic: ChessTactic; tab: Tab; exe
       </nav>
 
       {tab === "lesson" && (
-        <ChessLesson levelId={`tac-${topic.id}`} cards={topic.lesson} onDone={() => goExercise(0)} />
+        <ChessLesson levelId={`${lessonKeyPrefix}${topic.id}`} cards={topic.lesson} onDone={() => goExercise(0)} />
       )}
 
       {tab === "exercises" && (
         <section className="space-y-4" aria-label={t("Упражнения", "Mashqlar")}>
-          <div className="flex flex-wrap gap-1.5">
+          <div id="exercises-top" className="flex scroll-mt-20 flex-wrap gap-1.5">
             {topic.exercises.map((e, i) => (
               <button
                 key={e.id}
