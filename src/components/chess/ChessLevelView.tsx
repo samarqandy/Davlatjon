@@ -1,5 +1,6 @@
 "use client";
 
+import { currentScrollBehavior } from "@/lib/useMotion";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { RichText } from "@/components/RichText";
@@ -55,8 +56,7 @@ export function ChessLevelView({ levelId }: { levelId: string }) {
   useEffect(() => {
     if (!scrollToExercises.current || tab !== "exercises") return;
     scrollToExercises.current = false;
-    const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-    document.getElementById("exercises-top")?.scrollIntoView({ block: "start", behavior: reduce ? "auto" : "smooth" });
+    document.getElementById("exercises-top")?.scrollIntoView({ block: "start", behavior: currentScrollBehavior() });
   }, [tab, exercise]);
   const goExercise = (i: number) => {
     scrollToExercises.current = true;

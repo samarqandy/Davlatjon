@@ -147,6 +147,8 @@ export interface ChessTactic {
  */
 export interface ChessCourseLesson extends ChessTactic {
   refs: string[];
+  /** Урок о фигуре: значок — сама фигура (как на доске), а не эмодзи. */
+  piece?: BoardPiece;
 }
 
 /** Модуль курса: несколько уроков подряд под одним заголовком. */

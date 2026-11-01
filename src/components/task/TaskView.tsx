@@ -1,5 +1,6 @@
 "use client";
 
+import { currentScrollBehavior } from "@/lib/useMotion";
 import { useEffect } from "react";
 import { AnswerPanel } from "@/components/answers/AnswerPanel";
 import { ListenButton } from "@/components/ListenButton";
@@ -92,7 +93,9 @@ export function TaskView({ task, number, total }: { task: Task; number: number; 
                   type="button"
                   data-hint-jump
                   onClick={() =>
-                    document.getElementById("hints")?.scrollIntoView({ behavior: "smooth", block: "center" })
+                    document
+                      .getElementById("hints")
+                      ?.scrollIntoView({ behavior: currentScrollBehavior(), block: "center" })
                   }
                   className="inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-sun-soft px-3.5 text-sm font-extrabold text-[#7a4b00] lg:hidden"
                 >

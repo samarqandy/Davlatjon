@@ -1,5 +1,6 @@
 "use client";
 
+import { currentScrollBehavior } from "@/lib/useMotion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -70,7 +71,7 @@ export function DaySession({
 
   const go = (s: number) => {
     setHash(hashForStep(s, total), { keepScroll: true });
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.scrollTo({ top: 0, behavior: currentScrollBehavior() });
   };
   // Малышам после третьей и шестой задачи — спокойная остановка, если дальше ещё есть задачи
   // и они в самом деле поработали: хотя бы две из трёх последних задач решены.
@@ -78,7 +79,7 @@ export function DaySession({
     const worked = [step - 1, step - 2, step - 3].filter((i) => i >= 0 && solved(i)).length >= 2;
     if (young && worked && !resting && REST_AFTER.includes(step) && step < total) {
       setHash(`#rest-${step}`, { keepScroll: true });
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      window.scrollTo({ top: 0, behavior: currentScrollBehavior() });
     } else go(step + 1);
   };
 
@@ -117,6 +118,7 @@ export function DaySession({
 
       {step >= 1 && step <= total && !resting && (
         <nav
+          data-day-nav
           className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-white/95 backdrop-blur"
           aria-label={t("Переход между задачами", "Masalalar orasida oʻtish")}
         >

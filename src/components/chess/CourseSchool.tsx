@@ -10,6 +10,7 @@ import { useT } from "@/lib/i18n";
 import { useHydrated } from "@/lib/store";
 import { useChess } from "@/lib/useChess";
 import { setHash, useHash } from "@/lib/useHash";
+import { PieceIcon } from "./ChessBoard";
 import { parseHash, TopicView, useSolved } from "./TacticsSchool";
 
 /**
@@ -43,7 +44,7 @@ export function CourseSchool() {
   );
 }
 
-function Overview({ lessons }: { lessons: ChessTactic[] }) {
+function Overview({ lessons }: { lessons: (ChessTactic & { piece?: string })[] }) {
   const t = useT();
   const { course1, course1Modules } = useChess();
   const byId = new Map(lessons.map((l, i) => [l.id, { lesson: l, n: i + 1 }]));
@@ -65,7 +66,7 @@ function Overview({ lessons }: { lessons: ChessTactic[] }) {
           <h2 id={`module-${m.id}`} className="text-2xl font-black">
             <span className="text-muted">{mi + 1}.</span> {m.title}
           </h2>
-          <ol className="grid gap-2 sm:grid-cols-2">
+          <ol className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             {m.lessons.flatMap((id) => {
               const item = byId.get(id);
               return item ? [<LessonRow key={id} lesson={item.lesson} n={item.n} />] : [];
@@ -77,14 +78,14 @@ function Overview({ lessons }: { lessons: ChessTactic[] }) {
   );
 }
 
-function LessonRow({ lesson, n }: { lesson: ChessTactic; n: number }) {
+function LessonRow({ lesson, n }: { lesson: ChessTactic & { piece?: string }; n: number }) {
   const t = useT();
   const hydrated = useHydrated();
   const { count } = useSolved(lesson);
   const total = lesson.exercises.length;
   const done = hydrated && total > 0 && count === total;
   return (
-    <li>
+    <li className="min-w-0">
       <button
         type="button"
         data-course-lesson={lesson.id}
@@ -94,14 +95,20 @@ function LessonRow({ lesson, n }: { lesson: ChessTactic; n: number }) {
           done ? "border-mint/50" : "border-transparent",
         )}
       >
-        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-soft text-2xl" aria-hidden>
-          {lesson.emoji}
+        <span
+          className={cn(
+            "grid h-11 w-11 shrink-0 place-items-center rounded-xl text-2xl",
+            lesson.piece ? "bg-[#f0d9b5]" : "bg-brand-soft",
+          )}
+          aria-hidden
+        >
+          {lesson.piece ? <PieceIcon piece={lesson.piece} className="h-9 w-9" /> : lesson.emoji}
         </span>
         <span className="min-w-0 flex-1">
           <span className="block text-xs font-extrabold tracking-wide text-muted uppercase">
             {t(`Урок ${n}`, `${n}-dars`)}
           </span>
-          <span className="block truncate text-lg font-black">{lesson.title}</span>
+          <span className="line-clamp-2 text-lg leading-tight font-black text-pretty">{lesson.title}</span>
           <span className="mt-1 flex items-center gap-2">
             <ProgressBar value={hydrated ? count : 0} max={total} className="flex-1" />
             <span className="text-xs font-extrabold whitespace-nowrap text-muted">

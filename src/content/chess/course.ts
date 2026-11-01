@@ -183,6 +183,7 @@ export const COURSE_1_LESSONS: ChessCourseLesson[] = [
   },
   {
     id: "c1-rook",
+    piece: "wR",
     emoji: "🏰",
     title: "Ладья",
     idea: "Ладья ходит по горизонталям и вертикалям на любое число клеток.",
@@ -202,6 +203,7 @@ export const COURSE_1_LESSONS: ChessCourseLesson[] = [
   },
   {
     id: "c1-bishop",
+    piece: "wB",
     emoji: "⛪",
     title: "Слон",
     idea: "Слон ходит по диагоналям и никогда не меняет цвет клетки.",
@@ -221,6 +223,7 @@ export const COURSE_1_LESSONS: ChessCourseLesson[] = [
   },
   {
     id: "c1-queen",
+    piece: "wQ",
     emoji: "👑",
     title: "Ферзь",
     idea: "Ферзь ходит как ладья и слон вместе — это самая сильная фигура.",
@@ -240,6 +243,7 @@ export const COURSE_1_LESSONS: ChessCourseLesson[] = [
   },
   {
     id: "c1-knight",
+    piece: "wN",
     emoji: "🐴",
     title: "Конь",
     idea: "Конь прыгает буквой «Г» и перепрыгивает через фигуры.",
@@ -259,6 +263,7 @@ export const COURSE_1_LESSONS: ChessCourseLesson[] = [
   },
   {
     id: "c1-king",
+    piece: "wK",
     emoji: "🤴",
     title: "Король",
     idea: "Король ходит на одну клетку в любую сторону и не встаёт под удар.",
@@ -290,6 +295,7 @@ export const COURSE_1_LESSONS: ChessCourseLesson[] = [
   },
   {
     id: "c1-pawn",
+    piece: "wP",
     emoji: "♟️",
     title: "Пешка",
     idea: "Пешка ходит только вперёд, а бьёт наискосок.",

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Mascot } from "@/components/Mascot";
 import { cn } from "@/components/ui";
 import { useTaskId } from "@/components/task/TaskContext";
@@ -8,6 +8,7 @@ import { feedbackMood } from "@/lib/anim/mood";
 import { praiseCue, retryCue } from "@/lib/feedback";
 import { useLang } from "@/lib/i18n";
 import { useStore } from "@/lib/store";
+import { scrollBehavior } from "@/lib/motion";
 import { useMotionAllowed } from "@/lib/useMotion";
 import { cue, type Cue } from "@/lib/voice";
 
@@ -54,11 +55,19 @@ export function Feedback({
   const box = useRef<HTMLDivElement>(null);
   // Сколько неверных проверок подряд было до этого ответа: от этого зависит, за что хвалим и что советуем.
   const retries = useRef(0);
+  // Каждый новый ответ (новый объект состояния) — новая попытка, даже с тем же текстом: снова анимация, голос
+  // и объявление для экранного диктора. Иначе повторный такой же неверный ход оставался без ответа.
+  const [seen, setSeen] = useState(state);
+  const [attempt, setAttempt] = useState(0);
+  if (state !== seen) {
+    setSeen(state);
+    if (state) setAttempt(attempt + 1);
+  }
   useEffect(() => {
     if (!text) return;
     if (silent) return;
     // Ответ не должен прятаться под нижней панелью: подкручиваем страницу, если он ниже видимого.
-    box.current?.scrollIntoView?.({ block: "nearest", behavior: "smooth" });
+    box.current?.scrollIntoView?.({ block: "nearest", behavior: scrollBehavior(motion) });
     if (tone === "success") {
       // «мат» — по-русски, «mot» — по-узбекски.
       cue(
@@ -71,14 +80,17 @@ export function Feedback({
     }
     // hints читаем в момент ответа; смена числа подсказок сама по себе реплику не вызывает.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tone, text, sub, voice, lang, context, silent]);
+  }, [attempt, tone, text, sub, voice, lang, context, silent]);
   return (
     <div aria-live="polite" className={className}>
       {state && (
         <div
-          key={state.text}
+          key={`${state.text}#${attempt}`}
           ref={box}
-          className={cn("flex animate-pop scroll-mb-28 gap-3 rounded-2xl border-2 px-4 py-3", STYLES[state.tone])}
+          className={cn(
+            "flex animate-pop scroll-mb-[calc(var(--bottom-bar,0px)+1rem)] gap-3 rounded-2xl border-2 px-4 py-3",
+            STYLES[state.tone],
+          )}
         >
           {state.tone === "info" ? (
             <span className="relative text-2xl leading-none" aria-hidden>

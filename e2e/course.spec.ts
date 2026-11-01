@@ -68,3 +68,40 @@ test("курс по-узбекски: заголовки и уроки на уз
   await expect(page.getByText("14-dars")).toBeVisible();
   expect(await page.locator("main").innerText()).not.toMatch(/[А-Яа-яЁё]/);
 });
+
+test("курс на узком телефоне: страница не шире экрана, длинные названия переносятся", async ({ browser }) => {
+  for (const lang of ["ru", "uz"] as const) {
+    const ctx = await browser.newContext({ viewport: { width: 320, height: 720 }, isMobile: true, hasTouch: true });
+    const page = await ctx.newPage();
+    await prepare(page, lang);
+    await page.goto("/chess/course");
+    await expect(page.locator('[data-course-lesson="c1-lines"]')).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
+    await ctx.close();
+  }
+});
+
+test("курс: повтор того же неверного хода снова показывает ответ (новая карточка)", async ({ page }) => {
+  await prepare(page);
+  await page.goto("/chess/course#c1-check-exercise-2");
+  await square(page, "c1-check-rook", "a1");
+  await square(page, "c1-check-rook", "a5");
+  const card = page.getByText("Это не шах.");
+  await expect(card).toBeVisible();
+  await card.evaluate((el) => el.setAttribute("data-old", "1"));
+  await page.waitForTimeout(1900);
+  await square(page, "c1-check-rook", "a1");
+  await square(page, "c1-check-rook", "a5");
+  await expect(page.getByText("Это не шах.")).toBeVisible();
+  await expect(page.locator("[data-old]")).toHaveCount(0);
+});
+
+test("школа: под приветствием — карточка следующего урока курса", async ({ page }) => {
+  await prepare(page);
+  await page.goto("/chess");
+  const next = page.locator("[data-course-continue]");
+  await expect(next).toContainText("урок 1 из");
+  await expect(next).toContainText("Шахматная партия");
+  await next.click();
+  await expect(page).toHaveURL(/\/chess\/course#c1-game$/);
+});

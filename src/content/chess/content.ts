@@ -100,7 +100,7 @@ export function chessImagesIn(lang: Lang, ids: string[] | undefined): ChessImage
  * Уроки курса с готовым списком упражнений: сначала подключённые по id (refs) из уровней и тактики — на том же языке,
  * потом собственные упражнения урока. Неизвестный id — ошибка контента, её ловят тесты.
  */
-export function courseLessons(content: ChessContent): ChessTactic[] {
+export function courseLessons(content: ChessContent): (ChessTactic & { piece?: string })[] {
   const pool = new Map<string, ChessExercise>();
   for (const l of content.levels) for (const e of l.exercises) pool.set(e.id, e);
   for (const t of content.tactics) for (const e of t.exercises) pool.set(e.id, e);

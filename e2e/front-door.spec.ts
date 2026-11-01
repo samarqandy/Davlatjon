@@ -133,3 +133,23 @@ test("с подключённым входом в меню появляется 
   await skip.press("Enter");
   await expect(page.locator("main#main")).toBeFocused();
 });
+
+test("первое знакомство — настоящее модальное окно: фокус на заголовке, Tab не уходит на страницу за ним", async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(isMobile, "проверка клавиатуры — на компьютере");
+  await page.goto("/");
+  const dialog = page.locator("dialog[data-welcome-step]");
+  await expect(dialog).toBeVisible();
+  await expect(page.locator("#welcome-title")).toBeFocused();
+  for (let i = 0; i < 6; i++) {
+    await page.keyboard.press("Tab");
+    // Модальное окно делает страницу недоступной: фокус либо в окне, либо уходит в интерфейс браузера (body).
+    const where = await page.evaluate(() => {
+      const el = document.activeElement;
+      return !el || el === document.body ? "browser" : el.closest("dialog") ? "dialog" : "page";
+    });
+    expect(where).not.toBe("page");
+  }
+});
