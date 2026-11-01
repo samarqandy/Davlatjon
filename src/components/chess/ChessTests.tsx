@@ -1,5 +1,6 @@
 "use client";
 
+import { currentScrollBehavior } from "@/lib/useMotion";
 import Link from "next/link";
 import { Button, cn, ProgressBar } from "@/components/ui";
 import type { ChessTest } from "@/content/chess/types";
@@ -128,7 +129,7 @@ function TestRun({ test, index }: { test: ChessTest; index: number | null }) {
 
   const go = (i: number | null) => {
     setHash(i === null ? `#${test.id}` : `#${test.id}-${i + 1}`, { keepScroll: true });
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.scrollTo({ top: 0, behavior: currentScrollBehavior() });
   };
 
   return (

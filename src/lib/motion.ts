@@ -8,3 +8,6 @@ export function motionAllowed(osReduce: boolean, animations: boolean | undefined
 }
 
 export const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
+
+/** Плавная прокрутка — только когда анимации разрешены (CSS scroll-behavior не действует на behavior из JS). */
+export const scrollBehavior = (allowed: boolean): ScrollBehavior => (allowed ? "smooth" : "auto");

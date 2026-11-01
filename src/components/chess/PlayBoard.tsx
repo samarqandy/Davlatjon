@@ -374,6 +374,9 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
           ? t("🙂 Твой ход", "🙂 Navbat senda")
           : t(`Ходят ${sideName(turn)}`, `${sideName(turn)} yuradi`);
 
+  // Ход робота называем словами: иначе его видно только на доске, а экранный диктор говорит лишь «Твой ход».
+  const robotMove = withRobot && !thinking && !status.over && last && turn === config.color ? san(last.san) : null;
+
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
       <div className="space-y-3">
@@ -425,7 +428,13 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
             status.over ? "bg-sun-soft text-[#7a4b00]" : inCheck ? "bg-rose/10 text-rose" : "bg-white shadow-card",
           )}
           aria-live="polite"
+          data-play-status
         >
+          {robotMove && (
+            <span className="block text-sm font-extrabold opacity-80" data-robot-move>
+              {t(`🤖 Робот сыграл ${robotMove}.`, `🤖 Robot ${robotMove} yurdi.`)}
+            </span>
+          )}
           {statusText}
         </p>
         {illegal && (

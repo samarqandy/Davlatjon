@@ -120,3 +120,13 @@ test("младшему — крупная кнопка «Прочитать» (5
   await expect(listen).toBeVisible();
   expect((await listen.boundingBox())!.height).toBeGreaterThanOrEqual(55);
 });
+
+test("партия с роботом: ход робота назван словами в строке статуса (её читает экранный диктор)", async ({ page }) => {
+  await prepare(page);
+  await page.goto("/chess/play#robot-1-w");
+  await square(page, "play", "e2");
+  await square(page, "play", "e4");
+  const status = page.locator("[data-play-status]");
+  await expect(status).toContainText("Твой ход", { timeout: 10_000 });
+  await expect(status.locator("[data-robot-move]")).toContainText(/Робот сыграл .+\./);
+});

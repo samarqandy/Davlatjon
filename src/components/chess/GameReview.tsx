@@ -1,5 +1,6 @@
 "use client";
 
+import { currentScrollBehavior } from "@/lib/useMotion";
 import { stampText } from "@/lib/dates";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
@@ -463,7 +464,7 @@ function ReviewBody({
                 type="button"
                 onClick={() => {
                   setPly(m.ply);
-                  window.scrollTo({ top: 0, behavior: "smooth" });
+                  window.scrollTo({ top: 0, behavior: currentScrollBehavior() });
                 }}
                 className="rounded-3xl bg-white p-4 text-left shadow-card transition hover:-translate-y-0.5"
               >

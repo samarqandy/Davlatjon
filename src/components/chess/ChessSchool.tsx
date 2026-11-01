@@ -1,5 +1,6 @@
 "use client";
 
+import { courseLessons } from "@/content/chess/content";
 import Link from "next/link";
 import { ChildNameBanner } from "@/components/home/ChildNameBanner";
 import { TodayCard } from "@/components/progress/TodayCard";
@@ -23,7 +24,8 @@ export function ChessSchool() {
   const hydrated = useHydrated();
   const t = useT();
   const lang = useLang();
-  const { levels, school, puzzles, openings, games, secrets, riddles, endgames, tactics, tests } = useChess();
+  const content = useChess();
+  const { levels, school, puzzles, openings, games, secrets, riddles, endgames, tactics, tests } = content;
   const state = useStore((s) => s);
   const statuses = levelStatuses(levels, state);
   const rank = hydrated ? currentRank(levels, state) : null;
@@ -41,6 +43,14 @@ export function ChessSchool() {
   const tacticsSolved = hydrated
     ? tactics.reduce((n, x) => n + x.exercises.filter((e) => state.chess[e.id]?.solvedAt).length, 0)
     : 0;
+  const course = courseLessons(content);
+  const courseTotal = course.reduce((n, x) => n + x.exercises.length, 0);
+  const courseSolved = hydrated
+    ? course.reduce((n, x) => n + x.exercises.filter((e) => state.chess[e.id]?.solvedAt).length, 0)
+    : 0;
+  // Курс — главный путь новичка: показываем следующий незаконченный урок прямо под приветствием.
+  const courseNext = hydrated ? course.findIndex((l) => l.exercises.some((e) => !state.chess[e.id]?.solvedAt)) : 0;
+  const courseLesson = courseNext >= 0 ? course[courseNext] : null;
   const testsTotal = tests.reduce((n, x) => n + x.exercises.length, 0);
   const testsDone = hydrated
     ? tests.reduce((n, x) => n + x.exercises.filter((e) => state.chess[e.id]?.solvedAt).length, 0)
@@ -63,6 +73,18 @@ export function ChessSchool() {
     : null;
 
   const sections = [
+    {
+      href: "/chess/course",
+      emoji: "🪜",
+      title: content.course1.title,
+      text: t(
+        "Урок за уроком: доска и запись ходов, каждая фигура, ценность фигур, шах и защита от шаха.",
+        "Darsma-dars: taxta va yurishlarni yozish, har bir dona, donalar qiymati, shoh berish va undan himoya.",
+      ),
+      stat: hydrated
+        ? t(`${courseSolved} из ${courseTotal} упражнений`, `${courseTotal} ta mashqdan ${courseSolved} tasi`)
+        : t(`${course.length} уроков`, `${course.length} ta dars`),
+    },
     {
       href: "/chess/play",
       emoji: "🤖",
@@ -269,7 +291,7 @@ export function ChessSchool() {
   ];
 
   // Сначала то, с чего ребёнок обычно начинает; остальное — под «Ещё разделы».
-  const first = ["/chess/play", "/chess/puzzles", "/chess/secrets", "/chess/drills"];
+  const first = ["/chess/course", "/chess/play", "/chess/puzzles", "/chess/secrets"];
   const ordered = [
     ...first.map((href) => sections.find((x) => x.href === href)!),
     ...sections.filter((x) => !first.includes(x.href)),
@@ -315,14 +337,43 @@ export function ChessSchool() {
           <div className="ml-auto min-w-48 flex-1 sm:max-w-64">
             <p className="text-sm font-bold text-white/80">
               {t(
-                `Упражнений решено: ${hydrated ? solved : 0} из ${total}`,
-                `Yechilgan mashqlar: ${total} tadan ${hydrated ? solved : 0} tasi`,
+                `Уровни: решено ${hydrated ? solved : 0} из ${total}`,
+                `Darajalar: ${total} tadan ${hydrated ? solved : 0} tasi yechildi`,
               )}
             </p>
             <ProgressBar value={hydrated ? solved : 0} max={total} className="mt-1 bg-white/20" />
           </div>
         </div>
       </section>
+      {courseLesson && (
+        <Link
+          href={`/chess/course#${courseLesson.id}`}
+          data-course-continue
+          className="flex items-center gap-4 rounded-[2rem] bg-white p-4 shadow-lift ring-2 ring-brand/30 transition hover:-translate-y-0.5 sm:p-5"
+        >
+          <span className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-brand-soft text-4xl" aria-hidden>
+            🪜
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-sm font-extrabold tracking-wide text-muted uppercase">
+              {t(
+                `Курс · урок ${courseNext + 1} из ${course.length}`,
+                `Kurs · ${course.length} tadan ${courseNext + 1}-dars`,
+              )}
+            </span>
+            <span className="block text-xl leading-tight font-black">{courseLesson.title}</span>
+            <span className="mt-1 block">
+              <ProgressBar value={courseSolved} max={courseTotal} />
+            </span>
+          </span>
+          <span
+            aria-hidden
+            className="shrink-0 rounded-2xl bg-sun px-4 py-3 text-lg font-black text-ink shadow-[0_4px_0_0_#b45309]"
+          >
+            {courseSolved > 0 ? t("Дальше ▶", "Davom ▶") : t("Начать ▶", "Boshlash ▶")}
+          </span>
+        </Link>
+      )}
       {nextLevel && continueHref && (
         <Link
           href={continueHref}
@@ -341,7 +392,10 @@ export function ChessSchool() {
               <ProgressBar value={statuses[nextIndex].solved} max={statuses[nextIndex].total} />
             </span>
           </span>
-          <span className="shrink-0 rounded-2xl bg-sun px-4 py-3 text-lg font-black text-ink shadow-[0_4px_0_0_#b45309]">
+          <span
+            aria-hidden
+            className="shrink-0 rounded-2xl bg-white px-4 py-3 text-lg font-black text-brand-dark ring-2 ring-brand/30"
+          >
             ▶
           </span>
         </Link>

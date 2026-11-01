@@ -311,6 +311,7 @@ describe("шахматная школа: ответы", () => {
         case "run":
         case "enpassant":
         case "stalemate":
+        case "check":
           expected = tacticMoves(e.fen, e.goal);
           break;
       }

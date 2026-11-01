@@ -503,6 +503,14 @@ const GOAL_RETRY: Record<Of<"move">["goal"], (m: NonNullable<ReturnType<typeof p
       "Oʻtib ketayotganda olish: piyoda hozirgina yonidan oʻtib ketgan piyodani uradi.",
     ),
   }),
+  check: (_m, t) => ({
+    tone: "retry",
+    text: t("Это не шах.", "Bu yurish shoh bermaydi."),
+    sub: t(
+      "Найди ход, после которого твоя фигура нападает на короля соперника.",
+      "Shunday yurish top: undan keyin donang raqib shohiga hujum qilsin.",
+    ),
+  }),
   stalemate: (_m, t) => ({
     tone: "retry",
     text: t("Пока не пат: у соперника ещё есть ход.", "Hali pat emas: raqibning yurishi bor."),

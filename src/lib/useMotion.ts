@@ -1,8 +1,8 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { REDUCED_MOTION_QUERY, motionAllowed } from "@/lib/motion";
-import { useStore } from "@/lib/store";
+import { REDUCED_MOTION_QUERY, motionAllowed, scrollBehavior } from "@/lib/motion";
+import { getState, useStore } from "@/lib/store";
 
 function subscribeMedia(onChange: () => void): () => void {
   if (typeof window === "undefined" || !window.matchMedia) return () => {};
@@ -25,4 +25,9 @@ export function useMotionAllowed(): boolean {
   const reduce = useOsReducedMotion();
   const setting = useStore((s) => s.settings.animations);
   return motionAllowed(reduce, setting);
+}
+
+/** Для обработчиков и эффектов: плавная прокрутка, только если система и родитель не выключили анимации. */
+export function currentScrollBehavior(): ScrollBehavior {
+  return scrollBehavior(motionAllowed(osReduces(), getState().settings.animations));
 }

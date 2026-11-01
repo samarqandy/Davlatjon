@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ChildNameField } from "@/components/ChildNameField";
 import { Mascot } from "@/components/Mascot";
 import { ListenButton } from "@/components/ListenButton";
@@ -31,14 +31,27 @@ export function Welcome() {
     else skipName();
     if (age) updateSettings({ age });
     setWelcomed();
+    document.getElementById("main")?.focus();
   };
+
+  // Настоящее модальное окно: фокус внутри, страница за ним недоступна для Tab и экранного диктора.
+  const dialog = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    const d = dialog.current;
+    if (d && !d.open && typeof d.showModal === "function") d.showModal();
+  }, []);
+  // На каждом шаге фокус — на заголовке: диктор читает, что это за экран.
+  useEffect(() => {
+    document.getElementById("welcome-title")?.focus();
+  }, [step]);
   const profile = age ? profileText(PROFILES[ageProfile(age)], lang) : null;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-ink/40 p-4 backdrop-blur-sm"
-      role="dialog"
-      aria-modal="true"
+    <dialog
+      ref={dialog}
+      // Знакомство обязательно: Esc не закрывает окно мимо «Поехали!».
+      onCancel={(e) => e.preventDefault()}
+      className="fixed inset-0 z-50 m-0 h-full max-h-none w-full max-w-none items-center justify-center overflow-y-auto bg-ink/40 p-4 backdrop-blur-sm backdrop:bg-transparent open:flex"
       aria-labelledby="welcome-title"
       data-welcome-step={step}
     >
@@ -48,7 +61,7 @@ export function Welcome() {
             <div className="flex items-center gap-3" aria-hidden>
               <Mascot size={88} mood="happy" />
             </div>
-            <h2 id="welcome-title" className="text-3xl font-black">
+            <h2 id="welcome-title" tabIndex={-1} className="text-3xl font-black outline-none">
               {t("Привет! Добро пожаловать в лабораторию!", "Salom! Laboratoriyaga xush kelibsan!")}
             </h2>
             <div className="grid grid-cols-2 gap-3" role="group" aria-label="Язык · Til">
@@ -101,7 +114,7 @@ export function Welcome() {
           </div>
         ) : (
           <div className="space-y-5">
-            <h2 id="welcome-title" className="text-3xl font-black">
+            <h2 id="welcome-title" tabIndex={-1} className="text-3xl font-black outline-none">
               {t("Сколько тебе лет?", "Necha yoshdasan?")}
             </h2>
             <ListenButton src={VOICE_CLIPS.short("welcome-age", lang)} className="w-full justify-center" />
@@ -150,6 +163,6 @@ export function Welcome() {
           </div>
         )}
       </div>
-    </div>
+    </dialog>
   );
 }
