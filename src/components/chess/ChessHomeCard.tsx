@@ -4,16 +4,26 @@ import Link from "next/link";
 import { ProgressBar } from "@/components/ui";
 import { chessLevelHref } from "@/content/chess";
 import { currentRank, levelStatuses } from "@/lib/chessProgress";
-import { useT } from "@/lib/i18n";
+import type { ChessLevelId } from "@/content/chess/types";
+import { useBoth, useT } from "@/lib/i18n";
+import type { Both } from "@/lib/lang";
 import { useHydrated, useStore } from "@/lib/store";
-import { useChess } from "@/lib/useChess";
-import { PieceIcon } from "./ChessBoard";
+import { PieceIcon } from "./PieceIcon";
+
+/**
+ * Сводка школы для главной: только названия, фигуры и id упражнений. Её собирает сервер (app/page.tsx),
+ * чтобы главная не тянула в браузер весь шахматный контент (уроки, тайны, дебюты — ~150 КБ gzip).
+ */
+export interface ChessHomeSummary {
+  school: { title: string };
+  levels: { id: ChessLevelId; piece: string; name: string; exercises: { id: string }[] }[];
+}
 
 /** Карточка шахматной школы на главной: звание и следующий уровень. */
-export function ChessHomeCard() {
+export function ChessHomeCard({ summary }: { summary: Both<ChessHomeSummary> }) {
   const hydrated = useHydrated();
   const t = useT();
-  const { levels, school } = useChess();
+  const { levels, school } = useBoth(summary);
   const state = useStore((s) => s);
   const statuses = levelStatuses(levels, state);
   const rank = hydrated ? currentRank(levels, state) : null;

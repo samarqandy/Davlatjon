@@ -1,6 +1,6 @@
 /** Статистика задач по темам — для панели «сильные и слабые темы» и для родителей. */
 import { PUZZLES, type PuzzleTheme } from "@/content/chess/puzzles";
-import { BANK, themeOfKey } from "./puzzleBank";
+import { BANK, themeOfKey } from "./puzzleBankIndex";
 import type { ChessPuzzleProgress } from "./state";
 
 const CLASSIC_THEME = new Map(PUZZLES.map((p) => [p.id, p.theme]));

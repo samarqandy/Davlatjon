@@ -7,7 +7,7 @@ import { useEffect } from "react";
 import { TaskView } from "@/components/task/TaskView";
 import { Button, ButtonLink, cn } from "@/components/ui";
 import { sectionsFor } from "@/content/meta";
-import { printHref } from "@/content/program";
+import { printHref } from "@/lib/routes";
 import type { Day } from "@/content/types";
 import { useTitleTranslation } from "@/lib/docTitle";
 import { useBoth, useLang, useT, type Both } from "@/lib/i18n";
