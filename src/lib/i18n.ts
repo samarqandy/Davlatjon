@@ -6,15 +6,17 @@
  * со смыслом, а узбекский текст можно писать живым языком, а не дословно (правила — docs/uzbek-style.md).
  * Всё, что не зависит от React, — в src/lib/lang.ts (здесь оно тоже доступно).
  */
-import { useCallback, useMemo } from "react";
+import { useCallback, useContext, useMemo } from "react";
 import { fillName, nameFor, namesFor, personalize, type Names } from "./childName";
 import { sanFor, type Both, type Lang, type T } from "./lang";
-import { getState, updateSettings, useStore } from "./store";
+import { ServerLangContext } from "./serverLang";
+import { getState, updateSettings, useStore, useStoreOr } from "./store";
 
 export * from "./lang";
 
 export function useLang(): Lang {
-  return useStore((s) => (s.settings.lang === "uz" ? "uz" : "ru"));
+  const server = useContext(ServerLangContext);
+  return useStoreOr((s) => (s.settings.lang === "uz" ? "uz" : "ru"), server);
 }
 
 export function currentLang(): Lang {

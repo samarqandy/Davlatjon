@@ -4,8 +4,8 @@ import { ButtonLink } from "@/components/ui";
 import { SiteHeader } from "@/components/SiteHeader";
 import { useT } from "@/lib/i18n";
 
-/** Клиентский компонент: текст — на языке, выбранном на этом устройстве. */
-export default function NotFound() {
+/** «Страница не найдена». Клиентский компонент: текст — на языке, выбранном на этом устройстве. */
+export function NotFoundView() {
   const t = useT();
   return (
     <>

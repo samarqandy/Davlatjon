@@ -108,6 +108,15 @@ export function useStore<T>(selector: (s: AppState) => T): T {
   );
 }
 
+/** Как useStore, но на сервере и при гидратации — заданное значение (например, язык, который знает сервер). */
+export function useStoreOr<T>(selector: (s: AppState) => T, server: T): T {
+  return useSyncExternalStore(
+    subscribe,
+    () => selector(getState()),
+    () => server,
+  );
+}
+
 const noopSubscribe = () => () => {};
 
 /** true после гидратации — можно показывать данные из localStorage. */

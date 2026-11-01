@@ -2,7 +2,7 @@ import { SkipLink } from "@/components/SkipLink";
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import "@fontsource-variable/nunito";
-import "./globals.css";
+import "../globals.css";
 import { AccountSync } from "@/components/AccountSync";
 import { BottomNav } from "@/components/BottomNav";
 import { LangSync } from "@/components/LangSwitch";
@@ -11,6 +11,9 @@ import { ActivityTracker } from "@/components/progress/ActivityTracker";
 import { RestCard } from "@/components/progress/RestCard";
 import { XpToast } from "@/components/progress/XpToast";
 import { BRAND, BRAND_TITLE } from "@/lib/brand";
+import type { Lang } from "@/lib/lang";
+import { HEAD_SCRIPT } from "@/lib/headScript";
+import { ServerLangProvider } from "@/lib/serverLang";
 import { SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -46,31 +49,42 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
+/**
+ * Каждая страница собирается на двух языках: /ru/… и /uz/…. Адреса у детей при этом без приставки —
+ * proxy.ts по куке `lang` молча подставляет нужную сборку, и узбекская страница приходит уже на узбекском.
+ */
+export function generateStaticParams() {
+  return [{ lang: "ru" }, { lang: "uz" }];
+}
+
+export const dynamicParams = false;
+
+export default async function RootLayout({
+  children,
+  params,
+}: Readonly<{ children: ReactNode; params: Promise<{ lang: string }> }>) {
+  const lang: Lang = (await params).lang === "uz" ? "uz" : "ru";
   return (
-    <html lang="ru" suppressHydrationWarning>
+    <html lang={lang} suppressHydrationWarning>
       <head>
-        {/*
-          Узбекский язык — прячем страницу до загрузки, чтобы не мелькал русский текст. Имя ребёнка — только
-          на страницах, где оно стоит в текстах заданий (занятия, раздел родителя, задачник): чтобы вместо
-          имени не мелькало «Друг». Главная и шахматы с именем показываются сразу — там приветствие без имени до загрузки.
-        */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `try{var a=(JSON.parse(localStorage.getItem("davlatjon-lab:profiles")||"{}")||{}).active;var s=JSON.parse(localStorage.getItem("davlatjon-lab:v1"+(a&&a!=="main"&&/^[a-z0-9]{3,12}$/.test(a)?":"+a:""))||"{}").settings||{};var named=s.childName&&["week","parent","my-problems"].indexOf(location.pathname.split("/")[1])>=0;if(s.lang==="uz"||named){var h=document.documentElement;if(s.lang==="uz")h.lang="uz";h.classList.add("i18n-wait");setTimeout(function(){h.classList.remove("i18n-wait")},1500)}}catch(e){}`,
+            __html: HEAD_SCRIPT,
           }}
         />
       </head>
       <body className="min-h-dvh">
-        <SkipLink />
-        {children}
-        <BottomNav />
-        <ServiceWorker />
-        <LangSync />
-        <XpToast />
-        <ActivityTracker />
-        <RestCard />
-        <AccountSync />
+        <ServerLangProvider lang={lang}>
+          <SkipLink />
+          {children}
+          <BottomNav />
+          <ServiceWorker />
+          <LangSync />
+          <XpToast />
+          <ActivityTracker />
+          <RestCard />
+          <AccountSync />
+        </ServerLangProvider>
       </body>
     </html>
   );
