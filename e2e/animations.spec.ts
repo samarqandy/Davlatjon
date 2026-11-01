@@ -129,3 +129,27 @@ test("настройки родителя: переключатель «Аним
   const stored = await page.evaluate((key) => JSON.parse(localStorage.getItem(key) ?? "{}").settings?.animations, KEY);
   expect(stored).toBe(false);
 });
+
+test("главная: птица ниже экрана не грузит Rive, а скрипты страницы — без шахматного движка и ответов к задачам", async ({
+  page,
+}) => {
+  const asked: string[] = [];
+  const scripts: string[] = [];
+  page.on("request", (r) => {
+    if (/\.wasm|\.riv/.test(r.url())) asked.push(r.url());
+    if (r.resourceType() === "script") scripts.push(r.url());
+  });
+  await prepare(page);
+  await page.goto("/");
+  await page.waitForLoadState("networkidle");
+  expect(asked).toEqual([]);
+  // Только скрипты самой страницы (из HTML): куски, которые браузер позже подгружает заранее для ссылки «Шахматы», не в счёт.
+  const html = await (await page.request.get("/")).text();
+  const initial = [...new Set(html.match(/\/_next\/static\/chunks\/[^"]+\.js/g) ?? [])];
+  expect(initial.length).toBeGreaterThan(0);
+  for (const src of initial) {
+    const body = await (await page.request.get(src)).text();
+    expect(body.includes("getCastlingRights"), src).toBe(false);
+    expect(body.includes("solution:{"), src).toBe(false);
+  }
+});

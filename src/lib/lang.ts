@@ -2,7 +2,7 @@
  * Языки платформы — то, что не зависит от React и браузера: можно вызывать и на сервере, и в тестах.
  * Хуки (useT, useLang, useSan…) — в src/lib/i18n.ts.
  */
-import { ruSan } from "./chess";
+import { ruSan } from "./san";
 
 export type Lang = "ru" | "uz";
 

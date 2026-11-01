@@ -3,7 +3,7 @@
 import { RichText } from "@/components/RichText";
 import { ButtonLink, Button, LevelBadge } from "@/components/ui";
 import { sectionsFor } from "@/content/meta";
-import { printHref } from "@/content/program";
+import { printHref } from "@/lib/routes";
 import type { Day } from "@/content/types";
 import { useLang, useT } from "@/lib/i18n";
 import { useHydrated, useStore } from "@/lib/store";

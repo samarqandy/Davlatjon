@@ -3,7 +3,7 @@
  * задания дня выбираются по дате, выполнено ли — видно по времени решённых задач и партий.
  */
 import { CHESS_LEVELS } from "@/content/chess";
-import { allDays } from "@/content/program";
+import { TASK_COUNT } from "@/content/counts";
 import { isoDay, type AppState } from "./state";
 
 export type QuestKind = "puzzles" | "task" | "exercise" | "game";
@@ -16,7 +16,6 @@ export interface QuestGoal {
   href: string;
 }
 
-const TASK_COUNT = allDays().reduce((n, d) => n + d.tasks.length, 0);
 const EXERCISE_COUNT = CHESS_LEVELS.reduce((n, l) => n + l.exercises.length, 0);
 
 const on = (ms: number | undefined, day: string) => !!ms && isoDay(ms) === day;

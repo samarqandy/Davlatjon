@@ -38,14 +38,4 @@ export function findTask(taskId: string): { task: Task; day: Day } | undefined {
   return undefined;
 }
 
-export function dayHref(day: Pick<Day, "week" | "day">): string {
-  return `/week/${day.week}/day/${day.day}`;
-}
-
-export function printHref(day: Pick<Day, "week" | "day">): string {
-  return `/week/${day.week}/day/${day.day}/print`;
-}
-
-export function parentDayHref(day: Pick<Day, "week" | "day">): string {
-  return `/parent/week/${day.week}/day/${day.day}`;
-}
+export { dayHref, parentDayHref, printHref } from "@/lib/routes";

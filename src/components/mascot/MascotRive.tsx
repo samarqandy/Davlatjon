@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect } from "react";
+
+/** Сколько птица играет реакцию, прежде чем замереть: без этого Rive перерисовывает кадры всё время. */
+const SETTLE_MS = 3000;
 import { Alignment, Fit, Layout, RuntimeLoader, useRive } from "@rive-app/react-canvas-lite";
 import { ANIM_ASSETS, RIVE_WASM_URL } from "@/lib/anim/assets";
 import { riveCommand, type Mood } from "@/lib/anim/mood";
@@ -29,11 +32,15 @@ export default function MascotRive({ mood, onReady, onFail }: { mood: Mood; onRe
 
   useEffect(() => {
     if (!rive) return;
+    rive.play();
     const inputs = rive.stateMachineInputs(stateMachine) ?? [];
     const cmd = riveCommand(mood);
     const num = inputs.find((i) => i.name === "mood");
     if (num) num.value = cmd.mood;
     if (cmd.trigger) inputs.find((i) => i.name === cmd.trigger)?.fire();
+    // Реакцию показали — замираем до следующего настроения (экономим батарею и не тормозим касания).
+    const id = window.setTimeout(() => rive.pause(), SETTLE_MS);
+    return () => window.clearTimeout(id);
   }, [rive, mood]);
 
   return <RiveComponent className="absolute inset-0 h-full w-full" aria-hidden />;

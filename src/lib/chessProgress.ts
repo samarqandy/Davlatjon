@@ -1,4 +1,3 @@
-import type { ChessLevel } from "@/content/chess/types";
 import { profileMeta } from "./age";
 import type { AppState } from "./store";
 
@@ -21,7 +20,10 @@ export function unlockNeed(total: number): number {
   return Math.max(1, Math.ceil(total * 0.7));
 }
 
-export function levelStatuses(levels: readonly ChessLevel[], state: AppState): LevelStatus[] {
+/** Хватает id упражнений: так статусы считаются и по лёгкой сводке уровней (главная), и по полному контенту. */
+type LevelLike = { exercises: readonly { id: string }[] };
+
+export function levelStatuses(levels: readonly LevelLike[], state: AppState): LevelStatus[] {
   const out: LevelStatus[] = [];
   const open = state.settings.chessOpenAll === true ? levels.length : profileMeta(state.settings.age).openLevels;
   levels.forEach((level, i) => {
@@ -39,9 +41,9 @@ export function levelStatuses(levels: readonly ChessLevel[], state: AppState): L
 }
 
 /** Звание — последний уровень в непрерывной цепочке пройденных, начиная с первого. */
-export function currentRank(levels: readonly ChessLevel[], state: AppState): ChessLevel | null {
+export function currentRank<L extends LevelLike>(levels: readonly L[], state: AppState): L | null {
   const statuses = levelStatuses(levels, state);
-  let rank: ChessLevel | null = null;
+  let rank: L | null = null;
   for (let i = 0; i < levels.length && statuses[i].passed; i++) rank = levels[i];
   return rank;
 }

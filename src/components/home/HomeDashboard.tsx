@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ChessHomeCard } from "@/components/chess/ChessHomeCard";
+import { ChessHomeCard, type ChessHomeSummary } from "@/components/chess/ChessHomeCard";
 import { ButtonLink, cn, ProgressBar } from "@/components/ui";
 import { sectionsFor } from "@/content/meta";
 import type { DaySummary, WeekSummary } from "@/content/summary";
@@ -24,7 +24,7 @@ function dayStatus(d: DaySummary, s: AppState, nextId: string | null): Status {
   return "later";
 }
 
-export function HomeDashboard({ weeks: both }: { weeks: Both<WeekSummary[]> }) {
+export function HomeDashboard({ weeks: both, chess }: { weeks: Both<WeekSummary[]>; chess: Both<ChessHomeSummary> }) {
   const hydrated = useHydrated();
   const t = useT();
   const lang = useLang();
@@ -141,7 +141,7 @@ export function HomeDashboard({ weeks: both }: { weeks: Both<WeekSummary[]> }) {
 
       <PlacementCard />
 
-      <ChessHomeCard />
+      <ChessHomeCard summary={chess} />
 
       <details
         open={!junior}
