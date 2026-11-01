@@ -1,13 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_STATE, sanitize } from "@/lib/state";
-import {
-  ageBand,
-  bestCategory,
-  nextBase,
-  parseQuery,
-  weekKey,
-  weeklyGain,
-} from "@/lib/leaderboard";
+import { ageBand, bestCategory, nextBase, parseQuery, weekKey, weeklyGain } from "@/lib/leaderboard";
 import { mergeStates } from "@/lib/sync";
 import { xpBreakdown, xpTotal, type XpBreakdown } from "@/lib/xp";
 
@@ -41,8 +34,16 @@ describe("рейтинг: чистая логика", () => {
   });
 
   it("запрос: неизвестное → значения по умолчанию", () => {
-    expect(parseQuery(new URLSearchParams("scope=x&cat=y&age=z"))).toEqual({ scope: "week", category: "total", age: "all" });
-    expect(parseQuery(new URLSearchParams("scope=all&cat=chess&age=10%2B"))).toEqual({ scope: "all", category: "chess", age: "10+" });
+    expect(parseQuery(new URLSearchParams("scope=x&cat=y&age=z"))).toEqual({
+      scope: "week",
+      category: "total",
+      age: "all",
+    });
+    expect(parseQuery(new URLSearchParams("scope=all&cat=chess&age=10%2B"))).toEqual({
+      scope: "all",
+      category: "chess",
+      age: "10+",
+    });
   });
 
   it("сильнейшее направление", () => {
@@ -54,7 +55,7 @@ describe("рейтинг: чистая логика", () => {
   it("разбивка очков в сумме даёт общий опыт", () => {
     const state = sanitize({
       ...DEFAULT_STATE,
-      tasks: { "w1d1t1": { solvedAt: 1, tries: 0 } },
+      tasks: { w1d1t1: { solvedAt: 1, tries: 0 } },
       chess: { "x-1": { solvedAt: 1, misses: 0 } },
     });
     const br = xpBreakdown(state);
@@ -68,7 +69,9 @@ describe("рейтинг: чистая логика", () => {
     expect(mergeStates(on, DEFAULT_STATE).settings.leaderboard).toBe(true);
     expect(mergeStates(off, on).settings.leaderboard).toBe(false);
     expect(sanitize(off).settings.leaderboard).toBe(false);
-    expect(sanitize({ ...DEFAULT_STATE, settings: { ...DEFAULT_STATE.settings, leaderboard: "yes" } }).settings.leaderboard).toBeUndefined();
+    expect(
+      sanitize({ ...DEFAULT_STATE, settings: { ...DEFAULT_STATE.settings, leaderboard: "yes" } }).settings.leaderboard,
+    ).toBeUndefined();
   });
 });
 

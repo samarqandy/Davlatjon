@@ -43,7 +43,8 @@ export function LeaderboardView() {
   useEffect(() => {
     if (!signedIn) return;
     let stopped = false;
-    const qs = (cat: Category, limit: number) => `scope=${scope}&cat=${cat}&age=${encodeURIComponent(age)}&limit=${limit}`;
+    const qs = (cat: Category, limit: number) =>
+      `scope=${scope}&cat=${cat}&age=${encodeURIComponent(age)}&limit=${limit}`;
     void (async () => {
       const [main, ...stars] = await Promise.all([
         api<LeaderResponse>(`/api/play/leaderboard?${qs(category, 50)}`),
@@ -184,13 +185,7 @@ export function LeaderboardView() {
         </div>
         <div className="flex flex-wrap gap-2" aria-label={t("Возраст", "Yosh")}>
           {(["all", ...AGE_BANDS] as const).map((a) => (
-            <button
-              key={a}
-              aria-pressed={age === a}
-              data-age={a}
-              className={chip(age === a)}
-              onClick={() => setAge(a)}
-            >
+            <button key={a} aria-pressed={age === a} data-age={a} className={chip(age === a)} onClick={() => setAge(a)}>
               {ageLabel(a)}
             </button>
           ))}
@@ -244,7 +239,7 @@ export function LeaderboardView() {
                             <span aria-hidden>{MEDALS[r.rank - 1]}</span>
                             <span aria-hidden>{r.avatar ?? "🙂"}</span>
                             <span className="min-w-0 flex-1 truncate font-bold">{r.username}</span>
-                            <span className="tabular-nums text-muted">{r.value}</span>
+                            <span className="text-muted tabular-nums">{r.value}</span>
                           </li>
                         ))}
                       </ol>

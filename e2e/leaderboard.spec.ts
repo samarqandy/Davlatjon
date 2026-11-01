@@ -71,7 +71,9 @@ test("таблица: недельный список, фильтры уходя
   await page.locator("[data-scope='all']").click();
   await page.locator("[data-cat='chess']").click();
   await page.locator("[data-age='10+']").click();
-  await expect.poll(() => queries.some((q) => q.includes("scope=all") && q.includes("cat=chess") && q.includes("age=10%2B"))).toBe(true);
+  await expect
+    .poll(() => queries.some((q) => q.includes("scope=all") && q.includes("cat=chess") && q.includes("age=10%2B")))
+    .toBe(true);
 });
 
 test("пока участие не включено, ребёнок видит подсказку для взрослых; пустая таблица объясняет", async ({ page }) => {
