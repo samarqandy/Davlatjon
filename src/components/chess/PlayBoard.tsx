@@ -409,7 +409,7 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
           canDrag={(_, piece) => piece[0] === turn}
           promotion={promo.request}
           arrows={hint ? [{ from: hint.slice(0, 2), to: hint.slice(2, 4), color: "#10b981" }] : []}
-          maxWidth={520}
+          maxWidth={560}
         />
         <div className="flex items-center gap-2">
           <CapturedRow

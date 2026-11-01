@@ -221,6 +221,7 @@ function Drill({ mode, onExit }: { mode: DrillMode; onExit: () => void }) {
               marks={marks}
               orientation={mode === "read" ? (round.task?.fen.split(" ")[1] === "b" ? "black" : "white") : orientation}
               notation={mode === "read" || mode === "name" ? true : labels}
+              showTurn={mode === "read"}
               onSquare={mode === "find" ? tapFind : mode === "read" ? tapRead : undefined}
               draggable={mode === "read" && running}
               onDrop={

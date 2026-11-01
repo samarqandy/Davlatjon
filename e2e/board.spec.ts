@@ -94,3 +94,33 @@ test("цвета доски и набор звуков выбираются в �
   expect(stored.boardTheme).toBe("violet");
   expect(stored.boardSoundSet).toBe("soft");
 });
+
+test("в углу рамки — чей ход: □ белые, ■ чёрные; после хода квадратик меняется", async ({ page }) => {
+  await page.goto("/chess/analysis");
+  const turn = board(page).locator(".board-turn");
+  await expect(turn).toHaveAttribute("data-turn", "w");
+  await expect(board(page)).toHaveAttribute("aria-label", /ходят белые/);
+  await sq(page, "e2").click();
+  await sq(page, "e4").click();
+  await expect(turn).toHaveAttribute("data-turn", "b");
+});
+
+test("на телефоне задание и чей ход — над доской задачи, а доска целиком на экране", async ({ page }, info) => {
+  test.skip(info.project.name !== "phone", "раскладка для телефона");
+  await page.goto("/chess/puzzles#theme-mate1");
+  const prompt = page.locator("[data-puzzle-prompt]");
+  await expect(prompt).toBeVisible();
+  const promptBox = (await prompt.boundingBox())!;
+  const boardBox = (await page.locator('[data-board^="puzzle-"]').boundingBox())!;
+  expect(promptBox.y + promptBox.height).toBeLessThanOrEqual(boardBox.y);
+  expect(boardBox.y + boardBox.height).toBeLessThanOrEqual(page.viewportSize()!.height);
+});
+
+test("в упражнениях уровня «Следующее упражнение» оставляет доску на экране", async ({ page }, info) => {
+  test.skip(info.project.name !== "phone", "раскладка для телефона");
+  await page.goto("/chess/pawn#exercises");
+  await page.getByRole("button", { name: "Следующее упражнение →" }).click();
+  await expect(page).toHaveURL(/#exercise-2$/);
+  const top = page.locator("#exercises-top");
+  await expect.poll(async () => (await top.boundingBox())!.y).toBeLessThan(120);
+});

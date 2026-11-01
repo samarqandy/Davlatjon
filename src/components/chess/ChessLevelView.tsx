@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { RichText } from "@/components/RichText";
 import { Button, ButtonLink, cn, ProgressBar } from "@/components/ui";
 import { CHESS_LEVELS, chessLevelHref } from "@/content/chess";
@@ -49,9 +49,18 @@ export function ChessLevelView({ levelId }: { levelId: string }) {
   const next = levels[index + 1];
   const solvedIds = new Set(level.exercises.filter((e) => state.chess[e.id]?.solvedAt).map((e) => e.id));
 
+  // К упражнениям, а не к началу страницы: иначе после каждого «Следующее упражнение» доска уезжала за край экрана.
+  // Прокрутка — после отрисовки: при переходе из урока блока упражнений ещё нет на странице.
+  const scrollToExercises = useRef(false);
+  useEffect(() => {
+    if (!scrollToExercises.current || tab !== "exercises") return;
+    scrollToExercises.current = false;
+    const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    document.getElementById("exercises-top")?.scrollIntoView({ block: "start", behavior: reduce ? "auto" : "smooth" });
+  }, [tab, exercise]);
   const goExercise = (i: number) => {
+    scrollToExercises.current = true;
     setHash(`#exercise-${i + 1}`, { keepScroll: true });
-    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
@@ -84,7 +93,8 @@ export function ChessLevelView({ levelId }: { levelId: string }) {
             )}
           </div>
         </div>
-        <p className="mt-4 text-lg text-white/90">{level.goal}</p>
+        {/* В упражнениях описание уровня прячем: так доска видна без прокрутки. */}
+        {tab !== "exercises" && <p className="mt-4 text-lg text-white/90">{level.goal}</p>}
         <div className="mt-4 flex items-center gap-3">
           <ProgressBar value={status.solved} max={status.total} className="flex-1 bg-white/20" />
           <span className="text-sm font-extrabold whitespace-nowrap">
@@ -117,7 +127,10 @@ export function ChessLevelView({ levelId }: { levelId: string }) {
               <button
                 key={id}
                 type="button"
-                onClick={() => setHash(href, { keepScroll: true })}
+                onClick={() => {
+                  if (id === "exercises") scrollToExercises.current = true;
+                  setHash(href, { keepScroll: true });
+                }}
                 aria-current={tab === id ? "page" : undefined}
                 className={cn(
                   "rounded-xl px-2 py-2.5 text-sm leading-tight font-extrabold transition sm:px-4 sm:text-base",
@@ -138,7 +151,7 @@ export function ChessLevelView({ levelId }: { levelId: string }) {
 
           {tab === "exercises" && (
             <section className="space-y-4" aria-label={t("Упражнения", "Mashqlar")}>
-              <div className="flex flex-wrap gap-1.5">
+              <div id="exercises-top" className="flex scroll-mt-20 flex-wrap gap-1.5">
                 {level.exercises.map((e, i) => (
                   <button
                     key={e.id}

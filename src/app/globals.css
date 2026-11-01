@@ -537,6 +537,25 @@ html.i18n-wait::after {
   grid-row: 3;
   grid-column: 2;
 }
+/* Чей ход: □ — белые, ■ — чёрные, в углу между цифрами и буквами (как на диаграммах в учебниках). */
+.board-turn {
+  grid-row: 3;
+  grid-column: 1;
+  place-self: center;
+  width: calc(var(--f) * 0.95);
+  height: calc(var(--f) * 0.95);
+  border: 2px solid #fdf1dc;
+  border-radius: 2px;
+}
+.board-turn[data-turn="w"] {
+  background: #fff;
+}
+.board-turn[data-turn="b"] {
+  background: #111827;
+}
+.board-grid[data-frame="print"] .board-turn {
+  border-color: #111827;
+}
 .board-grid[data-frame="print"] .board-ranks,
 .board-grid[data-frame="print"] .board-files {
   color: #111827;
