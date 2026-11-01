@@ -35,7 +35,7 @@ export function LangSwitch({ className }: { className?: string }) {
   );
 }
 
-/** Держит <html lang> и заголовок вкладки в согласии с выбранным языком и снимает «ожидание» после загрузки. */
+/** Держит <html lang>, куку языка и заголовок вкладки в согласии с выбранным языком и снимает «ожидание» после загрузки. */
 export function LangSync() {
   const lang = useLang();
   const hydrated = useHydrated();
@@ -46,6 +46,8 @@ export function LangSync() {
     // Отметка «страница уже на выбранном языке» — по ней ждут сквозные тесты.
     h.dataset.lang = lang;
     h.classList.remove("i18n-wait");
+    // По куке proxy.ts отдаёт следующие страницы сразу на этом языке.
+    document.cookie = `lang=${lang}; path=/; max-age=31536000; samesite=lax`;
     return watchTitle(lang);
   }, [lang, hydrated]);
   return null;

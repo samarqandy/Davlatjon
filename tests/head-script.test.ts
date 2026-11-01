@@ -1,20 +1,14 @@
 /**
- * Скрипт в <head> (src/app/layout.tsx) прячет страницу до загрузки: для узбекского языка
- * и для страниц, где в текстах стоит имя ребёнка. Ошибка в нём не видна (он в try/catch) — проверяем здесь.
+ * Скрипт в <head> (src/lib/headScript.ts) прячет страницу до загрузки: когда она пришла не на языке
+ * устройства (кука ещё не записана) и для страниц, где в текстах стоит имя ребёнка. Ошибка в нём не видна (он в try/catch) — проверяем здесь.
  */
-import fs from "node:fs";
-import path from "node:path";
 import { describe, expect, it } from "vitest";
+import { HEAD_SCRIPT as code } from "@/lib/headScript";
 
-const layout = fs.readFileSync(path.join(process.cwd(), "src/app/layout.tsx"), "utf8");
-const literal = layout.match(/__html: `([^`]*)`/)![1];
-// Тот же текст, что попадёт в HTML (с обработкой экранирования, как у шаблонной строки).
-const code = new Function(`return \`${literal}\`;`)() as string;
-
-function run(settings: Record<string, unknown>, pathname: string) {
+function run(settings: Record<string, unknown>, pathname: string, served: "ru" | "uz" = "ru") {
   const classes = new Set<string>();
   const html = {
-    lang: "ru",
+    lang: served,
     classList: { add: (c: string) => classes.add(c), remove: (c: string) => classes.delete(c) },
   };
   const storage = { getItem: () => JSON.stringify({ settings }) };
@@ -32,9 +26,16 @@ describe("скрипт в <head>", () => {
     expect(() => new Function(code)).not.toThrow();
   });
 
-  it("узбекский: страница ждёт загрузки на любом адресе", () => {
+  it("страница не на языке устройства ждёт загрузки на любом адресе", () => {
     expect(run({ lang: "uz" }, "/")).toEqual({ hidden: true, lang: "uz" });
     expect(run({ lang: "uz" }, "/chess")).toEqual({ hidden: true, lang: "uz" });
+    expect(run({}, "/chess", "uz")).toEqual({ hidden: true, lang: "ru" });
+  });
+
+  it("страница уже на языке устройства показывается сразу", () => {
+    expect(run({ lang: "uz" }, "/", "uz")).toEqual({ hidden: false, lang: "uz" });
+    expect(run({ lang: "uz" }, "/chess/play", "uz")).toEqual({ hidden: false, lang: "uz" });
+    expect(run({ lang: "ru" }, "/")).toEqual({ hidden: false, lang: "ru" });
   });
 
   it("имя ребёнка: ждём только там, где оно стоит в текстах", () => {

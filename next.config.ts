@@ -3,6 +3,8 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
+  // Общий макет — в app/[lang]; для адресов, которых нет вовсе, — app/global-not-found.tsx.
+  experimental: { globalNotFound: true },
   async headers() {
     return [
       {

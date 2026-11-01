@@ -172,3 +172,43 @@ test("kirish: sozlanmagan saytda hisobsiz ishlashi aytiladi", async ({ page }) =
   const me = await page.request.get("/api/auth/me");
   expect(await me.json()).toEqual({ user: null, providers: { google: false, telegram: false }, reports: false });
 });
+
+test.describe("til serverda", () => {
+  test("kuka uz: sahifa HTML’da allaqachon oʻzbekcha keladi, kutish yoʻq", async ({ request }) => {
+    for (const url of ["/", "/chess", "/chess/course", "/week/1/day/1"]) {
+      const res = await request.get(url, { headers: { cookie: "lang=uz" } });
+      expect(res.status(), url).toBe(200);
+      const html = await res.text();
+      expect(html, url).toContain('<html lang="uz"');
+      const h1 = html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/)?.[1].replace(/<[^>]+>/g, "") ?? "";
+      expect(h1, url).not.toMatch(CYRILLIC);
+    }
+    const ru = await request.get("/chess");
+    expect(await ru.text()).toContain('<html lang="ru"');
+  });
+
+  test("til tanlangach kuka yoziladi, keyingi sahifa darhol oʻzbekcha", async ({ page, context }) => {
+    await uzbek(page);
+    await page.goto("/");
+    await expect(page.locator("html")).toHaveAttribute("data-lang", "uz");
+    const cookie = (await context.cookies()).find((c) => c.name === "lang");
+    expect(cookie?.value).toBe("uz");
+    const res = await page.goto("/chess");
+    expect(await res!.text()).toContain('<html lang="uz"');
+    // Sahifa allaqachon kerakli tilda — yashirilmaydi.
+    await expect(page.locator("html")).not.toHaveClass(/i18n-wait/);
+  });
+
+  test("/uz/… havolasi tilni oʻrnatadi va oddiy manzilga olib boradi", async ({ page, context }) => {
+    await page.goto("/uz/chess");
+    expect(new URL(page.url()).pathname).toBe("/chess");
+    expect((await context.cookies()).find((c) => c.name === "lang")?.value).toBe("uz");
+  });
+
+  test("notoʻgʻri manzil — 404 va «topilmadi» sahifasi", async ({ page }) => {
+    await uzbek(page);
+    const res = await page.goto("/yoq-sahifa");
+    expect(res!.status()).toBe(404);
+    await expect(page.getByRole("heading", { name: "Robot bunday sahifani topa olmadi" })).toBeVisible();
+  });
+});
