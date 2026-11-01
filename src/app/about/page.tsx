@@ -26,7 +26,7 @@ export default function AboutPage() {
   return (
     <>
       <SiteHeader />
-      <main className="mx-auto max-w-5xl px-4 pt-6 pb-16">
+      <main id="main" tabIndex={-1} className="mx-auto max-w-5xl px-4 pt-6 pb-16">
         <AboutView stats={stats} />
       </main>
       <SiteFooter />

@@ -314,7 +314,8 @@ export function PuzzleHub() {
                     </p>
                   </div>
                 </div>
-                <p className="mt-2 flex-1 text-sm text-muted">{theme.about}</p>
+                {/* На телефоне описание темы — на её странице: 19 карточек с описаниями растягивали раздел на несколько экранов. */}
+                <p className="mt-2 hidden flex-1 text-sm text-muted sm:block">{theme.about}</p>
                 <div className="mt-3 flex items-center gap-2">
                   <ProgressBar value={s?.solved ?? 0} max={total} className="flex-1" />
                   <span className="text-xs font-extrabold text-muted">

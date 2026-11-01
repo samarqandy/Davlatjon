@@ -316,7 +316,12 @@ test("без входа игра по сети просит войти, а на 
   await expect(page.getByText("Игра по сети появится")).toBeVisible();
 });
 
-test("на странице «Играть» есть вход в игру с друзьями", async ({ page }) => {
+test("на странице «Играть» вход в игру с друзьями есть только там, где подключён вход", async ({ page }) => {
+  await page.goto("/chess/play");
+  await expect(page.locator("[data-online-link]")).toHaveCount(0);
+  await page.route("**/api/auth/me", (route) =>
+    route.fulfill({ json: { user: null, providers: { google: true, telegram: false }, reports: false } }),
+  );
   await page.goto("/chess/play");
   await page.locator("[data-online-link]").click();
   await expect(page).toHaveURL(/\/chess\/online$/);

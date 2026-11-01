@@ -10,7 +10,7 @@ export default function NotFound() {
   return (
     <>
       <SiteHeader />
-      <main className="mx-auto flex max-w-xl flex-col items-center px-4 py-20 text-center">
+      <main id="main" tabIndex={-1} className="mx-auto flex max-w-xl flex-col items-center px-4 py-20 text-center">
         <div className="text-7xl" aria-hidden>
           🤖❓
         </div>

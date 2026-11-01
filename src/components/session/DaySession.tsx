@@ -106,7 +106,7 @@ export function DaySession({
         <ProgressDots day={day} step={step} onGo={go} />
       </header>
 
-      <main className="mx-auto max-w-6xl px-4 pt-5">
+      <main id="main" tabIndex={-1} className="mx-auto max-w-6xl px-4 pt-5">
         {step === 0 && <DayIntro day={day} onStart={() => go(1)} />}
         {resting && <RestStop onRest={() => router.push("/")} onMore={() => go(step + 1)} />}
         {step >= 1 && step <= total && !resting && (

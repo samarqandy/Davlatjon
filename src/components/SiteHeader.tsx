@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useAccount } from "@/lib/account";
+import { loginAvailable, useAccount } from "@/lib/account";
 import { useT } from "@/lib/i18n";
 import { BRAND, BRAND_TAGLINE } from "@/lib/brand";
 import { LangSwitch } from "./LangSwitch";
@@ -10,6 +10,7 @@ import { LogoMark } from "./Logo";
 
 export function SiteHeader({ active }: { active?: "home" | "chess" | "problems" | "parent" | "leaderboard" }) {
   const t = useT();
+  const ranked = loginAvailable(useAccount());
   const link = (href: string, emoji: string, label: string, key: typeof active) => (
     <Link
       href={href}
@@ -44,7 +45,7 @@ export function SiteHeader({ active }: { active?: "home" | "chess" | "problems" 
         <nav className="hidden items-center gap-1 sm:flex" aria-label={t("Разделы", "Boʻlimlar")}>
           {link("/chess", "♞", t("Шахматы", "Shaxmat"), "chess")}
           {link("/my-problems", "✍️", t("Мои задачи", "Masalalarim"), "problems")}
-          {link("/leaderboard", "🏆", t("Рейтинг", "Reyting"), "leaderboard")}
+          {ranked && link("/leaderboard", "🏆", t("Рейтинг", "Reyting"), "leaderboard")}
           {link("/parent", "🔒", t("Родителям", "Ota-onalarga"), "parent")}
         </nav>
         {/* На телефоне нижнее меню — детское, поэтому вход для взрослых — маленький замок рядом с языком. */}

@@ -8,7 +8,7 @@ export default function ChessPuzzlesPage() {
   return (
     <>
       <SiteHeader active="chess" />
-      <main className="mx-auto max-w-6xl px-4 pt-6 pb-16">
+      <main id="main" tabIndex={-1} className="mx-auto max-w-6xl px-4 pt-6 pb-16">
         <PuzzleHub />
       </main>
       <SiteFooter />

@@ -10,7 +10,7 @@ export default function ParentLayout({ children }: Readonly<{ children: ReactNod
   return (
     <>
       <SiteHeader active="parent" />
-      <main className="mx-auto max-w-6xl px-4 pt-6">
+      <main id="main" tabIndex={-1} className="mx-auto max-w-6xl px-4 pt-6">
         <ParentNav weeks={WEEKS.map((w) => ({ number: w.number, dayIds: w.days.map((d) => d.id) }))} />
         {children}
       </main>

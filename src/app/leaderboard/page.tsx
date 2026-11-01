@@ -8,7 +8,7 @@ export default function LeaderboardPage() {
   return (
     <>
       <SiteHeader active="leaderboard" />
-      <main className="mx-auto max-w-3xl px-4 pt-6 pb-16">
+      <main id="main" tabIndex={-1} className="mx-auto max-w-3xl px-4 pt-6 pb-16">
         <LeaderboardView />
       </main>
       <SiteFooter />

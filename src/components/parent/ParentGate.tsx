@@ -1,5 +1,6 @@
 "use client";
 
+import { stampText } from "@/lib/dates";
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { Button } from "@/components/ui";
 import { useT } from "@/lib/i18n";
@@ -13,12 +14,8 @@ import {
   useParentGate,
 } from "@/lib/parentGate";
 
-const two = (n: number) => String(n).padStart(2, "0");
-/** «30.09 14:05» — когда откроется сброс. */
-const stamp = (ms: number) => {
-  const d = new Date(ms);
-  return `${two(d.getDate())}.${two(d.getMonth() + 1)} ${two(d.getHours())}:${two(d.getMinutes())}`;
-};
+/** «30.09, 14:05» — когда откроется сброс. */
+const stamp = (ms: number) => stampText(ms);
 
 /** Показывает содержимое только взрослому (после ввода PIN-кода). */
 export function ParentGate({ children, compact = false }: { children: ReactNode; compact?: boolean }) {
