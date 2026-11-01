@@ -69,6 +69,11 @@ test("удаление данных аккаунта: два нажатия и �
   });
   await page.goto("/parent");
   const pins = page.locator('input[type="password"]');
+  // Замок рисуется после загрузки страницы: без ожидания isVisible() иногда видел пустоту и пропускал PIN.
+  await pins
+    .first()
+    .waitFor({ timeout: 5000 })
+    .catch(() => undefined);
   if (await pins.first().isVisible()) {
     if ((await pins.count()) > 1) {
       await pins.nth(0).fill("2468");

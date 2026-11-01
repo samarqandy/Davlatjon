@@ -1,6 +1,12 @@
 {
   "version": 1,
   "skills": {
+    "chess-puzzles-to-pgn": {
+      "source": "dash1971/ai-chess-assistant",
+      "sourceType": "github",
+      "skillPath": "skills/chess-puzzles-to-pgn/SKILL.md",
+      "computedHash": "7d3bbed6c62d134f1ff707de4e128483c680e7ffe9e96f844479b60b2c3d783d"
+    },
     "frontend-design": {
       "source": "anthropics/skills",
       "sourceType": "github",

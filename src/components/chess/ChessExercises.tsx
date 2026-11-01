@@ -152,7 +152,13 @@ function SquaresExercise({ ex }: { ex: Of<"squares"> }) {
           {t(`(${found.length} из ${ex.targets.length})`, `(${found.length} / ${ex.targets.length})`)}
         </span>
       </p>
-      <ChessBoard id={`sq-${ex.id}`} position="8/8/8/8/8/8/8/8 w - - 0 1" marks={marks} onSquare={tap} />
+      <ChessBoard
+        id={`sq-${ex.id}`}
+        position="8/8/8/8/8/8/8/8 w - - 0 1"
+        marks={marks}
+        onSquare={tap}
+        showTurn={false}
+      />
       {done && (
         <Button
           variant="secondary"
@@ -242,7 +248,7 @@ function MovesExercise({ ex }: { ex: Of<"moves"> }) {
 
   return (
     <ExerciseShell ex={ex} solved={!!progress.solvedAt} feedback={feedback}>
-      <ChessBoard id={`mv-${ex.id}`} position={ex.fen} marks={marks} onSquare={tap} />
+      <ChessBoard id={`mv-${ex.id}`} position={ex.fen} marks={marks} onSquare={tap} showTurn={false} />
       <div className="flex flex-wrap items-center gap-2">
         <Button onClick={check} disabled={marked.length === 0 || solvedNow}>
           {t("Проверить", "Tekshirish")}

@@ -15,8 +15,8 @@ export type SquareMark =
 
 const MARK_STYLE: Record<SquareMark, CSSProperties> = {
   selected: { boxShadow: "inset 0 0 0 4px #f59e0b", backgroundColor: "rgba(251, 191, 36, 0.45)" },
-  target: { background: "radial-gradient(circle, rgba(79, 70, 229, 0.55) 19%, transparent 21%)" },
-  capture: { background: "radial-gradient(circle, transparent 58%, rgba(79, 70, 229, 0.55) 60%)" },
+  target: { background: "radial-gradient(circle, rgba(79, 70, 229, 0.6) 25%, transparent 27%)" },
+  capture: { background: "radial-gradient(circle, transparent 54%, rgba(79, 70, 229, 0.6) 56%)" },
   mark: {
     background: "radial-gradient(circle, rgba(124, 58, 237, 0.85) 22%, rgba(124, 58, 237, 0.18) 24%)",
   },
@@ -107,6 +107,7 @@ export function ChessBoard({
   sounds,
   rejectFeedback = true,
   promotion = null,
+  showTurn = true,
   className,
 }: {
   id: string;
@@ -136,6 +137,8 @@ export function ChessBoard({
   notation?: boolean | "auto";
   /** Рамка: деревянная или тонкая для печати. */
   frame?: "wood" | "print";
+  /** Квадратик в углу рамки: □ — ходят белые, ■ — чёрные (как в шахматных книгах). Только для FEN 8 × 8. */
+  showTurn?: boolean;
   className?: string;
 }) {
   const t = useT();
@@ -185,6 +188,8 @@ export function ChessBoard({
   const coords = notation === "auto" ? maxWidth >= COORDS_MIN_WIDTH : notation;
   const { files, ranks } = coordLabels(cols, rows, orientation);
   const turn = typeof position === "string" ? position.split(" ")[1] : undefined;
+  const turnSide = showTurn && cols === 8 && rows === 8 && (turn === "w" || turn === "b") ? turn : null;
+  const turnText = turnSide === "w" ? t("ходят белые", "oqlar yuradi") : t("ходят чёрные", "qoralar yuradi");
   const dragAllowed = (square: string, piece: string) => {
     if (piece === "star") return false;
     if (canDrag) return canDrag(square, piece);
@@ -197,10 +202,14 @@ export function ChessBoard({
         frame === "print" ? "rounded-md bg-white ring-1 ring-black" : "rounded-xl shadow-card",
         className,
       )}
-      style={{ maxWidth, backgroundColor: frame === "print" ? undefined : theme.frame }}
+      // Доска не выше экрана: на ноутбуке и в альбомной ориентации телефона она целиком видна вместе с заголовком.
+      style={{
+        maxWidth: frame === "print" ? maxWidth : `min(${maxWidth}px, calc(100svh - 8rem))`,
+        backgroundColor: frame === "print" ? undefined : theme.frame,
+      }}
       data-board-theme={frame === "print" ? undefined : theme.id}
       role="group"
-      aria-label={label ?? t("Шахматная доска", "Shaxmat taxtasi")}
+      aria-label={[label ?? t("Шахматная доска", "Shaxmat taxtasi"), turnSide && turnText].filter(Boolean).join(", ")}
       data-board={id}
       data-rejected={rejected ? rejected.square : undefined}
       onPointerDownCapture={sfxUnlock}
@@ -271,6 +280,7 @@ export function ChessBoard({
           />
           {promotion && <PromotionPicker request={promotion} cols={cols} rows={rows} orientation={orientation} />}
         </div>
+        {coords && turnSide && <span className="board-turn" data-turn={turnSide} title={turnText} aria-hidden />}
         {coords && (
           <div
             className="board-files"

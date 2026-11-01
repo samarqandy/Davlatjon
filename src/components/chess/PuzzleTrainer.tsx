@@ -328,6 +328,13 @@ export function PuzzlePlayer({
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
       <div className="space-y-3">
+        {/* На телефоне задание и чей ход — над доской: раньше они были под ней, и до них приходилось листать. */}
+        <div className="lg:hidden" data-puzzle-prompt>
+          <p className="text-xs font-extrabold tracking-wide text-muted uppercase">
+            {STARS(stars)} · {solver === "w" ? t("ходят белые", "oqlar yuradi") : t("ходят чёрные", "qoralar yuradi")}
+          </p>
+          <p className="text-lg font-black text-brand-dark">{goal}</p>
+        </div>
         <ChessBoard
           id={`puzzle-${puzzle.id}`}
           position={shown}
@@ -342,16 +349,16 @@ export function PuzzlePlayer({
         />
         <Feedback state={feedback} silent={quiet} />
       </div>
-      <aside className="space-y-3">
+      <aside className="flex flex-col gap-3">
         <div className="rounded-2xl bg-white p-4 shadow-card">
-          <p className="text-xs font-extrabold tracking-wide text-muted uppercase">
+          <p className="hidden text-xs font-extrabold tracking-wide text-muted uppercase lg:block">
             {STARS(stars)} · {solver === "w" ? t("ходят белые", "oqlar yuradi") : t("ходят чёрные", "qoralar yuradi")}
           </p>
           <h2 className="mt-1 text-xl font-black">
             {bank && theme ? `${theme.emoji} ` : ""}
             {text.title}
           </h2>
-          <p className="mt-1 text-lg font-bold text-brand-dark">{goal}</p>
+          <p className="mt-1 hidden text-lg font-bold text-brand-dark lg:block">{goal}</p>
           {text.source && <p className="mt-1 text-xs text-muted">{text.source}</p>}
           <p className="mt-2 text-sm text-muted">
             {t(
@@ -364,6 +371,8 @@ export function PuzzlePlayer({
           <Button
             variant="secondary"
             size="sm"
+            // На телефоне кнопки — сразу под доской, выше описания задачи.
+            className="order-first self-start lg:order-none"
             onClick={() => {
               setMisses(2);
               // Подсказка в задаче из базы — как ошибка: рейтинг не растёт, задача вернётся на повторение.
@@ -378,7 +387,7 @@ export function PuzzlePlayer({
           </Button>
         )}
         {done && next && (
-          <Button onClick={next.onClick} size="lg">
+          <Button onClick={next.onClick} size="lg" className="order-first lg:order-none">
             {next.label}
           </Button>
         )}
