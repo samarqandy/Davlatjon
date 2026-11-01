@@ -95,7 +95,10 @@ function ReviewList({ notFound }: { notFound: boolean }) {
   const list = hydrated ? games.filter(canReview) : [];
   return (
     <div className="space-y-6">
-      <Link href="/chess" className="inline-flex min-h-11 items-center gap-1 text-sm font-extrabold text-brand hover:underline">
+      <Link
+        href="/chess"
+        className="inline-flex min-h-11 items-center gap-1 text-sm font-extrabold text-brand hover:underline"
+      >
         ← {t("Шахматная школа", "Shaxmat maktabi")}
       </Link>
       <header>

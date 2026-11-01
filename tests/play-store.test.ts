@@ -242,7 +242,13 @@ describe("серия дней у друзей", () => {
 });
 
 describe("рейтинг", () => {
-  const totals = (total: number, chess = total): XpBreakdown => ({ total, math: total - chess, chess, puzzles: 0, quick: 0 });
+  const totals = (total: number, chess = total): XpBreakdown => ({
+    total,
+    math: total - chess,
+    chess,
+    puzzles: 0,
+    quick: 0,
+  });
   const WEEK = 7 * 86_400_000;
 
   it("показывает только записанных детей, по убыванию очков, с фильтром по возрасту", async () => {

@@ -384,7 +384,9 @@ export function playStore(query: SqlQuery, clock: () => number = Date.now) {
       const week = weekKey(clock());
       const prev = (await q("select week, totals, base from lab_scores where key = $1", [key]))[0];
       const base = nextBase(
-        prev ? { week: String(prev.week), totals: json<XpBreakdown>(prev.totals), base: json<XpBreakdown>(prev.base) } : null,
+        prev
+          ? { week: String(prev.week), totals: json<XpBreakdown>(prev.totals), base: json<XpBreakdown>(prev.base) }
+          : null,
         info.totals,
         week,
       );

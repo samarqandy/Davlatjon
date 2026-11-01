@@ -119,9 +119,14 @@ export function OnlineControls() {
               </label>
             ))}
           </div>
-          <label className="flex cursor-pointer items-start gap-4 rounded-2xl border-2 border-line p-4" data-leaderboard-switch>
+          <label
+            className="flex cursor-pointer items-start gap-4 rounded-2xl border-2 border-line p-4"
+            data-leaderboard-switch
+          >
             <span className="flex-1">
-              <span className="block font-extrabold">🏆 {t("Участвовать в общем рейтинге", "Umumiy reytingda qatnashish")}</span>
+              <span className="block font-extrabold">
+                🏆 {t("Участвовать в общем рейтинге", "Umumiy reytingda qatnashish")}
+              </span>
               <span className="block text-[0.95rem] text-muted">
                 {t(
                   "Другие дети увидят только имя в игре, аватарку и очки этого ребёнка — настоящего имени и возраста никто не увидит. Выключите — запись из рейтинга сразу исчезнет. Настройка относится к выбранному сейчас ребёнку.",
@@ -143,7 +148,10 @@ export function OnlineControls() {
               aria-hidden
             >
               <span
-                className={cn("absolute top-1 h-5 w-5 rounded-full bg-white shadow transition-[left]", ranked ? "left-6" : "left-1")}
+                className={cn(
+                  "absolute top-1 h-5 w-5 rounded-full bg-white shadow transition-[left]",
+                  ranked ? "left-6" : "left-1",
+                )}
               />
             </span>
           </label>
