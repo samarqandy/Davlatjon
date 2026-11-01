@@ -1,5 +1,6 @@
 "use client";
 
+import { stampText } from "@/lib/dates";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Button, ButtonLink, cn, ProgressBar } from "@/components/ui";
@@ -82,10 +83,7 @@ export function ReviewHub() {
   return <ReviewList notFound={hydrated && !!id && !game} />;
 }
 
-function dateText(at: number): string {
-  const d = new Date(at);
-  return `${d.getDate()}.${String(d.getMonth() + 1).padStart(2, "0")} ${d.getHours()}:${String(d.getMinutes()).padStart(2, "0")}`;
-}
+const dateText = (at: number) => stampText(at);
 
 function ReviewList({ notFound }: { notFound: boolean }) {
   const hydrated = useHydrated();

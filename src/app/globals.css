@@ -122,6 +122,30 @@
     cursor: pointer;
   }
 
+  /* Без задержки на двойное касание: кнопки и ссылки отвечают на телефоне сразу. */
+  a,
+  button,
+  input,
+  label,
+  select,
+  summary,
+  textarea,
+  [role="button"] {
+    touch-action: manipulation;
+  }
+
+  /* Заголовки переносятся ровно, без одного слова на последней строке. */
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  /* Сюда ведёт ссылка «Перейти к содержимому»; рамка вокруг всей страницы не нужна. */
+  main:focus {
+    outline: none;
+  }
+
   button:disabled {
     cursor: not-allowed;
   }

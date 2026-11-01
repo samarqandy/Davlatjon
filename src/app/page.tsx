@@ -8,7 +8,7 @@ export default function HomePage() {
   return (
     <>
       <SiteHeader active="home" />
-      <main className="mx-auto max-w-6xl px-4 pt-6">
+      <main id="main" tabIndex={-1} className="mx-auto max-w-6xl px-4 pt-6">
         <HomeDashboard
           weeks={{
             ru: WEEKS.map(summarizeWeek),

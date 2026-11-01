@@ -8,7 +8,7 @@ export default function Page() {
   return (
     <>
       <SiteHeader active="home" />
-      <main className="mx-auto max-w-3xl px-4 pt-6 pb-16">
+      <main id="main" tabIndex={-1} className="mx-auto max-w-3xl px-4 pt-6 pb-16">
         <QuickView />
       </main>
       <SiteFooter />

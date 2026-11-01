@@ -1,5 +1,6 @@
 "use client";
 
+import { dayText } from "@/lib/dates";
 import { useState, type FormEvent } from "react";
 import { Button, Card } from "@/components/ui";
 import { useT } from "@/lib/i18n";
@@ -137,9 +138,7 @@ export function MyProblems() {
                 <h2 className="text-xl font-black">
                   {problems.length - i}. {p.title}
                 </h2>
-                <span className="shrink-0 text-xs font-bold text-muted">
-                  {new Date(p.createdAt).toLocaleDateString("ru-RU")}
-                </span>
+                <span className="shrink-0 text-xs font-bold text-muted">{dayText(p.createdAt)}</span>
               </div>
               <p className="text-lg leading-relaxed whitespace-pre-wrap">{p.text}</p>
               {p.answer && (

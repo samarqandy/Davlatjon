@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/components/ui";
+import { loginAvailable, useAccount } from "@/lib/account";
 import { useT } from "@/lib/i18n";
 
 /** Корни разделов: нижнее меню показываем только там, а внутри задач и партий оно не отвлекает. */
@@ -15,12 +16,14 @@ const ROOTS = ["/", "/chess", "/my-problems", "/leaderboard"];
 export function BottomNav() {
   const path = usePathname().replace(/(.)\/$/, "$1");
   const t = useT();
+  // Рейтинг виден только там, где подключён вход: без него вкладка вела бы в тупик.
+  const ranked = loginAvailable(useAccount());
   if (!ROOTS.includes(path)) return null;
   const tabs = [
     { href: "/", emoji: "🏠", label: t("Главная", "Bosh sahifa") },
     { href: "/chess", emoji: "♞", label: t("Шахматы", "Shaxmat") },
     { href: "/my-problems", emoji: "✍️", label: t("Мои задачи", "Masalalarim") },
-    { href: "/leaderboard", emoji: "🏆", label: t("Рейтинг", "Reyting") },
+    ...(ranked ? [{ href: "/leaderboard", emoji: "🏆", label: t("Рейтинг", "Reyting") }] : []),
   ];
   return (
     <>
@@ -30,7 +33,7 @@ export function BottomNav() {
         aria-label={t("Нижнее меню", "Pastki menyu")}
         className="no-print fixed inset-x-0 bottom-0 z-30 border-t border-line bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur sm:hidden"
       >
-        <ul className="mx-auto grid max-w-md grid-cols-4">
+        <ul className={cn("mx-auto grid max-w-md", tabs.length === 4 ? "grid-cols-4" : "grid-cols-3")}>
           {tabs.map((tab) => {
             const active = tab.href === path;
             return (

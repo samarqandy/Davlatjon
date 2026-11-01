@@ -1,5 +1,6 @@
 "use client";
 
+import { dayText } from "@/lib/dates";
 import Link from "next/link";
 import { PieceIcon } from "@/components/chess/ChessBoard";
 import { RichText } from "@/components/RichText";
@@ -14,7 +15,7 @@ import { sanFor, tFor, useLang, useT, type Lang } from "@/lib/i18n";
 import { pluralize } from "@/lib/plural";
 import { bankCount } from "@/lib/puzzleBank";
 import { accuracy, solvedCount, themeStats } from "@/lib/puzzleStats";
-import { isoDay, updateSettings, useHydrated, useStore, type ChessExerciseProgress } from "@/lib/store";
+import { updateSettings, useHydrated, useStore, type ChessExerciseProgress } from "@/lib/store";
 import { useChess } from "@/lib/useChess";
 
 const KIND_LABEL: Record<ChessExercise["kind"], { ru: string; uz: string }> = {
@@ -177,9 +178,8 @@ const RESULT_LABEL = {
   draw: { ru: "ничья", uz: "durang" },
 } as const;
 
-/** Дата партии: по-русски — как раньше, по-узбекски — привычное «28.09.2026». */
-const dateText = (ms: number, lang: Lang) =>
-  lang === "uz" ? isoDay(ms).split("-").reverse().join(".") : new Date(ms).toLocaleDateString("ru-RU");
+/** Дата партии: «28.09.2026» на обоих языках. */
+const dateText = (ms: number) => dayText(ms);
 
 /** Игра с роботом, задачи, дебюты, партии и дневник — одним взглядом. */
 function ActivitySummary() {
@@ -278,8 +278,8 @@ function ActivitySummary() {
           {games.length > 0 && (
             <p className="mt-2 text-xs text-muted">
               {t(
-                `Последняя партия: ${result(games[0].result)}, ${games[0].moves} ходов, ${dateText(games[0].at, lang)}.`,
-                `Oxirgi partiya: ${result(games[0].result)}, ${games[0].moves} ta yurish, ${dateText(games[0].at, lang)}.`,
+                `Последняя партия: ${result(games[0].result)}, ${games[0].moves} ходов, ${dateText(games[0].at)}.`,
+                `Oxirgi partiya: ${result(games[0].result)}, ${games[0].moves} ta yurish, ${dateText(games[0].at)}.`,
               )}
             </p>
           )}

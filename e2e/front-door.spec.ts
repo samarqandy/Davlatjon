@@ -40,13 +40,16 @@ test("знакомство: язык → возраст; без имени и в
   await expect(page.locator("[data-name-banner]")).toHaveCount(0);
 });
 
-test("нижнее меню на телефоне: четыре раздела; ссылка «Для взрослых» внизу страницы", async ({ page, isMobile }) => {
+test("нижнее меню на телефоне: три раздела без входа; ссылка «Для взрослых» внизу страницы", async ({
+  page,
+  isMobile,
+}) => {
   await prepare(page);
   await page.goto("/");
   const bar = page.locator("[data-bottom-nav]");
   if (isMobile) {
     await expect(bar).toBeVisible();
-    await expect(bar.getByRole("link")).toHaveCount(4);
+    await expect(bar.getByRole("link")).toHaveCount(3);
     await expect(bar.getByRole("link", { name: /Главная/ })).toHaveAttribute("aria-current", "page");
     // Внутри задач меню не отвлекает.
     await page.goto("/week/1/day/1#task-1");
@@ -108,4 +111,25 @@ test("старшим остановки нет: после третьей зад
   await page.getByRole("button", { name: "Дальше →" }).click();
   await expect(page).toHaveURL(/#task-4$/);
   await expect(page.locator("[data-rest-stop]")).toHaveCount(0);
+});
+
+test("с подключённым входом в меню появляется «Рейтинг»; ссылка «к содержимому» ведёт в main", async ({
+  page,
+  isMobile,
+}) => {
+  await prepare(page);
+  await page.route("**/api/auth/me", (route) =>
+    route.fulfill({ json: { user: null, providers: { google: true, telegram: false }, reports: false } }),
+  );
+  await page.goto("/");
+  if (isMobile) await expect(page.locator("[data-bottom-nav]").getByRole("link")).toHaveCount(4);
+  else
+    await expect(
+      page.getByRole("navigation", { name: "Разделы" }).getByRole("link", { name: "Рейтинг" }),
+    ).toBeVisible();
+  await page.keyboard.press("Tab");
+  const skip = page.getByRole("link", { name: "Перейти к содержимому" });
+  await expect(skip).toBeFocused();
+  await skip.press("Enter");
+  await expect(page.locator("main#main")).toBeFocused();
 });

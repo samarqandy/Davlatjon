@@ -46,6 +46,14 @@ export function HomeDashboard({ weeks: both }: { weeks: Both<WeekSummary[]> }) {
     anotherWay: tasks.filter((t) => t.marks.anotherWay).length,
     own: state.myProblems.length,
   };
+  const achievements = hydrated
+    ? [
+        { emoji: "✅", value: stats.solved, label: t("задач решено", "ta masala yechildi") },
+        { emoji: "💬", value: stats.explained, label: t("решений объяснено", "ta yechim tushuntirildi") },
+        { emoji: "🔁", value: stats.anotherWay, label: t("других способов", "ta boshqa usul") },
+        { emoji: "✍️", value: stats.own, label: t("своих задач", "ta oʻz masalam"), href: "/my-problems" },
+      ].filter((a) => a.value > 0)
+    : [];
 
   return (
     <div className="space-y-8">
@@ -87,14 +95,15 @@ export function HomeDashboard({ weeks: both }: { weeks: Both<WeekSummary[]> }) {
                 {weeks.length > 1 && t(`Неделя ${next.week} · `, `${next.week}-hafta · `)}
                 {t(`День ${next.day}.`, `${next.day}-kun.`)} {next.title}
               </p>
-              <div className="mt-3 flex flex-wrap gap-1.5" aria-hidden>
+              {/* Все задачи дня в одну строку: на узком экране значки чуть сжимаются, а не переносятся по одному. */}
+              <div className="mt-3 grid auto-cols-[minmax(0,2.25rem)] grid-flow-col gap-1.5" aria-hidden>
                 {next.tasks.map((task) => {
                   const solved = hydrated && state.tasks[task.id]?.status === "solved";
                   return (
                     <span
                       key={task.id}
                       className={cn(
-                        "flex h-9 w-9 items-center justify-center rounded-xl text-lg",
+                        "flex aspect-square items-center justify-center rounded-xl text-lg",
                         solved ? "bg-mint text-white" : "bg-white/20",
                       )}
                     >
@@ -261,21 +270,14 @@ export function HomeDashboard({ weeks: both }: { weeks: Both<WeekSummary[]> }) {
         </div>
       </details>
 
-      <section className="grid grid-cols-2 gap-3 sm:grid-cols-4" aria-label={t("Мои достижения", "Yutuqlarim")}>
-        <StatCard emoji="✅" value={hydrated ? stats.solved : 0} label={t("задач решено", "ta masala yechildi")} />
-        <StatCard
-          emoji="💬"
-          value={hydrated ? stats.explained : 0}
-          label={t("решений объяснено", "ta yechim tushuntirildi")}
-        />
-        <StatCard emoji="🔁" value={hydrated ? stats.anotherWay : 0} label={t("других способов", "ta boshqa usul")} />
-        <StatCard
-          emoji="✍️"
-          value={hydrated ? stats.own : 0}
-          label={t("своих задач", "ta oʻz masalam")}
-          href="/my-problems"
-        />
-      </section>
+      {/* Счётчики — только непустые: у новичка ряд нулей ничего не говорит и занимает экран. */}
+      {achievements.length > 0 && (
+        <section className="grid grid-cols-2 gap-3 sm:grid-cols-4" aria-label={t("Мои достижения", "Yutuqlarim")}>
+          {achievements.map((a) => (
+            <StatCard key={a.emoji} {...a} />
+          ))}
+        </section>
+      )}
     </div>
   );
 }

@@ -8,7 +8,7 @@ export default function MyProblemsPage() {
   return (
     <>
       <SiteHeader active="problems" />
-      <main className="mx-auto max-w-6xl px-4 pt-6">
+      <main id="main" tabIndex={-1} className="mx-auto max-w-6xl px-4 pt-6">
         <MyProblems />
       </main>
       <SiteFooter />

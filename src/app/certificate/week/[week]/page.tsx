@@ -27,7 +27,7 @@ export default async function WeekCertificatePage({ params }: Props) {
   return (
     <>
       <SiteHeader active="home" />
-      <main className="mx-auto max-w-6xl px-4 pt-6 pb-16 print:p-0">
+      <main id="main" tabIndex={-1} className="mx-auto max-w-6xl px-4 pt-6 pb-16 print:p-0">
         <WeekCertificateView
           week={{ ru: summarizeWeek(w), uz: summarizeWeek(localizeWeek(w, "uz")) }}
           weeksTotal={WEEKS.length}

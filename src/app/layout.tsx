@@ -1,3 +1,4 @@
+import { SkipLink } from "@/components/SkipLink";
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import "@fontsource-variable/nunito";
@@ -61,6 +62,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
         />
       </head>
       <body className="min-h-dvh">
+        <SkipLink />
         {children}
         <BottomNav />
         <ServiceWorker />

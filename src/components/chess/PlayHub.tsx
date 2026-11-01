@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Button, cn } from "@/components/ui";
 import { BOSS_LEVEL, bestCrowns } from "@/lib/crowns";
 import { robotLevels } from "@/lib/engine/search";
+import { loginAvailable, useAccount } from "@/lib/account";
 import { profileText, useAgeProfile } from "@/lib/age";
 import { useLang, useT } from "@/lib/i18n";
 import { CLOCKS, ENDGAMES, ODDS_PIECES, clockLabel, endgameText, oddsPieceLabel } from "@/lib/play";
@@ -64,6 +65,7 @@ function ModeChooser() {
   const lang = useLang();
   const profile = useAgeProfile();
   const robotName = profileText(profile, lang).robotName;
+  const online = loginAvailable(useAccount());
   const games = useStore((s) => s.chessGames);
   const robotGames = hydrated ? games.filter((g) => g.mode === "robot") : [];
   const wins = (level: number) => robotGames.filter((g) => g.level === level && g.result === "win").length;
@@ -99,30 +101,6 @@ function ModeChooser() {
           )}
         </p>
       </header>
-
-      <Link
-        href="/chess/online"
-        className="flex items-center gap-4 rounded-3xl bg-brand p-5 text-white shadow-lift transition hover:-translate-y-0.5"
-        data-online-link
-      >
-        <span className="text-4xl" aria-hidden>
-          👥
-        </span>
-        <span className="flex-1">
-          <span className="block text-xl font-black">
-            {t("Играть с друзьями по сети", "Doʻstlar bilan onlayn oʻynash")}
-          </span>
-          <span className="block text-white/85">
-            {t(
-              "Найди друга по имени, подружитесь и играйте партии на расстоянии.",
-              "Doʻstingni ismi bilan top, doʻst boʻling va masofadan turib oʻynang.",
-            )}
-          </span>
-        </span>
-        <span className="text-2xl" aria-hidden>
-          ▶
-        </span>
-      </Link>
 
       <details className="rounded-3xl bg-white p-5 shadow-card" data-board-look-details>
         <summary className="cursor-pointer text-lg font-black">
@@ -222,6 +200,33 @@ function ModeChooser() {
           ))}
         </div>
       </section>
+
+      {/* Игра по сети — только там, где подключён вход: иначе кнопка ведёт в тупик. */}
+      {online && (
+        <Link
+          href="/chess/online"
+          className="flex items-center gap-4 rounded-3xl bg-brand p-5 text-white shadow-lift transition hover:-translate-y-0.5"
+          data-online-link
+        >
+          <span className="text-4xl" aria-hidden>
+            👥
+          </span>
+          <span className="flex-1">
+            <span className="block text-xl font-black">
+              {t("Играть с друзьями по сети", "Doʻstlar bilan onlayn oʻynash")}
+            </span>
+            <span className="block text-white/85">
+              {t(
+                "Найди друга по имени, подружитесь и играйте партии на расстоянии.",
+                "Doʻstingni ismi bilan top, doʻst boʻling va masofadan turib oʻynang.",
+              )}
+            </span>
+          </span>
+          <span className="text-2xl" aria-hidden>
+            ▶
+          </span>
+        </Link>
+      )}
 
       <div className="grid gap-4 md:grid-cols-3">
         <section className="rounded-3xl bg-white p-5 shadow-card" aria-labelledby="two">
