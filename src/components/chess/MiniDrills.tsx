@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Button, cn, ProgressBar } from "@/components/ui";
+import { PIECE_WORDS } from "@/lib/board";
 import { attackersOf, pieceAt, type Color } from "@/lib/chess";
 import { useLang, useT } from "@/lib/i18n";
 import {
@@ -307,21 +308,6 @@ function SafetyDrill() {
 // ---------------------------------------------------------------------------
 // «Запомни»
 // ---------------------------------------------------------------------------
-
-const PIECE_WORDS: Record<string, [ru: string, uz: string]> = {
-  wK: ["белый король", "oq shoh"],
-  bK: ["чёрный король", "qora shoh"],
-  wQ: ["белый ферзь", "oq farzin"],
-  bQ: ["чёрный ферзь", "qora farzin"],
-  wR: ["белая ладья", "oq rux"],
-  bR: ["чёрная ладья", "qora rux"],
-  wB: ["белый слон", "oq fil"],
-  bB: ["чёрный слон", "qora fil"],
-  wN: ["белый конь", "oq ot"],
-  bN: ["чёрный конь", "qora ot"],
-  wP: ["белая пешка", "oq piyoda"],
-  bP: ["чёрная пешка", "qora piyoda"],
-};
 
 /** «Где стоял белый слон?» — у русских названий свой род. */
 function whereWas(piece: string, lang: "ru" | "uz"): string {

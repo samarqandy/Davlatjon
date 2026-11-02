@@ -1,13 +1,31 @@
 "use client";
 
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type KeyboardEvent as ReactKeyboardEvent,
+} from "react";
 import { Chessboard, type PositionDataType } from "react-chessboard";
 import { cn } from "@/components/ui";
-import { COORDS_MIN_WIDTH, classifyChange, coordLabels, snapshotOf, type Snapshot } from "@/lib/board";
+import {
+  COORDS_MIN_WIDTH,
+  PIECE_WORDS,
+  centerSquare,
+  classifyChange,
+  coordLabels,
+  snapshotOf,
+  stepSquare,
+  type BoardKey,
+  type Snapshot,
+} from "@/lib/board";
 import { boardThemeOf } from "@/lib/boardLook";
-import { useT } from "@/lib/i18n";
+import { useLang, useT } from "@/lib/i18n";
 import { playSfx, sfxUnlock } from "@/lib/sfx";
 import { useStore } from "@/lib/store";
+import { useMotionAllowed } from "@/lib/useMotion";
 import { PIECES, PieceIcon } from "./PieceIcon";
 
 export { PieceIcon };
@@ -38,6 +56,20 @@ const REJECTED_STYLE: CSSProperties = {
   backgroundColor: "rgba(239, 68, 68, 0.65)",
   animation: "shake 0.35s ease-in-out",
 };
+
+/** Курсор клавиатуры: двойная рамка (синяя по краю, белая внутри) видна и на светлой, и на тёмной клетке. */
+const CURSOR_SHADOW = "inset 0 0 0 3px #4f46e5, inset 0 0 0 6px #fff";
+
+const BOARD_KEYS = new Set<string>([
+  "ArrowUp",
+  "ArrowDown",
+  "ArrowLeft",
+  "ArrowRight",
+  "Home",
+  "End",
+  "PageUp",
+  "PageDown",
+]);
 
 /** Клетка → фигура: «wN», «bK», «star». */
 export type BoardPieces = Record<string, string>;
@@ -123,6 +155,8 @@ export function ChessBoard({
   className?: string;
 }) {
   const t = useT();
+  const lang = useLang();
+  const motion = useMotionAllowed();
   const [rejected, setRejected] = useState<{ square: string; n: number } | null>(null);
   const rejectTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const dragEnd = useRef<{ square: string; at: number } | null>(null);
@@ -139,10 +173,22 @@ export function ChessBoard({
     if (onSquare?.(square) === false) reject(square);
   };
 
+  // Клавиатура: рамка-курсор ходит стрелками, Enter или пробел — «нажать» на клетку. Так же, как пальцем:
+  // у досок с onSquare — их собственная логика выбора, у досок только с перетаскиванием — «откуда», затем «куда».
+  const interactive = !!onSquare || (draggable && !!onDrop);
+  const [cursor, setCursor] = useState<string | null>(null);
+  const [keyboard, setKeyboard] = useState(false);
+  const [keyFrom, setKeyFrom] = useState<string | null>(null);
+  const [said, setSaid] = useState("");
+  const pointerAt = useRef(0);
+  const frameRef = useRef<HTMLDivElement>(null);
+
   // Звук хода: сравниваем новую расстановку с прошлой.
   const themeId = useStore((s) => s.settings.boardTheme);
   const theme = boardThemeOf(themeId);
   const key = positionKey(position);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- key и есть расстановка
+  const onBoard = useMemo(() => snapshotOf(position, cols), [key, cols]);
   const withSound = sounds ?? (maxWidth >= 300 && frame !== "print");
   const seen = useRef<{ id: string; now: Snapshot; before: Snapshot | null } | null>(null);
   useEffect(() => {
@@ -163,9 +209,32 @@ export function ChessBoard({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key, id]);
 
+  // Фигуры библиотеки — каждая отдельная остановка Tab (32 на полной доске). Доска с клавиатуры — одна
+  // остановка; фигуры убираем из порядка Tab (и после каждого хода — новые узлы).
+  useEffect(() => {
+    const frame = frameRef.current;
+    if (!frame) return;
+    const strip = () =>
+      frame
+        .querySelectorAll('[aria-roledescription="draggable"][tabindex]')
+        .forEach((el) => el.removeAttribute("tabindex"));
+    strip();
+    const mo = new MutationObserver(strip);
+    mo.observe(frame, { subtree: true, childList: true, attributes: true, attributeFilter: ["tabindex"] });
+    return () => mo.disconnect();
+  }, []);
+
   const squareStyles: Record<string, CSSProperties> = {};
   for (const [sq, m] of Object.entries(marks)) if (m) squareStyles[sq] = MARK_STYLE[m];
+  if (keyFrom) squareStyles[keyFrom] = { ...squareStyles[keyFrom], ...MARK_STYLE.selected };
   if (rejected) squareStyles[rejected.square] = { ...squareStyles[rejected.square], ...REJECTED_STYLE };
+  if (keyboard && cursor) {
+    const under = squareStyles[cursor]?.boxShadow;
+    squareStyles[cursor] = {
+      ...squareStyles[cursor],
+      boxShadow: under ? `${CURSOR_SHADOW}, ${under}` : CURSOR_SHADOW,
+    };
+  }
   const coords = notation === "auto" ? maxWidth >= COORDS_MIN_WIDTH : notation;
   const { files, ranks } = coordLabels(cols, rows, orientation);
   const turn = typeof position === "string" ? position.split(" ")[1] : undefined;
@@ -181,6 +250,49 @@ export function ChessBoard({
     if (canDrag) return canDrag(square, piece);
     return !turn || piece[0] === turn;
   };
+
+  const describe = (square: string, from: string | null = keyFrom) => {
+    const words = PIECE_WORDS[onBoard[square]];
+    const what = words ? (lang === "uz" ? words[1] : words[0]) : t("пусто", "boʻsh");
+    const picked = from === square || marks[square] === "selected" ? t(", выбрана", ", tanlangan") : "";
+    return `${square}, ${what}${picked}`;
+  };
+  const startSquare = () =>
+    cursor ?? Object.keys(marks).find((sq) => marks[sq] === "selected") ?? centerSquare(cols, rows, orientation);
+  const press = (square: string) => {
+    if (onSquare) return tapSquare(square);
+    if (!onDrop) return;
+    if (!keyFrom) {
+      const piece = onBoard[square];
+      if (piece && dragAllowed(square, piece)) {
+        setKeyFrom(square);
+        setSaid(describe(square, square));
+      } else reject(square);
+      return;
+    }
+    setKeyFrom(null);
+    if (keyFrom === square) return setSaid(describe(square, null));
+    if (!onDrop(keyFrom, square)) reject(square);
+  };
+  const onKeyDown = (e: ReactKeyboardEvent<HTMLDivElement>) => {
+    if (!interactive || promotion || e.altKey || e.ctrlKey || e.metaKey) return;
+    const here = startSquare();
+    if (BOARD_KEYS.has(e.key)) {
+      e.preventDefault();
+      const next = stepSquare(here, e.key as BoardKey, cols, rows, orientation);
+      setKeyboard(true);
+      setCursor(next);
+      setSaid(describe(next));
+    } else if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      setKeyboard(true);
+      setCursor(here);
+      press(here);
+    } else if (e.key === "Escape" && keyFrom) {
+      setKeyFrom(null);
+      setSaid(describe(here, null));
+    }
+  };
   return (
     <div
       className={cn(
@@ -194,12 +306,44 @@ export function ChessBoard({
         backgroundColor: frame === "print" ? undefined : theme.frame,
       }}
       data-board-theme={frame === "print" ? undefined : theme.id}
-      role="group"
+      ref={frameRef}
+      role={interactive ? "application" : "group"}
       aria-label={[label ?? t("Шахматная доска", "Shaxmat taxtasi"), turnSide && turnText].filter(Boolean).join(", ")}
+      aria-describedby={interactive ? `${id}-keys` : undefined}
+      tabIndex={interactive ? 0 : undefined}
       data-board={id}
       data-rejected={rejected ? rejected.square : undefined}
-      onPointerDownCapture={sfxUnlock}
+      data-cursor={keyboard && cursor ? cursor : undefined}
+      onPointerDownCapture={() => {
+        sfxUnlock();
+        pointerAt.current = Date.now();
+        setKeyboard(false);
+      }}
+      onKeyDown={interactive ? onKeyDown : undefined}
+      onFocus={(e) => {
+        // Пришли клавишей Tab, а не пальцем или мышью — сразу показываем курсор и называем клетку.
+        if (!interactive || e.target !== e.currentTarget || Date.now() - pointerAt.current < 500) return;
+        const here = startSquare();
+        setKeyboard(true);
+        setCursor(here);
+        setSaid(describe(here));
+      }}
+      onBlur={(e) => {
+        if (e.currentTarget.contains(e.relatedTarget as Node | null)) return;
+        setKeyboard(false);
+        setKeyFrom(null);
+      }}
     >
+      {interactive && (
+        <>
+          <span id={`${id}-keys`} className="sr-only">
+            {t("Стрелки — выбрать клетку, Enter — нажать на неё.", "Strelkalar — katakni tanlash, Enter — uni bosish.")}
+          </span>
+          <span className="sr-only" aria-live="polite" aria-atomic="true" data-board-said>
+            {keyboard ? said : ""}
+          </span>
+        </>
+      )}
       <div className="board-grid" data-frame={frame} data-coords-off={coords ? undefined : ""}>
         {coords && (
           <div
@@ -233,6 +377,8 @@ export function ChessBoard({
                 ? []
                 : arrows.map((a) => ({ startSquare: a.from, endSquare: a.to, color: a.color ?? "#16a34a" })),
               animationDurationInMs: 180,
+              // Родитель выключил анимации или система просит меньше движения — фигура встаёт сразу.
+              showAnimations: motion,
               showNotation: false,
               ...(frame === "print"
                 ? {}

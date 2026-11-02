@@ -156,7 +156,9 @@ export function SettingsPanel() {
             }}
           />
         </div>
-        {message && <p className="font-bold text-brand-dark">{t(message.ru, message.uz)}</p>}
+        <p className="font-bold text-brand-dark empty:hidden" role="status">
+          {message ? t(message.ru, message.uz) : null}
+        </p>
       </Card>
 
       <Card className="space-y-3 p-5">
@@ -358,7 +360,7 @@ function Toggle({
       <input type="checkbox" className="peer sr-only" checked={value} onChange={(e) => onChange(e.target.checked)} />
       <span
         className={cn(
-          "relative mt-1 h-7 w-12 shrink-0 rounded-full transition peer-focus-visible:ring-4 peer-focus-visible:ring-brand/30",
+          "relative mt-1 h-7 w-12 shrink-0 rounded-full transition peer-focus-visible:outline-3 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-brand",
           value ? "bg-brand" : "bg-black/15",
         )}
         aria-hidden

@@ -51,7 +51,8 @@ export function DayIntro({ day, onStart }: { day: Day; onStart: () => void }) {
           <Button size="lg" onClick={onStart}>
             {started ? t("Продолжить ▶", "Davom etish ▶") : t("Начать занятие ▶", "Mashgʻulotni boshlash ▶")}
           </Button>
-          <ButtonLink href={printHref(day)} variant="secondary" size="lg">
+          {/* Печать — для взрослых: тише главной кнопки (та же кнопка есть и в шапке занятия). */}
+          <ButtonLink href={printHref(day)} variant="ghost" size="md" className="self-center">
             🖨 {t("Распечатать", "Chop etish")}
           </ButtonLink>
         </div>

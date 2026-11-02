@@ -57,6 +57,8 @@ export function ChessLevelView({ levelId }: { levelId: string }) {
     if (!scrollToExercises.current || tab !== "exercises") return;
     scrollToExercises.current = false;
     document.getElementById("exercises-top")?.scrollIntoView({ block: "start", behavior: currentScrollBehavior() });
+    // Фокус — на заголовок нового упражнения: диктор читает задание, Tab идёт к доске.
+    document.querySelector<HTMLElement>("[data-exercise-heading]")?.focus({ preventScroll: true });
   }, [tab, exercise]);
   const goExercise = (i: number) => {
     scrollToExercises.current = true;

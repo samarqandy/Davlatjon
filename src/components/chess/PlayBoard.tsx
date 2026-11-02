@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Confetti } from "@/components/rewards/Confetti";
 import { Button, ButtonLink, cn } from "@/components/ui";
+import { playReward } from "@/lib/sfx";
 import {
   illegalReason,
   isInCheck,
@@ -174,6 +176,8 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
     if (!status.over || recorded.current || plies.length === 0) return;
     recorded.current = true;
     if (status.mate && (!withRobot || status.winner === config.color)) cue("mate");
+    // Робот обыгран — фанфара, как за новый уровень (салют рисуется ниже).
+    if (withRobot && status.winner === config.color) playReward("level");
     recordChessGame({
       id: gameId,
       mode: config.mode,
@@ -425,10 +429,28 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
         <p
           className={cn(
             "rounded-2xl px-4 py-3 text-lg font-black",
-            status.over ? "bg-sun-soft text-[#7a4b00]" : inCheck ? "bg-rose/10 text-rose" : "bg-white shadow-card",
+            // Победа — зелёная, ничья — жёлтая, проигрыш роботу — спокойная, без тревожного цвета.
+            !status.over
+              ? inCheck
+                ? "bg-rose/10 text-rose"
+                : "bg-white shadow-card"
+              : status.winner === "draw"
+                ? "bg-sun-soft text-[#7a4b00]"
+                : withRobot && status.winner !== config.color
+                  ? "bg-brand-soft text-brand-dark"
+                  : "bg-mint-soft text-[#065f46]",
           )}
           aria-live="polite"
           data-play-status
+          data-result={
+            status.over
+              ? status.winner === "draw"
+                ? "draw"
+                : status.winner === config.color
+                  ? "win"
+                  : "loss"
+              : undefined
+          }
         >
           {robotMove && (
             <span className="block text-sm font-extrabold opacity-80" data-robot-move>
@@ -442,6 +464,7 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
             {illegal}
           </p>
         )}
+        {withRobot && status.over && status.winner === config.color && plies.length > 0 && <Confetti />}
         {crowns > 0 && (
           <p className="rounded-2xl bg-sun-soft px-4 py-2 font-black text-[#7a4b00]" data-crowns={crowns}>
             <span className="mr-1 text-2xl">{"👑".repeat(crowns)}</span>

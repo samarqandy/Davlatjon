@@ -67,7 +67,17 @@ export function LevelBadge({ level, compact = false, lang = "ru" }: { level: Lev
       title={`${lang === "uz" ? "Daraja" : "Уровень"}: ${meta.name} — ${meta.about}`}
     >
       <span aria-hidden>{meta.emoji}</span>
-      {!compact && meta.name}
+      {compact ? (
+        // Не только цвет: номер уровня виден всем, название — диктору (подсказка title на телефоне не появляется).
+        <>
+          <span aria-hidden className="tabular-nums">
+            {level}
+          </span>
+          <span className="sr-only">{`${lang === "uz" ? "Daraja" : "Уровень"}: ${meta.name}`}</span>
+        </>
+      ) : (
+        meta.name
+      )}
     </span>
   );
 }

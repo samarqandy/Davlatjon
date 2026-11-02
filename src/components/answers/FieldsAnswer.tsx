@@ -72,12 +72,17 @@ export function FieldsAnswer({ taskId, fields, hintsLeft }: { taskId: string; fi
           >
             <label className="mb-1.5 block text-sm font-extrabold text-muted" htmlFor={`${taskId}-${f.id}`}>
               {f.label}
-              {marks[f.id] === true && <span className="ml-1.5 text-mint">✓</span>}
+              {marks[f.id] === true && (
+                <span className="ml-1.5 text-mint">
+                  ✓<span className="sr-only">{t(" — верно", " — toʻgʻri")}</span>
+                </span>
+              )}
             </label>
             {f.type === "number" && (
               <div className="flex items-center gap-2">
                 <input
                   id={`${taskId}-${f.id}`}
+                  aria-invalid={marks[f.id] === false || undefined}
                   inputMode="numeric"
                   autoComplete="off"
                   value={values[f.id] ?? ""}
@@ -101,6 +106,7 @@ export function FieldsAnswer({ taskId, fields, hintsLeft }: { taskId: string; fi
             {f.type === "text" && (
               <input
                 id={`${taskId}-${f.id}`}
+                aria-invalid={marks[f.id] === false || undefined}
                 autoComplete="off"
                 autoCapitalize="characters"
                 spellCheck={false}
@@ -196,6 +202,7 @@ function CoordInput({
             key={c}
             type="button"
             onClick={() => onChange(`${c}${row}`)}
+            aria-pressed={c === col}
             className={cn(
               "h-10 w-10 rounded-xl border-2 text-lg font-extrabold",
               c === col ? "border-brand bg-brand text-white" : "border-line bg-white hover:border-brand/40",
@@ -211,6 +218,7 @@ function CoordInput({
             key={r}
             type="button"
             onClick={() => onChange(`${col}${r}`)}
+            aria-pressed={r === row}
             className={cn(
               "h-10 w-10 rounded-xl border-2 text-lg font-extrabold",
               r === row ? "border-brand bg-brand text-white" : "border-line bg-white hover:border-brand/40",

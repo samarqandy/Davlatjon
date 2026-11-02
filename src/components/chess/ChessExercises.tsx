@@ -48,7 +48,11 @@ function ExerciseShell({
   return (
     <div className="space-y-4">
       <div className="space-y-1.5">
-        <h3 className="flex flex-wrap items-center gap-2 text-2xl font-black">
+        <h3
+          data-exercise-heading
+          tabIndex={-1}
+          className="flex flex-wrap items-center gap-2 text-2xl font-black outline-none"
+        >
           {ex.title}
           {solved && (
             <span className="rounded-full bg-mint-soft px-2.5 py-0.5 text-sm font-extrabold text-[#065f46]">
@@ -585,9 +589,10 @@ function MoveExercise({ ex }: { ex: Of<"move"> }) {
   };
 
   const marks: Record<string, SquareMark> = {};
+  // Куда пришла фигура — сразу видно и без слов: зелёная клетка — верно, красная — не то (до отката хода).
   if (last) {
     marks[last[0]] = "last";
-    marks[last[1]] = "last";
+    marks[last[1]] = done ? "good" : "bad";
   }
   if (checkSq) marks[checkSq] = "check";
   if (selected) {
