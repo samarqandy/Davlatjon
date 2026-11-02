@@ -5,13 +5,17 @@ export const course2Uz: Uz<typeof COURSE_2> = {
   title: "2-bosqich «Ot»",
   subtitle: "Taktika va mot — darsma-dars",
   about:
-    "Bogʻlash, ochiq hujum va qoʻsh shoh yordamida mot, motga tayyorgarlik va shohga hujum, buyuk ustalarning oʻquv partiyalari. Darslar tartibi M.I. Glotovning «Shaxmat mahorati bosqichlari» metodikasi asosida; pozitsiyalar maktab uchun tuzilgan va shaxmat dvigateli bilan tekshirilgan.",
+    "Bogʻlash, ochiq hujum va qoʻsh shoh yordamida mot, motga tayyorgarlik va shohga hujum, buyuk ustalarning oʻquv partiyalari, motdan himoya, rux bilan mot, donalarni tutish, bogʻlash va ochiq shoh bilan material yutish, endshpilda faol shoh. Darslar tartibi M.I. Glotovning «Shaxmat mahorati bosqichlari» metodikasi asosida; pozitsiyalar maktab uchun tuzilgan va shaxmat dvigateli bilan tekshirilgan.",
 };
 
 export const course2ModulesUz: Uz<typeof COURSE_2_MODULES> = {
   "tactic-mates": { title: "Taktika yordamida mot" },
   attack: { title: "Motga tayyorgarlik va shohga hujum" },
   games: { title: "Oʻquv partiyalari" },
+  defence: { title: "Motdan himoya va rux bilan mot" },
+  trap: { title: "Donalarni tutish" },
+  advantage: { title: "Bogʻlash va ochiq shoh: dona yutish" },
+  endgame: { title: "Endshpil" },
 };
 
 export const course2LessonsUz: Uz<typeof COURSE_2_LESSONS> = {
@@ -213,6 +217,226 @@ export const course2LessonsUz: Uz<typeof COURSE_2_LESSONS> = {
         prompt: "Oqlar yuradi. Greko kabi mot qil.",
         hint: "g5 dagi qora farzin va h6 dagi shoh c1 dagi fil bilan bitta diagonalda turibdi.",
         why: "14. ♖xh5# — h vertikali boʻylab shoh. g5 dagi farzin ruxni urib ololmaydi: uni c1 dagi fil bogʻlagan (c1–h6 diagonali). Shoh ham urolmaydi — ruxni f7 dagi farzin himoya qiladi, u g6 va g7 ni ham ushlab turadi.",
+      },
+    },
+  },
+  "c2-defend-mate": {
+    title: "Mot tahdididan himoya",
+    idea: "Yurishdan oldin oʻzingdan soʻra: raqib nima bilan tahdid qilyapti? Mot tahdidini darhol qaytarish kerak.",
+    lesson: [
+      {
+        title: "Raqibning yurishlariga qara",
+        text: [
+          "Har bir yurishdan oldin oʻzingga savol ber: **raqib nima qilmoqchi?** Agar u mot bilan tahdid qilsa, hech qanday dona yutish muhim emas — avval himoya.",
+          "Koʻp uchraydigan tahdid — oxirgi gorizontaldagi mot. Oddiy himoya — **«shamollatish teshigi»**: shohning qochadigan joyi boʻlishi uchun h3 yoki g3 piyoda yurishi.",
+        ],
+      },
+    ],
+    terms: [
+      {
+        term: "Shamollatish teshigi",
+        text: "Motdan qochish uchun shoh yonidagi boʻsh katak (odatda h2 yoki h7).",
+      },
+    ],
+    exercises: {
+      "c2-defend-luft": {
+        title: "Shohni unutma",
+        prompt: "Oqlar yuradi. Qora rux birinchi gorizontalga qarab turibdi. Qaysi yurish yaxshiroq?",
+        hint: "Oq rux birinchi gorizontaldan ketsa nima boʻladi?",
+        why: "h3 — «shamollatish teshigi»: endi shohning h2 katagi bor. ♖a7? dan keyin esa ♖e1# — oxirgi gorizontalda mot.",
+      },
+      "c2-defend-quiz": {
+        title: "Raqib nima bilan tahdid qilyapti?",
+        prompt: "Savollarga javob ber.",
+        questions: [
+          {
+            text: "Raqib mot bilan tahdid qilyapti, sen esa uning ruxini urib olishing mumkin. Nima qilish kerak?",
+            options: ["avval motdan himoyalanish", "ruxni urib olish"],
+          },
+          {
+            text: "Shoh g1 da turganda h3 yurishi nima uchun qilinadi?",
+            options: ["shohning «shamollatish teshigi» boʻlishi uchun", "raqibga hujum qilish uchun"],
+          },
+        ],
+        hint: "Mot partiyani tugatadi — hech qanday dona motga arzimaydi.",
+        why: "Mot tahdidi birinchi navbatda qaytariladi. h3 «shamollatish teshigi» shohga h2 katagini beradi va oxirgi gorizontaldagi motdan qutqaradi.",
+      },
+    },
+  },
+  "c2-rook-mate": {
+    title: "Shoh va rux bilan mot",
+    idea: "Shoh va rux birga yolgʻiz shohga taxta chetida mot qiladi.",
+    lesson: [
+      {
+        title: "Rux kesadi, shoh yordam beradi",
+        text: [
+          "Yolgʻiz shohga qarshi rux uning chiziqlarini **kesib qoʻyadi** va chetga qisadi, oʻz shohing esa uning **roʻparasiga** keladi. Shohlar qarama-qarshi turganda, rux chet boʻylab shoh beradi — bu mot.",
+          "Raqib shohi ruxga hujum qilmasligiga eʼtibor ber: ruxni uzoqroqda yoki oʻz shohing himoyasida tut.",
+        ],
+      },
+    ],
+    terms: [{ term: "Oppozitsiya", text: "Shohlar bir katak oraliq bilan bir-biriga qarama-qarshi turadi." }],
+    exercises: {
+      "c2-rook-mate-e8": {
+        title: "Shohlar roʻparama-roʻpara",
+        prompt: "Oqlar yuradi. Rux bilan mot qil.",
+        hint: "Oq shoh d7, e7 va f7 ni ushlab turibdi. Sakkizinchi gorizontal qoldi.",
+        why: "♖a8# — sakkizinchi gorizontal boʻylab shoh, yettinchisini oq shoh ushlab turibdi.",
+      },
+      "c2-rook-mate-corner": {
+        title: "Burchakda mot",
+        prompt: "Oqlar yuradi. Rux bilan mot qil.",
+        hint: "b6 dagi shoh a7 va b7 ni yopib turibdi.",
+        why: "♖h8# — rux sakkizinchi gorizontal boʻylab shoh beradi, yettinchisini esa b6 dagi shoh ushlab turibdi.",
+      },
+      "c2-rook-mate-h8": {
+        title: "Narigi chetda mot",
+        prompt: "Oqlar yuradi. Rux bilan mot qil.",
+        hint: "Shohlar deyarli roʻparama-roʻpara, g7 va h7 ni oq shoh ushlab turibdi.",
+        why: "♖b8# — sakkizinchi gorizontal boʻylab shoh; h8 dagi shohning qochadigan joyi yoʻq.",
+      },
+    },
+  },
+  "c2-trap": {
+    title: "Donalarni tutish",
+    idea: "Chekinadigan joyi yoʻq dona — tutilgan dona.",
+    lesson: [
+      {
+        title: "Chekinish yoʻllarini kesib qoʻy",
+        text: [
+          "Donani yutish uchun unga darhol hujum qilish shart emas. Avval uning **chekinish yoʻllarini kesib qoʻy**, keyin hujum qil — qochadigan joy qolmaydi.",
+          "Koʻpincha taxta chetidagi donalar tutiladi: a2 yoki h2 dagi fil, chetdagi ot, piyodalar ortidan quvib ketgan farzin.",
+        ],
+      },
+    ],
+    terms: [{ term: "Donani tutish", text: "Donaning hamma chekinish yoʻllari kesiladi, keyin u urib olinadi." }],
+    exercises: {
+      "c2-trap-bishop": {
+        title: "Tuzoqdagi fil",
+        prompt: "Oqlar yuradi. Qora fil a2 ga kirib olgan. Uni qanday tutish mumkin?",
+        hint: "Fil qaysi katak orqali chiqib keta oladi?",
+        why: "b3! — endi filning bitta ham boʻsh katagi yoʻq (b1 ni shoh uradi), keyingi yurishda ♔b2 uni urib oladi. b4 dan keyin esa fil b3 orqali qochib ketadi.",
+      },
+      "c2-trap-quiz": {
+        title: "Donani qanday tutish mumkin",
+        prompt: "Qoidani esla.",
+        questions: [
+          {
+            text: "Donani tutish uchun avval nima qilgan yaxshi?",
+            options: ["uning chekinish yoʻllarini kesib qoʻyish", "darhol hujum qilish"],
+          },
+          { text: "Donani qayerda tutish osonroq?", options: ["taxta chetida", "taxta markazida"] },
+        ],
+        hint: "Chetda donaning chekinish uchun kataklari kamroq.",
+        why: "Avval chekinish yoʻllari kesiladi, keyin hujum qilinadi. Taxta chetida donaning kataklari kamroq, shuning uchun uni tutish osonroq.",
+      },
+    },
+  },
+  "c2-pin-win": {
+    title: "Bogʻlash: dona yutish",
+    idea: "Donani shohga bogʻla — va uni yut: u keta olmaydi.",
+    lesson: [
+      {
+        title: "Bogʻlangan donani urib olish mumkin",
+        text: [
+          "Bogʻlash nafaqat mot qilishga yordam beradi, balki **material ham yutadi**. Shohga bogʻlangan dona keta olmaydi — unga yana bir marta hujum qil, va u qoʻldan ketadi.",
+        ],
+      },
+    ],
+    terms: [{ term: "Mutlaq bogʻlash", text: "Shohga bogʻlash: bogʻlangan donaning ketishga haqqi yoʻq." }],
+    exercises: {
+      "c2-pin-win-bishop": {
+        title: "Ot bogʻlandi",
+        prompt: "Oqlar yuradi. Otni shohga bogʻla.",
+        hint: "c6 dagi ot va e8 dagi shoh bitta diagonalda.",
+        why: "♗b5 — c6 dagi ot e8 dagi shohga bogʻlandi va keta olmaydi.",
+      },
+      "c2-pin-win-queen": {
+        title: "Rux bogʻlandi",
+        prompt: "Oqlar yuradi. Ruxni shohga bogʻla.",
+        hint: "d7 dagi rux va e8 dagi shoh a4–e8 diagonalida turibdi.",
+        why: "♕a4 — d7 dagi rux shohga bogʻlandi: u diagonaldan keta olmaydi.",
+      },
+    },
+  },
+  "c2-discover-win": {
+    title: "Ochiq shoh: dona yutish",
+    idea: "Shohni och — shoh qutulayotganda donani urib ol.",
+    lesson: [
+      {
+        title: "Bitta yurishda shoh va urish",
+        text: [
+          "**Ochiq shohda** shoh qutulishga majbur, chiziqdan ketgan dona esa erkin: u **istalgan narsani**, hatto farzinni ham urib olishi mumkin.",
+        ],
+      },
+    ],
+    terms: [{ term: "Yutuqli ochiq shoh", text: "Dona chiziqdan ketib, shohni ochadi va oʻzi donani urib oladi." }],
+    exercises: {
+      "c2-discover-win-knight": {
+        title: "Ot farzinni oladi",
+        prompt: "Oqlar yuradi. Ochiq shoh bilan farzinni yut.",
+        hint: "Ot e1 dagi ruxga e vertikalini toʻsib turibdi. U qayerga foyda bilan yurishi kerak?",
+        why: "♘xd2+ — ot farzinni urib oladi va e1 dagi rux bilan shohni ochadi.",
+      },
+      "c2-discover-win-bishop": {
+        title: "Fil farzinni oladi",
+        prompt: "Oqlar yuradi. Ochiq shoh bilan farzinni yut.",
+        hint: "e2 dagi fil ruxga e vertikalini toʻsib turibdi.",
+        why: "♗xc4+ — fil farzinni urib oladi, e1 dagi rux esa shoh beradi.",
+      },
+    },
+  },
+  "c2-russian-game": {
+    title: "Oʻquv partiyasi: «Rus partiyasi»",
+    idea: "Rus partiyasidagi tuzoq: ot bilan ochiq shoh farzinni yutadi.",
+    lesson: [
+      {
+        title: "Tuzoq",
+        text: [
+          "1. e4 e5 2. ♘f3 ♘f6 — bu **Rus partiyasi** (Petrov himoyasi). 3. ♘xe5 ♘xe4? — qoralar oqlarning yurishlarini takrorlaydi, lekin bu xato.",
+          "4. ♕e2! ♘f6?? 5. ♘c6+! — e2 dagi farzin bilan ochiq shoh, c6 dagi ot esa d8 dagi farzinga hujum qiladi. Qoralar farzinni yoʻqotadi.",
+        ],
+      },
+    ],
+    terms: [{ term: "Rus partiyasi", text: "1. e4 e5 2. ♘f3 ♘f6 debyuti, uni Petrov himoyasi ham deyishadi." }],
+    exercises: {
+      "c2-russian-choose": {
+        title: "Ochiq shohni top",
+        prompt: "Oqlar yuradi. Farzinni qanday yutish mumkin?",
+        hint: "Ot e2 dagi farzinga e vertikalini toʻsib turibdi. Otning qaysi yurishi qora farzinga ham hujum qiladi?",
+        why: "♘c6+! — e2 dagi farzin bilan ochiq shoh va ot bilan d8 dagi farzinga hujum. Shoh qutuladi, farzin esa qoʻldan ketadi.",
+      },
+    },
+  },
+  "c2-king-active": {
+    title: "Endshpil: faol shoh",
+    idea: "Farzinlar boʻlmasa, shoh — kuchli dona: uni markazga va oldinga olib bor.",
+    lesson: [
+      {
+        title: "Shoh jangga kiradi",
+        text: [
+          "Partiya boshida shoh yashirinadi. Lekin **endshpilda**, donalar kam qolganda va motdan qoʻrqish kerak boʻlmaganda, shoh kuchli donaga aylanadi: u oʻz piyodalarini himoya qiladi va raqibnikiga hujum qiladi.",
+          "Qoida: endshpilda **shohni markazga** va oldinga, piyodalarga yaqinroq olib bor.",
+        ],
+      },
+    ],
+    terms: [{ term: "Endshpil", text: "Partiya oxiri: donalar kam, shohlar faol boʻladi." }],
+    exercises: {
+      "c2-king-active-quiz": {
+        title: "Endshpildagi shoh",
+        prompt: "Toʻgʻri javobni tanla.",
+        questions: [
+          {
+            text: "Endshpilda shoh qayerda boʻlishi kerak?",
+            options: ["markazda, piyodalarga yaqin", "burchakda, piyodalar ortida"],
+          },
+          {
+            text: "Nega endshpilda shoh jasur boʻlishi mumkin?",
+            options: ["donalar kam, mot deyarli tahdid qilmaydi", "shoh daxlsiz boʻlib qoldi"],
+          },
+        ],
+        hint: "Partiya boshi va oxiri orasidagi farqni esla.",
+        why: "Endshpilda donalar kam va mot deyarli tahdid qilmaydi, shuning uchun shoh markazga chiqadi va oʻz piyodalariga yordam beradi.",
       },
     },
   },
