@@ -185,3 +185,19 @@ test("ступень 2: открытый шах выигрывает ферзя,
   const stored = await page.evaluate((key) => JSON.parse(localStorage.getItem(key) ?? "{}").chess ?? {}, KEY);
   expect(stored["c2-discover-win-knight"]?.solvedAt).toBeTruthy();
 });
+
+test("ступень 3 «Слон»: страница курса, мат слонами Горвица засчитывается", async ({ page }) => {
+  await prepare(page);
+  await page.goto("/chess");
+  await expect(page.locator('a[href="/chess/course-3"]').first()).toBeVisible();
+  await page.goto("/chess/course-3");
+  await expect(page.getByRole("heading", { level: 1, name: /Ступень 3/ })).toBeVisible();
+  for (const id of ["horwitz", "seventh", "passer"])
+    await expect(page.locator(`[data-course-module="${id}"]`)).toBeVisible();
+  await page.goto("/chess/course-3#c3-horwitz-exercise-1");
+  await page.locator('[data-board="mo-c3-horwitz-g7"] [data-square="g2"]').click();
+  await page.locator('[data-board="mo-c3-horwitz-g7"] [data-square="g7"]').click();
+  await expect(page.getByText(/Почему так/)).toBeVisible();
+  const stored = await page.evaluate((key) => JSON.parse(localStorage.getItem(key) ?? "{}").chess ?? {}, KEY);
+  expect(stored["c3-horwitz-g7"]?.solvedAt).toBeTruthy();
+});

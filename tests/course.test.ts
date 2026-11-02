@@ -15,6 +15,7 @@ const ALL = "abcdefgh".split("").flatMap((f) => [1, 2, 3, 4, 5, 6, 7, 8].map((r)
 const STEPS = [
   { name: "ступень 1", modules: CHESS_RU.course1Modules, lessons: CHESS_RU.course1Lessons },
   { name: "ступень 2", modules: CHESS_RU.course2Modules, lessons: CHESS_RU.course2Lessons },
+  { name: "ступень 3", modules: CHESS_RU.course3Modules, lessons: CHESS_RU.course3Lessons },
 ];
 const allLessons = STEPS.flatMap((s) => s.lessons);
 const lessons = courseLessons(CHESS_RU, allLessons);
@@ -46,11 +47,13 @@ describe("курс: структура", () => {
       ).toEqual(step.lessons.map((l) => l.id));
   });
 
-  it("у второй ступени свои уроки (c2-…), а модули не повторяют первую", () => {
-    expect(CHESS_RU.course2Lessons.length).toBeGreaterThan(0);
-    for (const l of CHESS_RU.course2Lessons) expect(l.id.startsWith("c2-"), l.id).toBe(true);
-    const m1 = new Set(CHESS_RU.course1Modules.map((m) => m.id));
-    for (const m of CHESS_RU.course2Modules) expect(m1.has(m.id), m.id).toBe(false);
+  it("у каждой ступени свои уроки (c1-…, c2-…, c3-…), а id модулей не повторяются между ступенями", () => {
+    STEPS.forEach((step, i) => {
+      expect(step.lessons.length, step.name).toBeGreaterThan(0);
+      for (const l of step.lessons) expect(l.id.startsWith(`c${i + 1}-`), l.id).toBe(true);
+    });
+    const moduleIds = STEPS.flatMap((s) => s.modules.map((m) => m.id));
+    expect(new Set(moduleIds).size).toBe(moduleIds.length);
   });
 
   it("подключённые упражнения существуют, у каждого урока есть упражнения", () => {
@@ -171,7 +174,11 @@ describe("курс: ответы", () => {
 describe("курс: узбекская версия", () => {
   it("уроки с подключёнными упражнениями — без кириллицы, ответы те же", () => {
     const content = chessContent("uz");
-    const uz = courseLessons(content, [...content.course1Lessons, ...content.course2Lessons]);
+    const uz = courseLessons(content, [
+      ...content.course1Lessons,
+      ...content.course2Lessons,
+      ...content.course3Lessons,
+    ]);
     expect(cyrillicPaths(uz)).toEqual([]);
     expect(uz.map((l) => l.exercises.map((e) => e.id))).toEqual(lessons.map((l) => l.exercises.map((e) => e.id)));
   });

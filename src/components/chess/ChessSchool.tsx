@@ -3,6 +3,7 @@
 import { courseLessons } from "@/content/chess/courseLessons";
 import { COURSE_PART } from "@/content/chess/parts/course";
 import { COURSE2_PART } from "@/content/chess/parts/course2";
+import { COURSE3_PART } from "@/content/chess/parts/course3";
 import { LEVELS } from "@/content/chess/parts/levels";
 import { PUZZLE_PART } from "@/content/chess/parts/puzzles";
 import { TACTIC_PART } from "@/content/chess/parts/tactics";
@@ -48,6 +49,7 @@ export function ChessSchool({ counts }: { counts: ChessSchoolCounts }) {
   const { tactics } = useChessPart(TACTIC_PART);
   const { course1, course1Lessons } = useChessPart(COURSE_PART);
   const { course2, course2Lessons } = useChessPart(COURSE2_PART);
+  const { course3, course3Lessons } = useChessPart(COURSE3_PART);
   const state = useStore((s) => s);
   const statuses = levelStatuses(levels, state);
   const rank = hydrated ? currentRank(levels, state) : null;
@@ -67,15 +69,22 @@ export function ChessSchool({ counts }: { counts: ChessSchoolCounts }) {
     : 0;
   const course1List = courseLessons({ levels, tactics }, course1Lessons);
   const course2List = courseLessons({ levels, tactics }, course2Lessons);
+  const course3List = courseLessons({ levels, tactics }, course3Lessons);
   const solvedIn = (list: typeof course1List) =>
     hydrated ? list.reduce((n, x) => n + x.exercises.filter((e) => state.chess[e.id]?.solvedAt).length, 0) : 0;
   const totalIn = (list: typeof course1List) => list.reduce((n, x) => n + x.exercises.length, 0);
   const firstOpen = (list: typeof course1List) =>
     list.findIndex((l) => l.exercises.some((e) => !state.chess[e.id]?.solvedAt));
-  // Продолжаем ступень 1, а когда она пройдена — ступень 2.
-  const onStep2 = hydrated && firstOpen(course1List) < 0 && course2List.length > 0;
-  const course = onStep2 ? course2List : course1List;
-  const courseHref = onStep2 ? "/chess/course-2" : "/chess/course";
+  // Продолжаем первую непройденную ступень: 1, потом 2, потом 3.
+  const steps = [
+    { n: 1, list: course1List, href: "/chess/course" },
+    { n: 2, list: course2List, href: "/chess/course-2" },
+    { n: 3, list: course3List, href: "/chess/course-3" },
+  ];
+  const current = (hydrated && steps.find((st) => firstOpen(st.list) >= 0)) || steps[0];
+  const onStep2 = current.n > 1;
+  const course = current.list;
+  const courseHref = current.href;
   const courseTotal = course.reduce((n, x) => n + x.exercises.length, 0);
   const courseSolved = hydrated
     ? course.reduce((n, x) => n + x.exercises.filter((e) => state.chess[e.id]?.solvedAt).length, 0)
@@ -132,6 +141,21 @@ export function ChessSchool({ counts }: { counts: ChessSchoolCounts }) {
             `${totalIn(course2List)} ta mashqdan ${solvedIn(course2List)} tasi`,
           )
         : t(`${course2List.length} уроков`, `${course2List.length} ta dars`),
+    },
+    {
+      href: "/chess/course-3",
+      emoji: "🎯",
+      title: course3.title,
+      text: t(
+        "Слоны Горвица, обжорный ряд, атака двумя ладьями, проходная пешка в атаке.",
+        "Gorvits fillari, ochkoʻz qator, ikki rux bilan hujum, hujumdagi oʻtuvchi piyoda.",
+      ),
+      stat: hydrated
+        ? t(
+            `${solvedIn(course3List)} из ${totalIn(course3List)} упражнений`,
+            `${totalIn(course3List)} ta mashqdan ${solvedIn(course3List)} tasi`,
+          )
+        : t(`${course3List.length} уроков`, `${course3List.length} ta dars`),
     },
     {
       href: "/chess/play",
@@ -339,7 +363,14 @@ export function ChessSchool({ counts }: { counts: ChessSchoolCounts }) {
   ];
 
   // Сначала то, с чего ребёнок обычно начинает; остальное — под «Ещё разделы».
-  const first = ["/chess/course", "/chess/course-2", "/chess/play", "/chess/puzzles", "/chess/secrets"];
+  const first = [
+    "/chess/course",
+    "/chess/course-2",
+    "/chess/course-3",
+    "/chess/play",
+    "/chess/puzzles",
+    "/chess/secrets",
+  ];
   const ordered = [
     ...first.map((href) => sections.find((x) => x.href === href)!),
     ...sections.filter((x) => !first.includes(x.href)),
@@ -405,8 +436,8 @@ export function ChessSchool({ counts }: { counts: ChessSchoolCounts }) {
           <span className="min-w-0 flex-1">
             <span className="block text-sm font-extrabold tracking-wide text-muted uppercase">
               {t(
-                `${onStep2 ? "Ступень 2" : "Курс"} · урок ${courseNext + 1} из ${course.length}`,
-                `${onStep2 ? "2-bosqich" : "Kurs"} · ${course.length} tadan ${courseNext + 1}-dars`,
+                `${onStep2 ? `Ступень ${current.n}` : "Курс"} · урок ${courseNext + 1} из ${course.length}`,
+                `${onStep2 ? `${current.n}-bosqich` : "Kurs"} · ${course.length} tadan ${courseNext + 1}-dars`,
               )}
             </span>
             <span className="block text-xl leading-tight font-black">{courseLesson.title}</span>
