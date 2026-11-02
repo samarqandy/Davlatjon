@@ -80,6 +80,8 @@ describe("курс: ответы", () => {
       let expected: string[];
       if (e.goal === "mate") expected = matingMoves(e.fen);
       else if (e.goal === "promote") expected = all.filter((m) => m.promotion === "q").map(uci);
+      else if (e.goal === "castle")
+        expected = all.filter((m) => m.isKingsideCastle() || m.isQueensideCastle()).map(uci);
       else if (e.goal === "capture")
         expected = all
           .filter((m) => {
