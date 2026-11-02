@@ -5,7 +5,7 @@ export const course1Uz: Uz<typeof COURSE_1> = {
   title: "1-bosqich «Piyoda»",
   subtitle: "Shaxmat noldan — darsma-dars",
   about:
-    "Avval taxta va yurishlarni yozish, keyin har bir dona, donalarning qiymati, shoh berish va undan himoyalanishning uch usuli, har bir dona bilan mot, rokirovka va debyutning birinchi qoidalari. Har bir darsda — qisqa nazariya va taxtadagi mashqlar. Darslar tartibi M.I. Glotovning «Shaxmat mahorati bosqichlari» metodikasi asosida; pozitsiyalar maktab uchun tuzilgan va shaxmat dvigateli bilan tekshirilgan.",
+    "Avval taxta va yurishlarni yozish, keyin har bir dona, donalarning qiymati, shoh berish va undan himoyalanishning uch usuli, har bir dona bilan mot, rokirovka, debyutning birinchi qoidalari, vilka, bogʻlash, oʻtib urish va pat, oxirida esa labirintlar va yakuniy test. Har bir darsda — qisqa nazariya va taxtadagi mashqlar. Darslar tartibi M.I. Glotovning «Shaxmat mahorati bosqichlari» metodikasi asosida; pozitsiyalar maktab uchun tuzilgan va shaxmat dvigateli bilan tekshirilgan.",
 };
 
 export const course1ModulesUz: Uz<typeof COURSE_1_MODULES> = {
@@ -16,6 +16,10 @@ export const course1ModulesUz: Uz<typeof COURSE_1_MODULES> = {
   mate: { title: "Mot" },
   castle: { title: "Rokirovka" },
   opening: { title: "Partiya boshlanishi" },
+  double: { title: "Ikki tomonlama hujum" },
+  tactics: { title: "Oʻtib urish, bogʻlash, jamoa" },
+  special: { title: "Pat, zinapoya mot va maxsus qoidalar" },
+  finish: { title: "Bosqich marrasi" },
 };
 
 export const course1LessonsUz: Uz<typeof COURSE_1_LESSONS> = {
@@ -943,6 +947,498 @@ export const course1LessonsUz: Uz<typeof COURSE_1_LESSONS> = {
         ],
         hint: "Yigʻindini hisobla: harf — vertikal raqami, ustiga gorizontal raqami.",
         why: "e4: 5 + 4 = 9 — toq, oq katak. h8: 8 + 8 = 16 — juft, qora katak. Boshida g1 dagi ot f3 yoki h3 ga yuradi (e2 da piyoda turibdi). c1–h6 — bitta diagonal. a1 dagi rux vertikal boʻylab a8 gacha uradi — bu shoh.",
+      },
+    },
+  },
+  "c1-fork-rook": {
+    title: "Rux bilan ikki tomonlama hujum",
+    idea: "Vilka — bitta dona birdaniga ikkita donaga hujum qiladi. Ikkalasini birdan qutqarib boʻlmaydi.",
+    lesson: [
+      {
+        title: "Vilka nima",
+        text: [
+          "**Ikki tomonlama hujum**, yoki **vilka**, — bitta dona raqibning birdaniga ikkita donasiga hujum qiladigan yurish. Raqib faqat bittasini qutqarib ulguradi — ikkinchisini sen urib olasan.",
+          "Rux vilkani gorizontal yoki vertikal boʻylab qiladi. Faqat ruxning oʻzini urib ololmasliklarini tekshir.",
+        ],
+      },
+    ],
+    terms: [
+      { term: "Vilka (ikki tomonlama hujum)", text: "Bitta dona raqibning birdaniga ikkita donasiga hujum qiladi." },
+    ],
+    exercises: {
+      "c1-fork-rook-rank": {
+        title: "Bitta gorizontaldagi ikki dona",
+        prompt: "Oqlar yuradi. Rux bilan vilka qil.",
+        hint: "Ot va fil oltinchi gorizontalda turibdi. Ularning orasiga tur.",
+        why: "♖d6 — rux ham c6 dagi otga, ham g6 dagi filga hujum qiladi. Ulardan biri qoʻldan ketadi.",
+      },
+    },
+  },
+  "c1-fork-bishop": {
+    title: "Fil bilan ikki tomonlama hujum",
+    idea: "Fil bir vaqtda ikki diagonal boʻylab vilka qiladi.",
+    lesson: [
+      {
+        title: "Diagonallar chorrahasi",
+        text: [
+          "Fil ikki diagonal kesishgan joyda turadi va ikkalasi boʻylab uradi. Raqibning ikki donasiga olib boruvchi diagonallar uchrashadigan katakni qidir.",
+        ],
+      },
+    ],
+    terms: [{ term: "Fil bilan vilka", text: "Fil ikki diagonal boʻylab ikkita donaga hujum qiladi." }],
+    exercises: {
+      "c1-fork-bishop-e5": {
+        title: "Rux va ot",
+        prompt: "Oqlar yuradi. Fil bilan vilka qil.",
+        hint: "Fil allaqachon b8 dagi ruxga qarab turibdi. Shu diagonalda g7 dagi ot ham koʻrinadigan katakni top.",
+        why: "♗e5 — fil bir vaqtda b8 dagi ruxga ham, g7 dagi otga ham hujum qiladi.",
+      },
+    },
+  },
+  "c1-fork-king": {
+    title: "Shoh bilan ikki tomonlama hujum",
+    idea: "Shoh ham hujum qiladi — va himoyasiz ikki donaga vilka qila oladi.",
+    lesson: [
+      {
+        title: "Hujumdagi shoh",
+        text: [
+          "Shoh yonidagi hamma kataklarni uradi. Agar raqibning ikki donasi bitta katak yonida tursa va ularni hech kim himoya qilmasa, shoh oʻsha katakka turib, ulardan birini urib oladi.",
+          "Shoh hujum ostiga turishi mumkin emas — katakni hech kim urmayotganini tekshir.",
+        ],
+      },
+    ],
+    terms: [{ term: "Shoh bilan vilka", text: "Shoh yonidagi ikki himoyasiz donaga hujum qiladi." }],
+    exercises: {
+      "c1-fork-king-d5": {
+        title: "Ikki ot",
+        prompt: "Oqlar yuradi. Shoh bilan vilka qil.",
+        hint: "Ham c6 ga, ham e6 ga qoʻshni, otlar urmaydigan katakni top.",
+        why: "♔d5 — shoh ikkala otga hujum qiladi, otlarning oʻzi esa d5 katagini urmaydi.",
+      },
+    },
+  },
+  "c1-fork-knight": {
+    title: "Ot bilan ikki tomonlama hujum",
+    idea: "Ot — vilka ustasi: u oʻzini koʻrmaydigan donalarga hujum qiladi.",
+    lesson: [
+      {
+        title: "Shohli vilka",
+        text: [
+          "Ot «L» shaklida hujum qiladi, u hujum qilgan donalar esa koʻpincha unga javoban hujum qila olmaydi. Shuning uchun ot bilan vilka eng koʻp uchraydi.",
+          "Shoh berib qilingan vilka ayniqsa xavfli: shoh qochishga majbur, ikkinchi dona esa qoʻldan ketadi.",
+        ],
+      },
+    ],
+    terms: [{ term: "Ot bilan vilka", text: "Ot ikkita donaga hujum qiladi; koʻpincha shohga shoh berib." }],
+    exercises: {
+      "c1-fork-knight-c7": {
+        title: "Shoh va rux",
+        prompt: "Oqlar yuradi. Ot bilan vilka qil.",
+        hint: "Ot qaysi katakdan ham e8 dagi shohga, ham a8 dagi ruxga yetadi?",
+        why: "♘c7+ — shohga shoh va a8 dagi ruxga hujum. Shoh qochadi, rux esa qoʻldan ketadi.",
+      },
+    },
+  },
+  "c1-fork-pawn": {
+    title: "Piyoda bilan ikki tomonlama hujum",
+    idea: "Piyoda qiyshiq oʻngga va chapga uradi — va ikki donaga vilka qiladi.",
+    lesson: [
+      {
+        title: "Eng arzon vilka",
+        text: [
+          "Piyoda oldinga qiyshiq ikkita katakka birdaniga hujum qiladi. Agar u yerda raqib donalari tursa, u ulardan birini yoʻqotadi — axir piyoda eng arzon dona, almashuv sening foydangga boʻladi.",
+        ],
+      },
+    ],
+    terms: [{ term: "Piyoda bilan vilka", text: "Piyoda oldinga qiyshiq ikkita donaga hujum qiladi." }],
+    exercises: {
+      "c1-fork-pawn-d4": {
+        title: "Ot va fil",
+        prompt: "Oqlar yuradi. Piyoda bilan vilka qil.",
+        hint: "Qaysi piyoda oldinga bir qadam tashlasa, ot bilan filning orasiga turadi?",
+        why: "d4 — piyoda c5 dagi otga va e5 dagi filga hujum qiladi, uni esa c3 piyodasi himoya qiladi.",
+      },
+    },
+  },
+  "c1-fork-queen": {
+    title: "Farzin bilan ikki tomonlama hujum",
+    idea: "Farzin hamma tomonga uradi — vilkalari hammadan koʻp.",
+    lesson: [
+      {
+        title: "Sakkiz yoʻnalish",
+        text: [
+          "Farzin vertikal, gorizontal va diagonallar boʻylab uradi, shuning uchun vilkani oson topadi. Koʻpincha — shohga shoh berish va himoyasiz donaga hujum.",
+          "Farzin — eng qimmatli dona: uni faqat urib olib boʻlmaydigan joyga qoʻy.",
+        ],
+      },
+    ],
+    terms: [{ term: "Farzin bilan vilka", text: "Farzin birdaniga ikkita donaga hujum qiladi, koʻpincha shoh berib." }],
+    exercises: {
+      "c1-fork-queen-d5": {
+        title: "Shoh va rux",
+        prompt: "Oqlar yuradi. Farzin bilan vilka qil.",
+        hint: "g8 dagi shoh va a8 dagi rux ikki xil diagonalda turibdi. Ular qayerda kesishadi?",
+        why: "♕d5+ — g8 dagi shohga shoh va boshqa diagonal boʻylab a8 dagi ruxga hujum.",
+      },
+    },
+  },
+  "c1-skewer": {
+    title: "Oʻtib urish (rentgen)",
+    idea: "«Oʻtib» hujum: oldingi dona ketadi — va orqadagisini ochib qoʻyadi.",
+    lesson: [
+      {
+        title: "Dona orqali zarba",
+        text: [
+          "**Oʻtib urish (rentgen)** — bitta chiziqda birin-ketin turgan ikki donaga hujum. Odatda oldinda shoh turadi: unga shoh beriladi, u qochadi — uzoqqa uradigan dona esa uning orqasidagisini urib oladi.",
+          "Oʻtib urishni rux (toʻgʻri chiziq boʻylab), fil (diagonal boʻylab) va farzin (istalgan chiziq boʻylab) qiladi.",
+        ],
+      },
+    ],
+    terms: [
+      {
+        term: "Oʻtib urish (rentgen)",
+        text: "Bitta chiziqdagi ikki donaga hujum: oldingisi ketadi, orqadagisi qoʻldan ketadi.",
+      },
+    ],
+    exercises: {
+      "c1-skewer-rook-a5": {
+        title: "Rux oʻtib uradi",
+        prompt: "Oqlar yuradi. Rux bilan oʻtib urish qil.",
+        hint: "Shoh va farzin beshinchi gorizontalda turibdi.",
+        why: "♖a5+ — beshinchi gorizontal boʻylab shoh. Shoh qochadi, rux esa h5 dagi farzinni urib oladi.",
+      },
+      "c1-skewer-bishop-a4": {
+        title: "Fil oʻtib uradi",
+        prompt: "Oqlar yuradi. Fil bilan oʻtib urish qil.",
+        hint: "c6 dagi shoh va e8 dagi rux bitta diagonalda.",
+        why: "♗a4+ — a4–e8 diagonali boʻylab shoh. Shoh qochadi, fil esa e8 dagi ruxni urib oladi.",
+      },
+      "c1-skewer-queen-e1": {
+        title: "Farzin oʻtib uradi",
+        prompt: "Oqlar yuradi. Farzin bilan oʻtib urish qil.",
+        hint: "Shoh va rux bitta vertikalda turibdi.",
+        why: "♕e1+ — e vertikali boʻylab shoh. Shoh chiziqdan qochadi, farzin esa e8 dagi ruxni urib oladi.",
+      },
+    },
+  },
+  "c1-together": {
+    title: "Donalar birgalikda",
+    idea: "Bir dona hujum qiladi, ikkinchisi uni qoʻllab-quvvatlaydi — birga ular mot qiladi.",
+    lesson: [
+      {
+        title: "Jamoaviy oʻyin",
+        text: [
+          "Eng kuchli donalar — **bir-biriga yordam beradigan** donalar: biri shoh beradi, ikkinchisi uni himoya qiladi yoki shohning chekinish yoʻllarini yopadi.",
+          "Koʻpincha farzin shohning yonginasida mot qiladi, uni esa ot, fil yoki piyoda himoya qiladi — shoh farzinni urib ololmaydi.",
+        ],
+      },
+    ],
+    terms: [
+      { term: "Donalar hamkorligi", text: "Donalar birga harakat qiladi: hujum qiladi va bir-birini himoya qiladi." },
+    ],
+    exercises: {
+      "c1-together-queen-knight": {
+        title: "Farzin va ot",
+        prompt: "Oqlar yuradi. Mot qil.",
+        hint: "g5 dagi ot h7 katagiga qarab turibdi.",
+        why: "♕xh7# — farzin ot himoyasida piyodani urib oladi, shohning esa qochadigan joyi yoʻq.",
+      },
+      "c1-together-queen-bishop": {
+        title: "Farzin va fil",
+        prompt: "Oqlar yuradi. Mot qil.",
+        hint: "d3 dagi fil h7 ga qarab turibdi.",
+        why: "♕xh7# — farzinni fil himoya qiladi, f8 dagi rux va piyodalar esa shohni qochirmaydi.",
+      },
+      "c1-together-rook-pawn": {
+        title: "Rux va piyoda",
+        prompt: "Oqlar yuradi. Mot qil.",
+        hint: "g6 dagi piyoda shohga f7 va h7 kataklarini yopib turibdi.",
+        why: "♖c8# — rux sakkizinchi gorizontal boʻylab shoh beradi, g6 dagi piyoda esa f7 va h7 ni ushlab turadi.",
+      },
+    },
+  },
+  "c1-pin": {
+    title: "Bogʻlash",
+    idea: "Dona «bogʻlangan»: ketsa — shohni ochib qoʻyadi.",
+    lesson: [
+      {
+        title: "Bogʻlangan dona",
+        text: [
+          "**Bogʻlash** — orqasida shoh (yoki farzin) turgan donaga hujum. Bogʻlangan dona joyidan ketolmaydi: orqasida shoh ochilib qoladi, shoh ostiga yurish esa mumkin emas.",
+          "Bogʻlangan donani koʻpincha yutib olish mumkin: u qimirlay olmayotganida unga yana bir marta hujum qil.",
+        ],
+      },
+    ],
+    terms: [{ term: "Bogʻlash", text: "Dona joyidan ketolmaydi, chunki uning orqasida shoh yoki farzin turibdi." }],
+    exercises: {
+      "c1-pin-bishop-b5": {
+        title: "Otni bogʻla",
+        prompt: "Oqlar yuradi. Qora otni shohga bogʻla.",
+        hint: "d7 dagi ot va e8 dagi shoh bitta diagonalda turibdi.",
+        why: "♗b5 — ot bogʻlandi: agar u ketsa, fil e8 dagi shohga shoh beradi.",
+      },
+      "c1-pin-rook-e1": {
+        title: "Rux bogʻlaydi",
+        prompt: "Oqlar yuradi. Qora otni shohga bogʻla.",
+        hint: "e6 dagi ot va e8 dagi shoh bitta vertikalda turibdi.",
+        why: "♖e1 — e6 dagi ot e vertikali boʻylab shohga bogʻlandi.",
+      },
+    },
+  },
+  "c1-stalemate": {
+    title: "Pat",
+    idea: "Pat — yuradigan joy yoʻq, lekin shoh ham berilmagan. Bu durang!",
+    lesson: [
+      {
+        title: "Yuradigan joy yoʻq",
+        text: [
+          "**Pat** — yurish navbati kelgan tomonda **bitta ham yurish yoʻq**, lekin uning shohiga **shoh berilmagan** holat. Pat — durang, hatto raqibning donalari ancha koʻp boʻlsa ham.",
+          "Shuning uchun yutayotganingda, mot qilmaguningcha raqib shohiga hech boʻlmasa bitta katak qoldir.",
+        ],
+      },
+      {
+        title: "Qutqaruvchi pat",
+        text: [
+          "Yutqazayotgan tomon baʼzan **pat bilan qutulib qolishi** mumkin: hamma donalarini shunday berib yuboradiki, shohining yuradigan joyi qolmaydi.",
+        ],
+      },
+    ],
+    terms: [
+      { term: "Pat", text: "Yuradigan joy yoʻq, shoh ham berilmagan. Durang." },
+      { term: "Durang", text: "Partiya tugadi va hech kim gʻolib boʻlmadi." },
+    ],
+    exercises: {
+      "c1-stalemate-avoid": {
+        title: "Pat emas, mot",
+        prompt: "Oqlar yuradi. Mot qil — lekin pat qilib qoʻyma!",
+        hint: "♕f7 dan keyin qoralarda bitta ham yurish qolmaydi, lekin shoh ham boʻlmaydi — bu pat. Shoh kerak.",
+        why: "♕f8# — sakkizinchi gorizontal boʻylab shoh, g7 va h7 ni esa oq shoh ushlab turadi. ♕f7 yoki ♕c4 pat qilib qoʻyardi.",
+      },
+      "c1-stalemate-quiz": {
+        title: "Motmi yoki pat?",
+        prompt: "Farqini esla.",
+        questions: [
+          { text: "Shohga shoh berilgan va himoya yoʻq. Bu…", options: ["mot", "pat"] },
+          { text: "Shoh berilmagan, lekin yuradigan joy yoʻq. Bu…", options: ["mot", "pat"] },
+          { text: "Patda partiya nima bilan tugaydi?", options: ["gʻalaba bilan", "durang bilan"] },
+        ],
+        hint: "Mot — shoh bilan, pat — shohsiz.",
+        why: "Mot — himoyasiz shoh, gʻalaba. Pat — shoh berilmagan, lekin yurishlar yoʻq. Pat — durang.",
+      },
+    },
+  },
+  "c1-ladder": {
+    title: "Zinapoya mot",
+    idea: "Ikki rux «zinapoya» boʻylab qadam tashlab, shohni chetga qisib qoʻyadi.",
+    lesson: [
+      {
+        title: "Zinapoya",
+        text: [
+          "**Zinapoya (chiziqli) mot** ikki rux yoki rux bilan farzin yordamida qilinadi. Bir rux gorizontalni ushlab turadi, ikkinchisi keyingisida shoh beradi — va shunday pogʻonama-pogʻona, shoh chetga chiqib qolguncha.",
+          "Ruxlarni shohdan uzoqroqda tut, toki u ularni urib ololmasin.",
+        ],
+      },
+    ],
+    terms: [
+      { term: "Zinapoya mot", text: "Gorizontallarni navbatma-navbat kesib qoʻyadigan ikki ogʻir dona bilan mot." },
+    ],
+    exercises: {
+      "c1-ladder-g8": {
+        title: "Oxirgi pogʻona",
+        prompt: "Oqlar yuradi. Zinapoya mot qil.",
+        hint: "h7 dagi rux yettinchi gorizontalni ushlab turibdi. Ikkinchi rux sakkizinchisida shoh beradi.",
+        why: "♖g8# — sakkizinchi gorizontal boʻylab shoh, yettinchisini esa h7 dagi rux ushlab turibdi.",
+      },
+      "c1-ladder-b8": {
+        title: "Yana zinapoya",
+        prompt: "Oqlar yuradi. Zinapoya mot qil.",
+        hint: "Yettinchi gorizontal allaqachon a7 dagi rux nazoratida.",
+        why: "♖b8# — ruxlar birga yettinchi va sakkizinchi gorizontallarni ushlab turibdi.",
+      },
+    },
+  },
+  "c1-queen-mate": {
+    title: "Shoh va farzin bilan mot",
+    idea: "Farzin shohni chetga qisib qoʻyadi, oʻz shohi esa yordamga keladi.",
+    lesson: [
+      {
+        title: "Farzin va shoh birga",
+        text: [
+          "Bitta farzinning oʻzi bilan mot qilib boʻlmaydi — **oʻz shohing** kerak. Farzin raqib shohining chiziqlarini kesib, uni chetga qisadi, oq shoh esa yaqinroq keladi.",
+          "Shohlar bir-biriga qarama-qarshi turganda, farzin chetda mot qiladi. Pat boʻlmasligiga eʼtibor ber!",
+        ],
+      },
+    ],
+    terms: [
+      {
+        term: "Farzin va shoh bilan mot",
+        text: "Farzin taxta chetida shoh beradi, raqib shohini esa oq shoh qamab turadi.",
+      },
+    ],
+    exercises: {
+      "c1-queen-mate-e8": {
+        title: "Shohlar roʻparama-roʻpara",
+        prompt: "Oqlar yuradi. Farzin bilan mot qil — ikki usul bor.",
+        hint: "Oq shoh d7, e7 va f7 ni yopib turibdi. Farzin sakkizinchi gorizontal boʻylab shoh berishi kerak.",
+        why: "♕h8# yoki ♕a8# — sakkizinchi gorizontal boʻylab shoh, yettinchi gorizontalni esa oq shoh ushlab turibdi.",
+      },
+      "c1-queen-mate-corner": {
+        title: "Burchakda mot",
+        prompt: "Oqlar yuradi. Mot qil — istalgani toʻgʻri.",
+        hint: "Oq shoh a7 va b7 kataklarini himoya qiladi — farzin hatto yonginasiga ham tura oladi.",
+        why: "Motlar toʻrtta: ♕c8#, ♕d8#, ♕b7# va ♕a7#. b7 va a7 da farzinni b6 dagi shoh himoya qiladi.",
+      },
+    },
+  },
+  "c1-enpassant": {
+    title: "Oʻtayotgan piyodani urish",
+    idea: "Boshqa piyoda yonidan ikki katak sakrab oʻtgan piyodani «oʻtayotganda» urish mumkin.",
+    lesson: [
+      {
+        title: "Piyodaning maxsus qoidasi",
+        text: [
+          "Agar piyoda boshlangʻich katagidan **ikki katak** yurib, raqib piyodasining yoniga tursa, raqib piyodasi uni xuddi bir katak yurgandek urib olishi mumkin. Bu **oʻtayotgan piyodani urish**.",
+          "Oʻtayotgan piyodani **faqat darhol**, keyingi yurishda urish mumkin. Keyin bu huquq yoʻqoladi.",
+        ],
+      },
+    ],
+    terms: [
+      {
+        term: "Oʻtayotgan piyodani urish",
+        text: "Piyoda ikki katak sakragan piyodani u bir katak yurgandek urib oladi. Faqat darhol.",
+      },
+    ],
+    exercises: {
+      "c1-enpassant-d5": {
+        title: "Oʻtayotganda ur",
+        prompt: "Qoralar hozirgina e7–e5 yurdi. Piyodani oʻtayotganda urib ol.",
+        hint: "Oq piyoda qora piyoda «sakrab oʻtgan» katakka turadi.",
+        why: "dxe6 — d5 dagi piyoda e6 ga turdi, e5 dagi qora piyoda esa taxtadan olindi.",
+      },
+      "c1-enpassant-quiz": {
+        title: "Oʻtayotgan piyodani urish qoidasi",
+        prompt: "Qoidani esla.",
+        questions: [
+          { text: "Qaysi donalar oʻtayotganda urishi mumkin?", options: ["faqat piyodalar", "istalgan dona"] },
+          {
+            text: "Oʻtayotgan piyodani qachon urish mumkin?",
+            options: ["faqat darhol, keyingi yurishda", "xohlagan paytda"],
+          },
+        ],
+        hint: "Bu faqat piyodalar uchun maxsus qoida.",
+        why: "Oʻtayotgan piyodani urish — faqat piyodalar uchun qoida, uni faqat raqib piyodasi sakragandan keyin darhol bajarish mumkin.",
+      },
+    },
+  },
+  "c1-mazes": {
+    title: "Labirintlar",
+    idea: "Donani labirintdan eng kam yurish bilan olib oʻt.",
+    lesson: [
+      {
+        title: "Labirintdan qanday oʻtiladi",
+        text: [
+          "Labirintda dona toʻsiqlarni aylanib oʻtib, yulduzchalarni yigʻishi kerak. Avval dona umuman qayerga yeta olishini koʻr, keyin **eng qisqa yoʻlni** qidir.",
+          "Maqsaddan orqaga yurish qulay: dona qaysi kataklardan yulduzga bir yurishda yetadi?",
+        ],
+      },
+    ],
+    terms: [
+      { term: "Labirint", text: "Masala: donani toʻsiqlarni aylanib, eng kam yurish bilan maqsadga olib borish." },
+    ],
+    exercises: {
+      "c1-maze-king": {
+        title: "Shoh uchun ilon yoʻli",
+        prompt: "Devorlar yoʻlni toʻsib qoʻydi. Shohni eng kam yurish bilan h8 dagi yulduzga olib bor.",
+        hint: "Oʻtish joylari faqat chetlarda: har bir devorda boʻsh katak qayerdaligini qidir.",
+        why: "Masalan: a1 → a2 → a3 → a4 → b5 → c5 → d5 → e5 → f5 → g5 → h6 → g7 → h8 — oʻn ikki yurish.",
+      },
+      "c1-maze-knight": {
+        title: "Sayohatchi ot",
+        prompt: "Ot bilan hamma yulduzlarni eng kam yurish bilan yigʻ.",
+        hint: "Yulduzlar uzoqda: har biriga nechta sakrash kerakligini sanab, yoʻl qisqaroq boʻladigan tartibni qidir.",
+        why: "Masalan: b1 → a3 → b5 → d4 → e6 → g7 → e8 → d6 → c8 — sakkiz sakrash.",
+      },
+    },
+  },
+  "c1-final-test": {
+    title: "Bosqichning yakuniy testi",
+    idea: "Oʻzingni sinab koʻr: qoidalar, mot, vilka va pat — «Piyoda» bosqichidagi hamma narsa.",
+    lesson: [
+      {
+        title: "Test oldidan",
+        text: [
+          "Bosqichning butun yoʻli ortda qoldi — **taxtadan mot va vilkalargacha**! Shoshilma: har bir masalada avval shohlarga, urishlarga va tahdidlarga qara.",
+        ],
+      },
+    ],
+    terms: [
+      {
+        term: "«Piyoda» bosqichi",
+        text: "Kursning birinchi bosqichi: oʻyin qoidalaridan birinchi taktik zarbalargacha.",
+      },
+    ],
+    exercises: {
+      "c1-final-mate-rook": {
+        title: "1-masala",
+        prompt: "Oqlar yuradi. Mot qil.",
+        hint: "b6 dagi shoh a7 va b7 ni ushlab turibdi.",
+        why: "♖c8# — sakkizinchi gorizontal boʻylab shoh, yettinchi gorizontalni esa b6 dagi shoh yopib turibdi.",
+      },
+      "c1-final-mate-pawn": {
+        title: "2-masala",
+        prompt: "Oqlar yuradi. Mot qil.",
+        hint: "g6 dagi piyoda f7 va h7 kataklarini ushlab turibdi.",
+        why: "♖a8# — sakkizinchi gorizontal boʻylab shoh, g6 dagi piyoda shohga f7 va h7 ni yopib turibdi.",
+      },
+      "c1-final-quiz": {
+        title: "3-masala: savollar",
+        prompt: "Butun bosqich boʻyicha savollarga javob ber.",
+        questions: [
+          { text: "Rux necha piyodaga teng?" },
+          {
+            text: "Bitta donaning birdaniga ikki donaga hujumi nima deb ataladi?",
+            options: ["bogʻlash", "vilka", "pat"],
+          },
+          { text: "Shohga shoh berilgan boʻlsa, rokirovka qilish mumkinmi?", options: ["mumkin", "mumkin emas"] },
+          { text: "Shoh berilmagan, lekin yuradigan joy yoʻq. Bu…", options: ["mot", "pat"] },
+          { text: "Qaysi dona «L» shaklida yuradi?", options: ["fil", "ot", "rux"] },
+        ],
+        hint: "Donalar qiymati, vilka, rokirovka va pat haqidagi darslarni esla.",
+        why: "Rux 5 piyodaga teng. Ikki donaga hujum — vilka. Shoh berilganda rokirovka taqiqlangan. Shoh yoʻq va yurish yoʻq — pat. «L» shaklida ot yuradi.",
+      },
+    },
+  },
+  "c1-etiquette": {
+    title: "Oʻzini tutish qoidalari",
+    idea: "Shaxmatchi raqibni hurmat qiladi: qoʻl siqadi, xalaqit bermaydi va soʻzida turadi.",
+    lesson: [
+      {
+        title: "Shaxmat odobi",
+        text: [
+          "Partiyadan oldin va keyin raqiblar **qoʻl siqishadi**. Oʻyin paytida gaplashishmaydi va bir-biriga xalaqit berishmaydi.",
+          "**Ushlading — yur**: oʻz donangga tegsang, u bilan yurish kerak (agar yurish boʻlsa). Donani toʻgʻrilash uchun avval «toʻgʻrilayapman» deb ayt.",
+          "Gʻalaba ham, magʻlubiyat ham — raqibga rahmat ayt. Magʻlubiyat ham dars: partiyadan keyin xato qayerda boʻlganini tahlil qil.",
+        ],
+      },
+    ],
+    terms: [{ term: "Ushlading — yur", text: "Tegilgan oʻz donang bilan, agar imkon boʻlsa, yurish kerak." }],
+    exercises: {
+      "c1-etiquette-quiz": {
+        title: "Qanday yoʻl tutish kerak?",
+        prompt: "Haqiqiy shaxmatchi qanday yoʻl tutishini tanla.",
+        questions: [
+          {
+            text: "Oʻz otingga tegib, keyin fikringni oʻzgartirasan. Nima qilish kerak?",
+            options: ["ot bilan yurish", "boshqa donani olish"],
+          },
+          {
+            text: "Katakdagi donani toʻgʻrilamoqchisan. Avval nima deyish kerak?",
+            options: ["«toʻgʻrilayapman»", "hech narsa"],
+          },
+          { text: "Partiya tugadi. Nima qilish kerak?", options: ["raqib bilan qoʻl siqish", "darhol ketib qolish"] },
+        ],
+        hint: "Raqibga hurmat — eng asosiy qoida.",
+        why: "Ushlading — yur. Donani toʻgʻrilayotganda «toʻgʻrilayapman» deyiladi. Partiyadan keyin qoʻl siqib, raqibga rahmat aytiladi.",
       },
     },
   },

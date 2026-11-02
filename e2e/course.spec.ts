@@ -123,3 +123,21 @@ test("курс: мат, рокировка и дебют — новые моду
   expect(stored["c1-mate-rook-corner"]?.solvedAt).toBeTruthy();
   expect(stored["c1-castle-only-long"]?.solvedAt).toBeTruthy();
 });
+
+test("курс: вилка конём, сквозной удар и финиш ступени", async ({ page }) => {
+  await prepare(page);
+  await page.goto("/chess/course");
+  for (const id of ["double", "tactics", "special", "finish"])
+    await expect(page.locator(`[data-course-module="${id}"]`)).toBeVisible();
+  await page.goto("/chess/course#c1-fork-knight-exercise-3");
+  await square(page, "c1-fork-knight-c7", "b5");
+  await square(page, "c1-fork-knight-c7", "c7");
+  await expect(page.getByText(/Почему так/)).toBeVisible();
+  await page.goto("/chess/course#c1-skewer-exercise-5");
+  await square(page, "c1-skewer-rook-a5", "a1");
+  await square(page, "c1-skewer-rook-a5", "a5");
+  await expect(page.getByText(/Почему так/)).toBeVisible();
+  const stored = await page.evaluate((key) => JSON.parse(localStorage.getItem(key) ?? "{}").chess ?? {}, KEY);
+  expect(stored["c1-fork-knight-c7"]?.solvedAt).toBeTruthy();
+  expect(stored["c1-skewer-rook-a5"]?.solvedAt).toBeTruthy();
+});
