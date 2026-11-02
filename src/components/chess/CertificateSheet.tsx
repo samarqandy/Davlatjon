@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import type { ReactNode } from "react";
 import { BRAND } from "@/lib/brand";
 import { longDate } from "@/lib/certificate";
@@ -7,7 +8,7 @@ import { useLang, useT } from "@/lib/i18n";
 
 /**
  * Лист сертификата или диплома: A4 альбомный, с рамкой, именем ребёнка, наградой и датой.
- * Общий для звания уровня и диплома ступени курса.
+ * Общий для звания уровня и диплома ступени курса. В углу — логотип Parvoz Edu.
  */
 export function CertificateSheet({
   icon,
@@ -41,6 +42,16 @@ export function CertificateSheet({
           <div
             aria-hidden
             className="pointer-events-none absolute inset-[1.6cqi] rounded-[1cqi] border-[0.25cqi] border-[#d8b46a]"
+          />
+          {/* Логотип платформы — в углу листа, как печать школы. */}
+          <Image
+            src="/logo-full.webp"
+            alt={BRAND}
+            width={900}
+            height={1022}
+            unoptimized
+            data-certificate-logo
+            className="absolute top-[3.2cqi] left-[4cqi] h-[13cqi] w-auto"
           />
           <p className="relative text-[1.9cqi] font-extrabold tracking-[0.3em] text-[#9a6b17] uppercase">
             {t(`Шахматная школа ${BRAND}`, `${BRAND} shaxmat maktabi`)}
