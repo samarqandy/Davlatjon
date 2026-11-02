@@ -7,7 +7,9 @@ import { heroCards, cardsOpen, xpToNextCard, XP_PER_CARD, type HeroCard } from "
 import { useTitleTranslation } from "@/lib/docTitle";
 import { useT } from "@/lib/i18n";
 import { useHydrated, useStore } from "@/lib/store";
-import { useChess, useChessImage } from "@/lib/useChess";
+import { ENCYCLOPEDIA_PART } from "@/content/chess/parts/encyclopedia";
+import { SAGE_PART } from "@/content/chess/parts/sages";
+import { useChessImage, useChessPart } from "@/lib/useChess";
 import { showsNumbers } from "@/lib/workshop";
 import { xpTotal } from "@/lib/xp";
 
@@ -15,11 +17,12 @@ import { xpTotal } from "@/lib/xp";
 export function CollectionView() {
   const t = useT();
   const hydrated = useHydrated();
-  const chess = useChess();
+  const { sages } = useChessPart(SAGE_PART);
+  const { worldChampions } = useChessPart(ENCYCLOPEDIA_PART);
   useTitleTranslation("Коллекция героев", "Qahramonlar kolleksiyasi");
   const xp = useStore((s) => xpTotal(s));
   const numbers = useStore((s) => showsNumbers(s.settings.age));
-  const cards = heroCards(chess);
+  const cards = heroCards({ sages, worldChampions });
   const open = hydrated ? cardsOpen(xp, cards.length) : 0;
   const toNext = hydrated ? xpToNextCard(xp, cards.length) : null;
   const into = hydrated ? XP_PER_CARD - (toNext ?? 0) : 0;

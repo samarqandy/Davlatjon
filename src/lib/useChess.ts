@@ -1,16 +1,20 @@
 "use client";
 
-import { chessContent, chessImageIn, chessImagesIn, type ChessContent } from "@/content/chess/content";
+import { chessImageIn, chessImagesIn } from "@/content/chess/imageLookup";
 import type { ChessImage } from "@/content/chess/images";
+import type { ChessPart } from "@/content/chess/parts/make";
 import { useMemo } from "react";
 import { personalize } from "./childName";
 import { useLang, useNames } from "./i18n";
 
-/** Шахматный контент на языке интерфейса: уровни, задачи, дебюты, партии, тайны, энциклопедия, картинки. */
-export function useChess(): ChessContent {
+/**
+ * Часть шахматного контента на языке интерфейса, с именем ребёнка в текстах.
+ * Берём только нужную часть (src/content/chess/parts): страница не тянет в браузер весь контент школы.
+ */
+export function useChessPart<T extends object>(part: ChessPart<T>): T {
   const lang = useLang();
   const names = useNames();
-  return useMemo(() => personalize(chessContent(lang), lang, names), [lang, names]);
+  return useMemo(() => personalize(part.get(lang), lang, names), [part, lang, names]);
 }
 
 /** Картинка (или список картинок) с подписью на языке интерфейса. */

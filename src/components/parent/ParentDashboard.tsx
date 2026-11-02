@@ -7,7 +7,8 @@ import { currentRank, levelStatuses } from "@/lib/chessProgress";
 import { weekTotals } from "@/lib/insights";
 import { formatMinutes } from "@/lib/plural";
 import { useHydrated, useStore } from "@/lib/store";
-import { useChess } from "@/lib/useChess";
+import { useChessPart } from "@/lib/useChess";
+import { LEVELS } from "@/content/chess/parts/levels";
 
 /** Неделя для обзора родителя — без условий и ответов (собирается на сервере, на обоих языках). */
 export interface ParentWeek {
@@ -211,7 +212,7 @@ function Metric({ value, label }: { value: string; label: string }) {
 function ChessSummary() {
   const hydrated = useHydrated();
   const t = useT();
-  const levels = useChess().levels;
+  const { levels } = useChessPart(LEVELS);
   const state = useStore((s) => s);
   const statuses = levelStatuses(levels, state);
   const rank = hydrated ? currentRank(levels, state) : null;

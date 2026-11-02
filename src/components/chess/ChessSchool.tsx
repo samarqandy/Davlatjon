@@ -1,6 +1,10 @@
 "use client";
 
-import { courseLessons } from "@/content/chess/content";
+import { courseLessons } from "@/content/chess/courseLessons";
+import { COURSE_PART } from "@/content/chess/parts/course";
+import { LEVELS } from "@/content/chess/parts/levels";
+import { PUZZLE_PART } from "@/content/chess/parts/puzzles";
+import { TACTIC_PART } from "@/content/chess/parts/tactics";
 import Link from "next/link";
 import { ChildNameBanner } from "@/components/home/ChildNameBanner";
 import { TodayCard } from "@/components/progress/TodayCard";
@@ -15,17 +19,33 @@ import { useLang, useT } from "@/lib/i18n";
 import { plural, thousands } from "@/lib/plural";
 import { PUZZLE_TOTAL, solvedCount } from "@/lib/puzzleStats";
 import { useHydrated, useStore } from "@/lib/store";
-import { useChess } from "@/lib/useChess";
+import { useChessPart } from "@/lib/useChess";
 import { xpTotal } from "@/lib/xp";
 import { ChessBoard, PieceIcon } from "./ChessBoard";
 import { DidYouKnow } from "./DidYouKnow";
 
-export function ChessSchool() {
+/**
+ * Сколько всего в разделах, куда ведут карточки школы. Считает сервер (app/[lang]/chess/page.tsx):
+ * ради чисел школа не тянет в браузер тексты дебютов, партий, тайн, эндшпиля и тестов.
+ */
+export interface ChessSchoolCounts {
+  openings: number;
+  games: number;
+  endgameDrills: number;
+  secrets: number;
+  riddles: number;
+  /** id упражнений всех тестов — чтобы посчитать, сколько решено. */
+  testExercises: string[];
+}
+
+export function ChessSchool({ counts }: { counts: ChessSchoolCounts }) {
   const hydrated = useHydrated();
   const t = useT();
   const lang = useLang();
-  const content = useChess();
-  const { levels, school, puzzles, openings, games, secrets, riddles, endgames, tactics, tests } = content;
+  const { levels, school } = useChessPart(LEVELS);
+  const { puzzles } = useChessPart(PUZZLE_PART);
+  const { tactics } = useChessPart(TACTIC_PART);
+  const { course1, course1Lessons } = useChessPart(COURSE_PART);
   const state = useStore((s) => s);
   const statuses = levelStatuses(levels, state);
   const rank = hydrated ? currentRank(levels, state) : null;
@@ -43,7 +63,7 @@ export function ChessSchool() {
   const tacticsSolved = hydrated
     ? tactics.reduce((n, x) => n + x.exercises.filter((e) => state.chess[e.id]?.solvedAt).length, 0)
     : 0;
-  const course = courseLessons(content);
+  const course = courseLessons({ levels, tactics, course1Lessons });
   const courseTotal = course.reduce((n, x) => n + x.exercises.length, 0);
   const courseSolved = hydrated
     ? course.reduce((n, x) => n + x.exercises.filter((e) => state.chess[e.id]?.solvedAt).length, 0)
@@ -51,10 +71,8 @@ export function ChessSchool() {
   // Курс — главный путь новичка: показываем следующий незаконченный урок прямо под приветствием.
   const courseNext = hydrated ? course.findIndex((l) => l.exercises.some((e) => !state.chess[e.id]?.solvedAt)) : 0;
   const courseLesson = courseNext >= 0 ? course[courseNext] : null;
-  const testsTotal = tests.reduce((n, x) => n + x.exercises.length, 0);
-  const testsDone = hydrated
-    ? tests.reduce((n, x) => n + x.exercises.filter((e) => state.chess[e.id]?.solvedAt).length, 0)
-    : 0;
+  const testsTotal = counts.testExercises.length;
+  const testsDone = hydrated ? counts.testExercises.filter((id) => state.chess[id]?.solvedAt).length : 0;
   const gamesViewed = hydrated ? Object.keys(state.chessGamesViewed).length : 0;
   const played = hydrated ? state.chessGames.length : 0;
   const wins = hydrated ? state.chessGames.filter((g) => g.mode === "robot" && g.result === "win").length : 0;
@@ -76,7 +94,7 @@ export function ChessSchool() {
     {
       href: "/chess/course",
       emoji: "🪜",
-      title: content.course1.title,
+      title: course1.title,
       text: t(
         "Урок за уроком: доска и запись ходов, каждая фигура, ценность фигур, шах и защита от шаха.",
         "Darsma-dars: taxta va yurishlarni yozish, har bir dona, donalar qiymati, shoh berish va undan himoya.",
@@ -114,12 +132,12 @@ export function ChessSchool() {
       emoji: "📖",
       title: t("Дебюты", "Debyutlar"),
       text: t(
-        `Пять правил дебюта и ${openings.length} дебютов с идеями, историей и тренажёром ходов.`,
-        `Debyutning beshta qoidasi va ${openings.length} ta debyut — gʻoyalari, tarixi va yurishlar trenajyori bilan.`,
+        `Пять правил дебюта и ${counts.openings} дебютов с идеями, историей и тренажёром ходов.`,
+        `Debyutning beshta qoidasi va ${counts.openings} ta debyut — gʻoyalari, tarixi va yurishlar trenajyori bilan.`,
       ),
       stat: t(
-        `${openingsLearned} из ${openings.length} выучено`,
-        `${openings.length} tadan ${openingsLearned} tasi oʻrganildi`,
+        `${openingsLearned} из ${counts.openings} выучено`,
+        `${counts.openings} tadan ${openingsLearned} tasi oʻrganildi`,
       ),
     },
     {
@@ -127,12 +145,12 @@ export function ChessSchool() {
       emoji: "🏛️",
       title: t("Знаменитые партии", "Mashhur partiyalar"),
       text: t(
-        `${games.length} легендарных партий с объяснениями и картинками главных моментов.`,
-        `${games.length} ta afsonaviy partiya — izohlar va eng muhim lahzalarning rasmlari bilan.`,
+        `${counts.games} легендарных партий с объяснениями и картинками главных моментов.`,
+        `${counts.games} ta afsonaviy partiya — izohlar va eng muhim lahzalarning rasmlari bilan.`,
       ),
       stat: t(
-        `${gamesViewed} из ${games.length} разобрано`,
-        `${games.length} tadan ${gamesViewed} tasi koʻrib chiqildi`,
+        `${gamesViewed} из ${counts.games} разобрано`,
+        `${counts.games} tadan ${gamesViewed} tasi koʻrib chiqildi`,
       ),
     },
     {
@@ -181,8 +199,8 @@ export function ChessSchool() {
       ),
       stat: hydrated
         ? t(
-            `${Object.keys(state.chessEndgames).length} из ${endgames.flatMap((l) => l.drills).length} заданий`,
-            `${endgames.flatMap((l) => l.drills).length} ta topshiriqdan ${Object.keys(state.chessEndgames).length} tasi`,
+            `${Object.keys(state.chessEndgames).length} из ${counts.endgameDrills} заданий`,
+            `${counts.endgameDrills} ta topshiriqdan ${Object.keys(state.chessEndgames).length} tasi`,
           )
         : t("Начни с правила квадрата", "Kvadrat qoidasidan boshla"),
     },
@@ -261,8 +279,8 @@ export function ChessSchool() {
         "Xorazm va Buxoro olimlari, Temurning katta shaxmati, Abdusattorov va Samarqand, buyuklarning fikrlari, suhbatlar va topishmoqlar.",
       ),
       stat: t(
-        `${secrets.length} историй · ${riddles.length} загадок`,
-        `${secrets.length} ta hikoya · ${riddles.length} ta topishmoq`,
+        `${counts.secrets} историй · ${counts.riddles} загадок`,
+        `${counts.secrets} ta hikoya · ${counts.riddles} ta topishmoq`,
       ),
     },
     {

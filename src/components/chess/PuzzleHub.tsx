@@ -20,7 +20,8 @@ import { targetRating } from "@/lib/puzzleRating";
 import { PUZZLE_TOTAL, accuracy, solvedCount, strongWeak, themeStats } from "@/lib/puzzleStats";
 import { random } from "@/lib/random";
 import { chessStreakReached, duePuzzles, getState, useHydrated, usePuzzleRating, useStore } from "@/lib/store";
-import { useChess } from "@/lib/useChess";
+import { useChessPart } from "@/lib/useChess";
+import { PUZZLE_PART } from "@/content/chess/parts/puzzles";
 import { replaceHash, setHash, useHash } from "@/lib/useHash";
 import { useToday } from "@/lib/useToday";
 import { ChessBoard } from "./ChessBoard";
@@ -42,7 +43,7 @@ const STARS = (n: number) => "⭐".repeat(n);
 export function PuzzleHub() {
   const hash = useHash();
   const t = useT();
-  const { puzzles, themes } = useChess();
+  const { puzzles, themes } = useChessPart(PUZZLE_PART);
   const profile = useAgeProfile();
   const hydrated = useHydrated();
   const progress = useStore((s) => s.chessPuzzles);
@@ -418,7 +419,7 @@ function SingleView({ puzzle }: { puzzle: ChessPuzzle }) {
  */
 function ThemeView({ theme, part }: { theme: PuzzleTheme; part: number | "bank" | null }) {
   const t = useT();
-  const { themes } = useChess();
+  const { themes } = useChessPart(PUZZLE_PART);
   const hydrated = useHydrated();
   const info = themes.find((x) => x.id === theme)!;
   const list = useMemo(() => puzzlesByTheme(theme), [theme]);

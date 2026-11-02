@@ -20,7 +20,8 @@ import {
   WOODPECKER_ROUNDS,
   type WoodpeckerRound,
 } from "@/lib/store";
-import { useChess } from "@/lib/useChess";
+import { useChessPart } from "@/lib/useChess";
+import { PUZZLE_PART } from "@/content/chess/parts/puzzles";
 import { setHash } from "@/lib/useHash";
 import { PuzzlePlayer, type AnyPuzzle } from "./PuzzleTrainer";
 
@@ -444,7 +445,7 @@ function Rounds({ rounds }: { rounds: readonly WoodpeckerRound[] }) {
 
 /** Название темы с эмодзи — для чипов на панели. */
 export function useThemeName() {
-  const { themes } = useChess();
+  const { themes } = useChessPart(PUZZLE_PART);
   return (id: PuzzleTheme) => {
     const theme = themes.find((x) => x.id === id);
     return theme ? `${theme.emoji} ${theme.name}` : id;

@@ -5,7 +5,9 @@ import { useState } from "react";
 import { RichText } from "@/components/RichText";
 import { cn } from "@/components/ui";
 import { useLang, useT } from "@/lib/i18n";
-import { useChess, useChessImage } from "@/lib/useChess";
+import { useChessPart, useChessImage } from "@/lib/useChess";
+import { ENCYCLOPEDIA_PART } from "@/content/chess/parts/encyclopedia";
+import { IMAGE_PART } from "@/content/chess/parts/images";
 import { PieceIcon } from "./ChessBoard";
 import { Figure, ImageCredits, Portrait } from "./Figure";
 
@@ -79,7 +81,6 @@ export function Encyclopedia() {
   const {
     chessMath,
     fideNote,
-    images,
     pieceNamesTable,
     polgarNote,
     records,
@@ -87,7 +88,8 @@ export function Encyclopedia() {
     uzbekChess,
     womenChampions,
     worldChampions,
-  } = useChess();
+  } = useChessPart(ENCYCLOPEDIA_PART);
+  const { images } = useChessPart(IMAGE_PART);
   const [open, setOpen] = useState<string | null>(null);
   const sections = [
     ["history", t("🗺️ Путь шахмат", "🗺️ Shaxmat yoʻli")],

@@ -10,7 +10,8 @@ import { useTitleTranslation } from "@/lib/docTitle";
 import { useT } from "@/lib/i18n";
 import { useStore } from "@/lib/store";
 import type { AppState } from "@/lib/state";
-import { useChess } from "@/lib/useChess";
+import { useChessPart } from "@/lib/useChess";
+import { TEST_PART } from "@/content/chess/parts/tests";
 import { setHash, useHash } from "@/lib/useHash";
 import { ChessExerciseView } from "./ChessExercises";
 
@@ -45,7 +46,7 @@ function parseHash(hash: string, tests: ChessTest[]): { test: ChessTest | null; 
 }
 
 export function ChessTests() {
-  const { tests } = useChess();
+  const { tests } = useChessPart(TEST_PART);
   const t = useT();
   const hash = useHash();
   const { test, index } = parseHash(hash, tests);
@@ -65,7 +66,7 @@ function Stars({ n }: { n: number }) {
 
 function Overview() {
   const t = useT();
-  const { tests } = useChess();
+  const { tests } = useChessPart(TEST_PART);
   const state = useStore((s) => s);
   return (
     <>
