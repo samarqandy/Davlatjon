@@ -6,7 +6,7 @@ import { Chess } from "chess.js";
 import { describe, expect, it } from "vitest";
 import { CHESS_RU, chessContent, courseLessons } from "@/content/chess/content";
 import type { ChessExercise } from "@/content/chess/types";
-import { legalTargets, matingMoves } from "@/lib/chess";
+import { legalTargets, matingMoves, pieceTargets, shortestStarsPath } from "@/lib/chess";
 import { cyrillicPaths } from "@/content/localize";
 import { tacticMoves, type TacticGoal } from "@/lib/tactics";
 
@@ -98,6 +98,22 @@ describe("курс: ответы", () => {
 
   it("«куда пойдёт фигура»: ответ совпадает с chess.js", () => {
     for (const e of byKind("moves")) expect([...e.answer].sort(), e.id).toEqual(legalTargets(e.fen, e.from));
+  });
+
+  it("лабиринты: путь в объяснении настоящий и самый короткий", () => {
+    const route = (text: string) => text.match(/[a-h][1-8](?: → [a-h][1-8])+/)?.[0].split(" → ") ?? null;
+    for (const e of byKind("stars")) {
+      const size = { cols: 8, rows: 8 };
+      const blocked = new Set(e.blocks ?? []);
+      const best = shortestStarsPath({ size, piece: e.piece, start: e.start, stars: e.stars, blocks: e.blocks });
+      expect(best?.length, e.id).toBe(e.optimal);
+      const r = route(e.why);
+      expect(r?.[0], e.id).toBe(e.start);
+      expect(r!.length - 1, e.id).toBe(e.optimal);
+      for (let i = 1; i < r!.length; i++)
+        expect(pieceTargets(e.piece, r![i - 1], size, blocked), e.id).toContain(r![i]);
+      for (const s of e.stars) expect(r, e.id).toContain(s);
+    }
   });
 
   it("«найди клетку»: клетки существуют и не повторяются", () => {
