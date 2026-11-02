@@ -12,7 +12,8 @@ import { pluralize } from "@/lib/plural";
 import { judgeLineMove, playUci, solutionLine, type BankPuzzle } from "@/lib/puzzleBank";
 import { starsFor } from "@/lib/puzzleRating";
 import { chessPuzzleMiss, chessPuzzleRated, chessPuzzleSolved, getState } from "@/lib/store";
-import { useChess } from "@/lib/useChess";
+import { useChessPart } from "@/lib/useChess";
+import { PUZZLE_PART } from "@/content/chess/parts/puzzles";
 import { ChessBoard, type PromotionPiece, type SquareMark } from "./ChessBoard";
 import { usePromotion } from "./useMoveInput";
 
@@ -65,7 +66,7 @@ export function PuzzlePlayer({
 }) {
   const t = useT();
   const san = useSan();
-  const { puzzles, themes } = useChess();
+  const { puzzles, themes } = useChessPart(PUZZLE_PART);
   const bank = isBankPuzzle(puzzle) ? puzzle : null;
   const classic = isBankPuzzle(puzzle) ? null : puzzle;
   const key = puzzleKey(puzzle);

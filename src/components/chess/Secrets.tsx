@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Button, cn } from "@/components/ui";
-import { chessImageIn } from "@/content/chess/content";
+import { chessImageIn } from "@/content/chess/imageLookup";
 import {
   ENVOY_ROUNDS,
   formatBig,
@@ -17,7 +17,10 @@ import {
   type SecretWidget,
 } from "@/content/chess/secrets";
 import { useAgeProfile } from "@/lib/age";
-import { useChess, useChessImage } from "@/lib/useChess";
+import { useChessPart, useChessImage } from "@/lib/useChess";
+import { INSIGHT_PART } from "@/content/chess/parts/insights";
+import { SAGE_PART } from "@/content/chess/parts/sages";
+import { SECRET_PART } from "@/content/chess/parts/secrets";
 import { useHash } from "@/lib/useHash";
 import { ChessBoard, PieceIcon, type SquareMark } from "./ChessBoard";
 import { Figure, Portrait } from "./Figure";
@@ -29,7 +32,8 @@ import { VOICE_CLIPS } from "@/lib/voice";
 /** Страница «Тайны шахмат»: карточки-истории с крючком, картинкой и встроенной игрой; загадки про фигуры. */
 export function Secrets() {
   const t = useT();
-  const { secrets, riddles, thoughts, dialogues, newViews } = useChess();
+  const { secrets, riddles } = useChessPart(SECRET_PART);
+  const { thoughts, dialogues, newViews } = useChessPart(INSIGHT_PART);
   const hash = useHash().replace(/^#/, "");
   const profile = useAgeProfile();
   const [opened, setOpened] = useState<Set<string>>(() => new Set());
@@ -368,7 +372,7 @@ const ENVOY_PIECES: EnvoyRound["piece"][] = ["n", "b", "r", "q", "k", "p"];
 
 function EnvoyGame() {
   const t = useT();
-  const { pieceNames } = useChess();
+  const { pieceNames } = useChessPart(SECRET_PART);
   const options = ENVOY_PIECES.map((p) => pieceNames[p]);
   const [round, setRound] = useState(0);
   const [picked, setPicked] = useState<string | null>(null);
@@ -584,7 +588,7 @@ function KnightTour() {
 
 function DilaramStory() {
   const t = useT();
-  const { dilaram } = useChess();
+  const { dilaram } = useChessPart(SECRET_PART);
   const [i, setI] = useState(0);
   const f = dilaram[i];
   return (
@@ -632,7 +636,7 @@ function DilaramStory() {
 
 function TurkReveal() {
   const t = useT();
-  const { turkOptions, turkReveal } = useChess();
+  const { turkOptions, turkReveal } = useChessPart(SECRET_PART);
   const [picked, setPicked] = useState<number | null>(null);
   return (
     <div className="rounded-2xl bg-brand-soft/40 p-4">
@@ -664,7 +668,7 @@ function TurkReveal() {
 
 function Sages() {
   const lang = useLang();
-  const { sages } = useChess();
+  const { sages } = useChessPart(SAGE_PART);
   return (
     <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
       {sages.map((s) => {
@@ -689,7 +693,7 @@ function Sages() {
 
 function Riddles() {
   const t = useT();
-  const { riddles } = useChess();
+  const { riddles } = useChessPart(SECRET_PART);
   const [picked, setPicked] = useState<Record<number, string>>({});
   const solved = riddles.filter((r, i) => picked[i] === r.answer).length;
   return (

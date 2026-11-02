@@ -10,7 +10,8 @@ import { legalTargets, pieceAt, playMove } from "@/lib/chess";
 import { bestMoves, kingCatches, moveOutcome, pawnSquare, robotMove } from "@/lib/endgame";
 import { useLang, useSan, useT } from "@/lib/i18n";
 import { chessEndgameSolved, useHydrated, useStore } from "@/lib/store";
-import { useChess } from "@/lib/useChess";
+import { useChessPart } from "@/lib/useChess";
+import { ENDGAME_PART } from "@/content/chess/parts/endgames";
 import { cue } from "@/lib/voice";
 import { ChessBoard, PieceIcon, type SquareMark } from "./ChessBoard";
 
@@ -18,7 +19,7 @@ import { ChessBoard, PieceIcon, type SquareMark } from "./ChessBoard";
 export function EndgameSchool() {
   const t = useT();
   const hydrated = useHydrated();
-  const { endgameSchool, endgames, endgameMates } = useChess();
+  const { endgameSchool, endgames, endgameMates } = useChessPart(ENDGAME_PART);
   const solved = useStore((s) => s.chessEndgames);
   const all = endgames.flatMap((l) => l.drills);
   const done = hydrated ? all.filter((d) => solved[d.id]).length : 0;

@@ -5,13 +5,15 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { RichText } from "@/components/RichText";
 import { Button, cn } from "@/components/ui";
-import { chessImagesIn } from "@/content/chess/content";
+import { chessImagesIn } from "@/content/chess/imageLookup";
 import type { FamousGame } from "@/content/chess/games";
 import type { ChessImage } from "@/content/chess/images";
 import { useTitleTranslation } from "@/lib/docTitle";
 import { useLang, useSan, useT } from "@/lib/i18n";
 import { chessGameViewed, useHydrated, useStore } from "@/lib/store";
-import { useChess, useChessImages } from "@/lib/useChess";
+import { useChessPart, useChessImages } from "@/lib/useChess";
+import { GAME_PART } from "@/content/chess/parts/games";
+import { LEVELS } from "@/content/chess/parts/levels";
 import { ChessBoard, type SquareMark } from "./ChessBoard";
 import { PhotoStrip, Portrait } from "./Figure";
 import { GuessGame, guessHero } from "./GuessGame";
@@ -44,7 +46,8 @@ export function FamousGamesList() {
   const hydrated = useHydrated();
   const t = useT();
   const lang = useLang();
-  const { games, levels } = useChess();
+  const { games } = useChessPart(GAME_PART);
+  const { levels } = useChessPart(LEVELS);
   const viewed = useStore((s) => s.chessGamesViewed);
   return (
     <div className="space-y-6">
@@ -117,7 +120,8 @@ export function FamousGamesList() {
 export function GameReplay({ game: ruGame }: { game: FamousGame }) {
   const t = useT();
   const san = useSan();
-  const { games, levels } = useChess();
+  const { games } = useChessPart(GAME_PART);
+  const { levels } = useChessPart(LEVELS);
   // Страница передаёт партию по-русски (её собирает сервер); тексты берём на языке интерфейса.
   const game = games.find((g) => g.id === ruGame.id) ?? ruGame;
   useTitleTranslation(ruGame.title, game.title);

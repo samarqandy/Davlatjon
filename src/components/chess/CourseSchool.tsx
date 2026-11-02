@@ -3,12 +3,15 @@
 import Link from "next/link";
 import { useMemo } from "react";
 import { cn, ProgressBar } from "@/components/ui";
-import { courseLessons } from "@/content/chess/content";
+import { courseLessons } from "@/content/chess/courseLessons";
+import { LEVELS } from "@/content/chess/parts/levels";
+import { TACTIC_PART } from "@/content/chess/parts/tactics";
 import type { ChessTactic } from "@/content/chess/types";
 import { useTitleTranslation } from "@/lib/docTitle";
 import { useT } from "@/lib/i18n";
 import { useHydrated } from "@/lib/store";
-import { useChess } from "@/lib/useChess";
+import { useChessPart } from "@/lib/useChess";
+import { COURSE_PART } from "@/content/chess/parts/course";
 import { setHash, useHash } from "@/lib/useHash";
 import { PieceIcon } from "./ChessBoard";
 import { parseHash, TopicView, useSolved } from "./TacticsSchool";
@@ -19,11 +22,16 @@ import { parseHash, TopicView, useSolved } from "./TacticsSchool";
  */
 export function CourseSchool() {
   const t = useT();
-  const content = useChess();
-  const lessons = useMemo(() => courseLessons(content), [content]);
+  const { levels } = useChessPart(LEVELS);
+  const { tactics } = useChessPart(TACTIC_PART);
+  const course = useChessPart(COURSE_PART);
+  const lessons = useMemo(
+    () => courseLessons({ levels, tactics, course1Lessons: course.course1Lessons }),
+    [levels, tactics, course],
+  );
   const hash = useHash();
   const parsed = parseHash(hash, lessons);
-  useTitleTranslation("Ступень 1", content.course1.title);
+  useTitleTranslation("Ступень 1", course.course1.title);
   const number = (id: string) => lessons.findIndex((l) => l.id === id) + 1;
   return (
     <div className="space-y-6">
@@ -46,7 +54,7 @@ export function CourseSchool() {
 
 function Overview({ lessons }: { lessons: (ChessTactic & { piece?: string })[] }) {
   const t = useT();
-  const { course1, course1Modules } = useChess();
+  const { course1, course1Modules } = useChessPart(COURSE_PART);
   const byId = new Map(lessons.map((l, i) => [l.id, { lesson: l, n: i + 1 }]));
   return (
     <>

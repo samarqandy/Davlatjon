@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { RichText } from "@/components/RichText";
 import { Button, ButtonLink, cn, ProgressBar } from "@/components/ui";
 import { CHESS_LEVELS, chessLevelHref } from "@/content/chess";
-import { chessImagesIn } from "@/content/chess/content";
+import { chessImagesIn } from "@/content/chess/imageLookup";
 import type { ChessLevel } from "@/content/chess/types";
 import { certificateHref } from "@/lib/certificate";
 import { levelStatuses } from "@/lib/chessProgress";
@@ -14,7 +14,10 @@ import { useTitleTranslation } from "@/lib/docTitle";
 import { useLang, useT } from "@/lib/i18n";
 import { pluralize } from "@/lib/plural";
 import { useHydrated, useStore } from "@/lib/store";
-import { useChess, useChessImage } from "@/lib/useChess";
+import { useChessPart, useChessImage } from "@/lib/useChess";
+import { GAME_PART } from "@/content/chess/parts/games";
+import { LEVELS } from "@/content/chess/parts/levels";
+import { OPENING_PART } from "@/content/chess/parts/openings";
 import { setHash, useHash } from "@/lib/useHash";
 import { PieceIcon } from "./ChessBoard";
 import { Figure, Portrait } from "./Figure";
@@ -36,7 +39,7 @@ function parseHash(hash: string, total: number): { tab: Tab; exercise: number } 
 export function ChessLevelView({ levelId }: { levelId: string }) {
   const t = useT();
   const lang = useLang();
-  const { levels } = useChess();
+  const { levels } = useChessPart(LEVELS);
   const index = levels.findIndex((l) => l.id === levelId);
   const level = levels[index];
   // Заголовок вкладки «Шахматы · Пешка» → «Shaxmat · Piyoda».
@@ -370,7 +373,9 @@ function Dictionary({ level }: { level: ChessLevel }) {
 function Extras({ levelId }: { levelId: ChessLevel["id"] }) {
   const t = useT();
   const lang = useLang();
-  const { extras, openings: allOpenings, games: allGames } = useChess();
+  const { extras } = useChessPart(LEVELS);
+  const { openings: allOpenings } = useChessPart(OPENING_PART);
+  const { games: allGames } = useChessPart(GAME_PART);
   const x = extras[levelId];
   const openings = (x.openings ?? []).map((id) => allOpenings.find((o) => o.id === id)).filter((o) => o !== undefined);
   const games = (x.games ?? []).map((id) => allGames.find((g) => g.id === id)).filter((g) => g !== undefined);

@@ -11,7 +11,8 @@ import { useTitleTranslation } from "@/lib/docTitle";
 import { useLang, useT } from "@/lib/i18n";
 import { pluralize } from "@/lib/plural";
 import { useHydrated, useStore } from "@/lib/store";
-import { useChess } from "@/lib/useChess";
+import { useChessPart } from "@/lib/useChess";
+import { LEVELS } from "@/content/chess/parts/levels";
 import { PieceIcon } from "./ChessBoard";
 
 /**
@@ -22,7 +23,7 @@ export function CertificateView({ levelId }: { levelId: string }) {
   const t = useT();
   const lang = useLang();
   const hydrated = useHydrated();
-  const { levels } = useChess();
+  const { levels } = useChessPart(LEVELS);
   const index = levels.findIndex((l) => l.id === levelId);
   const level = levels[index];
   useTitleTranslation(`Сертификат «${CHESS_LEVELS[index].name}»`, `«${level.name}» sertifikati`);

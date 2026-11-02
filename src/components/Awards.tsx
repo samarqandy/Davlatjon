@@ -9,7 +9,8 @@ import { certificateHref, rankEarnedAt } from "@/lib/certificate";
 import { useLang, useT } from "@/lib/i18n";
 import { plural, pluralize } from "@/lib/plural";
 import { isoDay, useHydrated, useStore } from "@/lib/store";
-import { useChess } from "@/lib/useChess";
+import { useChessPart } from "@/lib/useChess";
+import { LEVELS } from "@/content/chess/parts/levels";
 import { useToday } from "@/lib/useToday";
 
 const WEEKS = 14;
@@ -124,7 +125,7 @@ export function AwardsPage() {
 function Certificates() {
   const t = useT();
   const hydrated = useHydrated();
-  const { levels } = useChess();
+  const { levels } = useChessPart(LEVELS);
   const state = useStore((s) => s);
   if (!hydrated) return null;
   const earnedLevels = levels.filter((l) => rankEarnedAt(l, state));

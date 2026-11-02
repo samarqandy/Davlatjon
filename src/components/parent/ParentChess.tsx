@@ -16,7 +16,11 @@ import { pluralize } from "@/lib/plural";
 import { bankCount } from "@/lib/puzzleBank";
 import { accuracy, solvedCount, themeStats } from "@/lib/puzzleStats";
 import { updateSettings, useHydrated, useStore, type ChessExerciseProgress } from "@/lib/store";
-import { useChess } from "@/lib/useChess";
+import { useChessPart } from "@/lib/useChess";
+import { GAME_PART } from "@/content/chess/parts/games";
+import { OPENING_PART } from "@/content/chess/parts/openings";
+import { PUZZLE_PART } from "@/content/chess/parts/puzzles";
+import { LEVELS } from "@/content/chess/parts/levels";
 
 const KIND_LABEL: Record<ChessExercise["kind"], { ru: string; uz: string }> = {
   squares: { ru: "Имена клеток", uz: "Kataklar nomi" },
@@ -80,7 +84,7 @@ export function ParentChess() {
   const hydrated = useHydrated();
   const t = useT();
   const lang = useLang();
-  const levels = useChess().levels;
+  const { levels } = useChessPart(LEVELS);
   const state = useStore((s) => s);
   const statuses = levelStatuses(levels, state);
   const rank = hydrated ? currentRank(levels, state) : null;
@@ -186,7 +190,7 @@ function ActivitySummary() {
   const hydrated = useHydrated();
   const t = useT();
   const lang = useLang();
-  const chess = useChess();
+  const chess = { ...useChessPart(PUZZLE_PART), ...useChessPart(OPENING_PART), ...useChessPart(GAME_PART) };
   const state = useStore((s) => s);
   if (!hydrated) return null;
   const result = (r: keyof typeof RESULT_LABEL) => t(RESULT_LABEL[r].ru, RESULT_LABEL[r].uz);

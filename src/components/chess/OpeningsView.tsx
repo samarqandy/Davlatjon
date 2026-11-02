@@ -8,7 +8,8 @@ import { getOpening, type Opening, type OpeningCategory } from "@/content/chess/
 import { legalTargets, pieceAt, playMove, type Color } from "@/lib/chess";
 import { useSan, useT, type T } from "@/lib/i18n";
 import { chessOpeningLearned, useHydrated, useStore } from "@/lib/store";
-import { useChess, useChessImage } from "@/lib/useChess";
+import { useChessPart, useChessImage } from "@/lib/useChess";
+import { OPENING_PART } from "@/content/chess/parts/openings";
 import { setHash, useHash } from "@/lib/useHash";
 import { ChessBoard, type SquareMark } from "./ChessBoard";
 import { Figure } from "./Figure";
@@ -19,7 +20,7 @@ const CATEGORY_ORDER: OpeningCategory[] = ["open", "semiOpen", "closed", "gambit
 
 export function OpeningsView() {
   const hash = useHash();
-  const { openings } = useChess();
+  const { openings } = useChessPart(OPENING_PART);
   // Дебют на языке интерфейса: ходы и id те же, тексты — переведённые.
   const find = (id: string) => {
     const ru = getOpening(id);
@@ -41,7 +42,7 @@ export function OpeningsView() {
 function OpeningsList() {
   const hydrated = useHydrated();
   const t = useT();
-  const { openings, openingCategories, openingPrinciples } = useChess();
+  const { openings, openingCategories, openingPrinciples } = useChessPart(OPENING_PART);
   const learned = useStore((s) => s.chessOpenings);
   return (
     <div className="space-y-6">
@@ -127,7 +128,7 @@ function OpeningsList() {
 function OpeningDetail({ opening }: { opening: Opening }) {
   const t = useT();
   const san = useSan();
-  const { openingCategories } = useChess();
+  const { openingCategories } = useChessPart(OPENING_PART);
   const positions = useMemo(() => replayPositions(opening.moves), [opening.moves]);
   const [ply, setPly] = useState(positions.length - 1);
   const learned = useStore((s) => s.chessOpenings);

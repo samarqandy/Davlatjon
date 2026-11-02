@@ -6,14 +6,15 @@ import { Button, cn } from "@/components/ui";
 import { ListenButton } from "@/components/ListenButton";
 import { useLang, useT } from "@/lib/i18n";
 import { VOICE_CLIPS } from "@/lib/voice";
-import { useChess } from "@/lib/useChess";
+import { useChessPart } from "@/lib/useChess";
+import { DID_YOU_KNOW_PART } from "@/content/chess/parts/didYouKnow";
 import { useToday } from "@/lib/useToday";
 
 /** «Знаешь ли ты?» — вопрос дня с ответом по нажатию; «Ещё вопрос» листает дальше. */
 export function DidYouKnow({ className }: { className?: string }) {
   const t = useT();
   const lang = useLang();
-  const { didYouKnow } = useChess();
+  const { didYouKnow } = useChessPart(DID_YOU_KNOW_PART);
   const today = useToday();
   const [offset, setOffset] = useState(0);
   const [open, setOpen] = useState(false);

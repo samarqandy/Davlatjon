@@ -10,7 +10,8 @@ import { useLang, useT } from "@/lib/i18n";
 import { useEffect, useRef, useState } from "react";
 import { Celebration } from "@/components/rewards/Celebration";
 import { useHydrated, useStore } from "@/lib/store";
-import { useChess } from "@/lib/useChess";
+import { useChessPart } from "@/lib/useChess";
+import { TACTIC_PART } from "@/content/chess/parts/tactics";
 import { setHash, useHash } from "@/lib/useHash";
 import { ChessExerciseView } from "./ChessExercises";
 import { ChessLesson } from "./ChessLesson";
@@ -34,7 +35,7 @@ export function parseHash(
 
 export function TacticsSchool() {
   const t = useT();
-  const { tactics, tacticsSchool } = useChess();
+  const { tactics, tacticsSchool } = useChessPart(TACTIC_PART);
   const hash = useHash();
   const parsed = parseHash(hash, tactics);
   useTitleTranslation("Тактика", tacticsSchool.title);
@@ -64,7 +65,7 @@ export function useSolved(topic: ChessTactic): { ids: Set<string>; count: number
 
 function Overview() {
   const t = useT();
-  const { tactics, tacticsSchool } = useChess();
+  const { tactics, tacticsSchool } = useChessPart(TACTIC_PART);
   return (
     <>
       <Link
