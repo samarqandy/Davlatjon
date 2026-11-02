@@ -17,6 +17,30 @@ export function rankEarnedAt(level: Pick<ChessLevel, "exercises">, s: Pick<AppSt
   return level.exercises.length ? last : null;
 }
 
+/** Диплом ступени курса: решён итоговый тест и не меньше этой доли всех упражнений курса. */
+export const COURSE_DIPLOMA_SHARE = 0.8;
+
+/** Сколько упражнений курса нужно решить для диплома. */
+export const courseDiplomaNeed = (total: number) => Math.ceil(total * COURSE_DIPLOMA_SHARE);
+
+/**
+ * Когда получен диплом ступени: момент, когда решены и все упражнения итогового теста, и нужная доля курса
+ * (время решения того упражнения, на котором набралась доля), — или null, если ещё не получен.
+ */
+export function courseEarnedAt(all: string[], final: string[], s: Pick<AppState, "chess">): number | null {
+  const at = (id: string) => s.chess[id]?.solvedAt ?? 0;
+  if (!all.length || final.some((id) => !at(id))) return null;
+  const times = all
+    .map(at)
+    .filter((t) => t > 0)
+    .sort((a, b) => a - b);
+  const need = courseDiplomaNeed(all.length);
+  if (times.length < need) return null;
+  return Math.max(times[need - 1], ...final.map(at));
+}
+
+export const courseDiplomaHref = "/chess/course/diploma";
+
 const MONTHS_RU = [
   "января",
   "февраля",
