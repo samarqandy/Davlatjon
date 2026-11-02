@@ -5,10 +5,10 @@ import { useMemo } from "react";
 import { ChildNameBanner } from "@/components/home/ChildNameBanner";
 import { Button, ButtonLink, ProgressBar } from "@/components/ui";
 import { courseLessons } from "@/content/chess/courseLessons";
-import { COURSE_PART } from "@/content/chess/parts/course";
 import { LEVELS } from "@/content/chess/parts/levels";
 import { TACTIC_PART } from "@/content/chess/parts/tactics";
-import { courseDiplomaHref, courseDiplomaNeed, courseEarnedAt } from "@/lib/certificate";
+import { courseDiplomaNeed, courseEarnedAt } from "@/lib/certificate";
+import { diplomaHref, type CourseStep } from "@/lib/course/step";
 import { nameFor } from "@/lib/childName";
 import { useTitleTranslation } from "@/lib/docTitle";
 import { useLang, useT } from "@/lib/i18n";
@@ -17,33 +17,30 @@ import { useChessPart } from "@/lib/useChess";
 import { PieceIcon } from "./ChessBoard";
 import { CertificateSheet } from "./CertificateSheet";
 
-/** Урок с итоговым тестом ступени: его упражнения нужны для диплома все. */
-export const FINAL_LESSON = "c1-final-test";
-
-/** Упражнения курса и итогового теста — для диплома и карточки на странице курса. */
-export function useCourseIds(): { all: string[]; final: string[]; lessons: number } {
+/** Упражнения ступени и её итогового теста — для диплома и карточки на странице курса. */
+export function useCourseIds(step: CourseStep): { all: string[]; final: string[]; lessons: number } {
   const { levels } = useChessPart(LEVELS);
   const { tactics } = useChessPart(TACTIC_PART);
-  const { course1Lessons } = useChessPart(COURSE_PART);
+  const content = step.useContent();
   return useMemo(() => {
-    const lessons = courseLessons({ levels, tactics, course1Lessons });
+    const lessons = courseLessons({ levels, tactics }, content.lessons);
     const all = [...new Set(lessons.flatMap((l) => l.exercises.map((e) => e.id)))];
-    const final = lessons.find((l) => l.id === FINAL_LESSON)?.exercises.map((e) => e.id) ?? [];
+    const final = lessons.find((l) => l.id === step.final)?.exercises.map((e) => e.id) ?? [];
     return { all, final, lessons: lessons.length };
-  }, [levels, tactics, course1Lessons]);
+  }, [levels, tactics, content.lessons, step.final]);
 }
 
 /**
- * Диплом ступени «Пешка» — как в конце книги: лист A4 с именем ребёнка. Выдаётся, когда решён итоговый тест
+ * Диплом ступени — как в конце книги: лист A4 с именем ребёнка. Выдаётся, когда решён итоговый тест
  * и не меньше 80 % упражнений курса. До этого — сколько осталось.
  */
-export function CourseDiploma() {
+export function CourseDiploma({ step }: { step: CourseStep }) {
   const t = useT();
   const lang = useLang();
   const hydrated = useHydrated();
-  const { course1 } = useChessPart(COURSE_PART);
-  const { all, final, lessons } = useCourseIds();
-  useTitleTranslation("Диплом ступени «Пешка»", "«Piyoda» bosqichi diplomi");
+  const { info: course1 } = step.useContent();
+  const { all, final, lessons } = useCourseIds(step);
+  useTitleTranslation(`Диплом ступени «${step.award.ru}»`, `«${step.award.uz}» bosqichi diplomi`);
   const earnedAt = useStore((s) => courseEarnedAt(all, final, s));
   const solved = useStore((s) => all.filter((id) => s.chess[id]?.solvedAt).length);
   const finalSolved = useStore((s) => final.filter((id) => s.chess[id]?.solvedAt).length);
@@ -55,7 +52,7 @@ export function CourseDiploma() {
 
   const back = (
     <Link
-      href="/chess/course"
+      href={step.href}
       className="no-print inline-flex min-h-11 items-center gap-1 text-sm font-extrabold text-brand hover:underline"
     >
       ← {course1.title}
@@ -92,7 +89,7 @@ export function CourseDiploma() {
               </span>
             </div>
           </div>
-          <ButtonLink href={`/chess/course#${FINAL_LESSON}`}>{t("К итоговому тесту →", "Yakuniy testga →")}</ButtonLink>
+          <ButtonLink href={`${step.href}#${step.final}`}>{t("К итоговому тесту →", "Yakuniy testga →")}</ButtonLink>
         </section>
       </div>
     );
@@ -102,7 +99,9 @@ export function CourseDiploma() {
       {back}
       <div className="no-print flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-black">🎓 {t("Диплом ступени «Пешка»", "«Piyoda» bosqichi diplomi")}</h1>
+          <h1 className="text-2xl font-black">
+            🎓 {t(`Диплом ступени «${step.award.ru}»`, `«${step.award.uz}» bosqichi diplomi`)}
+          </h1>
           <p className="text-muted">
             {t(
               "Распечатай на листе A4 (альбомная ориентация) — и повесь на стену!",
@@ -123,7 +122,7 @@ export function CourseDiploma() {
         heading={t("Диплом", "Diplom")}
         icon={
           <PieceIcon
-            piece="wP"
+            piece={step.piece}
             className="relative h-[13cqi] w-[13cqi] rounded-full bg-[#f0d9b5] p-[1.2cqi] ring-[0.5cqi] ring-[#d8b46a]"
           />
         }
@@ -132,7 +131,7 @@ export function CourseDiploma() {
           "награждается дипломом за прохождение ступени",
           "bosqichni muvaffaqiyatli oʻtgani uchun diplom bilan taqdirlanadi",
         )}
-        title={t("Пешка", "Piyoda")}
+        title={t(step.award.ru, step.award.uz)}
         detail={t(
           `Курс из ${lessons} уроков: решено ${solved} из ${all.length} упражнений и итоговый тест.`,
           `${lessons} ta darsli kurs: ${all.length} ta mashqdan ${solved} tasi va yakuniy test yechildi.`,
@@ -144,17 +143,19 @@ export function CourseDiploma() {
 }
 
 /** Карточка диплома внизу страницы курса: сколько осталось или ссылка на готовый диплом. */
-export function DiplomaCard() {
+export function DiplomaCard({ step }: { step: CourseStep }) {
   const t = useT();
   const hydrated = useHydrated();
-  const { all, final } = useCourseIds();
+  const { all, final } = useCourseIds(step);
   const earned = useStore((s) => courseEarnedAt(all, final, s) !== null);
   const solved = useStore((s) => all.filter((id) => s.chess[id]?.solvedAt).length);
   const need = courseDiplomaNeed(all.length);
   const shown = hydrated ? Math.min(solved, need) : 0;
+  // Итогового теста у ступени ещё нет — диплом пока не выдаётся, карточку не показываем.
+  if (!final.length) return null;
   return (
     <Link
-      href={courseDiplomaHref}
+      href={diplomaHref(step)}
       data-diploma-card={hydrated && earned ? "earned" : "locked"}
       className="flex items-center gap-4 rounded-3xl border-2 border-[#d8b46a] bg-[#fffaf0] p-5 shadow-card transition hover:-translate-y-0.5"
     >
@@ -165,7 +166,7 @@ export function DiplomaCard() {
         <span className="block text-xl font-black text-[#7a4b00]">
           {hydrated && earned
             ? t("Диплом ступени получен — открыть и распечатать", "Bosqich diplomi olindi — ochish va chop etish")
-            : t("Диплом ступени «Пешка»", "«Piyoda» bosqichi diplomi")}
+            : t(`Диплом ступени «${step.award.ru}»`, `«${step.award.uz}» bosqichi diplomi`)}
         </span>
         {!(hydrated && earned) && (
           <span className="mt-2 flex items-center gap-3">
