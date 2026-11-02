@@ -172,3 +172,16 @@ test("ступень 2 «Конь»: страница курса, урок дв�
   const stored = await page.evaluate((key) => JSON.parse(localStorage.getItem(key) ?? "{}").chess ?? {}, KEY);
   expect(stored["c2-double-check-knight"]?.solvedAt).toBeTruthy();
 });
+
+test("ступень 2: открытый шах выигрывает ферзя, урок «Ловля фигур» на месте", async ({ page }) => {
+  await prepare(page);
+  await page.goto("/chess/course-2");
+  for (const id of ["defence", "trap", "advantage", "endgame"])
+    await expect(page.locator(`[data-course-module="${id}"]`)).toBeVisible();
+  await page.goto("/chess/course-2#c2-discover-win-exercise-3");
+  await page.locator('[data-board="mo-c2-discover-win-knight"] [data-square="e4"]').click();
+  await page.locator('[data-board="mo-c2-discover-win-knight"] [data-square="d2"]').click();
+  await expect(page.getByText(/Почему так/)).toBeVisible();
+  const stored = await page.evaluate((key) => JSON.parse(localStorage.getItem(key) ?? "{}").chess ?? {}, KEY);
+  expect(stored["c2-discover-win-knight"]?.solvedAt).toBeTruthy();
+});
