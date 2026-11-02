@@ -156,3 +156,19 @@ test("курс: «как сыграть лучше» — неверный выб
   const stored = await page.evaluate((key) => JSON.parse(localStorage.getItem(key) ?? "{}").chess ?? {}, KEY);
   expect(stored[id]?.solvedAt).toBeTruthy();
 });
+
+test("ступень 2 «Конь»: страница курса, урок двойного шаха засчитывается, карточка в школе", async ({ page }) => {
+  await prepare(page);
+  await page.goto("/chess");
+  await expect(page.locator('a[href="/chess/course-2"]').first()).toBeVisible();
+  await page.goto("/chess/course-2");
+  await expect(page.getByRole("heading", { level: 1, name: /Ступень 2/ })).toBeVisible();
+  for (const id of ["tactic-mates", "attack", "games"])
+    await expect(page.locator(`[data-course-module="${id}"]`)).toBeVisible();
+  await page.goto("/chess/course-2#c2-double-check-exercise-1");
+  await page.locator('[data-board="mo-c2-double-check-knight"] [data-square="e6"]').click();
+  await page.locator('[data-board="mo-c2-double-check-knight"] [data-square="c7"]').click();
+  await expect(page.getByText(/Почему так/)).toBeVisible();
+  const stored = await page.evaluate((key) => JSON.parse(localStorage.getItem(key) ?? "{}").chess ?? {}, KEY);
+  expect(stored["c2-double-check-knight"]?.solvedAt).toBeTruthy();
+});

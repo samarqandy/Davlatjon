@@ -29,7 +29,8 @@ export const courseDiplomaNeed = (total: number) => Math.ceil(total * COURSE_DIP
  */
 export function courseEarnedAt(all: string[], final: string[], s: Pick<AppState, "chess">): number | null {
   const at = (id: string) => s.chess[id]?.solvedAt ?? 0;
-  if (!all.length || final.some((id) => !at(id))) return null;
+  // Без итогового теста (ступень ещё пишется) диплома нет.
+  if (!all.length || !final.length || final.some((id) => !at(id))) return null;
   const times = all
     .map(at)
     .filter((t) => t > 0)
@@ -38,8 +39,6 @@ export function courseEarnedAt(all: string[], final: string[], s: Pick<AppState,
   if (times.length < need) return null;
   return Math.max(times[need - 1], ...final.map(at));
 }
-
-export const courseDiplomaHref = "/chess/course/diploma";
 
 const MONTHS_RU = [
   "января",

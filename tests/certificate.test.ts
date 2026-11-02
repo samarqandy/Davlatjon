@@ -42,7 +42,8 @@ describe("диплом ступени", () => {
     expect(courseEarnedAt(ALL, FINAL, solved([...many, ["e9", 100], ["e10", 200]]))).toBe(200);
   });
 
-  it("пустой курс — диплома нет", () => {
+  it("пустой курс или ступень без итогового теста — диплома нет", () => {
     expect(courseEarnedAt([], [], solved([]))).toBeNull();
+    expect(courseEarnedAt(ALL, [], solved(ALL.map((id, i) => [id, i + 1])))).toBeNull();
   });
 });

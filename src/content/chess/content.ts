@@ -6,6 +6,7 @@
 import type { Lang } from "@/lib/lang";
 import type { Uz } from "../localize";
 import { COURSE_PART } from "./parts/course";
+import { COURSE2_PART } from "./parts/course2";
 import { DID_YOU_KNOW_PART } from "./parts/didYouKnow";
 import { ENCYCLOPEDIA_PART } from "./parts/encyclopedia";
 import { ENDGAME_PART } from "./parts/endgames";
@@ -39,6 +40,7 @@ export const CHESS_PARTS = [
   TACTIC_PART,
   TEST_PART,
   COURSE_PART,
+  COURSE2_PART,
 ] as const;
 
 type PartValue<P> = P extends { ru: infer T } ? T : never;

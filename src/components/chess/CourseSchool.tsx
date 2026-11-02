@@ -9,30 +9,30 @@ import { TACTIC_PART } from "@/content/chess/parts/tactics";
 import type { ChessTactic } from "@/content/chess/types";
 import { useTitleTranslation } from "@/lib/docTitle";
 import { useT } from "@/lib/i18n";
+import type { CourseStep } from "@/lib/course/step";
 import { useHydrated } from "@/lib/store";
 import { useChessPart } from "@/lib/useChess";
-import { COURSE_PART } from "@/content/chess/parts/course";
 import { setHash, useHash } from "@/lib/useHash";
 import { DiplomaCard } from "./CourseDiploma";
 import { PieceIcon } from "./ChessBoard";
 import { parseHash, TopicView, useSolved } from "./TacticsSchool";
 
 /**
- * Курс по ступеням (ступень 1 «Пешка»): уроки по порядку, сгруппированные в модули.
+ * Курс по ступеням: уроки ступени по порядку, сгруппированные в модули.
  * Урок открывается тем же видом, что и тема тактики: теория, упражнения, словарик.
  */
-export function CourseSchool() {
+export function CourseSchool({ step }: { step: CourseStep }) {
   const t = useT();
   const { levels } = useChessPart(LEVELS);
   const { tactics } = useChessPart(TACTIC_PART);
-  const course = useChessPart(COURSE_PART);
+  const content = step.useContent();
   const lessons = useMemo(
-    () => courseLessons({ levels, tactics, course1Lessons: course.course1Lessons }),
-    [levels, tactics, course],
+    () => courseLessons({ levels, tactics }, content.lessons),
+    [levels, tactics, content.lessons],
   );
   const hash = useHash();
   const parsed = parseHash(hash, lessons);
-  useTitleTranslation("Ступень 1", course.course1.title);
+  useTitleTranslation(`Ступень ${step.n}`, content.info.title);
   const number = (id: string) => lessons.findIndex((l) => l.id === id) + 1;
   return (
     <div className="space-y-6">
@@ -47,15 +47,15 @@ export function CourseSchool() {
           kicker={t(`Урок ${number(parsed.topic.id)}`, `${number(parsed.topic.id)}-dars`)}
         />
       ) : (
-        <Overview lessons={lessons} />
+        <Overview step={step} lessons={lessons} />
       )}
     </div>
   );
 }
 
-function Overview({ lessons }: { lessons: (ChessTactic & { piece?: string })[] }) {
+function Overview({ step, lessons }: { step: CourseStep; lessons: (ChessTactic & { piece?: string })[] }) {
   const t = useT();
-  const { course1, course1Modules } = useChessPart(COURSE_PART);
+  const { info: course1, modules: course1Modules } = step.useContent();
   const byId = new Map(lessons.map((l, i) => [l.id, { lesson: l, n: i + 1 }]));
   return (
     <>
@@ -83,7 +83,7 @@ function Overview({ lessons }: { lessons: (ChessTactic & { piece?: string })[] }
           </ol>
         </section>
       ))}
-      <DiplomaCard />
+      <DiplomaCard step={step} />
     </>
   );
 }
