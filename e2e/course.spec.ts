@@ -105,3 +105,21 @@ test("школа: под приветствием — карточка след�
   await next.click();
   await expect(page).toHaveURL(/\/chess\/course#c1-game$/);
 });
+
+test("курс: мат, рокировка и дебют — новые модули, мат ладьёй и рокировка засчитываются", async ({ page }) => {
+  await prepare(page);
+  await page.goto("/chess/course");
+  for (const id of ["mate", "castle", "opening"])
+    await expect(page.locator(`[data-course-module="${id}"]`)).toBeVisible();
+  await page.goto("/chess/course#c1-mate-rook-exercise-3");
+  await square(page, "c1-mate-rook-corner", "a1");
+  await square(page, "c1-mate-rook-corner", "a8");
+  await expect(page.getByText(/Почему так/)).toBeVisible();
+  await page.goto("/chess/course#c1-castle-rules-exercise-1");
+  await square(page, "c1-castle-only-long", "e1");
+  await square(page, "c1-castle-only-long", "c1");
+  await expect(page.getByText(/Почему так/)).toBeVisible();
+  const stored = await page.evaluate((key) => JSON.parse(localStorage.getItem(key) ?? "{}").chess ?? {}, KEY);
+  expect(stored["c1-mate-rook-corner"]?.solvedAt).toBeTruthy();
+  expect(stored["c1-castle-only-long"]?.solvedAt).toBeTruthy();
+});

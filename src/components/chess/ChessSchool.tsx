@@ -96,8 +96,8 @@ export function ChessSchool({ counts }: { counts: ChessSchoolCounts }) {
       emoji: "🪜",
       title: course1.title,
       text: t(
-        "Урок за уроком: доска и запись ходов, каждая фигура, ценность фигур, шах и защита от шаха.",
-        "Darsma-dars: taxta va yurishlarni yozish, har bir dona, donalar qiymati, shoh berish va undan himoya.",
+        "Урок за уроком: доска и запись ходов, каждая фигура, шах и защита, мат каждой фигурой, рокировка и дебют.",
+        "Darsma-dars: taxta va yurishlarni yozish, har bir dona, shoh berish va himoya, har bir dona bilan mot, rokirovka va debyut.",
       ),
       stat: hydrated
         ? t(`${courseSolved} из ${courseTotal} упражнений`, `${courseTotal} ta mashqdan ${courseSolved} tasi`)
