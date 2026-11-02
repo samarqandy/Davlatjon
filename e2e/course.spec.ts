@@ -141,3 +141,18 @@ test("курс: вилка конём, сквозной удар и финиш �
   expect(stored["c1-fork-knight-c7"]?.solvedAt).toBeTruthy();
   expect(stored["c1-skewer-rook-a5"]?.solvedAt).toBeTruthy();
 });
+
+test("курс: «как сыграть лучше» — неверный выбор подсвечен, верный ход делается на доске", async ({ page }) => {
+  await prepare(page);
+  const id = "c1-stalemate-choose";
+  // Пятое упражнение урока: после трёх подключённых и «Мат, а не пат».
+  await page.goto("/chess/course#c1-stalemate-exercise-5");
+  const board = page.locator(`[data-board="ch-${id}"]`);
+  await expect(board).toBeVisible();
+  await page.locator('[data-choice="f1f7"]').click();
+  await expect(page.getByText("не лучший выбор")).toBeVisible();
+  await page.locator('[data-choice="f1f8"]').click();
+  await expect(page.getByText(/Почему так/)).toBeVisible();
+  const stored = await page.evaluate((key) => JSON.parse(localStorage.getItem(key) ?? "{}").chess ?? {}, KEY);
+  expect(stored[id]?.solvedAt).toBeTruthy();
+});

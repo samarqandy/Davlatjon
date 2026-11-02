@@ -30,6 +30,7 @@ const KIND_LABEL: Record<ChessExercise["kind"], { ru: string; uz: string }> = {
   pick: { ru: "Найди на доске", uz: "Taxtadan top" },
   quiz: { ru: "Вопросы", uz: "Savollar" },
   queens: { ru: "Расстановка ферзей", uz: "Farzinlarni joylashtirish" },
+  choose: { ru: "Как сыграть лучше", uz: "Qanday oʻynash yaxshiroq" },
 };
 
 /** Ключ ответа для родителя. */
@@ -58,6 +59,10 @@ function answerOf(e: ChessExercise, lang: Lang): string {
         `Доска ${e.size} × ${e.size}: ферзи не должны стоять на одной линии.`,
         `${e.size} × ${e.size} taxta: hech bir ikki farzin bir chiziqda turmasligi kerak.`,
       );
+    case "choose": {
+      const best = sanFor(lang, sanOf(e.fen, e.moves[e.correct]));
+      return t(`Лучший ход: ${best}.`, `Eng yaxshi yurish: ${best}.`);
+    }
   }
 }
 

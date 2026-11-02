@@ -13,6 +13,7 @@ import {
   playMove,
   queensInConflict,
   queensSolutions,
+  sanOf,
   type PieceType,
 } from "@/lib/chess";
 import { askExplain, praise } from "@/lib/feedback";
@@ -754,6 +755,113 @@ function QuizExercise({ ex }: { ex: Of<"quiz"> }) {
 }
 
 // ---------------------------------------------------------------------------
+// Как сыграть лучше?
+// ---------------------------------------------------------------------------
+
+/** Цвета стрелок вариантов: синий, оранжевый, фиолетовый — различимы и на светлых, и на тёмных клетках. */
+const CHOICE_COLORS = ["#2563eb", "#ea580c", "#9333ea"];
+const CHOICE_LETTERS = ["A", "B", "C"];
+
+/**
+ * Два-три хода показаны стрелками, ребёнок выбирает лучший кнопкой. Верный ход делается на доске,
+ * неверный подсвечивается красным — можно выбрать ещё раз.
+ */
+function ChooseExercise({ ex }: { ex: Of<"choose"> }) {
+  const t = useT();
+  const lang = useLang();
+  const san = useSan();
+  const progress = useChessExercise(ex.id);
+  const [done, setDone] = useState(false);
+  const [wrong, setWrong] = useState<number | null>(null);
+  const [feedback, setFeedback] = useState<FeedbackState | null>(null);
+  const attempts = useRef(0);
+  const turn = ex.fen.split(" ")[1];
+  const labels = ex.moves.map((u) => san(sanOf(ex.fen, u)));
+  const best = ex.moves[ex.correct];
+  const played = done ? playMove(ex.fen, best.slice(0, 2), best.slice(2, 4), (best[4] as PieceType) ?? "q") : null;
+
+  const answer = (i: number) => {
+    if (done) return;
+    const n = attempts.current++;
+    if (i === ex.correct) {
+      setDone(true);
+      setWrong(null);
+      chessSolved(ex.id);
+      setFeedback({ tone: "success", text: `${praise(n, lang)} ${labels[i]}`, sub: askExplain(n, lang) });
+      return;
+    }
+    chessMiss(ex.id);
+    setWrong(i);
+    setFeedback({
+      tone: "retry",
+      text: t(`${labels[i]} — не лучший выбор.`, `${labels[i]} — eng yaxshi tanlov emas.`),
+      sub: t(
+        "Сравни ходы: что делает каждый? Вспомни правила урока.",
+        "Yurishlarni solishtir: har biri nima qiladi? Dars qoidalarini esla.",
+      ),
+    });
+  };
+
+  const marks: Record<string, SquareMark> = {};
+  if (played) {
+    marks[best.slice(0, 2)] = "last";
+    marks[best.slice(2, 4)] = "good";
+  } else if (wrong !== null) marks[ex.moves[wrong].slice(2, 4)] = "bad";
+
+  return (
+    <ExerciseShell ex={ex} solved={!!progress.solvedAt} feedback={feedback}>
+      <p className="text-sm font-bold text-muted">
+        {turn === "w" ? t("Ходят белые.", "Oqlar yuradi.") : t("Ходят чёрные.", "Qoralar yuradi.")}{" "}
+        {t("Стрелки — ходы на выбор.", "Strelkalar — tanlash uchun yurishlar.")}
+      </p>
+      <ChessBoard
+        id={`ch-${ex.id}`}
+        position={played?.fen ?? ex.fen}
+        marks={marks}
+        arrows={
+          played
+            ? []
+            : ex.moves.map((u, i) => ({ from: u.slice(0, 2), to: u.slice(2, 4), color: CHOICE_COLORS[i % 3] }))
+        }
+      />
+      <div className="flex flex-wrap gap-2" role="group" aria-label={t("Ходы на выбор", "Tanlash uchun yurishlar")}>
+        {ex.moves.map((u, i) => (
+          <Button
+            key={u}
+            variant={done && i === ex.correct ? "primary" : wrong === i ? "sun" : "secondary"}
+            onClick={() => answer(i)}
+            aria-pressed={done && i === ex.correct}
+            disabled={done && i !== ex.correct}
+            data-choice={u}
+          >
+            <span
+              aria-hidden
+              className="grid h-7 w-7 place-items-center rounded-full text-sm font-black text-white"
+              style={{ backgroundColor: CHOICE_COLORS[i % 3] }}
+            >
+              {CHOICE_LETTERS[i]}
+            </span>
+            <span className="text-lg font-black">{labels[i]}</span>
+          </Button>
+        ))}
+      </div>
+      {done && (
+        <Button
+          variant="secondary"
+          onClick={() => {
+            setDone(false);
+            setWrong(null);
+            setFeedback(null);
+          }}
+        >
+          {t("↺ Решить ещё раз", "↺ Yana bir bor yechish")}
+        </Button>
+      )}
+    </ExerciseShell>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Ферзи
 // ---------------------------------------------------------------------------
 
@@ -904,5 +1012,7 @@ function ExerciseByKind({ exercise }: { exercise: ChessExercise }) {
       return <QuizExercise ex={exercise} />;
     case "queens":
       return <QueensExercise ex={exercise} />;
+    case "choose":
+      return <ChooseExercise ex={exercise} />;
   }
 }

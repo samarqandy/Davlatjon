@@ -116,6 +116,24 @@ describe("курс: ответы", () => {
     }
   });
 
+  it("«как сыграть лучше»: позиция возможна, ходы разные и по правилам, верный ход в списке", () => {
+    const choices = byKind("choose");
+    expect(choices.length).toBeGreaterThanOrEqual(5);
+    for (const e of choices) {
+      expect(legal(e.fen), e.id).toBe(true);
+      expect(e.moves.length, e.id).toBeGreaterThanOrEqual(2);
+      expect(e.moves.length, e.id).toBeLessThanOrEqual(3);
+      expect(new Set(e.moves).size, e.id).toBe(e.moves.length);
+      expect(e.correct, e.id).toBeGreaterThanOrEqual(0);
+      expect(e.correct, e.id).toBeLessThan(e.moves.length);
+      const all = new Chess(e.fen).moves({ verbose: true }).map((m) => `${m.from}${m.to}${m.promotion ?? ""}`);
+      for (const u of e.moves) expect(all, `${e.id}: ${u}`).toContain(u);
+      // Если среди вариантов есть мат — верный ход и есть мат.
+      const mates = matingMoves(e.fen);
+      if (e.moves.some((u) => mates.includes(u))) expect(mates, e.id).toContain(e.moves[e.correct]);
+    }
+  });
+
   it("«найди клетку»: клетки существуют и не повторяются", () => {
     for (const e of byKind("squares")) {
       for (const s of e.targets) expect(ALL, e.id).toContain(s);
