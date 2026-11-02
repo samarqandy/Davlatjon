@@ -691,6 +691,12 @@ export const course1LessonsUz: Uz<typeof COURSE_1_LESSONS> = {
         hint: "Qoralar otni f6 ga qoʻymadi. Endi nima himoyasiz qoldi?",
         why: "♕xf7# — oʻsha bolalar moti, faqat farzin f3 dan keldi. ♘f6 yurishi qoralarni qutqarib qolardi.",
       },
+      "c1-mate-opening-defend": {
+        title: "Tuzoqqa tushma!",
+        prompt: "Qoralar yuradi. Oqlarning farzini va fili f7 ni moʻljalga oldi. Qanday himoyalanish kerak?",
+        hint: "f6 dagi ot farzinga hujum qiladimi? U f7 katagini himoya qiladimi?",
+        why: "g6 farzinni quvib yuboradi va f7 qutqariladi. ♘f6? dan keyin esa ♕xf7# — bolalar moti boʻladi.",
+      },
     },
   },
   "c1-castle": {
@@ -829,6 +835,24 @@ export const course1LessonsUz: Uz<typeof COURSE_1_LESSONS> = {
         ],
         hint: "Markaz, rivojlantirish, rokirovka — farzin esa shoshilmaydi.",
         why: "e4 markazni egallaydi va fil bilan farzinga yoʻl ochadi. Otni markaz tomon chiqaramiz, har bir dona bilan — bir yurish. Rokirovka shohni yashiradi va ruxni oʻyinga kiritadi.",
+      },
+      "c1-develop-choose-first": {
+        title: "Partiyani qanday boshlash kerak?",
+        prompt: "Oqlar birinchi yurishni qiladi. Qaysi biri yaxshiroq?",
+        hint: "Debyutning birinchi qoidasini esla.",
+        why: "e4 markazni egallaydi va fil bilan farzinga yoʻl ochadi. a4 yurishi deyarli hech narsa qilmaydi.",
+      },
+      "c1-develop-choose-knight": {
+        title: "Otmi yoki farzinmi?",
+        prompt: "Oqlar yuradi. Qanday oʻynash yaxshiroq?",
+        hint: "Debyutda qaysi donani juda erta chiqarish kerak emas?",
+        why: "♘f3 otni rivojlantiradi va e5 piyodasiga hujum qiladi. h5 dagi farzinni qoralar oʻz donalari bilan quvlay boshlaydi, oqlar esa vaqt yoʻqotadi.",
+      },
+      "c1-develop-choose-black": {
+        title: "Piyodani qanday himoya qilish kerak?",
+        prompt: "Qoralar yuradi. f3 dagi ot e5 piyodasiga hujum qildi. Uni qanday himoya qilgan yaxshi?",
+        hint: "Bir yurish donani rivojlantiradi, ikkinchisi shohni zaiflashtiradi.",
+        why: "♘c6 piyodani himoya qiladi va otni rivojlantiradi. f6 yurishi shohni e8–h5 diagonali boʻylab ochib qoʻyadi va otning eng yaxshi katagini egallaydi.",
       },
     },
   },
@@ -1037,6 +1061,12 @@ export const course1LessonsUz: Uz<typeof COURSE_1_LESSONS> = {
         hint: "Ot qaysi katakdan ham e8 dagi shohga, ham a8 dagi ruxga yetadi?",
         why: "♘c7+ — shohga shoh va a8 dagi ruxga hujum. Shoh qochadi, rux esa qoʻldan ketadi.",
       },
+      "c1-fork-knight-choose": {
+        title: "Qaysi shoh yaxshiroq?",
+        prompt: "Oqlar yuradi. Otning ikkala yurishi ham shoh. Qaysi biri ruxni yutadi?",
+        hint: "Shohdan keyin ot yana nimaga hujum qilishiga qara.",
+        why: "♘c7+ — shoh va bir vaqtda a8 dagi ruxga hujum: bu vilka. ♘d6+ dan keyin shoh shunchaki qochib ketadi.",
+      },
     },
   },
   "c1-fork-pawn": {
@@ -1213,6 +1243,12 @@ export const course1LessonsUz: Uz<typeof COURSE_1_LESSONS> = {
         prompt: "Oqlar yuradi. Mot qil — lekin pat qilib qoʻyma!",
         hint: "♕f7 dan keyin qoralarda bitta ham yurish qolmaydi, lekin shoh ham boʻlmaydi — bu pat. Shoh kerak.",
         why: "♕f8# — sakkizinchi gorizontal boʻylab shoh, g7 va h7 ni esa oq shoh ushlab turadi. ♕f7 yoki ♕c4 pat qilib qoʻyardi.",
+      },
+      "c1-stalemate-choose": {
+        title: "Motmi yoki pat?",
+        prompt: "Oqlar yuradi. Bir yurish mot qiladi, ikkinchisi — pat. Motni tanla.",
+        hint: "Qaysi yurishdan keyin qora shohga shoh beriladi?",
+        why: "♕f8# — shoh berildi va qochadigan joy yoʻq: bu mot. ♕f7 dan keyin shoh yoʻq, qoralarning yurishi ham yoʻq — bu pat, durang.",
       },
       "c1-stalemate-quiz": {
         title: "Motmi yoki pat?",

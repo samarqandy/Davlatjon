@@ -95,7 +95,12 @@ export type ChessExercise =
       questions: { text: string; fen?: string; options: string[]; correct: number }[];
     })
   /** Расставить size ферзей на доске size × size, чтобы они не били друг друга. */
-  | (ExerciseBase & { kind: "queens"; size: number });
+  | (ExerciseBase & { kind: "queens"; size: number })
+  /**
+   * «Как сыграть лучше?» — на доске стрелками показаны два-три хода (запись «e2e4»), нужно выбрать лучший.
+   * correct — номер лучшего хода в moves. Как в заданиях М.И. Глотова «Выберите, как бы вы сыграли».
+   */
+  | (ExerciseBase & { kind: "choose"; fen: string; moves: string[]; correct: number });
 
 export interface ChessLegend {
   hook: string;
