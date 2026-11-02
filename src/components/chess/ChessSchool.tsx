@@ -123,8 +123,8 @@ export function ChessSchool({ counts }: { counts: ChessSchoolCounts }) {
       emoji: "🐴",
       title: course2.title,
       text: t(
-        "Мат с помощью связки, открытого нападения и двойного шаха, подготовка мата, атака на короля, ловля фигур, учебные партии.",
-        "Bogʻlash, ochiq hujum va qoʻsh shoh yordamida mot, motga tayyorgarlik, shohga hujum, donalarni tutish, oʻquv partiyalari.",
+        "Мат с помощью связки, открытого нападения и двойного шаха, атака на короля, ловля фигур, эндшпиль, лабиринты и итоговый тест.",
+        "Bogʻlash, ochiq hujum va qoʻsh shoh yordamida mot, shohga hujum, donalarni tutish, endshpil, labirintlar va yakuniy test.",
       ),
       stat: hydrated
         ? t(

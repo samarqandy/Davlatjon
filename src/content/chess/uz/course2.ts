@@ -5,7 +5,7 @@ export const course2Uz: Uz<typeof COURSE_2> = {
   title: "2-bosqich «Ot»",
   subtitle: "Taktika va mot — darsma-dars",
   about:
-    "Bogʻlash, ochiq hujum va qoʻsh shoh yordamida mot, motga tayyorgarlik va shohga hujum, buyuk ustalarning oʻquv partiyalari, motdan himoya, rux bilan mot, donalarni tutish, bogʻlash va ochiq shoh bilan material yutish, endshpilda faol shoh. Darslar tartibi M.I. Glotovning «Shaxmat mahorati bosqichlari» metodikasi asosida; pozitsiyalar maktab uchun tuzilgan va shaxmat dvigateli bilan tekshirilgan.",
+    "Bogʻlash, ochiq hujum va qoʻsh shoh yordamida mot, motga tayyorgarlik va shohga hujum, buyuk ustalarning oʻquv partiyalari, motdan himoya, rux bilan mot, donalarni tutish, bogʻlash va ochiq shoh bilan material yutish, faol shoh, abadiy shoh, mot toʻri, oʻtuvchi piyoda, labirintlar va yakuniy test. Darslar tartibi M.I. Glotovning «Shaxmat mahorati bosqichlari» metodikasi asosida; pozitsiyalar maktab uchun tuzilgan va shaxmat dvigateli bilan tekshirilgan.",
 };
 
 export const course2ModulesUz: Uz<typeof COURSE_2_MODULES> = {
@@ -16,6 +16,9 @@ export const course2ModulesUz: Uz<typeof COURSE_2_MODULES> = {
   trap: { title: "Donalarni tutish" },
   advantage: { title: "Bogʻlash va ochiq shoh: dona yutish" },
   endgame: { title: "Endshpil" },
+  realize: { title: "Ustunlikni amalga oshirish va qutulish" },
+  net: { title: "Mot toʻri va donalarning joylashuvi" },
+  "finish-2": { title: "Bosqich marrasi" },
 };
 
 export const course2LessonsUz: Uz<typeof COURSE_2_LESSONS> = {
@@ -437,6 +440,269 @@ export const course2LessonsUz: Uz<typeof COURSE_2_LESSONS> = {
         ],
         hint: "Partiya boshi va oxiri orasidagi farqni esla.",
         why: "Endshpilda donalar kam va mot deyarli tahdid qilmaydi, shuning uchun shoh markazga chiqadi va oʻz piyodalariga yordam beradi.",
+      },
+    },
+  },
+  "c2-realize": {
+    title: "Ustunlikni amalga oshirish",
+    idea: "Material koʻproq boʻlsa — donalarni almashtir. Va esda tut: bitta ot yoki fil bilan mot qilib boʻlmaydi.",
+    lesson: [
+      {
+        title: "Oldinda boʻlganda qanday yutish kerak",
+        text: [
+          "Agar sening **materialing koʻproq** boʻlsa, donalarni almashtir: taxtada donalar qancha kam boʻlsa, ustunliging shuncha yaqqol koʻrinadi. Piyodalarni esa asra — ular farzinga aylanishi mumkin.",
+          "Yutqazayotgan tomonga esa, aksincha, donalarni saqlab qolish va tuzoqlar izlash foydali.",
+        ],
+      },
+      {
+        title: "Material yetmaganda",
+        text: [
+          "Baʼzi donalarning yolgʻiz shohga mot qilishga **kuchi yetmaydi**: bitta **fil** yoki bitta **ot** (shoh bilan) mot qila olmaydi. Bu durang.",
+          "Farzin yoki rux bilan shoh mot qiladi. Piyodasiz ikki ot, raqib xato qilmasa, mot qila olmaydi.",
+        ],
+      },
+    ],
+    terms: [
+      { term: "Ustunlikni amalga oshirish", text: "Materialdagi ustunlikni gʻalabaga aylantirish." },
+      { term: "Material yetishmasligi", text: "Motga kuch yetmaydi — durang (masalan, shoh va filga qarshi shoh)." },
+    ],
+    exercises: {
+      "c2-realize-quiz": {
+        title: "Kuch yetadimi?",
+        prompt: "Yolgʻiz shohga mot qilish mumkinmi?",
+        questions: [
+          { text: "Shoh va rux shohga qarshi.", options: ["mot mumkin", "durang"] },
+          { text: "Shoh va fil shohga qarshi.", options: ["mot mumkin", "durang"] },
+          { text: "Shoh va ot shohga qarshi.", options: ["mot mumkin", "durang"] },
+          { text: "Shoh va farzin shohga qarshi.", options: ["mot mumkin", "durang"] },
+          {
+            text: "Sening bitta ortiqcha ruxing bor. Nima foydaliroq?",
+            options: ["donalarni almashtirish", "almashuvdan qochish"],
+          },
+        ],
+        hint: "Fil va otning oʻzi shohga hamma kataklarni yopib qoʻya olmaydi.",
+        why: "Rux va farzin (shoh bilan) mot qiladi, fil yoki otning oʻzi — yoʻq, bu durang. Oldinda boʻlganda donalarni almashtir.",
+      },
+    },
+  },
+  "c2-perpetual": {
+    title: "Abadiy shoh va telba rux",
+    idea: "Yutqazayotgan boʻlsang — durang izla: abadiy shoh yoki pat.",
+    lesson: [
+      {
+        title: "Abadiy shoh",
+        text: [
+          "**Abadiy shoh** — raqiblardan biri tinimsiz shoh beradi, shoh esa ulardan yashirina olmaydi. Partiya **durang** bilan tugaydi.",
+          "Material kam boʻlganda koʻpincha abadiy shoh bilan qutulib qolishadi: farzin ikki katakdan navbatma-navbat shoh beradi.",
+        ],
+      },
+      {
+        title: "Telba rux",
+        text: [
+          "**Telba rux** — tinimsiz shoh berib, zarba ostiga tashlanadigan rux. Uni urib olishsa, pat boʻladi, urmashsa — shohlar tugamaydi.",
+          "Bu shohning rux bilan yurishdan boshqa birorta yurishi qolmaganda qutulishning ayyorona usuli.",
+        ],
+      },
+    ],
+    terms: [
+      { term: "Abadiy shoh", text: "Yashirinib boʻlmaydigan tinimsiz shohlar. Durang." },
+      { term: "Telba rux", text: "Rux shoh berib oʻzini qurbon qiladi: urilsa — pat, urilmasa — shohlar davom etadi." },
+    ],
+    exercises: {
+      "c2-perpetual-quiz": {
+        title: "Qanday qutulish mumkin?",
+        prompt: "Durang usullarini esla.",
+        questions: [
+          { text: "Abadiy shohda partiya nima bilan tugaydi?", options: ["gʻalaba bilan", "durang bilan"] },
+          {
+            text: "Sen yutqazyapsan. Nimani izlash kerak?",
+            options: ["abadiy shoh yoki pat", "farzinlarni almashish"],
+          },
+          { text: "Telba ruxni urib olishdi, shohning esa yurishi yoʻq. Bu…", options: ["mot", "pat"] },
+        ],
+        hint: "Abadiy shoh va pat — durangga olib boruvchi ikki yoʻl.",
+        why: "Abadiy shoh — durang. Yutqazayotgan tomon abadiy shoh yoki pat izlaydi. Telba rux urilgach yurish ham, shoh ham boʻlmasa — bu pat.",
+      },
+    },
+  },
+  "c2-mating-net": {
+    title: "Mot toʻri",
+    idea: "Baʼzan shohdan koʻra shohning oxirgi kataklarini tortib oladigan sokin yurish kuchliroq.",
+    lesson: [
+      {
+        title: "Sokin yurish shohdan kuchliroq",
+        text: [
+          "**Mot toʻri** — shoh shunday qurshab olinganki, keyingi har qanday shoh motga aylanadi. Koʻpincha buning uchun shohsiz **sokin yurish** kerak: u oxirgi katakni yopadi, raqib esa hech narsa qila olmaydi.",
+          "Shoh berishga shoshilma: avval shoh berilgandan keyin shoh qayerga qochishini koʻr.",
+        ],
+      },
+    ],
+    terms: [{ term: "Mot toʻri", text: "Shoh qurshovda: hozir shoh boʻlmasa ham, mot muqarrar." }],
+    exercises: {
+      "c2-net-choose": {
+        title: "Shohmi yoki sokin yurishmi?",
+        prompt: "Oqlar yuradi. Qaysi yurish motga olib boradi?",
+        hint: "♖g8+ dan keyin shoh h7 ga qochadi. Avval f7 katagini egallasa-chi?",
+        why: "♔f7! — h8 dagi shoh faqat h7 ga yura oladi, keyin esa ♖h1#. ♖g8+ ♔h7 dan keyin mot yoʻq.",
+      },
+      "c2-net-mate": {
+        title: "Toʻr yopildi",
+        prompt: "Oqlar yuradi. Mot qil.",
+        hint: "Oq shoh g6, g7 va g8 ni ushlab turibdi. h vertikali boʻylab shoh kerak.",
+        why: "♖h1# — h vertikali boʻylab shoh, qolgan hamma kataklarni oq shoh yopib qoʻydi.",
+      },
+    },
+  },
+  "c2-good-pieces": {
+    title: "Donalarga qayer yaxshi",
+    idea: "Ruxga — ochiq chiziq, otga — markaz, filga — boʻsh diagonal.",
+    lesson: [
+      {
+        title: "Donalar uchun yaxshi joylar",
+        text: [
+          "**Rux** piyodalar boʻlmagan **ochiq vertikalda** kuchli: u yerdan u raqib lageriga kirib boradi.",
+          "**Ot** **markazda** kuchli: u yerdan sakkizta katakka yetadi. «Chetdagi ot — bechora ot»: u yerda uning atigi ikki-toʻrtta katagi bor.",
+          "**Filga** oʻz piyodalari toʻsmagan **boʻsh diagonal** kerak.",
+        ],
+      },
+    ],
+    terms: [
+      { term: "Ochiq vertikal", text: "Piyodasiz vertikal: unda rux kuchli." },
+      { term: "«Chetdagi ot — bechora»", text: "Taxta chetida otning kataklari kam." },
+    ],
+    exercises: {
+      "c2-good-rook": {
+        title: "Ruxni qayerga qoʻyish kerak?",
+        prompt: "Oqlar yuradi. d vertikali ochiq. Rux bilan qayerga yurgan yaxshiroq?",
+        hint: "Qaysi vertikalda piyoda yoʻq?",
+        why: "♖d1 — rux ochiq vertikalni egalladi va d7 yoki d8 gacha bora oladi. b1 da esa u oʻz piyodasiga tiraladi.",
+      },
+      "c2-good-knight": {
+        title: "Ot markazga",
+        prompt: "Oqlar yuradi. Ot bilan qayerga yurgan yaxshiroq?",
+        hint: "Yurishdan keyin ot nechta katakni urishini sanab koʻr.",
+        why: "♘c3 — ot markazga yaqinroq va koʻp katakni uradi. a3 da, taxta chetida, uning atigi toʻrtta yurishi bor.",
+      },
+    },
+  },
+  "c2-passed-pawn": {
+    title: "Oʻtuvchi piyoda",
+    idea: "Raqib piyodalari xalaqit bermaydigan piyoda farzinlikka intiladi.",
+    lesson: [
+      {
+        title: "Yoʻl ochiq",
+        text: [
+          "**Oʻtuvchi piyoda** — oldida va qoʻshni vertikallarda raqib piyodalari boʻlmagan piyoda. Uni faqat dona toʻxtata oladi.",
+          "**Kvadrat qoidasi**: piyodadan oxirgi gorizontalgacha kvadrat chiz. Agar raqib shohi unga kirib ulgursa — piyodaga yetib oladi; ulgurmasa — piyoda farzinga aylanadi.",
+        ],
+      },
+    ],
+    terms: [
+      { term: "Oʻtuvchi piyoda", text: "Uning oldida va yonida raqib piyodalari yoʻq." },
+      { term: "Kvadrat qoidasi", text: "Shoh piyoda kvadratida — yetib oladi, kvadratdan tashqarida — ulgurmaydi." },
+    ],
+    exercises: {
+      "c2-passed-promote": {
+        title: "Oldinga, farzinlikka!",
+        prompt: "Oqlar yuradi. Piyodani farzinga aylantir.",
+        hint: "Piyodaga bitta qadam qoldi.",
+        why: "a8♕ — oʻtuvchi piyoda chetga yetib, farzinga aylandi.",
+      },
+      "c2-passed-quiz": {
+        title: "Kvadrat qoidasi",
+        prompt: "Savollarga javob ber.",
+        questions: [
+          {
+            text: "Qaysi piyoda oʻtuvchi deyiladi?",
+            options: ["oldida va yonida raqib piyodalari yoʻq piyoda", "markazdagi istalgan piyoda"],
+          },
+          {
+            text: "Raqib shohi piyoda kvadratidan tashqarida, yurish navbati piyodada. U piyodaga yetib oladimi?",
+            options: ["yetib oladi", "yetib ololmaydi"],
+          },
+        ],
+        hint: "Kvadrat piyodadan oxirgi gorizontalgacha chiziladi.",
+        why: "Oʻtuvchi piyodaning oldida va qoʻshni vertikallarda raqib piyodalari yoʻq. Kvadratdan tashqaridagi shoh ulgurmaydi: piyoda farzinga aylanadi.",
+      },
+    },
+  },
+  "c2-mazes": {
+    title: "«Ot» bosqichi labirintlari",
+    idea: "Uzun yoʻllar: donani hamma yulduzlar orqali eng qisqa yoʻl bilan olib oʻt.",
+    lesson: [
+      {
+        title: "Yurishlarni oldindan sana",
+        text: [
+          "Bu labirintlarda yoʻl uzun, shuning uchun avval **reja tuz**: yulduzlarni qaysi tartibda yigʻish va toʻsiqlarni qayerdan aylanib oʻtish kerak. Yaxshi reja — qisqa yoʻl.",
+        ],
+      },
+    ],
+    terms: [{ term: "Yoʻnalish", text: "Donaning boshidan maqsadgacha boʻlgan yurishlari ketma-ketligi." }],
+    exercises: {
+      "c2-maze-rook": {
+        title: "Rux devorlarni aylanib oʻtadi",
+        prompt: "Rux bilan hamma yulduzlarni eng kam yurish bilan yigʻ.",
+        hint: "d vertikali boʻylab toʻgʻri yoʻl yopiq. Taxta chetlari boʻylab aylanib oʻt.",
+        why: "Masalan: d1 → a1 → a5 → a8 → d8 → h8 → h4 — olti yurish.",
+      },
+      "c2-maze-knight": {
+        title: "Burchakdan burchakka",
+        prompt: "Otni a1 burchagidan h8 burchagiga eng kam sakrash bilan olib bor.",
+        hint: "Ot bir yurishda bir tomonga koʻpi bilan ikki katak oʻtadi. Diagonal boʻylab yetti katakka nechta sakrash kerak?",
+        why: "Masalan: a1 → b3 → a5 → b7 → d6 → f7 → h8 — olti sakrash.",
+      },
+    },
+  },
+  "c2-final-test": {
+    title: "«Ot» bosqichining yakuniy testi",
+    idea: "Oʻzingni sinab koʻr: mot, bogʻlash, qoʻsh shoh, himoya va endshpil.",
+    lesson: [
+      {
+        title: "Test oldidan",
+        text: [
+          "Ikkinchi bosqich ortda qoldi: taktika yordamida mot, hujum, donalarni tutish va endshpil. Har bir masalada avval **shohlar, urishlar va tahdidlarni** qidir — himoyani ham unutma.",
+        ],
+      },
+    ],
+    terms: [
+      {
+        term: "«Ot» bosqichi",
+        text: "Kursning ikkinchi bosqichi: taktika, shohga hujum va endshpilning birinchi qoidalari.",
+      },
+    ],
+    exercises: {
+      "c2-final-mate-queen": {
+        title: "1-masala",
+        prompt: "Oqlar yuradi. Mot qil.",
+        hint: "f6 dagi fil g7 ga qarab turibdi.",
+        why: "♕g7# — farzinni f6 dagi fil himoya qiladi, shohning esa qochadigan joyi yoʻq.",
+      },
+      "c2-final-mate-rank": {
+        title: "2-masala",
+        prompt: "Oqlar yuradi. Mot qil.",
+        hint: "d8 dagi qora rux oxirgi gorizontalni yolgʻiz oʻzi qoʻriqlayapti.",
+        why: "♖xd8# — rux himoyachini urib oladi va oxirgi gorizontalda mot.",
+      },
+      "c2-final-mate-corner": {
+        title: "3-masala",
+        prompt: "Oqlar yuradi. Mot qil.",
+        hint: "a7 va b7 piyodalari oʻz shohini qamab qoʻydi.",
+        why: "♖e8# — sakkizinchi gorizontal boʻylab shoh, a7 va b7 piyodalari shohni qochirmaydi.",
+      },
+      "c2-final-quiz": {
+        title: "4-masala: savollar",
+        prompt: "Bosqich boʻyicha savollarga javob ber.",
+        questions: [
+          {
+            text: "Qoʻsh shohdan faqat… bilan himoyalanish mumkin.",
+            options: ["shohning qochishi", "donani urib olish", "toʻsish"],
+          },
+          { text: "Shohga bogʻlangan dona chiziqdan keta oladimi?", options: ["keta oladi", "keta olmaydi"] },
+          { text: "Shoh va ot shohga qarshi — bu…", options: ["yutuq", "durang"] },
+          { text: "Endshpilda shoh qayerda boʻlishi kerak?", options: ["markazda", "burchakda"] },
+        ],
+        hint: "Qoʻsh shoh, bogʻlash, material yetishmasligi va faol shoh haqidagi darslarni esla.",
+        why: "Qoʻsh shohdan faqat shohning qochishi qutqaradi. Shohga bogʻlangan dona keta olmaydi. Ot bilan shoh mot qila olmaydi — durang. Endshpilda shoh markazga chiqadi.",
       },
     },
   },

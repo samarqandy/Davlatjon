@@ -50,3 +50,17 @@ test("диплом получен: лист с именем и датой, ка�
   await expect(logo).toBeVisible();
   expect(await logo.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0)).toBe(true);
 });
+
+test("диплом ступени «Конь»: открывается после итогового теста ступени 2", async ({ page }) => {
+  const step2 = [
+    ...new Set(courseLessons(CHESS_RU, CHESS_RU.course2Lessons).flatMap((l) => l.exercises.map((e) => e.id))),
+  ];
+  await prepare(page, step2, "Анна");
+  await page.goto("/chess/course-2");
+  await expect(page.locator('[data-diploma-card="earned"]')).toBeVisible();
+  await page.goto("/chess/course-2/diploma");
+  const sheet = page.locator('[data-certificate="earned"]');
+  await expect(sheet).toContainText("Диплом");
+  await expect(sheet).toContainText("Конь");
+  await expect(page.locator("[data-certificate-name]")).toHaveText("Анна");
+});
