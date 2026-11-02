@@ -13,6 +13,7 @@ import { useHydrated } from "@/lib/store";
 import { useChessPart } from "@/lib/useChess";
 import { COURSE_PART } from "@/content/chess/parts/course";
 import { setHash, useHash } from "@/lib/useHash";
+import { DiplomaCard } from "./CourseDiploma";
 import { PieceIcon } from "./ChessBoard";
 import { parseHash, TopicView, useSolved } from "./TacticsSchool";
 
@@ -82,6 +83,7 @@ function Overview({ lessons }: { lessons: (ChessTactic & { piece?: string })[] }
           </ol>
         </section>
       ))}
+      <DiplomaCard />
     </>
   );
 }
