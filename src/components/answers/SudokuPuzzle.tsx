@@ -135,7 +135,7 @@ export function SudokuPuzzle({
                     aria-label={t(`Строка ${r + 1}, столбец ${c + 1}`, `${r + 1}-qator, ${c + 1}-ustun`)}
                     value={values[key] ?? ""}
                     onChange={(e) => set(key, e.target.value)}
-                    className="h-full w-full bg-transparent text-center text-3xl font-black text-brand-dark outline-none focus:bg-brand-soft"
+                    className="h-full w-full bg-transparent text-center text-3xl font-black text-brand-dark outline-none focus:bg-brand-soft focus-visible:outline-3 focus-visible:-outline-offset-4 focus-visible:outline-brand"
                     placeholder="·"
                   />
                 )}

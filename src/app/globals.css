@@ -23,7 +23,8 @@
 
   --animate-pop: pop 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.3);
   --animate-shake: shake 0.45s ease-in-out;
-  --animate-float: float 3s ease-in-out infinite;
+  /* Покачивание — два раза и замирает: бесконечное движение рядом с текстом отвлекает (WCAG 2.2.2). */
+  --animate-float: float 3s ease-in-out 2;
   --animate-fade-up: fade-up 0.35s ease-out both;
   /* Полоска времени: длительность задаётся на месте (animation-duration). */
   --animate-drain: drain 1s linear forwards;
@@ -310,9 +311,19 @@
     scroll-behavior: auto !important;
   }
 }
+/* Родитель выключил «Анимации» в настройках (MotionSync ставит html[data-motion="off"]) — то же самое. */
+html[data-motion="off"] *,
+html[data-motion="off"] *::before,
+html[data-motion="off"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
 
 /*
   Запасные анимации птицы Парвоз (из logo.webp), пока нет файла Rive: покой — animate-float, остальное ниже.
+  Каждая — несколько раз и замирает: через несколько секунд птица спокойна и не отвлекает от задания.
   «Неверно» — мягкий наклон головы: без тряски и без грусти. Включаются только когда анимации разрешены (MascotLive).
 */
 .mascot-m-happy,
@@ -323,10 +334,10 @@
   transform-origin: 50% 100%;
 }
 .mascot-m-happy {
-  animation: mascot-happy 1.2s ease-in-out infinite;
+  animation: mascot-happy 1.2s ease-in-out 2;
 }
 .mascot-m-thinking {
-  animation: mascot-thinking 2.5s ease-in-out infinite;
+  animation: mascot-thinking 2.5s ease-in-out 2;
 }
 .mascot-m-correct {
   animation: mascot-correct 0.9s cubic-bezier(0.3, 0.7, 0.4, 1) both;
@@ -335,7 +346,7 @@
   animation: mascot-hmm 1s ease-in-out both;
 }
 .mascot-m-celebration {
-  animation: mascot-celebrate 1.1s ease-in-out infinite;
+  animation: mascot-celebrate 1.1s ease-in-out 3;
 }
 
 @keyframes mascot-happy {

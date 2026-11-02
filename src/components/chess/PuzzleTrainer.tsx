@@ -87,6 +87,8 @@ export function PuzzlePlayer({
   const [shown, setShown] = useState(puzzle.fen);
   const [selected, setSelected] = useState<string | null>(null);
   const [last, setLast] = useState<[string, string] | null>(null);
+  // Свой ход: клетка, куда пришла фигура, — зелёная (верно) или красная (не то). Ход соперника — жёлтый.
+  const [lastTone, setLastTone] = useState<"good" | "bad" | null>(null);
   const [misses, setMisses] = useState(0);
   const [done, setDone] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -106,6 +108,7 @@ export function PuzzlePlayer({
       oppLast.current = squares(bank.moves[0]);
       setShown(intro.fen);
       setLast(oppLast.current);
+      setLastTone(null);
       setFeedback({
         tone: "info",
         text: t(`Соперник сыграл ${san(intro.san)}. Твой ход!`, `Raqib ${san(intro.san)} yurdi. Navbat senda!`),
@@ -147,6 +150,7 @@ export function PuzzlePlayer({
   const miss = (mate: boolean) => {
     const n = misses + 1;
     setMisses(n);
+    setLastTone("bad");
     rateOnce(false);
     chessPuzzleMiss(key);
     if (!failed.current) {
@@ -175,6 +179,7 @@ export function PuzzlePlayer({
     timer.current = setTimeout(() => {
       setShown(step.fen);
       setLast(oppLast.current);
+      setLastTone(null);
       setBusy(false);
     }, 900);
   };
@@ -208,6 +213,7 @@ export function PuzzlePlayer({
       setStep({ fen, matesLeft, ply: step.ply + 2 });
       setShown(fen);
       setLast(oppLast.current);
+      setLastTone(null);
       setBusy(false);
       setFeedback({
         tone: "info",
@@ -230,6 +236,7 @@ export function PuzzlePlayer({
     setSelected(null);
     setShown(played.fen);
     setLast([from, to]);
+    setLastTone("good");
     if (bank) {
       attemptLine(played);
       return true;
@@ -262,6 +269,7 @@ export function PuzzlePlayer({
         setStep({ fen, matesLeft, ply: 0 });
         setShown(fen);
         setLast(oppLast.current);
+        setLastTone(null);
         setBusy(false);
         setFeedback({
           tone: "info",
@@ -276,6 +284,7 @@ export function PuzzlePlayer({
     const n = miss(played.mate);
     if (played.mate && step.matesLeft === 1) {
       // Любой мат в один ход — тоже решение.
+      setLastTone("good");
       setDone(true);
       chessPuzzleSolved(key, false);
       setBusy(false);
@@ -300,7 +309,7 @@ export function PuzzlePlayer({
   const marks: Record<string, SquareMark> = {};
   if (last) {
     marks[last[0]] = "last";
-    marks[last[1]] = "last";
+    marks[last[1]] = lastTone ?? "last";
   }
   if (isInCheck(shown)) {
     const k = kingOf(shown, shown.split(" ")[1] as Color);

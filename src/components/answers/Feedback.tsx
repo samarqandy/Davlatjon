@@ -66,8 +66,10 @@ export function Feedback({
   useEffect(() => {
     if (!text) return;
     if (silent) return;
-    // Ответ не должен прятаться под нижней панелью: подкручиваем страницу, если он ниже видимого.
-    box.current?.scrollIntoView?.({ block: "nearest", behavior: scrollBehavior(motion) });
+    // Ответ не должен прятаться под нижней панелью: подкручиваем страницу, только если он ниже видимого.
+    // Уже видимую карточку не трогаем — иначе доска «прыгает» вверх, пока ребёнок смотрит на ход.
+    const el = box.current;
+    if (el && !fullyVisible(el)) el.scrollIntoView?.({ block: "nearest", behavior: scrollBehavior(motion) });
     if (tone === "success") {
       // «мат» — по-русски, «mot» — по-узбекски.
       cue(
@@ -134,4 +136,16 @@ function Sparkles() {
       ))}
     </span>
   );
+}
+
+/** Карточка целиком на экране с учётом её отступа от нижней панели (scroll-margin). */
+function fullyVisible(el: HTMLElement): boolean {
+  const r = el.getBoundingClientRect();
+  // Карточка появляется с увеличением (pop): считаем по настоящему размеру, а не по уменьшенному.
+  const h = el.offsetHeight || r.height;
+  const top = r.top + (r.height - h) / 2;
+  const style = getComputedStyle(el);
+  const below = parseFloat(style.scrollMarginBottom) || 0;
+  const above = parseFloat(style.scrollMarginTop) || 0;
+  return top - above >= 0 && top + h + below <= window.innerHeight;
 }

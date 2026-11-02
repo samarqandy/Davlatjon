@@ -1,7 +1,7 @@
 /** Доска: подписи на рамке, звуки ходов, превращение, «почему так нельзя», съеденные фигуры. */
 import { Chess } from "chess.js";
 import { describe, expect, it } from "vitest";
-import { classifyChange, coordLabels, snapshotOf } from "@/lib/board";
+import { centerSquare, classifyChange, coordLabels, snapshotOf, stepSquare } from "@/lib/board";
 import { illegalReason, isPromotionMove } from "@/lib/chess";
 import { PAWN_BATTLE_FEN } from "@/lib/engine/search";
 import { capturedPieces, withOdds } from "@/lib/play";
@@ -115,5 +115,31 @@ describe("съеденные фигуры", () => {
   it("превращённая пешка — ушедшая пешка, а не лишний ферзь", () => {
     const start = "4k3/4P3/8/8/8/8/8/4K3 w - - 0 1";
     expect(capturedPieces("4k1Q1/8/8/8/8/8/8/4K3 b - - 0 1", start)).toEqual({ w: [], b: [] });
+  });
+});
+
+describe("курсор клавиатуры", () => {
+  it("стрелки — как доска видна на экране, у края курсор стоит", () => {
+    expect(stepSquare("e4", "ArrowUp", 8, 8, "white")).toBe("e5");
+    expect(stepSquare("e4", "ArrowRight", 8, 8, "white")).toBe("f4");
+    expect(stepSquare("e4", "ArrowUp", 8, 8, "black")).toBe("e3");
+    expect(stepSquare("e4", "ArrowRight", 8, 8, "black")).toBe("d4");
+    expect(stepSquare("h8", "ArrowUp", 8, 8, "white")).toBe("h8");
+    expect(stepSquare("a1", "ArrowLeft", 8, 8, "white")).toBe("a1");
+  });
+
+  it("Home/End и PageUp/PageDown — к краям; доска не 8 × 8 тоже", () => {
+    expect(stepSquare("e4", "Home", 8, 8, "white")).toBe("a4");
+    expect(stepSquare("e4", "End", 8, 8, "white")).toBe("h4");
+    expect(stepSquare("e4", "PageUp", 8, 8, "white")).toBe("e8");
+    expect(stepSquare("e4", "Home", 8, 8, "black")).toBe("h4");
+    expect(stepSquare("b2", "End", 5, 5, "white")).toBe("e2");
+    expect(stepSquare("b2", "PageUp", 5, 5, "white")).toBe("b5");
+  });
+
+  it("начало — середина доски ближе к тому, кто внизу", () => {
+    expect(centerSquare(8, 8, "white")).toBe("d4");
+    expect(centerSquare(8, 8, "black")).toBe("e5");
+    expect(centerSquare(5, 5, "white")).toBe("c3");
   });
 });

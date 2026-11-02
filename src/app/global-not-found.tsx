@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "@fontsource-variable/nunito";
 import "./globals.css";
 import { LangSync } from "@/components/LangSwitch";
+import { MotionSync } from "@/components/MotionSync";
 import { NotFoundView } from "@/components/NotFoundView";
 import { BRAND } from "@/lib/brand";
 import { HEAD_SCRIPT } from "@/lib/headScript";
@@ -24,6 +25,7 @@ export default function GlobalNotFound() {
       <body className="min-h-dvh">
         <NotFoundView />
         <LangSync />
+        <MotionSync />
       </body>
     </html>
   );

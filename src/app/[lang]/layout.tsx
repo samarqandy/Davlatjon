@@ -6,6 +6,7 @@ import "../globals.css";
 import { AccountSync } from "@/components/AccountSync";
 import { BottomNav } from "@/components/BottomNav";
 import { LangSync } from "@/components/LangSwitch";
+import { MotionSync } from "@/components/MotionSync";
 import { ServiceWorker } from "@/components/ServiceWorker";
 import { ActivityTracker } from "@/components/progress/ActivityTracker";
 import { RestCard } from "@/components/progress/RestCard";
@@ -80,6 +81,7 @@ export default async function RootLayout({
           <BottomNav />
           <ServiceWorker />
           <LangSync />
+          <MotionSync />
           <XpToast />
           <ActivityTracker />
           <RestCard />

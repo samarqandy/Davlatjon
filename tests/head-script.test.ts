@@ -7,9 +7,11 @@ import { HEAD_SCRIPT as code } from "@/lib/headScript";
 
 function run(settings: Record<string, unknown>, pathname: string, served: "ru" | "uz" = "ru") {
   const classes = new Set<string>();
+  const attrs: Record<string, string> = {};
   const html = {
     lang: served,
     classList: { add: (c: string) => classes.add(c), remove: (c: string) => classes.delete(c) },
+    setAttribute: (k: string, v: string) => void (attrs[k] = v),
   };
   const storage = { getItem: () => JSON.stringify({ settings }) };
   new Function("localStorage", "location", "document", "setTimeout", code)(
@@ -18,7 +20,7 @@ function run(settings: Record<string, unknown>, pathname: string, served: "ru" |
     { documentElement: html },
     () => 0,
   );
-  return { hidden: classes.has("i18n-wait"), lang: html.lang };
+  return { hidden: classes.has("i18n-wait"), lang: html.lang, motion: attrs["data-motion"] };
 }
 
 describe("скрипт в <head>", () => {
@@ -27,15 +29,15 @@ describe("скрипт в <head>", () => {
   });
 
   it("страница не на языке устройства ждёт загрузки на любом адресе", () => {
-    expect(run({ lang: "uz" }, "/")).toEqual({ hidden: true, lang: "uz" });
-    expect(run({ lang: "uz" }, "/chess")).toEqual({ hidden: true, lang: "uz" });
-    expect(run({}, "/chess", "uz")).toEqual({ hidden: true, lang: "ru" });
+    expect(run({ lang: "uz" }, "/")).toMatchObject({ hidden: true, lang: "uz" });
+    expect(run({ lang: "uz" }, "/chess")).toMatchObject({ hidden: true, lang: "uz" });
+    expect(run({}, "/chess", "uz")).toMatchObject({ hidden: true, lang: "ru" });
   });
 
   it("страница уже на языке устройства показывается сразу", () => {
-    expect(run({ lang: "uz" }, "/", "uz")).toEqual({ hidden: false, lang: "uz" });
-    expect(run({ lang: "uz" }, "/chess/play", "uz")).toEqual({ hidden: false, lang: "uz" });
-    expect(run({ lang: "ru" }, "/")).toEqual({ hidden: false, lang: "ru" });
+    expect(run({ lang: "uz" }, "/", "uz")).toMatchObject({ hidden: false, lang: "uz" });
+    expect(run({ lang: "uz" }, "/chess/play", "uz")).toMatchObject({ hidden: false, lang: "uz" });
+    expect(run({ lang: "ru" }, "/")).toMatchObject({ hidden: false, lang: "ru" });
   });
 
   it("имя ребёнка: ждём только там, где оно стоит в текстах", () => {
@@ -45,5 +47,11 @@ describe("скрипт в <head>", () => {
     expect(run({ childName: "Анна" }, "/").hidden).toBe(false);
     expect(run({ childName: "Анна" }, "/chess/play").hidden).toBe(false);
     expect(run({}, "/week/1/day/1").hidden).toBe(false);
+  });
+
+  it("анимации, выключенные родителем, выключены ещё до отрисовки", () => {
+    expect(run({ animations: false }, "/").motion).toBe("off");
+    expect(run({ animations: false, lang: "uz" }, "/chess", "uz").motion).toBe("off");
+    expect(run({}, "/").motion).toBeUndefined();
   });
 });

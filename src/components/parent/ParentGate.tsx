@@ -1,7 +1,7 @@
 "use client";
 
 import { stampText } from "@/lib/dates";
-import { useEffect, useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { Button } from "@/components/ui";
 import { useT } from "@/lib/i18n";
 import {
@@ -50,6 +50,7 @@ function PinForm({ mode, compact }: { mode: "create" | "enter"; compact: boolean
     return () => clearInterval(id);
   }, [waiting, resetAt, resetReady]);
 
+  const first = useRef<HTMLInputElement>(null);
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -67,6 +68,8 @@ function PinForm({ mode, compact }: { mode: "create" | "enter"; compact: boolean
       setPin("");
       setWaitMs(pinWaitMs());
       setError(result === "wait" ? null : t("PIN-код не подошёл.", "PIN-kod mos kelmadi."));
+      // Поле очищено — фокус обратно в него: можно сразу вводить заново.
+      first.current?.focus();
     }
   };
 
@@ -110,6 +113,9 @@ function PinForm({ mode, compact }: { mode: "create" | "enter"; compact: boolean
               maxLength={4}
               value={pin}
               onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 4))}
+              ref={first}
+              aria-invalid={!!error || undefined}
+              aria-describedby={error ? "pin-error" : undefined}
               autoFocus
             />
           </label>
@@ -123,11 +129,17 @@ function PinForm({ mode, compact }: { mode: "create" | "enter"; compact: boolean
                 autoComplete="off"
                 maxLength={4}
                 value={pin2}
+                aria-invalid={!!error || undefined}
+                aria-describedby={error ? "pin-error" : undefined}
                 onChange={(e) => setPin2(e.target.value.replace(/\D/g, "").slice(0, 4))}
               />
             </label>
           )}
-          {error && <p className="font-bold text-rose">{error}</p>}
+          {error && (
+            <p id="pin-error" role="alert" className="font-bold text-rose">
+              {error}
+            </p>
+          )}
           {waiting && (
             <p className="font-bold text-muted" role="status">
               {t("Подождите немного и попробуйте снова.", "Biroz kuting va yana urinib koʻring.")}

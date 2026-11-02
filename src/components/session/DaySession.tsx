@@ -3,7 +3,7 @@
 import { currentScrollBehavior } from "@/lib/useMotion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { TaskView } from "@/components/task/TaskView";
 import { Button, ButtonLink, cn } from "@/components/ui";
 import { sectionsFor } from "@/content/meta";
@@ -69,7 +69,17 @@ export function DaySession({
     if (step >= 1) startDay(day.id);
   }, [step, day.id]);
 
+  // «Дальше» нажали — фокус на заголовок новой задачи: диктор читает её, а Tab идёт по её содержимому,
+  // а не от нижней панели. При первой загрузке фокус не трогаем.
+  const moved = useRef(false);
+  useEffect(() => {
+    if (!moved.current) return;
+    moved.current = false;
+    document.querySelector<HTMLElement>("[data-step-heading]")?.focus({ preventScroll: true });
+  }, [step]);
+
   const go = (s: number) => {
+    moved.current = true;
     setHash(hashForStep(s, total), { keepScroll: true });
     window.scrollTo({ top: 0, behavior: currentScrollBehavior() });
   };

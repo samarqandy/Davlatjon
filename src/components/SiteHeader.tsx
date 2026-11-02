@@ -69,44 +69,47 @@ export function SiteFooter() {
   const account = useAccount();
   return (
     <footer className="no-print mt-16 border-t border-line/70">
-      <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-6 text-sm text-muted sm:flex-row sm:items-center sm:justify-between">
-        <p className="font-bold">
-          {t(
-            "Любопытство → Мышление → Рассуждение → Открытие → Уверенность",
-            "Qiziquvchanlik → Fikrlash → Mulohaza → Kashfiyot → Ishonch",
-          )}
-        </p>
-        <p>
-          {account.user
-            ? t("Прогресс сохраняется в аккаунте.", "Natijalar hisobda saqlanadi.")
-            : t(
-                "Прогресс хранится в этом браузере. Чтобы он был на всех устройствах, родителю нужно войти в аккаунт.",
-                "Natijalar shu brauzerda saqlanadi. Hamma qurilmada boʻlishi uchun ota-ona hisobga kirishi kerak.",
-              )}
-        </p>
-        <nav aria-label={t("О сайте", "Sayt haqida")} className="flex flex-wrap gap-x-4 gap-y-1">
+      {/* Слева — девиз и где хранится прогресс, справа — ссылки одной ровной строкой, без переносов внутри ссылок. */}
+      <div className="mx-auto grid max-w-6xl gap-3 px-4 py-6 text-sm text-muted sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:gap-x-8">
+        <div className="space-y-1">
+          <p className="font-bold">
+            {t(
+              "Любопытство → Мышление → Рассуждение → Открытие → Уверенность",
+              "Qiziquvchanlik → Fikrlash → Mulohaza → Kashfiyot → Ishonch",
+            )}
+          </p>
+          <p>
+            {account.user
+              ? t("Прогресс сохраняется в аккаунте.", "Natijalar hisobda saqlanadi.")
+              : t(
+                  "Прогресс хранится в этом браузере. Чтобы он был на всех устройствах, родителю нужно войти в аккаунт.",
+                  "Natijalar shu brauzerda saqlanadi. Hamma qurilmada boʻlishi uchun ota-ona hisobga kirishi kerak.",
+                )}
+          </p>
+        </div>
+        <nav aria-label={t("О сайте", "Sayt haqida")} className="flex flex-wrap gap-x-4 gap-y-1 sm:justify-end">
           <Link
             href="/about"
             data-about-link
-            className="inline-flex min-h-11 items-center font-extrabold underline underline-offset-4 hover:text-ink"
+            className="inline-flex min-h-11 items-center font-extrabold whitespace-nowrap underline underline-offset-4 hover:text-ink"
           >
             {t("О платформе", "Platforma haqida")}
           </Link>
           <Link
             href="/privacy"
             data-privacy-link
-            className="inline-flex min-h-11 items-center font-extrabold underline underline-offset-4 hover:text-ink"
+            className="inline-flex min-h-11 items-center font-extrabold whitespace-nowrap underline underline-offset-4 hover:text-ink"
           >
             {t("Конфиденциальность", "Maxfiylik")}
           </Link>
+          <Link
+            href="/parent"
+            data-adults-link
+            className="inline-flex min-h-11 items-center font-extrabold whitespace-nowrap underline underline-offset-4 hover:text-ink"
+          >
+            🔒 {t("Для взрослых", "Kattalar uchun")}
+          </Link>
         </nav>
-        <Link
-          href="/parent"
-          data-adults-link
-          className="inline-flex min-h-11 items-center self-start font-extrabold text-muted underline underline-offset-4 hover:text-ink sm:self-auto"
-        >
-          🔒 {t("Для взрослых", "Kattalar uchun")}
-        </Link>
       </div>
     </footer>
   );

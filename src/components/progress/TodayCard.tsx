@@ -75,8 +75,13 @@ export function TodayCard({ className }: { className?: string }) {
   const flame = Math.min(1 + streak.days / 10, 2);
 
   return (
-    <section className={cn("rounded-3xl bg-white p-5 shadow-card", className)} aria-labelledby="today" data-today>
-      <div className="grid gap-5 md:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
+    // Делится на две колонки по своей ширине, а не по ширине окна: в узкой колонке главной — одна колонка.
+    <section
+      className={cn("@container rounded-3xl bg-white p-5 shadow-card", className)}
+      aria-labelledby="today"
+      data-today
+    >
+      <div className="grid gap-5 @xl:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
         <div>
           <h2 id="today" className="text-xl font-black">
             🎯 {t("Задание дня", "Kun vazifasi")}
@@ -93,9 +98,14 @@ export function TodayCard({ className }: { className?: string }) {
                       ok ? "border-mint/40 bg-mint-soft/60" : "border-line hover:border-brand/40",
                     )}
                   >
-                    <span aria-hidden className="text-xl">
-                      {ok ? "✅" : "⬜"}
-                    </span>
+                    {/* Не «⬜»: пустой квадратик похож на флажок, который можно отметить, а это ссылка. */}
+                    {ok ? (
+                      <span aria-hidden className="text-xl">
+                        ✅
+                      </span>
+                    ) : (
+                      <span aria-hidden className="mx-0.5 h-5 w-5 shrink-0 rounded-full border-[3px] border-brand/30" />
+                    )}
                     <span className="flex-1 font-bold">{goalText(g, t)}</span>
                     <span className="text-sm font-black text-muted tabular-nums">
                       {g.have}/{g.need}

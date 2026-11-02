@@ -7,8 +7,9 @@ import { Button, cn, ProgressBar } from "@/components/ui";
 import type { ChessTactic } from "@/content/chess/types";
 import { useTitleTranslation } from "@/lib/docTitle";
 import { useLang, useT } from "@/lib/i18n";
-import { useEffect, useRef } from "react";
-import { useStore } from "@/lib/store";
+import { useEffect, useRef, useState } from "react";
+import { Celebration } from "@/components/rewards/Celebration";
+import { useHydrated, useStore } from "@/lib/store";
 import { useChess } from "@/lib/useChess";
 import { setHash, useHash } from "@/lib/useHash";
 import { ChessExerciseView } from "./ChessExercises";
@@ -141,12 +142,25 @@ export function TopicView({
   const index = siblings.findIndex((x) => x.id === topic.id);
   const next = siblings[index + 1];
 
+  // Последнее упражнение темы решено только что (а не раньше) — праздник. Считаем от первого числа после загрузки
+  // сохранённого прогресса, чтобы повторный заход в пройденную тему не устраивал салют.
+  const hydrated = useHydrated();
+  const [seen, setSeen] = useState<{ id: string; count: number } | null>(null);
+  const [celebrated, setCelebrated] = useState<string | null>(null);
+  if (hydrated && (seen?.id !== topic.id || seen.count !== count)) {
+    if (seen?.id === topic.id && seen.count < total && count === total) setCelebrated(topic.id);
+    setSeen({ id: topic.id, count });
+  }
+  const celebrate = celebrated === topic.id;
+
   // К упражнениям, а не к началу страницы — после отрисовки (из урока блока упражнений ещё нет).
   const scrollToExercises = useRef(false);
   useEffect(() => {
     if (!scrollToExercises.current || tab !== "exercises") return;
     scrollToExercises.current = false;
     document.getElementById("exercises-top")?.scrollIntoView({ block: "start", behavior: currentScrollBehavior() });
+    // Фокус — на заголовок нового упражнения: диктор читает задание, Tab идёт к доске.
+    document.querySelector<HTMLElement>("[data-exercise-heading]")?.focus({ preventScroll: true });
   }, [tab, exercise]);
   const goExercise = (i: number) => {
     scrollToExercises.current = true;
@@ -241,6 +255,24 @@ export function TopicView({
           <div className="rounded-3xl bg-paper p-1 sm:p-2">
             <ChessExerciseView key={topic.exercises[exercise].id} exercise={topic.exercises[exercise]} />
           </div>
+          {celebrate && (
+            <Celebration
+              title={t("Тема пройдена! 🏆", "Mavzu oʻzlashtirildi! 🏆")}
+              actions={
+                next ? (
+                  <Button size="lg" onClick={() => setHash(`#${next.id}`)}>
+                    {t(`Дальше: ${next.title} →`, `Keyingisi: ${next.title} →`)}
+                  </Button>
+                ) : (
+                  <Button size="lg" variant="secondary" onClick={() => setHash("#")}>
+                    {backLabel}
+                  </Button>
+                )
+              }
+            >
+              {t(`Все ${total} упражнений решены.`, `Barcha ${total} ta mashq yechildi.`)}
+            </Celebration>
+          )}
           <div className="flex flex-wrap items-center gap-2 pt-2">
             <Button variant="secondary" onClick={() => goExercise(exercise - 1)} disabled={exercise === 0}>
               {t("← Назад", "← Orqaga")}

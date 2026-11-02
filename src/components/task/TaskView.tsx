@@ -64,7 +64,11 @@ export function TaskView({ task, number, total }: { task: Task; number: number; 
                 className={young ? "order-last w-full justify-center sm:order-none sm:w-auto" : undefined}
               />
             </div>
-            <h2 className="mb-4 flex items-center gap-2 text-2xl font-black sm:text-3xl">
+            <h2
+              data-step-heading
+              tabIndex={-1}
+              className="mb-4 flex items-center gap-2 text-2xl font-black outline-none sm:text-3xl"
+            >
               {task.title}
               {solved && (
                 <span

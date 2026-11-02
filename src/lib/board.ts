@@ -151,3 +151,56 @@ function givesCheck(
     return false;
   }
 }
+
+/** Название фигуры для диктора и подсказок. */
+export const PIECE_WORDS: Record<string, [ru: string, uz: string]> = {
+  wK: ["белый король", "oq shoh"],
+  bK: ["чёрный король", "qora shoh"],
+  wQ: ["белый ферзь", "oq farzin"],
+  bQ: ["чёрный ферзь", "qora farzin"],
+  wR: ["белая ладья", "oq rux"],
+  bR: ["чёрная ладья", "qora rux"],
+  wB: ["белый слон", "oq fil"],
+  bB: ["чёрный слон", "qora fil"],
+  wN: ["белый конь", "oq ot"],
+  bN: ["чёрный конь", "qora ot"],
+  wP: ["белая пешка", "oq piyoda"],
+  bP: ["чёрная пешка", "qora piyoda"],
+  star: ["звёздочка", "yulduzcha"],
+};
+
+/** Клавиши, которыми ходит рамка-курсор по доске с клавиатуры. */
+export type BoardKey = "ArrowUp" | "ArrowDown" | "ArrowLeft" | "ArrowRight" | "Home" | "End" | "PageUp" | "PageDown";
+
+/**
+ * Курсор клавиатуры: на какую клетку он перейдёт. «Вверх» — так, как доска видна на экране:
+ * у чёрных снизу ряды идут наоборот. Home/End — к краям ряда, PageUp/PageDown — к краям вертикали.
+ */
+export function stepSquare(
+  square: string,
+  key: BoardKey,
+  cols: number,
+  rows: number,
+  orientation: Orientation,
+): string {
+  let file = FILES.indexOf(square[0]);
+  let rank = Number(square.slice(1)) - 1;
+  const flip = orientation === "black" ? -1 : 1;
+  const clamp = (v: number, n: number) => Math.max(0, Math.min(n - 1, v));
+  if (key === "ArrowUp") rank = clamp(rank + flip, rows);
+  else if (key === "ArrowDown") rank = clamp(rank - flip, rows);
+  else if (key === "ArrowRight") file = clamp(file + flip, cols);
+  else if (key === "ArrowLeft") file = clamp(file - flip, cols);
+  else if (key === "Home") file = orientation === "black" ? cols - 1 : 0;
+  else if (key === "End") file = orientation === "black" ? 0 : cols - 1;
+  else if (key === "PageUp") rank = orientation === "black" ? 0 : rows - 1;
+  else if (key === "PageDown") rank = orientation === "black" ? rows - 1 : 0;
+  return `${FILES[file]}${rank + 1}`;
+}
+
+/** С какой клетки начинается курсор: середина доски ближе к тому, кто внизу (d4 у белых, e5 у чёрных). */
+export function centerSquare(cols: number, rows: number, orientation: Orientation): string {
+  const file = orientation === "black" ? Math.ceil((cols - 1) / 2) : Math.floor((cols - 1) / 2);
+  const rank = orientation === "black" ? Math.ceil((rows - 1) / 2) : Math.floor((rows - 1) / 2);
+  return `${FILES[file]}${rank + 1}`;
+}

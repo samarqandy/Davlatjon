@@ -2,6 +2,8 @@
 
 import { currentScrollBehavior } from "@/lib/useMotion";
 import Link from "next/link";
+import { useState } from "react";
+import { Celebration } from "@/components/rewards/Celebration";
 import { Button, cn, ProgressBar } from "@/components/ui";
 import type { ChessTest } from "@/content/chess/types";
 import { useTitleTranslation } from "@/lib/docTitle";
@@ -127,7 +129,10 @@ function TestRun({ test, index }: { test: ChessTest; index: number | null }) {
   // Без номера в адресе — следующий нерешённый вопрос; после последнего — итог.
   const current = index ?? (finished ? null : firstOpen);
 
+  // Праздник — только сразу после «Результат →», а не при каждом открытии итогов теста.
+  const [justFinished, setJustFinished] = useState<string | null>(null);
   const go = (i: number | null) => {
+    setJustFinished(i === null && current !== null ? test.id : null);
     setHash(i === null ? `#${test.id}` : `#${test.id}-${i + 1}`, { keepScroll: true });
     window.scrollTo({ top: 0, behavior: currentScrollBehavior() });
   };
@@ -181,6 +186,15 @@ function TestRun({ test, index }: { test: ChessTest; index: number | null }) {
         })}
       </div>
 
+      {current === null && justFinished === test.id && starsFor(r.score) > 0 && (
+        <Celebration
+          title={
+            starsFor(r.score) === 3
+              ? t("Тест сдан на три звезды! 🏆", "Test uch yulduzga topshirildi! 🏆")
+              : t("Тест сдан! 🎉", "Test topshirildi! 🎉")
+          }
+        />
+      )}
       {current === null ? (
         <section className="rounded-3xl bg-white p-6 text-center shadow-card" data-test-result={r.score}>
           <p className="text-5xl" aria-hidden>

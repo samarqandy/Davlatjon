@@ -427,7 +427,7 @@ export function MagicSquarePuzzle({
                       setFeedback(null);
                       saveTaskInput(taskId, { square: next });
                     }}
-                    className="h-full w-full rounded-2xl bg-brand-soft/60 text-center text-3xl font-black text-ink outline-none focus:bg-sun-soft"
+                    className="h-full w-full rounded-2xl bg-brand-soft/60 text-center text-3xl font-black text-ink outline-none focus:bg-sun-soft focus-visible:outline-3 focus-visible:-outline-offset-4 focus-visible:outline-brand"
                     placeholder="?"
                   />
                 )}
