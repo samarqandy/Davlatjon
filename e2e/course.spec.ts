@@ -201,3 +201,15 @@ test("ступень 3 «Слон»: страница курса, мат сло�
   const stored = await page.evaluate((key) => JSON.parse(localStorage.getItem(key) ?? "{}").chess ?? {}, KEY);
   expect(stored["c3-horwitz-g7"]?.solvedAt).toBeTruthy();
 });
+
+test("ступень 3: оппозиция — «как сыграть лучше» засчитывается", async ({ page }) => {
+  await prepare(page);
+  await page.goto("/chess/course-3");
+  for (const id of ["pawns-squares", "pawn-endgame"])
+    await expect(page.locator(`[data-course-module="${id}"]`)).toBeVisible();
+  await page.goto("/chess/course-3#c3-opposition-exercise-1");
+  await page.locator('[data-choice="e4e5"]').click();
+  await expect(page.getByText("не лучший выбор")).toBeVisible();
+  await page.locator('[data-choice="d4e5"]').click();
+  await expect(page.getByText(/Почему так/)).toBeVisible();
+});

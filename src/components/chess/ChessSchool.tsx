@@ -147,8 +147,8 @@ export function ChessSchool({ counts }: { counts: ChessSchoolCounts }) {
       emoji: "🎯",
       title: course3.title,
       text: t(
-        "Слоны Горвица, обжорный ряд, атака двумя ладьями, проходная пешка в атаке.",
-        "Gorvits fillari, ochkoʻz qator, ikki rux bilan hujum, hujumdagi oʻtuvchi piyoda.",
+        "Слоны Горвица, обжорный ряд, проходная пешка, слабые поля, оппозиция и пешечный эндшпиль.",
+        "Gorvits fillari, ochkoʻz qator, oʻtuvchi piyoda, kuchsiz kataklar, oppozitsiya va piyodali endshpil.",
       ),
       stat: hydrated
         ? t(
