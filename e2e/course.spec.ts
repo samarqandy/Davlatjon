@@ -213,3 +213,17 @@ test("ступень 3: оппозиция — «как сыграть лучш�
   await page.locator('[data-choice="d4e5"]').click();
   await expect(page.getByText(/Почему так/)).toBeVisible();
 });
+
+test("ступень 3: ловушка пата — слабое превращение засчитывается", async ({ page }) => {
+  await prepare(page);
+  await page.goto("/chess/course-3");
+  for (const id of ["kpk", "activity", "saving", "bishops-finale", "finish-3"])
+    await expect(page.locator(`[data-course-module="${id}"]`)).toBeVisible();
+  await page.goto("/chess/course-3#c3-study-exercise-1");
+  await page.locator('[data-choice="c7c8q"]').click();
+  await expect(page.getByText("не лучший выбор")).toBeVisible();
+  await page.locator('[data-choice="c7c8r"]').click();
+  await expect(page.getByText(/Почему так/)).toBeVisible();
+  const stored = await page.evaluate((key) => JSON.parse(localStorage.getItem(key) ?? "{}").chess ?? {}, KEY);
+  expect(stored["c3-study-underpromote"]?.solvedAt).toBeTruthy();
+});
