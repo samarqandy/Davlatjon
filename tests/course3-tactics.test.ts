@@ -103,3 +103,66 @@ describe("курс «Слон»: уничтожение защиты, отвле
     expect(c.isCheckmate()).toBe(true);
   });
 });
+
+/** Мат не более чем в n ходов белых, где каждый ход белых — шах. */
+function mateInChecks(fen: string, n: number): boolean {
+  const c = new Chess(fen);
+  return c.moves({ verbose: true }).some((m) => {
+    const d = new Chess(fen);
+    d.move(m);
+    if (!d.inCheck()) return false;
+    if (d.isCheckmate()) return true;
+    return (
+      n > 1 &&
+      d.moves({ verbose: true }).every((r) => {
+        const e = new Chess(d.fen());
+        e.move(r);
+        return mateInChecks(e.fen(), n - 1);
+      })
+    );
+  });
+}
+
+describe("курс «Слон»: финал ступени", () => {
+  it("промежуточный шах: после Сxf7+ на любой ответ белые берут ферзя", () => {
+    const c = new Chess("6k1/5ppp/8/8/2B5/8/5PPK/R2q4 w - - 0 1");
+    c.move("Bxf7+");
+    for (const r of c.moves()) {
+      const d = new Chess(c.fen());
+      d.move(r);
+      expect(d.moves(), r).toContain("Rxd1");
+    }
+  });
+
+  it("форточка: после h3 мата нет, после Фxa7 — Лc1#", () => {
+    const fen = "2r3k1/p4ppp/8/8/Q7/8/5PPP/6K1 w - - 0 1";
+    const a = new Chess(fen);
+    a.move("h3");
+    expect(matingMoves(a.fen())).toEqual([]);
+    const b = new Chess(fen);
+    b.move("Qxa7");
+    expect(matingMoves(b.fen())).toEqual(["c8c1"]);
+  });
+
+  it("Морфи, 1858: Фb8+ — единственный мат в 2 хода", () => {
+    expect(firstMovesMatingInTwo("4kb1r/p2n1ppp/4q3/4p1B1/4P3/1Q6/PPP2PPP/2KR4 w k - 0 16")).toEqual(["b3b8"]);
+  });
+
+  it("Андерсен, 1852: после Фxd7+ мат шахами за 3 хода; после Сxe7 чёрные матуют Фxg2#", () => {
+    const fen = "1r2k1r1/pbppnp1p/1b3P2/8/Q7/B1PB1q2/P4PPP/3R2K1 w - - 0 21";
+    const c = new Chess(fen);
+    c.move("Qxd7+");
+    for (const r of c.moves()) {
+      const d = new Chess(c.fen());
+      d.move(r);
+      expect(mateInChecks(d.fen(), 3), r).toBe(true);
+    }
+    const e = new Chess(fen);
+    e.move("Bxe7");
+    expect(matingMoves(e.fen())).toContain("f3g2");
+  });
+
+  it("итоговый тест: Фg8+ — единственный мат в 2 хода", () => {
+    expect(firstMovesMatingInTwo("3r3k/6pp/8/6N1/2Q5/1B6/6PP/6K1 w - - 0 1")).toEqual(["c4g8"]);
+  });
+});
