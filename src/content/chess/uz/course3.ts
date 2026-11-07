@@ -5,7 +5,7 @@ export const course3Uz: Uz<typeof COURSE_3> = {
   title: "3-bosqich «Fil»",
   subtitle: "Shohga hujum taktikasi",
   about:
-    "Shohga hujumda bogʻlash, rentgen, bogʻlash bilan material yutish, ochiq shoh va pistirma, qoʻsh shoh, «tegirmon», ochiq hujum, himoyani yoʻq qilish, chalgʻitish, toʻsib qoʻyish va jalb qilish. Darslar mavzusi va tartibi M.I. Glotovning «Shaxmat mahorati bosqichlari. 3-bosqich „Fil“» kitobi asosida; pozitsiyalar maktab uchun tuzilgan va shaxmat dvigateli bilan tekshirilgan.",
+    "Shohga hujumda bogʻlash, rentgen, bogʻlash bilan material yutish, ochiq shoh va pistirma, qoʻsh shoh, «tegirmon», ochiq hujum, himoyani yoʻq qilish, chalgʻitish, toʻsib qoʻyish, jalb qilish, qisilgan mot, blokirovka, oraliq yurish, piyoda himoyasini buzish, oxirgi gorizontal zaifligi, Morfi va Andersen partiyalari. Darslar mavzusi va tartibi M.I. Glotovning «Shaxmat mahorati bosqichlari. 3-bosqich „Fil“» kitobi asosida; pozitsiyalar maktab uchun tuzilgan va shaxmat dvigateli bilan tekshirilgan.",
 };
 
 export const course3ModulesUz: Uz<typeof COURSE_3_MODULES> = {
@@ -15,6 +15,11 @@ export const course3ModulesUz: Uz<typeof COURSE_3_MODULES> = {
   "remove-def": { title: "Himoyani yoʻq qilish" },
   deflection: { title: "Chalgʻitish va toʻsib qoʻyish" },
   decoy: { title: "Jalb qilish" },
+  smothered: { title: "Qisilgan mot va blokirovka" },
+  intermezzo: { title: "Oraliq yurish" },
+  "king-cover": { title: "Shoh panohi" },
+  classics: { title: "Morfi va Andersen" },
+  "finish-3": { title: "Bosqich marrasi" },
 };
 
 export const course3LessonsUz: Uz<typeof COURSE_3_LESSONS> = {
@@ -319,6 +324,246 @@ export const course3LessonsUz: Uz<typeof COURSE_3_LESSONS> = {
         prompt: "Oqlar yuradi va 2 yurishda mot qiladi. Birinchi yurish qaysi?",
         hint: "Ruxni g8 ga — shoh yoniga turishga majbur qil.",
         why: "♕g8+! — shoh ura olmaydi (farzinni b3 dagi fil himoya qiladi), faqat ♜xg8 qoladi. Rux oʻz shohini qamab qoʻydi va ♘f7# — qisilgan mot. ♘f7+? dan keyin ♚g8 — shoh qochadi.",
+      },
+    },
+  },
+  "c3-smothered": {
+    title: "Qisilgan mot",
+    idea: "Shohni oʻz donalari qamab qoʻygan, ot esa mot qiladi.",
+    lesson: [
+      {
+        title: "Havosiz shoh",
+        text: [
+          "**Qisilgan mot** — shohni **oʻz** donalari va piyodalari oʻrab olgan, motni esa ot qiladi. Otdan toʻsib boʻlmaydi: u donalar ustidan sakraydi.",
+          "Koʻpincha qisilgan mot burchakdagi shohga qilinadi: h8 yoki a8 da.",
+        ],
+      },
+    ],
+    terms: [{ term: "Qisilgan mot", text: "Oʻz donalari qamab qoʻygan shohga ot bilan qilingan mot." }],
+    exercises: {
+      "c3-smothered-knight": {
+        title: "Burchakdagi ot",
+        prompt: "Oqlar yuradi. Mot qil.",
+        hint: "g8 dagi rux va g7, h7 piyodalari shohni qamab qoʻygan.",
+        why: "♘f7# — qisilgan mot: shohni oʻz donalari oʻrab olgan, otdan esa toʻsib boʻlmaydi.",
+      },
+    },
+  },
+  "c3-blockade": {
+    title: "Blokirovka, katakni boʻshatish va punktni egallash",
+    idea: "Piyodani dona bilan toʻxtat, hujum uchun katakni boʻshat, kuchli punktni egalla.",
+    lesson: [
+      {
+        title: "Blokirovka",
+        text: [
+          "**Blokirovka** — dona raqibning oʻtuvchi piyodasi oldiga turib, uni toʻxtatadi. Eng yaxshi bloker — ot: piyoda uni bezovta qilmaydi, ot esa uning ustidan uradi.",
+        ],
+      },
+      {
+        title: "Katak va chiziqni boʻshatish",
+        text: [
+          "Baʼzan kerakli katak yoki chiziqni **oʻz** donang egallab turadi. Shunda uni olib ketishadi — yaxshisi shoh yoki tahdid bilan — va boʻshagan katak yoki chiziq boshqa donaga qoladi.",
+        ],
+      },
+      {
+        title: "Punktni egallash",
+        text: [
+          "**Punkt** — raqib lagerida piyoda haydab yubora olmaydigan kuchli katak. Bunday punktdagi ot yoki rux partiya oxirigacha pozitsiyaga bosim oʻtkazadi. Bundan Aleksandr Alyoxin mohirona foydalangan.",
+        ],
+      },
+    ],
+    terms: [
+      { term: "Blokirovka", text: "Dona oʻtuvchi piyoda oldida turib, uni oʻtkazmaydi." },
+      { term: "Punkt", text: "Raqib piyodasi donani haydab yubora olmaydigan kuchli katak." },
+    ],
+    exercises: {
+      "c3-blockade-quiz": {
+        title: "Oʻzingni tekshir",
+        prompt: "Savollarga javob ber.",
+        questions: [
+          { text: "Oʻtuvchi piyodaning eng yaxshi blokeri qaysi dona?", options: ["ot", "shoh", "farzin"] },
+          {
+            text: "Kerakli katakni oʻz donang egallab tursa, nima qilinadi?",
+            options: ["uni olib ketishadi, yaxshisi shoh bilan", "uni urib olishlarini kutishadi", "taslim boʻlishadi"],
+          },
+          {
+            text: "Punkt ot uchun nimasi bilan yaxshi?",
+            options: ["uni raqib piyodasi haydab yubora olmaydi", "u yerda ot koʻrinmaydi", "u yerdan qochish oson"],
+          },
+        ],
+        hint: "Bloker piyoda oldida turadi, punkt — piyoda hujum qilmaydigan katak.",
+        why: "Ot — eng yaxshi bloker: u piyoda ustidan uradi. Oʻz donangni kerakli katakdan olib ketishadi, yaxshisi shoh bilan. Punktdagi donani piyoda bilan haydab boʻlmaydi.",
+      },
+    },
+  },
+  "c3-intermezzo": {
+    title: "Oraliq shoh va yurish",
+    idea: "Donani qaytarib olishga shoshilma: avval shoh, keyin almashuv.",
+    lesson: [
+      {
+        title: "Avval shoh",
+        text: [
+          "Raqib donani urib oldi — qoʻl beixtiyor javoban urishga choʻziladi. Lekin avval tekshir: undan ham koʻproq yutadigan **oraliq shoh** yoki tahdid yoʻqmi?",
+          "Raqib shohdan himoyalanayotganda uning donasi hech qayoqqa ketmaydi — uni keyingi yurishda olish mumkin.",
+        ],
+      },
+    ],
+    terms: [
+      { term: "Oraliq yurish", text: "Oddiy javob urish oʻrniga qilinadigan kutilmagan yurish (koʻpincha shoh)." },
+    ],
+    exercises: {
+      "c3-intermezzo-choose": {
+        title: "Urishga shoshilma",
+        prompt: "Qora farzin hozirgina d1 da urib oldi. Oqlar yuradi. Qanday oʻynagan yaxshi?",
+        hint: "Avval shoh bersang, d1 dagi farzin hech qayoqqa qochmaydi.",
+        why: "♗xf7+! — piyodani yutib, oraliq shoh. Shohning har qanday javobidan keyin oqlar farzinni oladi: ♖xd1. Darhol ♖xd1 qilinsa, f7 piyodasi qoralarda qoladi.",
+      },
+    },
+  },
+  "c3-pawn-shield": {
+    title: "Piyoda himoyasini buzish",
+    idea: "Shoh oldidagi piyodalar — uning qalqoni. Qalqonni buz — shoh ochiladi.",
+    lesson: [
+      {
+        title: "Piyodalar qalqoni",
+        text: [
+          "f7, g7 va h7 piyodalari rokirovkadan keyin shohni toʻsib turadi. Hujumchi bu qalqonni buzadi: piyodani urib oladi, koʻpincha donani qurbon qilib, shohga bostirib kiradi.",
+          "Ayniqsa h7 piyodasiga farzin va g5 dagi ot birga hujum qilganda xavfli.",
+        ],
+      },
+    ],
+    terms: [{ term: "Piyoda himoyasi", text: "Shoh oldida turib, uni himoya qiladigan piyodalar." }],
+    exercises: {
+      "c3-pawn-shield-h7": {
+        title: "h7 ga zarba",
+        prompt: "Oqlar yuradi. Mot qil.",
+        hint: "Farzin va ot birga h7 ga hujum qilyapti.",
+        why: "♕xh7# — farzin piyodalar qalqonini buzdi; uni g5 dagi ot himoya qiladi, f8 dagi rux esa shohning yoʻlini toʻsib turibdi.",
+      },
+    },
+  },
+  "c3-back-rank": {
+    title: "Oxirgi gorizontal zaifligi",
+    idea: "Butun piyodalar ortidagi shoh oxirgi gorizontalda mot olishi mumkin.",
+    lesson: [
+      {
+        title: "Darcha yoʻq",
+        text: [
+          "Rokirovkadan keyin shoh f, g va h piyodalari ortida turadi. Agar bu piyodalar yurmagan boʻlsa, shohning **chekinadigan joyi yoʻq** va rux yoki farzin oxirgi gorizontalda mot qiladi.",
+          "Himoya — **darcha**: h yoki g piyodasi bilan yurish, undan keyin shohda katak paydo boʻladi.",
+        ],
+      },
+    ],
+    terms: [{ term: "Darcha", text: "Piyoda yurishi bilan ochilgan, shoh chekinadigan katak." }],
+    exercises: {
+      "c3-back-rank-mate": {
+        title: "Sakkizinchi boʻylab mot",
+        prompt: "Oqlar yuradi. Mot qil.",
+        hint: "f7, g7 va h7 piyodalari shohni qochirmaydi.",
+        why: "♖d8# — shohda darcha yoʻq, f7, g7 va h7 piyodalari uni oxirgi gorizontalda qamab qoʻygan.",
+      },
+      "c3-back-rank-luft": {
+        title: "Darcha och",
+        prompt: "Oqlar yuradi. Qoralar mot bilan tahdid qilyapti. Qanday oʻynash kerak?",
+        hint: "Qora rux c1 ga borish bilan tahdid qilyapti.",
+        why: "h3! — shohda h2 katagi paydo boʻldi va mot tahdidi yoʻqoldi. ♕xa7? dan keyin qoralar ♜c1# bilan mot qiladi.",
+      },
+    },
+  },
+  "c3-morphy": {
+    title: "Pol Morfi — tojsiz qirol",
+    idea: "Morfi donalarni tez rivojlantirib, markazda qolgan shohga hujum qilgan.",
+    lesson: [
+      {
+        title: "Operadagi partiya",
+        text: [
+          "**Pol Morfi** (1837–1884) — amerikalik shaxmatchi, oʻz davrining eng kuchli oʻyinchisi. Uni shaxmatning tojsiz qiroli deyishadi: u paytda hali rasmiy jahon chempioni yoʻq edi.",
+          "1858 yili Parij operasida Morfi Braunshveyg gersogi va graf Izuar bilan oʻynagan. U donalarni tez olib chiqdi, material qurbon qildi va markazda qolib ketgan shohga mot qildi.",
+        ],
+      },
+    ],
+    terms: [{ term: "Rivojlanish", text: "Partiya boshida donalarni oʻyinga olib chiqish." }],
+    exercises: {
+      "c3-morphy-choose": {
+        title: "Opera partiyasining yakuni",
+        prompt: "Morfi (oqlar) yuradi va 2 yurishda mot qiladi. Birinchi yurish qaysi?",
+        hint: "Farzin d1 dagi ruxga yoʻl ochish uchun oʻzini qurbon qiladi.",
+        why: "16. ♕b8+!! ♞xb8 17. ♖d8# — d7 dagi ot chiziqdan ketdi va rux g5 dagi fil yordamida mot qildi. Mashhur 1858 yilgi partiya shunday tugagan.",
+      },
+    },
+  },
+  "c3-anderssen": {
+    title: "Adolf Andersen: «Soʻlmas partiya»",
+    idea: "Hujum uchun qurbonlar: Andersen farzin va ruxni berib, fillar bilan mot qildi.",
+    lesson: [
+      {
+        title: "Hujum ustasi",
+        text: [
+          "**Adolf Andersen** (1818–1879) — nemis shaxmatchisi, chiroyli qurbonlar ustasi. 1852 yili Berlinda u Jan Dyufresn bilan partiya oʻynagan va uni **«Soʻlmas partiya»** deb atashgan — uning goʻzalligi eskirmaydi.",
+          "Qoralar ♛xg2# mot bilan tahdid qilayotgan edi, lekin oqlar tezroq edi: farzin qurbon qilingan shohlar seriyasi.",
+        ],
+      },
+    ],
+    terms: [{ term: "Kombinatsiya", text: "Maqsadga olib boradigan, koʻpincha qurbonli majburiy yurishlar seriyasi." }],
+    exercises: {
+      "c3-anderssen-choose": {
+        title: "Farzin qurbonligi",
+        prompt: "Andersen (oqlar) yuradi. Qoralar ♛xg2# mot bilan tahdid qilyapti. Qanday yutish mumkin?",
+        hint: "Shoh kerak. Eng jasur shoh — farzin bilan d7 da.",
+        why: "21. ♕xd7+!! ♚xd7 22. ♗f5+ (qoʻsh shoh) ♚e8 23. ♗d7+ ♚f8 24. ♗xe7# — 4 yurishda mot. 22... ♚c6 ga 23. ♗d7# javob boʻladi. ♗xe7? dan keyin esa qoralarning oʻzi ♛xg2# bilan mot qiladi.",
+      },
+    },
+  },
+  "c3-exam": {
+    title: "«Fil» bosqichining yakuniy testi",
+    idea: "Oʻzingni sinab koʻr: bogʻlash, ochiq shoh, jalb qilish, qisilgan mot va oxirgi gorizontal.",
+    lesson: [
+      {
+        title: "Test oldidan",
+        text: [
+          "Uchinchi bosqich ortda qoldi — shohga hujum taktikasi. Har bir masalada **shohlar, urishlar va tahdidlarni** qidir va oʻzingdan soʻra: raqibning qaysi donasi mot katagini himoya qilyapti?",
+        ],
+      },
+    ],
+    terms: [{ term: "«Fil» bosqichi", text: "Kursning uchinchi bosqichi: shohga hujum taktikasi." }],
+    exercises: {
+      "c3-exam-smothered": {
+        title: "1-masala",
+        prompt: "Oqlar yuradi. Mot qil.",
+        hint: "Shohni oʻz donalari qamab qoʻygan.",
+        why: "♘f7# — qisilgan mot: g8 dagi rux va g7, h7 piyodalari shohni qochirmaydi.",
+      },
+      "c3-exam-rank": {
+        title: "2-masala",
+        prompt: "Oqlar yuradi. Mot qil.",
+        hint: "Qora shohda darcha yoʻq.",
+        why: "♕b8# — oxirgi gorizontalda mot: f7, g7 va h7 piyodalari shohni qamab qoʻygan.",
+      },
+      "c3-exam-decoy": {
+        title: "3-masala",
+        prompt: "Oqlar yuradi va 2 yurishda mot qiladi. Birinchi yurish qaysi?",
+        hint: "Filidor motini esla.",
+        why: "♕g8+! ♜xg8 ♘f7# — rux g8 ga jalb qilindi va oʻz shohini qamab qoʻydi, ot qisilgan mot qiladi. ♘f7+? dan keyin ♚g8 — shoh qochadi.",
+      },
+      "c3-exam-quiz": {
+        title: "4-masala: savollar",
+        prompt: "Bosqich boʻyicha savollarga javob ber.",
+        questions: [
+          {
+            text: "Bir vaqtda ikki dona bilan berilgan shoh qanday ataladi?",
+            options: ["qoʻsh shoh", "abadiy shoh", "ochiq hujum"],
+          },
+          {
+            text: "Shoh bilan bogʻlangan dona…",
+            options: ["chiziqdan qimirlay olmaydi", "istalgan joyga yura oladi", "faqat oldinga yuradi"],
+          },
+          {
+            text: "Oxirgi gorizontaldagi motdan qanday himoyalanish mumkin?",
+            options: ["piyoda bilan darcha ochish", "farzinni berish", "shohni markazga qoʻyish"],
+          },
+        ],
+        hint: "Qoʻsh shoh, bogʻlash va darcha haqidagi darslarni esla.",
+        why: "Qoʻsh shoh — bir vaqtda ikki dona bilan shoh. Shoh bilan bogʻlangan dona chiziqdan keta olmaydi. Oxirgi gorizontaldagi motdan darcha qutqaradi.",
       },
     },
   },

@@ -6,7 +6,7 @@ import type { CourseStep } from "./step";
 export const STEP_3: CourseStep = {
   n: 3,
   href: "/chess/course-3",
-  final: "c3-final-test",
+  final: "c3-exam",
   piece: "wB",
   award: { ru: "Слон", uz: "Fil" },
   useContent() {

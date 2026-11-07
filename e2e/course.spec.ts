@@ -192,7 +192,17 @@ test("ступень 3 «Слон»: тактика — открытое нап�
   await expect(page.locator('a[href="/chess/course-3"]').first()).toBeVisible();
   await page.goto("/chess/course-3");
   await expect(page.getByRole("heading", { level: 1, name: /Ступень 3/ })).toBeVisible();
-  for (const id of ["pin-king", "discovered", "disc-attack", "remove-def", "deflection", "decoy"])
+  for (const id of [
+    "pin-king",
+    "discovered",
+    "disc-attack",
+    "remove-def",
+    "deflection",
+    "decoy",
+    "smothered",
+    "classics",
+    "finish-3",
+  ])
     await expect(page.locator(`[data-course-module="${id}"]`)).toBeVisible();
   await page.goto("/chess/course-3#c3-disc-attack-exercise-1");
   await page.locator('[data-choice="d4e6"]').click();
