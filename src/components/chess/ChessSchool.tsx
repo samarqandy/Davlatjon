@@ -4,6 +4,7 @@ import { courseLessons } from "@/content/chess/courseLessons";
 import { COURSE_PART } from "@/content/chess/parts/course";
 import { COURSE2_PART } from "@/content/chess/parts/course2";
 import { COURSE3_PART } from "@/content/chess/parts/course3";
+import { COURSE4_PART } from "@/content/chess/parts/course4";
 import { LEVELS } from "@/content/chess/parts/levels";
 import { PUZZLE_PART } from "@/content/chess/parts/puzzles";
 import { TACTIC_PART } from "@/content/chess/parts/tactics";
@@ -50,6 +51,7 @@ export function ChessSchool({ counts }: { counts: ChessSchoolCounts }) {
   const { course1, course1Lessons } = useChessPart(COURSE_PART);
   const { course2, course2Lessons } = useChessPart(COURSE2_PART);
   const { course3, course3Lessons } = useChessPart(COURSE3_PART);
+  const { course4, course4Lessons } = useChessPart(COURSE4_PART);
   const state = useStore((s) => s);
   const statuses = levelStatuses(levels, state);
   const rank = hydrated ? currentRank(levels, state) : null;
@@ -70,16 +72,18 @@ export function ChessSchool({ counts }: { counts: ChessSchoolCounts }) {
   const course1List = courseLessons({ levels, tactics }, course1Lessons);
   const course2List = courseLessons({ levels, tactics }, course2Lessons);
   const course3List = courseLessons({ levels, tactics }, course3Lessons);
+  const course4List = courseLessons({ levels, tactics }, course4Lessons);
   const solvedIn = (list: typeof course1List) =>
     hydrated ? list.reduce((n, x) => n + x.exercises.filter((e) => state.chess[e.id]?.solvedAt).length, 0) : 0;
   const totalIn = (list: typeof course1List) => list.reduce((n, x) => n + x.exercises.length, 0);
   const firstOpen = (list: typeof course1List) =>
     list.findIndex((l) => l.exercises.some((e) => !state.chess[e.id]?.solvedAt));
-  // Продолжаем первую непройденную ступень: 1, потом 2, потом 3.
+  // Продолжаем первую непройденную ступень по порядку.
   const steps = [
     { n: 1, list: course1List, href: "/chess/course" },
     { n: 2, list: course2List, href: "/chess/course-2" },
     { n: 3, list: course3List, href: "/chess/course-3" },
+    { n: 4, list: course4List, href: "/chess/course-4" },
   ];
   const current = (hydrated && steps.find((st) => firstOpen(st.list) >= 0)) || steps[0];
   const onStep2 = current.n > 1;
@@ -147,8 +151,8 @@ export function ChessSchool({ counts }: { counts: ChessSchoolCounts }) {
       emoji: "🎯",
       title: course3.title,
       text: t(
-        "Слоны Горвица, обжорный ряд, проходная пешка, слабые поля, пешечный эндшпиль, пат, вечный шах и мат двумя слонами.",
-        "Gorvits fillari, ochkoʻz qator, oʻtuvchi piyoda, kuchsiz kataklar, piyodali endshpil, pat, abadiy shoh va ikki fil bilan mot.",
+        "Связка и рентген, открытый и двойной шах, открытое нападение — тактика атаки на короля.",
+        "Bogʻlash va rentgen, ochiq va qoʻsh shoh, ochiq hujum — shohga hujum taktikasi.",
       ),
       stat: hydrated
         ? t(
@@ -156,6 +160,21 @@ export function ChessSchool({ counts }: { counts: ChessSchoolCounts }) {
             `${totalIn(course3List)} ta mashqdan ${solvedIn(course3List)} tasi`,
           )
         : t(`${course3List.length} уроков`, `${course3List.length} ta dars`),
+    },
+    {
+      href: "/chess/course-4",
+      emoji: "🏰",
+      title: course4.title,
+      text: t(
+        "Слоны Горвица, обжорный ряд, проходная пешка, слабые поля, пешечный эндшпиль, пат, вечный шах и мат двумя слонами.",
+        "Gorvits fillari, ochkoʻz qator, oʻtuvchi piyoda, kuchsiz kataklar, piyodali endshpil, pat, abadiy shoh va ikki fil bilan mot.",
+      ),
+      stat: hydrated
+        ? t(
+            `${solvedIn(course4List)} из ${totalIn(course4List)} упражнений`,
+            `${totalIn(course4List)} ta mashqdan ${solvedIn(course4List)} tasi`,
+          )
+        : t(`${course4List.length} уроков`, `${course4List.length} ta dars`),
     },
     {
       href: "/chess/play",
@@ -367,6 +386,7 @@ export function ChessSchool({ counts }: { counts: ChessSchoolCounts }) {
     "/chess/course",
     "/chess/course-2",
     "/chess/course-3",
+    "/chess/course-4",
     "/chess/play",
     "/chess/puzzles",
     "/chess/secrets",

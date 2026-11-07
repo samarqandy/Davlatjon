@@ -186,44 +186,61 @@ test("ступень 2: открытый шах выигрывает ферзя,
   expect(stored["c2-discover-win-knight"]?.solvedAt).toBeTruthy();
 });
 
-test("ступень 3 «Слон»: страница курса, мат слонами Горвица засчитывается", async ({ page }) => {
+test("ступень 3 «Слон»: тактика — открытое нападение засчитывается", async ({ page }) => {
   await prepare(page);
   await page.goto("/chess");
   await expect(page.locator('a[href="/chess/course-3"]').first()).toBeVisible();
   await page.goto("/chess/course-3");
   await expect(page.getByRole("heading", { level: 1, name: /Ступень 3/ })).toBeVisible();
-  for (const id of ["horwitz", "seventh", "passer"])
+  for (const id of ["pin-king", "discovered", "disc-attack"])
     await expect(page.locator(`[data-course-module="${id}"]`)).toBeVisible();
-  await page.goto("/chess/course-3#c3-horwitz-exercise-1");
-  await page.locator('[data-board="mo-c3-horwitz-g7"] [data-square="g2"]').click();
-  await page.locator('[data-board="mo-c3-horwitz-g7"] [data-square="g7"]').click();
+  await page.goto("/chess/course-3#c3-disc-attack-exercise-1");
+  await page.locator('[data-choice="d4e6"]').click();
+  await expect(page.getByText("не лучший выбор")).toBeVisible();
+  await page.locator('[data-choice="d4f5"]').click();
   await expect(page.getByText(/Почему так/)).toBeVisible();
   const stored = await page.evaluate((key) => JSON.parse(localStorage.getItem(key) ?? "{}").chess ?? {}, KEY);
-  expect(stored["c3-horwitz-g7"]?.solvedAt).toBeTruthy();
+  expect(stored["c3-disc-attack-choose"]?.solvedAt).toBeTruthy();
 });
 
-test("ступень 3: оппозиция — «как сыграть лучше» засчитывается", async ({ page }) => {
+test("ступень 4 «Ладья»: страница курса, мат слонами Горвица засчитывается", async ({ page }) => {
   await prepare(page);
-  await page.goto("/chess/course-3");
+  await page.goto("/chess");
+  await expect(page.locator('a[href="/chess/course-4"]').first()).toBeVisible();
+  await page.goto("/chess/course-4");
+  await expect(page.getByRole("heading", { level: 1, name: /Ступень 4/ })).toBeVisible();
+  for (const id of ["horwitz", "seventh", "passer"])
+    await expect(page.locator(`[data-course-module="${id}"]`)).toBeVisible();
+  await page.goto("/chess/course-4#c4-horwitz-exercise-1");
+  await page.locator('[data-board="mo-c4-horwitz-g7"] [data-square="g2"]').click();
+  await page.locator('[data-board="mo-c4-horwitz-g7"] [data-square="g7"]').click();
+  await expect(page.getByText(/Почему так/)).toBeVisible();
+  const stored = await page.evaluate((key) => JSON.parse(localStorage.getItem(key) ?? "{}").chess ?? {}, KEY);
+  expect(stored["c4-horwitz-g7"]?.solvedAt).toBeTruthy();
+});
+
+test("ступень 4: оппозиция — «как сыграть лучше» засчитывается", async ({ page }) => {
+  await prepare(page);
+  await page.goto("/chess/course-4");
   for (const id of ["pawns-squares", "pawn-endgame"])
     await expect(page.locator(`[data-course-module="${id}"]`)).toBeVisible();
-  await page.goto("/chess/course-3#c3-opposition-exercise-1");
+  await page.goto("/chess/course-4#c4-opposition-exercise-1");
   await page.locator('[data-choice="e4e5"]').click();
   await expect(page.getByText("не лучший выбор")).toBeVisible();
   await page.locator('[data-choice="d4e5"]').click();
   await expect(page.getByText(/Почему так/)).toBeVisible();
 });
 
-test("ступень 3: ловушка пата — слабое превращение засчитывается", async ({ page }) => {
+test("ступень 4: ловушка пата — слабое превращение засчитывается", async ({ page }) => {
   await prepare(page);
-  await page.goto("/chess/course-3");
-  for (const id of ["kpk", "activity", "saving", "bishops-finale", "finish-3"])
+  await page.goto("/chess/course-4");
+  for (const id of ["kpk", "activity", "saving", "bishops-finale", "finish-4"])
     await expect(page.locator(`[data-course-module="${id}"]`)).toBeVisible();
-  await page.goto("/chess/course-3#c3-study-exercise-1");
+  await page.goto("/chess/course-4#c4-study-exercise-1");
   await page.locator('[data-choice="c7c8q"]').click();
   await expect(page.getByText("не лучший выбор")).toBeVisible();
   await page.locator('[data-choice="c7c8r"]').click();
   await expect(page.getByText(/Почему так/)).toBeVisible();
   const stored = await page.evaluate((key) => JSON.parse(localStorage.getItem(key) ?? "{}").chess ?? {}, KEY);
-  expect(stored["c3-study-underpromote"]?.solvedAt).toBeTruthy();
+  expect(stored["c4-study-underpromote"]?.solvedAt).toBeTruthy();
 });

@@ -3,6 +3,7 @@
  * Без React и без браузера — поэтому этим пользуются и сервер (синхронизация с аккаунтом), и тесты.
  * Сам стор (localStorage + подписки) — в src/lib/store.ts.
  */
+import { migrateCourseIds } from "./courseMigration";
 import { isBoardThemeId, isSoundSetId, type SoundSetId } from "./boardLook";
 import { cleanChildName } from "./childName";
 import type { PuzzleLevel, PuzzleRating } from "./puzzleRating";
@@ -405,7 +406,7 @@ export function sanitize(raw: unknown): AppState {
       reportToTelegram: typeof settings.reportToTelegram === "boolean" ? settings.reportToTelegram : undefined,
       leaderboard: typeof settings.leaderboard === "boolean" ? settings.leaderboard : undefined,
     },
-    chess: entriesOf(raw.chess) as AppState["chess"],
+    chess: migrateCourseIds(entriesOf(raw.chess)) as AppState["chess"],
     chessGames: Array.isArray(raw.chessGames) ? (raw.chessGames.filter(isObject) as unknown as ChessGameRecord[]) : [],
     chessPuzzles: entriesOf(raw.chessPuzzles) as AppState["chessPuzzles"],
     chessRating: ratingOf(raw.chessRating),
