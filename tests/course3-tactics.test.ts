@@ -79,3 +79,27 @@ describe("курс «Слон»: открытое нападение", () => {
     expect(e.isCheckmate()).toBe(true);
   });
 });
+
+describe("курс «Слон»: уничтожение защиты, отвлечение, завлечение", () => {
+  it("уничтожение защиты: Лxf6 — мат в 2; Фxh7+ берёт конь", () => {
+    const fen = "7k/6pp/5n2/6N1/8/7Q/8/5RK1 w - - 0 1";
+    expect(mateInTwo(fen, "f1f6")).toBe(true);
+    expect(mateInTwo(fen, "h3h7")).toBe(false);
+  });
+
+  it("отвлечение: Лa8+ — единственный мат в 2; Фxg7+ — нет", () => {
+    const fen = "7k/2q3pp/8/5NQ1/8/8/5PPP/R5K1 w - - 0 1";
+    expect(firstMovesMatingInTwo(fen)).toEqual(["a1a8"]);
+  });
+
+  it("завлечение: Фg8+ — единственный мат в 2: Лxg8 вынужден, затем Кf7#", () => {
+    const fen = "4r2k/6pp/8/6N1/2Q5/1B6/6PP/6K1 w - - 0 1";
+    expect(firstMovesMatingInTwo(fen)).toEqual(["c4g8"]);
+    const c = new Chess(fen);
+    c.move("Qg8+");
+    expect(c.moves()).toEqual(["Rxg8"]);
+    c.move("Rxg8");
+    c.move("Nf7#");
+    expect(c.isCheckmate()).toBe(true);
+  });
+});
