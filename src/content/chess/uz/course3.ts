@@ -5,13 +5,16 @@ export const course3Uz: Uz<typeof COURSE_3> = {
   title: "3-bosqich «Fil»",
   subtitle: "Shohga hujum taktikasi",
   about:
-    "Shohga hujumda bogʻlash, rentgen, bogʻlash bilan material yutish, ochiq shoh va pistirma, qoʻsh shoh, «tegirmon» va ochiq hujum. Darslar mavzusi va tartibi M.I. Glotovning «Shaxmat mahorati bosqichlari. 3-bosqich „Fil“» kitobi asosida; pozitsiyalar maktab uchun tuzilgan va shaxmat dvigateli bilan tekshirilgan.",
+    "Shohga hujumda bogʻlash, rentgen, bogʻlash bilan material yutish, ochiq shoh va pistirma, qoʻsh shoh, «tegirmon», ochiq hujum, himoyani yoʻq qilish, chalgʻitish, toʻsib qoʻyish va jalb qilish. Darslar mavzusi va tartibi M.I. Glotovning «Shaxmat mahorati bosqichlari. 3-bosqich „Fil“» kitobi asosida; pozitsiyalar maktab uchun tuzilgan va shaxmat dvigateli bilan tekshirilgan.",
 };
 
 export const course3ModulesUz: Uz<typeof COURSE_3_MODULES> = {
   "pin-king": { title: "Shohga hujumda bogʻlash" },
   discovered: { title: "Ochiq va qoʻsh shoh" },
   "disc-attack": { title: "Ochiq hujum" },
+  "remove-def": { title: "Himoyani yoʻq qilish" },
+  deflection: { title: "Chalgʻitish va toʻsib qoʻyish" },
+  decoy: { title: "Jalb qilish" },
 };
 
 export const course3LessonsUz: Uz<typeof COURSE_3_LESSONS> = {
@@ -212,6 +215,110 @@ export const course3LessonsUz: Uz<typeof COURSE_3_LESSONS> = {
         prompt: "Oqlar yuradi. Farzinni qanday yutish mumkin?",
         hint: "Ot bilan d vertikalidan shoh berib ket.",
         why: "♘f5+! — ot shoh beradi, d1 dagi rux esa d8 dagi farzinga hujumni ochdi. Qora shoh qochadi va ♖xd8. ♘e6? dan keyin chiziq ham ochiladi, lekin shoh yoʻq — qoralarning oʻzi ♛xd1# bilan mot qiladi.",
+      },
+    },
+  },
+  "c3-remove-def": {
+    title: "Himoyani yoʻq qilish",
+    idea: "Mot katagini himoya qilayotgan donani ol — va mot qilish mumkin boʻladi.",
+    lesson: [
+      {
+        title: "Kim himoya qilyapti?",
+        text: [
+          "Hujumdan oldin oʻzingdan soʻra: **qaysi dona motga xalaqit beryapti?** Koʻpincha bu raqibning bitta donasi — kerakli katakni ushlab turgan ot, fil yoki rux.",
+          "Himoyachini ol — hatto oʻz donangni berib boʻlsa ham — va keyingi yurishda mot keladi.",
+        ],
+      },
+    ],
+    terms: [{ term: "Himoyani yoʻq qilish", text: "Muhim katakni himoya qilayotgan donani urib olish." }],
+    exercises: {
+      "c3-remove-def-rank": {
+        title: "Yagona himoyachi",
+        prompt: "Oqlar yuradi. Mot qil.",
+        hint: "Qora rux oxirgi gorizontalni yolgʻiz oʻzi qoʻriqlayapti.",
+        why: "♖xe8# — rux oxirgi gorizontalning yagona himoyachisini urib oldi, f7, g7 va h7 piyodalari esa shohni qochirmaydi.",
+      },
+      "c3-remove-def-choose": {
+        title: "Otni yoʻqot",
+        prompt: "Oqlar yuradi va 2 yurishda mot qiladi. Birinchi yurish qaysi?",
+        hint: "f6 dagi ot h7 ni himoya qilyapti. Uni ol.",
+        why: "♖xf6! — h7 ning himoyachisi yoʻqoldi. gxf6, g6 yoki ♚g8 dan keyin ♕xh7#: farzinni g5 dagi ot qoʻllab-quvvatlaydi. h6 yoki h5 ga esa — ♖f8#. ♕xh7+? dan keyin ♞xh7 — f6 dagi otning oʻzi farzinni urib oladi.",
+      },
+    },
+  },
+  "c3-deflect": {
+    title: "Chalgʻitish",
+    idea: "Himoyachini u qoʻriqlayotgan katak yoki chiziqdan ketishga majbur qil.",
+    lesson: [
+      {
+        title: "Himoyachi ketadi",
+        text: [
+          "**Chalgʻitish** — shoh yoki qurbon, undan keyin himoyachi ketishga majbur. U shohni bir joyda qutqaradi — va boshqa katakni qoʻriqsiz qoldiradi.",
+          "Eng yaxshisi **shoh berib** chalgʻitish: raqibning oʻylashga vaqti yoʻq, u javob berishga majbur.",
+        ],
+      },
+    ],
+    terms: [{ term: "Chalgʻitish", text: "Himoyachi ketishga majbur boʻladi va muhim katakni qoʻriqsiz qoldiradi." }],
+    exercises: {
+      "c3-deflect-choose": {
+        title: "Farzin yettinchidan ketadi",
+        prompt: "Oqlar yuradi va 2 yurishda mot qiladi. Birinchi yurish qaysi?",
+        hint: "Qora farzin yettinchi gorizontal boʻylab g7 ni qoʻriqlayapti. Sakkizinchi boʻylab shoh ber.",
+        why: "♖a8+! — qora farzin b8, c8 yoki d8 da toʻsishga majbur va yettinchi gorizontaldan ketadi. Keyin ♕xg7#: farzinni f5 dagi ot qoʻllab-quvvatlaydi. ♕xg7+? dan keyin ♛xg7 ♘xg7 — mot yoʻq.",
+      },
+    },
+  },
+  "c3-interfere": {
+    title: "Toʻsib qoʻyish",
+    idea: "Himoyachi bilan u qoʻriqlayotgan katak orasiga dona qoʻy.",
+    lesson: [
+      {
+        title: "Chiziqdagi devor",
+        text: [
+          "Rux, fil va farzin uzoqdan — chiziq boʻylab himoya qiladi. **Toʻsib qoʻyish** — oʻz donangni shu chiziqqa qoʻyish, shunda himoya uziladi.",
+          "Toʻsib qoʻyish toʻsgan donani urib boʻlmaganda yoki urish foydasiz boʻlganda ishlaydi: masalan, u himoyalangan yoki himoyachi bogʻlangan.",
+        ],
+      },
+    ],
+    terms: [{ term: "Toʻsib qoʻyish", text: "Dona himoyachining chizigʻiga turib, himoyani uzadi." }],
+    exercises: {
+      "c3-interfere-quiz": {
+        title: "Qayerda toʻsish kerak?",
+        prompt: "b5 dagi qora fil e8 katagini qoʻriqlayapti. Savollarga javob ber.",
+        questions: [
+          {
+            text: "b5 dagi filni e8 katagidan toʻsish uchun donani qaysi katakka qoʻyish kerak?",
+            options: ["c6 yoki d7", "c4 yoki d3", "b6 yoki b7"],
+          },
+          {
+            text: "Qaysi donalarni toʻsib qoʻyish mumkin?",
+            options: ["rux, fil va farzinni", "faqat otni", "faqat piyodani"],
+          },
+        ],
+        hint: "Fil b5 – c6 – d7 – e8 diagonali boʻylab yuradi.",
+        why: "b5 dagi fil e8 ni c6 va d7 orqali diagonal boʻylab qoʻriqlaydi — toʻsiq oʻsha yerga qoʻyiladi. Faqat uzoqqa uradigan donalarni toʻsib qoʻyish mumkin: rux, fil va farzinni. Ot esa donalar ustidan sakrab oʻtadi.",
+      },
+    },
+  },
+  "c3-decoy": {
+    title: "Jalb qilish",
+    idea: "Qurbon bilan raqib donasini yomon katakka turishga majbur qil.",
+    lesson: [
+      {
+        title: "Oʻlja",
+        text: [
+          "**Jalb qilish** — qurbon, undan keyin raqib donasi biz uchun kerakli katakka turishga majbur. Shoh zarba ostiga boradi, rux oʻz shohini qamab qoʻyadi.",
+          "Mashhur misol — **Filidor moti**: farzin g8 da oʻzini qurbon qiladi, rux uni urib olib shohni qamab qoʻyadi, ot esa «qisilgan» mot qiladi.",
+        ],
+      },
+    ],
+    terms: [{ term: "Jalb qilish", text: "Raqib donasini yomon katakka chorlaydigan qurbon." }],
+    exercises: {
+      "c3-decoy-choose": {
+        title: "Farzin — oʻlja",
+        prompt: "Oqlar yuradi va 2 yurishda mot qiladi. Birinchi yurish qaysi?",
+        hint: "Ruxni g8 ga — shoh yoniga turishga majbur qil.",
+        why: "♕g8+! — shoh ura olmaydi (farzinni b3 dagi fil himoya qiladi), faqat ♜xg8 qoladi. Rux oʻz shohini qamab qoʻydi va ♘f7# — qisilgan mot. ♘f7+? dan keyin ♚g8 — shoh qochadi.",
       },
     },
   },
