@@ -166,3 +166,44 @@ describe("курс «Слон»: финал ступени", () => {
     expect(firstMovesMatingInTwo("3r3k/6pp/8/6N1/2Q5/1B6/6PP/6K1 w - - 0 1")).toEqual(["c4g8"]);
   });
 });
+
+describe("курс: позиционные упражнения в бывших уроках-вопросах", () => {
+  it("перекрытие: Кf6+ — единственный мат в 2; после него у чёрных только Кf8", () => {
+    const fen = "1R1QN2k/3n2pp/8/5r2/8/8/5PKP/8 w - - 0 1";
+    expect(firstMovesMatingInTwo(fen)).toEqual(["e8f6"]);
+    const c = new Chess(fen);
+    c.move("Nf6+");
+    expect(c.moves()).toEqual(["Nf8"]);
+    const d = new Chess(fen);
+    d.move("Nd6+");
+    expect(d.moves()).toContain("Rf8");
+  });
+
+  it("вечный шах: Фc6+ Крb8 Фb5+ Крa8 — у чёрных каждый раз один ход", () => {
+    const c = new Chess("k1r5/p1p5/8/8/8/K7/2Q3pp/8 w - - 0 1");
+    c.move("Qc6+");
+    expect(c.moves()).toEqual(["Kb8"]);
+    c.move("Kb8");
+    c.move("Qb5+");
+    expect(c.moves()).toEqual(["Ka8"]);
+    c.move("Ka8");
+    c.move("Qc6+");
+    expect(c.moves()).toEqual(["Kb8"]);
+  });
+
+  it("блокировка: после Кd3 пешке d4 некуда идти; после Кc6 она идёт d3", () => {
+    const a = new Chess("6k1/8/8/8/1N1p4/8/8/6K1 w - - 0 1");
+    a.move("Nd3");
+    expect(a.moves({ square: "d4" })).toEqual([]);
+    const b = new Chess("6k1/8/8/8/1N1p4/8/8/6K1 w - - 0 1");
+    b.move("Nc6");
+    expect(b.moves({ square: "d4" })).toEqual(["d3"]);
+  });
+
+  it("отдалённая проходная: впереди a4 нет чёрных пешек на a и b, у пешек f2–h2 — есть", () => {
+    const black = ["f7", "g7", "h7"];
+    const passed = (sq: string) =>
+      !black.some((b) => Math.abs(b.charCodeAt(0) - sq.charCodeAt(0)) <= 1 && Number(b[1]) > Number(sq[1]));
+    expect(["a4", "f2", "g2", "h2"].filter(passed)).toEqual(["a4"]);
+  });
+});

@@ -3,7 +3,7 @@
  * Прогресс по ним хранился под id «c3-…» — переносим его на «c4-…», чтобы решённое не пропало.
  * Новые уроки ступени 3 «Слон» не используют эти имена, поэтому перенос можно делать при каждой загрузке.
  */
-const MOVED_TO_STEP_4 = new Set([
+export const MOVED_TO_STEP_4: ReadonlySet<string> = new Set([
   "horwitz",
   "horwitz-g7",
   "horwitz-h7",

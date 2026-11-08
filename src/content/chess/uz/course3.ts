@@ -287,6 +287,12 @@ export const course3LessonsUz: Uz<typeof COURSE_3_LESSONS> = {
     ],
     terms: [{ term: "Toʻsib qoʻyish", text: "Dona himoyachining chizigʻiga turib, himoyani uzadi." }],
     exercises: {
+      "c3-interfere-choose": {
+        title: "Ot ruxni toʻsadi",
+        prompt: "Oqlar yuradi va 2 yurishda mot qiladi. Birinchi yurish qaysi?",
+        hint: "Ot sakkizinchi gorizontaldan ketadi (farzin bilan ochiq shoh) — va qora rux chizigʻiga turadi.",
+        why: "♘f6+! — d8 dagi farzin sakkizinchi gorizontal boʻylab shoh beradi, f6 dagi ot esa f5 dagi ruxning f8 ga yoʻlini toʻsdi. Faqat ♞f8 bilan toʻsish mumkin, va ♕xf8# — farzinni b8 dagi rux qoʻllab-quvvatlaydi. ♘d6+? dan keyin rux bemalol toʻsadi: ♜f8.",
+      },
       "c3-interfere-quiz": {
         title: "Qayerda toʻsish kerak?",
         prompt: "b5 dagi qora fil e8 katagini qoʻriqlayapti. Savollarga javob ber.",
@@ -377,6 +383,12 @@ export const course3LessonsUz: Uz<typeof COURSE_3_LESSONS> = {
       { term: "Punkt", text: "Raqib piyodasi donani haydab yubora olmaydigan kuchli katak." },
     ],
     exercises: {
+      "c3-blockade-choose": {
+        title: "Ot-bloker",
+        prompt: "Oqlar yuradi. d4 piyodasini qanday toʻxtatish mumkin?",
+        hint: "Otni toʻgʻridan-toʻgʻri piyoda oldiga qoʻy.",
+        why: "♘d3! — ot piyoda oldiga turdi va u endi oldinga yura olmaydi. ♘c6? dan keyin piyoda d3 ga yuradi va d1 ga yuguradi.",
+      },
       "c3-blockade-quiz": {
         title: "Oʻzingni tekshir",
         prompt: "Savollarga javob ber.",

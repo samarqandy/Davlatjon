@@ -677,6 +677,17 @@ export const COURSE_2_LESSONS: ChessCourseLesson[] = [
     refs: [],
     exercises: [
       {
+        id: "c2-king-active-choose",
+        kind: "choose",
+        title: "Король вперёд!",
+        prompt: "Белые ходят. Как выиграть?",
+        fen: "8/8/2k5/8/8/1K6/4P3/8 w - - 0 1",
+        moves: ["b3c4", "b3a4", "e2e4"],
+        correct: 0,
+        hint: "Король идёт в центр и не пускает чёрного короля к пешке.",
+        why: "Крc4! — король идёт вперёд, в центр, и держит чёрного короля. Потом пешка пройдёт. После Крa4? или e4? чёрный король успевает к пешке — ничья.",
+      },
+      {
         id: "c2-king-active-quiz",
         kind: "quiz",
         title: "Король в эндшпиле",
@@ -726,6 +737,17 @@ export const COURSE_2_LESSONS: ChessCourseLesson[] = [
     refs: [],
     exercises: [
       {
+        id: "c2-realize-mate",
+        kind: "move",
+        title: "Лишний ферзь",
+        prompt: "Белые ходят. Поставь мат.",
+        fen: "7k/8/6K1/8/8/8/8/1Q6 w - - 0 1",
+        goal: "mate",
+        solutions: ["b1b8"],
+        hint: "Король g6 держит g7 и h7. Ферзю осталось дать шах по последней горизонтали.",
+        why: "Фb8# — ферзь шахует по восьмой горизонтали, а белый король забирает у чёрного клетки g7 и h7.",
+      },
+      {
         id: "c2-realize-quiz",
         kind: "quiz",
         title: "Хватит ли сил?",
@@ -773,6 +795,17 @@ export const COURSE_2_LESSONS: ChessCourseLesson[] = [
     ],
     refs: [],
     exercises: [
+      {
+        id: "c2-perpetual-choose",
+        kind: "choose",
+        title: "Спасительные шахи",
+        prompt: "Белые ходят. Чёрные пешки вот-вот станут ферзями. Как спастись?",
+        fen: "k1r5/p1p5/8/8/8/K7/2Q3pp/8 w - - 0 1",
+        moves: ["c2c6", "c2c7"],
+        correct: 0,
+        hint: "Ищи шах, после которого королю почти некуда идти.",
+        why: "Фc6+! Крb8 Фb5+ Крa8 Фc6+ — король ходит между a8 и b8, а ферзь шахует без конца. Это вечный шах — ничья. После Фxc7? Лxc7 белые остаются без ферзя.",
+      },
       {
         id: "c2-perpetual-quiz",
         kind: "quiz",

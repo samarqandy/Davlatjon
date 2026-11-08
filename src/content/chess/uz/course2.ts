@@ -425,6 +425,12 @@ export const course2LessonsUz: Uz<typeof COURSE_2_LESSONS> = {
     ],
     terms: [{ term: "Endshpil", text: "Partiya oxiri: donalar kam, shohlar faol boʻladi." }],
     exercises: {
+      "c2-king-active-choose": {
+        title: "Shoh oldinga!",
+        prompt: "Oqlar yuradi. Qanday yutish mumkin?",
+        hint: "Shoh markazga boradi va qora shohni piyodaga yaqinlashtirmaydi.",
+        why: "♔c4! — shoh oldinga, markazga boradi va qora shohni ushlab turadi. Keyin piyoda oʻtadi. ♔a4? yoki e4? dan keyin qora shoh piyodaga ulguradi — durang.",
+      },
       "c2-king-active-quiz": {
         title: "Endshpildagi shoh",
         prompt: "Toʻgʻri javobni tanla.",
@@ -467,6 +473,12 @@ export const course2LessonsUz: Uz<typeof COURSE_2_LESSONS> = {
       { term: "Material yetishmasligi", text: "Motga kuch yetmaydi — durang (masalan, shoh va filga qarshi shoh)." },
     ],
     exercises: {
+      "c2-realize-mate": {
+        title: "Ortiqcha farzin",
+        prompt: "Oqlar yuradi. Mot qil.",
+        hint: "g6 dagi shoh g7 va h7 ni ushlab turibdi. Farzinga oxirgi gorizontal boʻylab shoh berish qoldi.",
+        why: "♕b8# — farzin sakkizinchi gorizontal boʻylab shoh beradi, oq shoh esa qora shohdan g7 va h7 kataklarini tortib oladi.",
+      },
       "c2-realize-quiz": {
         title: "Kuch yetadimi?",
         prompt: "Yolgʻiz shohga mot qilish mumkinmi?",
@@ -509,6 +521,12 @@ export const course2LessonsUz: Uz<typeof COURSE_2_LESSONS> = {
       { term: "Telba rux", text: "Rux shoh berib oʻzini qurbon qiladi: urilsa — pat, urilmasa — shohlar davom etadi." },
     ],
     exercises: {
+      "c2-perpetual-choose": {
+        title: "Qutqaruvchi shohlar",
+        prompt: "Oqlar yuradi. Qora piyodalar hademay farzinga aylanadi. Qanday qutulish mumkin?",
+        hint: "Shunday shoh izla: undan keyin shohning boradigan joyi deyarli qolmasin.",
+        why: "♕c6+! ♚b8 ♕b5+ ♚a8 ♕c6+ — shoh a8 va b8 orasida yuradi, farzin esa toʻxtovsiz shoh beradi. Bu abadiy shoh — durang. ♕xc7? dan keyin ♜xc7 — oqlar farzinsiz qoladi.",
+      },
       "c2-perpetual-quiz": {
         title: "Qanday qutulish mumkin?",
         prompt: "Durang usullarini esla.",
