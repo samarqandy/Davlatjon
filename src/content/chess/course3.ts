@@ -448,6 +448,17 @@ export const COURSE_3_LESSONS: ChessCourseLesson[] = [
     refs: [],
     exercises: [
       {
+        id: "c3-interfere-choose",
+        kind: "choose",
+        title: "Конь перекрывает ладью",
+        prompt: "Белые ходят и ставят мат в 2 хода. Какой первый ход?",
+        fen: "1R1QN2k/3n2pp/8/5r2/8/8/5PKP/8 w - - 0 1",
+        moves: ["e8f6", "e8d6"],
+        correct: 0,
+        hint: "Конь уходит с восьмой горизонтали (открытый шах ферзём) — и встаёт на линию чёрной ладьи.",
+        why: "Кf6+! — ферзь d8 шахует по восьмой горизонтали, а конь f6 перекрыл ладье f5 дорогу на f8. Закрыться можно только Кf8, и Фxf8# — ферзя поддерживает ладья b8. После Кd6+? ладья спокойно закрывается: Лf8.",
+      },
+      {
         id: "c3-interfere-quiz",
         kind: "quiz",
         title: "Где перекрыть?",
@@ -566,6 +577,17 @@ export const COURSE_3_LESSONS: ChessCourseLesson[] = [
     ],
     refs: [],
     exercises: [
+      {
+        id: "c3-blockade-choose",
+        kind: "choose",
+        title: "Конь-блокёр",
+        prompt: "Белые ходят. Как остановить пешку d4?",
+        fen: "6k1/8/8/8/1N1p4/8/8/6K1 w - - 0 1",
+        moves: ["b4d3", "b4c6"],
+        correct: 0,
+        hint: "Поставь коня прямо перед пешкой.",
+        why: "Кd3! — конь встал перед пешкой, и она больше не может идти вперёд. После Кc6? пешка идёт d3 и бежит к d1.",
+      },
       {
         id: "c3-blockade-quiz",
         kind: "quiz",

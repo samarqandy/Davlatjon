@@ -180,6 +180,12 @@ export const course4LessonsUz: Uz<typeof COURSE_4_LESSONS> = {
     ],
     terms: [{ term: "Piyodalar falangasi", text: "Bir gorizontalda yonma-yon turgan piyodalar." }],
     exercises: {
+      "c4-phalanx-choose": {
+        title: "Piyodalarni yonma-yon qoʻy",
+        prompt: "Oqlar yuradi. Qaysi yurish bilan falanga qurish mumkin?",
+        hint: "Falanga — bitta gorizontalda yonma-yon turgan piyodalar.",
+        why: "e4! — d4 va e4 piyodalari yelkama-yelka turdi va birga c5, d5, e5 va f5 kataklarini ushlab turadi. d5? dan keyin piyodalar ajraldi va d5 ni hech kim himoya qilmaydi.",
+      },
       "c4-phalanx-quiz": {
         title: "Falanga nima?",
         prompt: "Toʻgʻri javobni tanla.",
@@ -457,6 +463,12 @@ export const course4LessonsUz: Uz<typeof COURSE_4_LESSONS> = {
       { term: "Uzoqdagi oʻtuvchi piyoda", text: "Shohlardan uzoqdagi oʻtuvchi piyoda; raqib shohini chalgʻitadi." },
     ],
     exercises: {
+      "c4-outside-passer-pick": {
+        title: "Uzoqdagi oʻtuvchi piyodani top",
+        prompt: "Uzoqdagi oʻtuvchi piyodaga aylanadigan oq piyodani bos.",
+        hint: "Oʻtuvchi piyoda — oldida oʻz vertikalida ham, qoʻshni vertikallarda ham qora piyoda yoʻq piyoda.",
+        why: "a4 — oʻtuvchi: a va b vertikallarida qora piyodalar yoʻq. U shohlardan uzoqda, qora shoh uning ortidan yugurishga majbur boʻladi, oq shoh esa bu vaqtda shoh qanotidagi piyodalarni oladi.",
+      },
       "c4-outside-passer-quiz": {
         title: "U nima uchun kerak?",
         prompt: "Uzoqdagi oʻtuvchi piyoda haqidagi savollarga javob ber.",

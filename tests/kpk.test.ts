@@ -79,3 +79,12 @@ describe("курс «Ладья»: КП против К, крайняя пешк
     expect(kpkWins("d5", "e8", "e5", "b")).toBe(false);
   });
 });
+
+describe("курс «Конь»: активный король", () => {
+  it("Крc4 выигрывает, Крa4, Крb4 и e4 — ничья", () => {
+    // Белые: Крb3, пешка e2; чёрные: Крc6; ход белых.
+    expect(kpkWins("c4", "c6", "e2", "b")).toBe(true);
+    expect(kpkWins("a4", "c6", "e2", "b")).toBe(false);
+    expect(kpkWins("b3", "c6", "e4", "b")).toBe(false);
+  });
+});
