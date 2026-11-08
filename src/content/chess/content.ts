@@ -9,6 +9,7 @@ import { COURSE_PART } from "./parts/course";
 import { COURSE2_PART } from "./parts/course2";
 import { COURSE3_PART } from "./parts/course3";
 import { COURSE4_PART } from "./parts/course4";
+import { COURSE5_PART } from "./parts/course5";
 import { DID_YOU_KNOW_PART } from "./parts/didYouKnow";
 import { ENCYCLOPEDIA_PART } from "./parts/encyclopedia";
 import { ENDGAME_PART } from "./parts/endgames";
@@ -45,6 +46,7 @@ export const CHESS_PARTS = [
   COURSE2_PART,
   COURSE3_PART,
   COURSE4_PART,
+  COURSE5_PART,
 ] as const;
 
 type PartValue<P> = P extends { ru: infer T } ? T : never;

@@ -17,6 +17,7 @@ const STEPS = [
   { name: "ступень 2", modules: CHESS_RU.course2Modules, lessons: CHESS_RU.course2Lessons },
   { name: "ступень 3", modules: CHESS_RU.course3Modules, lessons: CHESS_RU.course3Lessons },
   { name: "ступень 4", modules: CHESS_RU.course4Modules, lessons: CHESS_RU.course4Lessons },
+  { name: "ступень 5", modules: CHESS_RU.course5Modules, lessons: CHESS_RU.course5Lessons },
 ];
 const allLessons = STEPS.flatMap((s) => s.lessons);
 const lessons = courseLessons(CHESS_RU, allLessons);
@@ -48,7 +49,7 @@ describe("курс: структура", () => {
       ).toEqual(step.lessons.map((l) => l.id));
   });
 
-  it("у каждой ступени свои уроки (c1-…, c2-…, c3-…, c4-…), а id модулей не повторяются между ступенями", () => {
+  it("у каждой ступени свои уроки (c1-…, c2-…, c3-…, c4-…, c5-…), а id модулей не повторяются между ступенями", () => {
     STEPS.forEach((step, i) => {
       expect(step.lessons.length, step.name).toBeGreaterThan(0);
       for (const l of step.lessons) expect(l.id.startsWith(`c${i + 1}-`), l.id).toBe(true);
@@ -180,6 +181,7 @@ describe("курс: узбекская версия", () => {
       ...content.course2Lessons,
       ...content.course3Lessons,
       ...content.course4Lessons,
+      ...content.course5Lessons,
     ]);
     expect(cyrillicPaths(uz)).toEqual([]);
     expect(uz.map((l) => l.exercises.map((e) => e.id))).toEqual(lessons.map((l) => l.exercises.map((e) => e.id)));

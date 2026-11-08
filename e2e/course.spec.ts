@@ -160,6 +160,8 @@ test("курс: «как сыграть лучше» — неверный выб
 test("ступень 2 «Конь»: страница курса, урок двойного шаха засчитывается, карточка в школе", async ({ page }) => {
   await prepare(page);
   await page.goto("/chess");
+  // Сразу видна только текущая ступень; остальные — под «Ещё разделы».
+  await page.locator("[data-more-sections] summary").click();
   await expect(page.locator('a[href="/chess/course-2"]').first()).toBeVisible();
   await page.goto("/chess/course-2");
   await expect(page.getByRole("heading", { level: 1, name: /Ступень 2/ })).toBeVisible();
@@ -189,6 +191,8 @@ test("ступень 2: открытый шах выигрывает ферзя,
 test("ступень 3 «Слон»: тактика — открытое нападение засчитывается", async ({ page }) => {
   await prepare(page);
   await page.goto("/chess");
+  // Сразу видна только текущая ступень; остальные — под «Ещё разделы».
+  await page.locator("[data-more-sections] summary").click();
   await expect(page.locator('a[href="/chess/course-3"]').first()).toBeVisible();
   await page.goto("/chess/course-3");
   await expect(page.getByRole("heading", { level: 1, name: /Ступень 3/ })).toBeVisible();
@@ -216,6 +220,8 @@ test("ступень 3 «Слон»: тактика — открытое нап�
 test("ступень 4 «Ладья»: страница курса, мат слонами Горвица засчитывается", async ({ page }) => {
   await prepare(page);
   await page.goto("/chess");
+  // Сразу видна только текущая ступень; остальные — под «Ещё разделы».
+  await page.locator("[data-more-sections] summary").click();
   await expect(page.locator('a[href="/chess/course-4"]').first()).toBeVisible();
   await page.goto("/chess/course-4");
   await expect(page.getByRole("heading", { level: 1, name: /Ступень 4/ })).toBeVisible();
@@ -253,4 +259,23 @@ test("ступень 4: ловушка пата — слабое превращ�
   await expect(page.getByText(/Почему так/)).toBeVisible();
   const stored = await page.evaluate((key) => JSON.parse(localStorage.getItem(key) ?? "{}").chess ?? {}, KEY);
   expect(stored["c4-study-underpromote"]?.solvedAt).toBeTruthy();
+});
+
+test("ступень 5 «Ферзь»: страница курса, завлечение засчитывается", async ({ page }) => {
+  await prepare(page);
+  await page.goto("/chess");
+  // Сразу видна только текущая ступень; остальные — под «Ещё разделы».
+  await page.locator("[data-more-sections] summary").click();
+  await expect(page.locator('a[href="/chess/course-5"]').first()).toBeVisible();
+  await page.goto("/chess/course-5");
+  await expect(page.getByRole("heading", { level: 1, name: /Ступень 5/ })).toBeVisible();
+  for (const id of ["q-pin", "q-double", "q-decoy"])
+    await expect(page.locator(`[data-course-module="${id}"]`)).toBeVisible();
+  await page.goto("/chess/course-5#c5-decoy-net-exercise-1");
+  await page.locator('[data-choice="c8f8"]').click();
+  await expect(page.getByText("не лучший выбор")).toBeVisible();
+  await page.locator('[data-choice="g6h7"]').click();
+  await expect(page.getByText(/Почему так/)).toBeVisible();
+  const stored = await page.evaluate((key) => JSON.parse(localStorage.getItem(key) ?? "{}").chess ?? {}, KEY);
+  expect(stored["c5-decoy-net-choose"]?.solvedAt).toBeTruthy();
 });
