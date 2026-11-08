@@ -79,6 +79,7 @@ test.describe("oʻzbek tili", () => {
     "/chess/course-2",
     "/chess/course-3",
     "/chess/course-4",
+    "/chess/course-5",
     "/certificate/week/1",
     "/privacy",
   ];

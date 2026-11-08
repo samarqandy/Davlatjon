@@ -5,6 +5,7 @@ import { COURSE_PART } from "@/content/chess/parts/course";
 import { COURSE2_PART } from "@/content/chess/parts/course2";
 import { COURSE3_PART } from "@/content/chess/parts/course3";
 import { COURSE4_PART } from "@/content/chess/parts/course4";
+import { COURSE5_PART } from "@/content/chess/parts/course5";
 import { LEVELS } from "@/content/chess/parts/levels";
 import { PUZZLE_PART } from "@/content/chess/parts/puzzles";
 import { TACTIC_PART } from "@/content/chess/parts/tactics";
@@ -52,6 +53,7 @@ export function ChessSchool({ counts }: { counts: ChessSchoolCounts }) {
   const { course2, course2Lessons } = useChessPart(COURSE2_PART);
   const { course3, course3Lessons } = useChessPart(COURSE3_PART);
   const { course4, course4Lessons } = useChessPart(COURSE4_PART);
+  const { course5, course5Lessons } = useChessPart(COURSE5_PART);
   const state = useStore((s) => s);
   const statuses = levelStatuses(levels, state);
   const rank = hydrated ? currentRank(levels, state) : null;
@@ -73,6 +75,7 @@ export function ChessSchool({ counts }: { counts: ChessSchoolCounts }) {
   const course2List = courseLessons({ levels, tactics }, course2Lessons);
   const course3List = courseLessons({ levels, tactics }, course3Lessons);
   const course4List = courseLessons({ levels, tactics }, course4Lessons);
+  const course5List = courseLessons({ levels, tactics }, course5Lessons);
   const solvedIn = (list: typeof course1List) =>
     hydrated ? list.reduce((n, x) => n + x.exercises.filter((e) => state.chess[e.id]?.solvedAt).length, 0) : 0;
   const totalIn = (list: typeof course1List) => list.reduce((n, x) => n + x.exercises.length, 0);
@@ -84,6 +87,7 @@ export function ChessSchool({ counts }: { counts: ChessSchoolCounts }) {
     { n: 2, list: course2List, href: "/chess/course-2" },
     { n: 3, list: course3List, href: "/chess/course-3" },
     { n: 4, list: course4List, href: "/chess/course-4" },
+    { n: 5, list: course5List, href: "/chess/course-5" },
   ];
   const current = (hydrated && steps.find((st) => firstOpen(st.list) >= 0)) || steps[0];
   const onStep2 = current.n > 1;
@@ -175,6 +179,21 @@ export function ChessSchool({ counts }: { counts: ChessSchoolCounts }) {
             `${totalIn(course4List)} ta mashqdan ${solvedIn(course4List)} tasi`,
           )
         : t(`${course4List.length} уроков`, `${course4List.length} ta dars`),
+    },
+    {
+      href: "/chess/course-5",
+      emoji: "👑",
+      title: course5.title,
+      text: t(
+        "Связка и двойная связка, развязывание, двойной шах и «мельница», отвлечение, завлечение и шедевр Эдварда Ласкера.",
+        "Bogʻlash va qoʻsh bogʻlash, bogʻlashdan chiqish, qoʻsh shoh va «tegirmon», chalgʻitish, jalb qilish va Edvard Laskerning durdonasi.",
+      ),
+      stat: hydrated
+        ? t(
+            `${solvedIn(course5List)} из ${totalIn(course5List)} упражнений`,
+            `${totalIn(course5List)} ta mashqdan ${solvedIn(course5List)} tasi`,
+          )
+        : t(`${course5List.length} уроков`, `${course5List.length} ta dars`),
     },
     {
       href: "/chess/play",
@@ -382,14 +401,13 @@ export function ChessSchool({ counts }: { counts: ChessSchoolCounts }) {
   ];
 
   // Сначала то, с чего ребёнок обычно начинает; остальное — под «Ещё разделы».
+  // Из ступеней курса сразу видна только та, которую ребёнок проходит; остальные — под «Ещё разделы».
   const first = [
-    "/chess/course",
-    "/chess/course-2",
-    "/chess/course-3",
-    "/chess/course-4",
+    courseHref,
     "/chess/play",
     "/chess/puzzles",
     "/chess/secrets",
+    ...steps.map((st) => st.href).filter((href) => href !== courseHref),
   ];
   const ordered = [
     ...first.map((href) => sections.find((x) => x.href === href)!),
