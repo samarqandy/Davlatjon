@@ -1,6 +1,6 @@
 /** Курс «Ферзь»: комбинации проверены перебором chess.js, партии — по записи ходов. */
 import { Chess } from "chess.js";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { matingMoves } from "@/lib/chess";
 
 /** Мат не более чем в n ходов белых, где каждый ход белых — шах. */
@@ -26,6 +26,9 @@ const play = (moves: string) => {
   for (const m of moves.split(" ")) c.move(m);
   return c;
 };
+
+// Перебор вариантов под общей нагрузкой может идти дольше стандартных 5 секунд.
+vi.setConfig({ testTimeout: 30_000 });
 
 describe("курс «Ферзь»: комбинации", () => {
   it("связка: Фxh7# — единственный мат, конь f8 связан", () => {
@@ -70,5 +73,61 @@ describe("курс «Ферзь»: комбинации", () => {
     expect(forcesMate(fen, "g5f7", 4)).toBe(true);
     expect(mateInChecks(fen, 3)).toBe(false);
     expect(forcesMate(fen, "d5g8", 4)).toBe(false);
+  });
+});
+
+describe("курс «Ферзь»: ловля ферзя, атака, жертвы", () => {
+  const replies = (fen: string, first: string) => {
+    const c = new Chess(fen);
+    c.move(first);
+    return c;
+  };
+  it("ловля ферзя: после Сc3 на любой ответ белые забирают ферзя; после Сb4 — Фd4", () => {
+    const c = replies("6k1/5ppp/8/B7/8/1B6/P2P4/qNK5 w - - 0 1", "Bc3");
+    for (const r of c.moves({ verbose: true })) {
+      const d = new Chess(c.fen());
+      d.move(r);
+      const q = d
+        .board()
+        .flat()
+        .find((p) => p?.type === "q" && p.color === "b")!;
+      expect(
+        d.moves({ verbose: true }).some((m) => m.to === q.square),
+        r.san,
+      ).toBe(true);
+    }
+    expect(replies("6k1/5ppp/8/B7/8/1B6/P2P4/qNK5 w - - 0 1", "Bb4").moves()).toContain("Qd4");
+  });
+
+  it("взаимодействие: Фxg7# и Фg7# — единственные маты", () => {
+    expect(matingMoves("5rk1/5ppp/8/8/6Q1/2B5/5PPP/6K1 w - - 0 1")).toEqual(["g4g7"]);
+    expect(matingMoves("5rk1/5p1p/8/7N/3Q4/8/5PPP/6K1 w - - 0 1")).toEqual(["d4g7"]);
+  });
+
+  it("нерокировавшийся король: Лe4+ — мат в 2, король идёт только на d8", () => {
+    const fen = "4k1B1/3p1pr1/8/7n/1Q5R/8/1K6/8 w - - 0 1";
+    expect(forcesMate(fen, "h4e4", 2)).toBe(true);
+    expect(replies(fen, "Re4+").moves()).toEqual(["Kd8"]);
+  });
+
+  it("жертвы на f7 и тихий ход: верные ходы матуют в 2, неверные — нет", () => {
+    const two = (fen: string, first: string) => {
+      const c = new Chess(fen);
+      c.move({ from: first.slice(0, 2), to: first.slice(2, 4) });
+      return (
+        c.moves().length > 0 &&
+        c.moves({ verbose: true }).every((r) => {
+          const e = new Chess(c.fen());
+          e.move(r);
+          return matingMoves(e.fen()).length > 0;
+        })
+      );
+    };
+    expect(two("6k1/3rRpp1/7p/8/8/8/QK3PPP/8 w - - 0 1", "a2f7")).toBe(true);
+    expect(two("6k1/3rRpp1/7p/8/8/8/QK3PPP/8 w - - 0 1", "e7f7")).toBe(false);
+    expect(two("6k1/b4p1p/1R4p1/6b1/2B2Q2/8/5P2/6K1 w - - 0 1", "f4f7")).toBe(true);
+    expect(two("6k1/b4p1p/1R4p1/6b1/2B2Q2/8/5P2/6K1 w - - 0 1", "b6g6")).toBe(false);
+    expect(two("3B3k/6pp/8/2b5/8/1Q6/K6P/B7 w - - 0 1", "b3f7")).toBe(true);
+    expect(two("3B3k/6pp/8/2b5/8/1Q6/K6P/B7 w - - 0 1", "b3g8")).toBe(false);
   });
 });

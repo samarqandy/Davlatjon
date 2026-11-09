@@ -1,6 +1,6 @@
 /** Курс «Слон»: комбинации «мат в 2 хода» и открытое нападение — объяснения проверены перебором chess.js. */
 import { Chess } from "chess.js";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { matingMoves } from "@/lib/chess";
 
 const uci = (m: { from: string; to: string; promotion?: string }) => `${m.from}${m.to}${m.promotion ?? ""}`;
@@ -24,6 +24,9 @@ const firstMovesMatingInTwo = (fen: string) =>
     .moves({ verbose: true })
     .map(uci)
     .filter((u) => mateInTwo(fen, u));
+
+// Перебор вариантов под общей нагрузкой может идти дольше стандартных 5 секунд.
+vi.setConfig({ testTimeout: 30_000 });
 
 describe("курс «Слон»: мат в 2 хода", () => {
   it("связка: Фh6! матует, Сxh7 — нет; g7 не бьёт h6", () => {
