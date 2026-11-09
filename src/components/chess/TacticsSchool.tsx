@@ -15,6 +15,7 @@ import { TACTIC_PART } from "@/content/chess/parts/tactics";
 import { setHash, useHash } from "@/lib/useHash";
 import { ChessExerciseView } from "./ChessExercises";
 import { ChessLesson } from "./ChessLesson";
+import { ArrowLeft, BookOpen, Library, Target } from "lucide-react";
 
 export type Tab = "lesson" | "exercises" | "dictionary";
 
@@ -170,23 +171,26 @@ export function TopicView({
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setHash("#")}
-        className="inline-flex min-h-11 items-center gap-1 text-sm font-extrabold text-brand hover:underline"
-      >
-        {backLabel}
-      </button>
-      <header className="rounded-[2rem] bg-linear-to-br from-[#3b2f23] via-[#5b4632] to-[#7c5a33] p-5 text-white shadow-lift sm:p-7">
-        <p className="text-4xl" aria-hidden>
-          {topic.emoji}
-        </p>
-        {kicker && <p className="text-sm font-extrabold tracking-wide text-white/80 uppercase">{kicker}</p>}
-        <h1 className="text-3xl leading-tight font-black sm:text-4xl">{topic.title}</h1>
-        <p className="mt-2 text-lg text-white/90">{topic.idea}</p>
-        <div className="mt-4 flex items-center gap-3">
-          <ProgressBar value={count} max={total} className="flex-1 bg-white/20" />
-          <span className="text-sm font-extrabold whitespace-nowrap">{`${count} / ${total}`}</span>
+      {/* Компактная шапка урока: задача, а не заголовок, — главное на экране (на телефоне доска сразу видна). */}
+      <header className="flex items-center gap-3 rounded-3xl bg-linear-to-br from-[#3b2f23] to-[#6b4f33] p-3 text-white shadow-card sm:p-4">
+        <button
+          type="button"
+          onClick={() => setHash("#")}
+          aria-label={backLabel.replace(/^←\s*/, "")}
+          className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-white/12 ring-1 ring-white/25 transition hover:bg-white/20"
+        >
+          <ArrowLeft className="h-5 w-5" aria-hidden />
+        </button>
+        <div className="min-w-0 flex-1">
+          {kicker && <p className="text-xs font-extrabold tracking-wide text-white/75 uppercase">{kicker}</p>}
+          <h1 className="truncate text-xl leading-tight font-black sm:text-2xl">
+            <span aria-hidden>{topic.emoji} </span>
+            {topic.title}
+          </h1>
+          <div className="mt-1.5 flex items-center gap-2">
+            <ProgressBar value={count} max={total} className="flex-1 bg-white/20" />
+            <span className="text-xs font-extrabold whitespace-nowrap">{`${count} / ${total}`}</span>
+          </div>
         </div>
       </header>
 
@@ -196,15 +200,16 @@ export function TopicView({
       >
         {(
           [
-            ["lesson", t("📖 Урок", "📖 Dars"), `#${topic.id}`],
+            ["lesson", t("Урок", "Dars"), `#${topic.id}`, BookOpen],
             [
               "exercises",
-              t(`🎯 Упражнения ${count}/${total}`, `🎯 Mashqlar ${count}/${total}`),
+              t(`Упражнения ${count}/${total}`, `Mashqlar ${count}/${total}`),
               `#${topic.id}-exercises`,
+              Target,
             ],
-            ["dictionary", t("📚 Словарик", "📚 Lugʻat"), `#${topic.id}-dictionary`],
+            ["dictionary", t("Словарик", "Lugʻat"), `#${topic.id}-dictionary`, Library],
           ] as const
-        ).map(([id, label, href]) => (
+        ).map(([id, label, href, Icon]) => (
           <button
             key={id}
             type="button"
@@ -214,14 +219,17 @@ export function TopicView({
             }}
             aria-current={tab === id ? "page" : undefined}
             className={cn(
-              "rounded-xl px-2 py-2.5 text-sm leading-tight font-extrabold transition sm:px-4 sm:text-base",
+              "flex items-center justify-center gap-1.5 rounded-xl px-2 py-2 text-sm leading-tight font-extrabold transition sm:px-4 sm:text-base",
               tab === id ? "bg-brand text-white" : "text-muted hover:bg-brand-soft hover:text-brand-dark",
             )}
           >
+            <Icon className="hidden h-4 w-4 shrink-0 sm:block" aria-hidden />
             {label}
           </button>
         ))}
       </nav>
+
+      {tab === "lesson" && <p className="text-lg font-bold text-pretty">{topic.idea}</p>}
 
       {tab === "lesson" && (
         <ChessLesson levelId={`${lessonKeyPrefix}${topic.id}`} cards={topic.lesson} onDone={() => goExercise(0)} />
@@ -229,8 +237,9 @@ export function TopicView({
 
       {tab === "exercises" && (
         <section className="space-y-4" aria-label={t("Упражнения", "Mashqlar")}>
+          {/* Номера упражнений нужны, только если их несколько: одна кнопка «1» лишь отодвигала доску вниз. */}
           <div id="exercises-top" className="flex scroll-mt-20 flex-wrap gap-1.5">
-            {topic.exercises.map((e, i) => (
+            {(total > 1 ? topic.exercises : []).map((e, i) => (
               <button
                 key={e.id}
                 type="button"
