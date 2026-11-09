@@ -18,6 +18,14 @@
   --color-mint-soft: #e3f8ef;
   --color-rose: #e11d48;
 
+  /* Смысловые цвета (DESIGN.md): в новом коде — они, а не «mint/sun/rose» напрямую. */
+  --color-success: #10b981;
+  --color-success-soft: #e3f8ef;
+  --color-warning: #f59e0b;
+  --color-warning-soft: #fff4d6;
+  --color-danger: #e11d48;
+  --color-info: #4f46e5;
+
   --shadow-card: 0 1px 2px rgb(29 33 64 / 0.06), 0 8px 24px -12px rgb(29 33 64 / 0.18);
   --shadow-lift: 0 2px 4px rgb(29 33 64 / 0.08), 0 16px 32px -16px rgb(29 33 64 / 0.28);
 
@@ -99,6 +107,25 @@
   html {
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
+  }
+
+  /*
+   * Возрастные режимы (DESIGN.md, html[data-age] ставит скрипт в <head>):
+   * kid (до 7 лет) — всё на ~6 % крупнее: текст и зоны нажатия; teen (11+) — строже: меньше скруглений,
+   * без клетчатого фона и детских украшений (элементы с классом .deco).
+   */
+  html[data-age="kid"] {
+    font-size: 106.25%;
+  }
+  html[data-age="teen"] {
+    --radius-2xl: 0.75rem;
+    --radius-3xl: 1rem;
+  }
+  html[data-age="teen"] body {
+    background-image: none;
+  }
+  html[data-age="teen"] .deco {
+    display: none;
   }
 
   body {

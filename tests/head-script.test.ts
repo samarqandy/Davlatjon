@@ -20,7 +20,7 @@ function run(settings: Record<string, unknown>, pathname: string, served: "ru" |
     { documentElement: html },
     () => 0,
   );
-  return { hidden: classes.has("i18n-wait"), lang: html.lang, motion: attrs["data-motion"] };
+  return { hidden: classes.has("i18n-wait"), lang: html.lang, motion: attrs["data-motion"], age: attrs["data-age"] };
 }
 
 describe("скрипт в <head>", () => {
@@ -53,5 +53,11 @@ describe("скрипт в <head>", () => {
     expect(run({ animations: false }, "/").motion).toBe("off");
     expect(run({ animations: false, lang: "uz" }, "/chess", "uz").motion).toBe("off");
     expect(run({}, "/").motion).toBeUndefined();
+  });
+
+  it("возрастной режим ставится до отрисовки и совпадает с ageMode()", async () => {
+    const { ageMode } = await import("@/lib/ageMode");
+    for (const age of [undefined, 5, 7, 8, 10, 11, 15])
+      expect(run(age === undefined ? {} : { age }, "/").age, String(age)).toBe(ageMode(age));
   });
 });
