@@ -9,6 +9,15 @@ import { formatMinutes } from "@/lib/plural";
 import { useHydrated, useStore } from "@/lib/store";
 import { useChessPart } from "@/lib/useChess";
 import { LEVELS } from "@/content/chess/parts/levels";
+import { ParentWeekCard } from "./ParentWeekCard";
+import { useCourseIds } from "@/components/chess/CourseDiploma";
+import { courseEarnedAt } from "@/lib/certificate";
+import type { CourseStep } from "@/lib/course/step";
+import { STEP_1 } from "@/lib/course/step1";
+import { STEP_2 } from "@/lib/course/step2";
+import { STEP_3 } from "@/lib/course/step3";
+import { STEP_4 } from "@/lib/course/step4";
+import { STEP_5 } from "@/lib/course/step5";
 
 /** Неделя для обзора родителя — без условий и ответов (собирается на сервере, на обоих языках). */
 export interface ParentWeek {
@@ -59,6 +68,7 @@ export function ParentDashboard({ weeks: both }: { weeks: Both<ParentWeek[]> }) 
 
   return (
     <div className="space-y-6">
+      <ParentWeekCard />
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
         <Card className="p-5 sm:p-6">
           <h1 className="text-2xl font-black">{t("Здравствуйте! 👋", "Assalomu alaykum! 👋")}</h1>
@@ -244,6 +254,37 @@ function ChessSummary() {
       <ButtonLink href="/parent/chess" variant="soft" size="sm">
         {t("Ответы и прогресс →", "Javoblar va natijalar →")}
       </ButtonLink>
+      <div className="w-full" data-parent-course>
+        <h3 className="mt-2 font-extrabold">{t("Курс по ступеням", "Bosqichma-bosqich kurs")}</h3>
+        <ul className="mt-2 grid gap-2 sm:grid-cols-2">
+          {[STEP_1, STEP_2, STEP_3, STEP_4, STEP_5].map((step) => (
+            <CourseStepRow key={step.href} step={step} />
+          ))}
+        </ul>
+      </div>
     </Card>
+  );
+}
+
+/** Ступень курса у родителя: сколько упражнений решено и получен ли диплом. */
+function CourseStepRow({ step }: { step: CourseStep }) {
+  const t = useT();
+  const hydrated = useHydrated();
+  const { all, final } = useCourseIds(step);
+  const solved = useStore((s) => (hydrated ? all.filter((id) => s.chess[id]?.solvedAt).length : 0));
+  const diploma = useStore((s) => hydrated && final.length > 0 && courseEarnedAt(all, final, s) !== null);
+  return (
+    <li className="rounded-2xl bg-paper px-3 py-2">
+      <p className="flex items-center justify-between gap-2 text-sm font-extrabold">
+        <span>{t(`Ступень ${step.n} «${step.award.ru}»`, `${step.n}-bosqich «${step.award.uz}»`)}</span>
+        {diploma && <span className="text-[#7a4b00]">{t("🎓 диплом", "🎓 diplom")}</span>}
+      </p>
+      <div className="mt-1 flex items-center gap-2">
+        <ProgressBar value={solved} max={all.length} className="flex-1" />
+        <span className="text-xs font-extrabold whitespace-nowrap tabular-nums">
+          {solved}/{all.length}
+        </span>
+      </div>
+    </li>
   );
 }
