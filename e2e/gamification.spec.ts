@@ -308,7 +308,7 @@ test("новая карточка: плашка со ссылкой, когда 
   await expect(page).toHaveURL(/\/chess\/collection$/);
 });
 
-test("«Мои успехи»: уровень опыта, дипломы ступеней, награды и коллекция в одном месте", async ({ page }) => {
+test("«Мои успехи»: уровень опыта, дипломы всех пяти ступеней, награды и коллекция в одном месте", async ({ page }) => {
   const done = Object.fromEntries(["w1d2t1", "w1d2t2", "w1d2t3", "w1d2t4"].map((id) => [id, solvedTask]));
   await prepare(page, { tasks: done }, "ru");
   await page.goto("/achievements");
@@ -317,7 +317,7 @@ test("«Мои успехи»: уровень опыта, дипломы сту�
   await expect(page.locator("[data-achievements-level]")).toHaveAttribute("data-achievements-level", "2");
   await expect(page.getByText("60 XP")).toBeVisible();
   await expect(page.locator("[data-today]")).toBeVisible();
-  await expect(page.locator("[data-diploma-card]")).toHaveCount(4);
+  await expect(page.locator("[data-diploma-card]")).toHaveCount(5);
   await expect(page.locator('a[href="/chess/awards"]')).toBeVisible();
   await expect(page.getByText("Открыто 2 из 23")).toBeVisible();
 });

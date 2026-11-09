@@ -92,3 +92,17 @@ test("диплом ступени «Слон»: открывается посл�
   await expect(sheet).toContainText("Слон");
   await expect(page.locator("[data-certificate-name]")).toHaveText("Анна");
 });
+
+test("диплом ступени «Ферзь»: открывается после итогового теста ступени 5", async ({ page }) => {
+  const step5 = [
+    ...new Set(courseLessons(CHESS_RU, CHESS_RU.course5Lessons).flatMap((l) => l.exercises.map((e) => e.id))),
+  ];
+  await prepare(page, step5, "Анна");
+  await page.goto("/chess/course-5");
+  await expect(page.locator('[data-diploma-card="earned"]')).toBeVisible();
+  await page.goto("/chess/course-5/diploma");
+  const sheet = page.locator('[data-certificate="earned"]');
+  await expect(sheet).toContainText("Диплом");
+  await expect(sheet).toContainText("Ферзь");
+  await expect(page.locator("[data-certificate-name]")).toHaveText("Анна");
+});
