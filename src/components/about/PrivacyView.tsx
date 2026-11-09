@@ -70,8 +70,12 @@ export function PrivacyView({ contact }: { contact: string }) {
       title: t("Чего мы не делаем", "Nimalarni qilmaymiz"),
       body: [
         t(
-          "Не показываем рекламу. Не подключаем аналитику и чужие трекеры. Не продаём и не передаём данные для рекламы. Не просим настоящее имя, фото, адрес или телефон ребёнка. Озвучку задач записали заранее с помощью сервиса синтеза речи — в него не отправляются никакие данные пользователей.",
-          "Reklama koʻrsatmaymiz. Tahlil va begona kuzatuvchilarni ulamaymiz. Maʼlumotlarni reklama uchun sotmaymiz va bermaymiz. Bolaning haqiqiy ismi, rasmi, manzili yoki telefonini soʻramaymiz. Masalalar ovozini oldindan nutq sintezi xizmati bilan yozib qoʻyganmiz — unga foydalanuvchilarning hech qanday maʼlumoti yuborilmaydi.",
+          "Не показываем рекламу. Не подключаем рекламные и чужие трекеры. Не продаём и не передаём данные для рекламы. Не просим настоящее имя, фото, адрес или телефон ребёнка. Озвучку задач записали заранее с помощью сервиса синтеза речи — в него не отправляются никакие данные пользователей.",
+          "Reklama koʻrsatmaymiz. Reklama va begona kuzatuvchilarni ulamaymiz. Maʼlumotlarni reklama uchun sotmaymiz va bermaymiz. Bolaning haqiqiy ismi, rasmi, manzili yoki telefonini soʻramaymiz. Masalalar ovozini oldindan nutq sintezi xizmati bilan yozib qoʻyganmiz — unga foydalanuvchilarning hech qanday maʼlumoti yuborilmaydi.",
+        ),
+        t(
+          "Чтобы улучшать занятия, мы ведём обезличенную статистику Vercel Web Analytics: без cookie, без имени и без ответов ребёнка. Она считает только просмотры страниц и сколько раз начали занятие или решили задачу.",
+          "Mashgʻulotlarni yaxshilash uchun Vercel Web Analytics orqali shaxsiy boʻlmagan statistika yuritamiz: cookiesiz, ismsiz va bolaning javoblarisiz. U faqat sahifa koʻrishlarini hamda mashgʻulot necha marta boshlangani yoki masala necha marta yechilganini sanaydi.",
         ),
         t(
           "Технически сайт работает на хостинге Vercel: как и у любого сайта, там остаются обычные служебные журналы запросов (адрес, время).",
@@ -121,7 +125,7 @@ export function PrivacyView({ contact }: { contact: string }) {
             <b>{contact}</b>.{" "}
           </>
         ) : null}
-        {t("Обновлено: 10 октября 2026.", "Yangilangan: 2026-yil 10-oktabr.")}{" "}
+        {t("Обновлено: 9 ноября 2026.", "Yangilangan: 2026-yil 9-noyabr.")}{" "}
         <Link href="/about" className="font-extrabold text-brand hover:underline">
           {t("О платформе", "Platforma haqida")}
         </Link>

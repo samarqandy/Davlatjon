@@ -27,6 +27,7 @@ import { useChessPart } from "@/lib/useChess";
 import { xpTotal } from "@/lib/xp";
 import { ChessBoard, PieceIcon } from "./ChessBoard";
 import { DidYouKnow } from "./DidYouKnow";
+import { Check, ChevronDown, Dumbbell, Lock, Play, Route } from "lucide-react";
 
 /**
  * Сколько всего в разделах, куда ведут карточки школы. Считает сервер (app/[lang]/chess/page.tsx):
@@ -57,8 +58,6 @@ export function ChessSchool({ counts }: { counts: ChessSchoolCounts }) {
   const state = useStore((s) => s);
   const statuses = levelStatuses(levels, state);
   const rank = hydrated ? currentRank(levels, state) : null;
-  const solved = statuses.reduce((s, x) => s + x.solved, 0);
-  const total = statuses.reduce((s, x) => s + x.total, 0);
   // Словарик шахматиста: все термины всех уровней — на языке интерфейса.
   const glossary = levels.flatMap((level) => level.terms.map((term) => ({ ...term, level })));
   const profile = useAgeProfile();
@@ -108,16 +107,6 @@ export function ChessSchool({ counts }: { counts: ChessSchoolCounts }) {
   const reviewable = hydrated
     ? state.chessGames.filter((g) => (g.mode === "robot" || g.mode === "two") && (g.ucis?.length ?? 0) > 1).length
     : 0;
-
-  // «Продолжить»: первый открытый уровень, где ещё есть что решать, и первое нерешённое упражнение в нём.
-  const nextIndex = hydrated ? statuses.findIndex((s) => s.unlocked && !s.passed) : -1;
-  const nextLevel = nextIndex >= 0 ? levels[nextIndex] : null;
-  const nextExercise = nextLevel ? nextLevel.exercises.findIndex((e) => !state.chess[e.id]?.solvedAt) : -1;
-  const continueHref = nextLevel
-    ? `${chessLevelHref(nextLevel.id)}${
-        statuses[nextIndex].solved > 0 && nextExercise >= 0 ? `#exercise-${nextExercise + 1}` : ""
-      }`
-    : null;
 
   const sections = [
     {
@@ -400,331 +389,256 @@ export function ChessSchool({ counts }: { counts: ChessSchoolCounts }) {
     },
   ];
 
-  // Сначала то, с чего ребёнок обычно начинает; остальное — под «Ещё разделы».
-  // Из ступеней курса сразу видна только та, которую ребёнок проходит; остальные — под «Ещё разделы».
-  const first = [
-    courseHref,
-    "/chess/play",
-    "/chess/puzzles",
-    "/chess/secrets",
-    ...steps.map((st) => st.href).filter((href) => href !== courseHref),
-  ];
-  const ordered = [
-    ...first.map((href) => sections.find((x) => x.href === href)!),
-    ...sections.filter((x) => !first.includes(x.href)),
+  // Учиться — одна дорога: ступени курса. Тренироваться — всё остальное; первые три раздела видны сразу.
+  const stepTitles = [course1.title, course2.title, course3.title, course4.title, course5.title];
+  const practiceFirst = ["/chess/play", "/chess/puzzles", "/chess/tactics"];
+  const practice = sections.filter((x) => !steps.some((st) => st.href === x.href));
+  const orderedPractice = [
+    ...practiceFirst.map((href) => practice.find((x) => x.href === href)!),
+    ...practice.filter((x) => !practiceFirst.includes(x.href)),
   ];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       <ChildNameBanner />
-      <section className="relative overflow-hidden rounded-[2rem] bg-linear-to-br from-[#3b2f23] via-[#5b4632] to-[#7c5a33] p-6 text-white shadow-lift sm:p-8">
-        <div className="absolute -top-6 -right-4 flex gap-2 opacity-20" aria-hidden>
-          <PieceIcon piece="bN" className="h-40 w-40" />
+      <header className="flex flex-wrap items-center gap-3">
+        <div className="min-w-0 flex-1">
+          <p className="font-bold text-muted">
+            {hydrated && state.settings.childName ? t("Привет, {name}!", "Salom, {name}!") : t("Привет!", "Salom!")}
+          </p>
+          <h1 className="text-3xl leading-tight font-black">{school.title}</h1>
         </div>
-        <p className="text-lg font-bold text-white/80">
-          {hydrated && state.settings.childName
-            ? t("♞ Привет, {name}!", "♞ Salom, {name}!")
-            : t("♞ Привет!", "♞ Salom!")}
-        </p>
-        <h1 className="mt-1 text-3xl leading-tight font-black sm:text-4xl">{school.title}</h1>
-        <p className="mt-1 text-xl font-bold text-white/85">{school.subtitle}</p>
-        <p className="mt-3 max-w-2xl text-white/85">{school.about}</p>
-        <div className="mt-5 flex flex-wrap items-center gap-4 rounded-3xl bg-white/12 p-4 ring-1 ring-white/25">
-          {rank ? (
-            <>
-              <PieceIcon piece={rank.piece} className="h-14 w-14 rounded-2xl bg-[#f0d9b5] p-1" />
-              <div>
-                <p className="text-sm font-extrabold tracking-wide text-white/85 uppercase">
-                  {t("Твоё звание", "Sening unvoning")}
-                </p>
-                {lang === "uz" ? (
-                  <p className="text-2xl font-black">{rank.name}</p>
-                ) : (
-                  <p className="text-2xl font-black">
-                    {rank.name} <span className="text-base font-bold text-white/85">· {rank.uz}</span>
-                  </p>
-                )}
-              </div>
-            </>
-          ) : (
-            <p className="text-lg font-bold">
-              {t("Звания пока нет — начни с уровня «Пешка»!", "Hozircha unvoning yoʻq — «Piyoda» darajasidan boshla!")}
-            </p>
-          )}
-          <div className="ml-auto min-w-48 flex-1 sm:max-w-64">
-            <p className="text-sm font-bold text-white/80">
-              {t(
-                `Уровни: решено ${hydrated ? solved : 0} из ${total}`,
-                `Darajalar: ${total} tadan ${hydrated ? solved : 0} tasi yechildi`,
-              )}
-            </p>
-            <ProgressBar value={hydrated ? solved : 0} max={total} className="mt-1 bg-white/20" />
+        {rank && (
+          <div className="flex items-center gap-2 rounded-2xl bg-white px-3 py-2 shadow-card">
+            <PieceIcon piece={rank.piece} className="h-10 w-10 rounded-xl bg-[#f0d9b5] p-0.5" />
+            <div>
+              <p className="text-xs font-extrabold tracking-wide text-muted uppercase">
+                {t("Твоё звание", "Sening unvoning")}
+              </p>
+              <p className="leading-tight font-black">{rank.name}</p>
+            </div>
           </div>
-        </div>
-      </section>
+        )}
+      </header>
+
       {courseLesson && (
         <Link
           href={`${courseHref}#${courseLesson.id}`}
           data-course-continue
-          className="flex items-center gap-4 rounded-[2rem] bg-white p-4 shadow-lift ring-2 ring-brand/30 transition hover:-translate-y-0.5 sm:p-5"
+          className="block rounded-[2rem] bg-linear-to-br from-[#3b2f23] to-[#6b4f33] p-5 text-white shadow-lift transition hover:-translate-y-0.5 sm:p-6"
         >
-          <span className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-brand-soft text-4xl" aria-hidden>
-            🪜
+          <span className="flex items-center gap-2 text-sm font-extrabold tracking-wide text-white/80 uppercase">
+            <Route className="h-4 w-4" aria-hidden />
+            {t("Следующий шаг", "Keyingi qadam")}
           </span>
-          <span className="min-w-0 flex-1">
-            <span className="block text-sm font-extrabold tracking-wide text-muted uppercase">
-              {t(
-                `${onStep2 ? `Ступень ${current.n}` : "Курс"} · урок ${courseNext + 1} из ${course.length}`,
-                `${onStep2 ? `${current.n}-bosqich` : "Kurs"} · ${course.length} tadan ${courseNext + 1}-dars`,
-              )}
-            </span>
-            <span className="block text-xl leading-tight font-black">{courseLesson.title}</span>
-            <span className="mt-1 block">
-              <ProgressBar value={courseSolved} max={courseTotal} />
-            </span>
+          <span className="mt-2 block text-sm font-bold text-white/80">
+            {t(
+              `${onStep2 ? `Ступень ${current.n}` : "Курс"} · урок ${courseNext + 1} из ${course.length}`,
+              `${onStep2 ? `${current.n}-bosqich` : "Kurs"} · ${course.length} tadan ${courseNext + 1}-dars`,
+            )}
           </span>
-          <span
-            aria-hidden
-            className="shrink-0 rounded-2xl bg-sun px-4 py-3 text-lg font-black text-ink shadow-[0_4px_0_0_#b45309]"
-          >
-            {courseSolved > 0 ? t("Дальше ▶", "Davom ▶") : t("Начать ▶", "Boshlash ▶")}
-          </span>
-        </Link>
-      )}
-      {nextLevel && continueHref && (
-        <Link
-          href={continueHref}
-          data-chess-continue
-          className="flex items-center gap-4 rounded-[2rem] bg-white p-4 shadow-lift ring-2 ring-brand/30 transition hover:-translate-y-0.5 sm:p-5"
-        >
-          <PieceIcon piece={nextLevel.piece} className="h-16 w-16 shrink-0 rounded-2xl bg-[#f0d9b5] p-1" />
-          <span className="min-w-0 flex-1">
-            <span className="block text-sm font-extrabold tracking-wide text-muted uppercase">
-              {statuses[nextIndex].solved > 0 ? t("Продолжим", "Davom etamiz") : t("Начнём", "Boshlaymiz")}
+          <span className="mt-1 block text-2xl leading-tight font-black sm:text-3xl">{courseLesson.title}</span>
+          <span className="mt-4 flex items-center gap-4">
+            <ProgressBar value={courseSolved} max={courseTotal} className="flex-1 bg-white/20" />
+            <span className="inline-flex shrink-0 items-center gap-2 rounded-2xl bg-sun px-5 py-3 text-lg font-black text-ink shadow-[0_4px_0_0_#b45309]">
+              <Play className="h-5 w-5 fill-current" aria-hidden />
+              {courseSolved > 0 ? t("Дальше", "Davom") : t("Начать", "Boshlash")}
             </span>
-            <span className="block text-xl leading-tight font-black">
-              {t(`Уровень ${nextLevel.order}. ${nextLevel.name}`, `${nextLevel.order}-daraja. ${nextLevel.name}`)}
-            </span>
-            <span className="mt-1 block">
-              <ProgressBar value={statuses[nextIndex].solved} max={statuses[nextIndex].total} />
-            </span>
-          </span>
-          <span
-            aria-hidden
-            className="shrink-0 rounded-2xl bg-white px-4 py-3 text-lg font-black text-brand-dark ring-2 ring-brand/30"
-          >
-            ▶
           </span>
         </Link>
       )}
 
       <TodayCard />
 
-      <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]" aria-labelledby="daily-home">
-        <div>
-          <h2 id="daily-home" className="mb-3 text-2xl font-black">
-            {t("Уровни и звания", "Darajalar va unvonlar")}
-          </h2>
-          <ol className="grid gap-3 sm:grid-cols-2">
-            {levels.map((level, i) => {
-              const st = statuses[i];
-              const open = !hydrated || st.unlocked;
-              const inner = (
-                <>
-                  <div className="flex items-center gap-3">
-                    <PieceIcon
-                      piece={level.piece}
-                      className={cn("h-16 w-16 shrink-0 rounded-2xl bg-[#f0d9b5] p-1", !open && "opacity-40 grayscale")}
-                    />
-                    <div className="min-w-0">
-                      <p className="text-xs font-extrabold tracking-wide text-muted uppercase">
-                        {t(`Уровень ${level.order}`, `${level.order}-daraja`)} · {"⭐".repeat(level.order)}
-                      </p>
-                      <p className="text-xl font-black">{level.name}</p>
-                      {/* По-узбекски название уровня уже узбекское — подпись с ним нужна только русскому тексту. */}
-                      {lang === "ru" && (
-                        <p lang="uz" className="text-sm font-bold text-muted">
-                          {level.uz}
-                        </p>
-                      )}
-                    </div>
-                    <span
-                      className={cn(
-                        "ml-auto shrink-0 rounded-full px-2.5 py-1 text-xs font-extrabold",
-                        hydrated && st.passed
-                          ? "bg-sun-soft text-[#7a4b00]"
-                          : open
-                            ? "bg-brand-soft text-brand-dark"
-                            : "bg-line/60 text-muted",
-                      )}
-                    >
-                      {hydrated && st.passed
-                        ? t("🏅 звание", "🏅 unvon")
-                        : open
-                          ? t("открыт", "ochiq")
-                          : t("🔒 закрыт", "🔒 yopiq")}
-                    </span>
-                  </div>
-                  {/* Закрытый уровень — короткой карточкой: на телефоне длинный список закрытых уровней прятал всё ниже. */}
-                  {open && (
-                    <>
-                      <p className="mt-3 font-bold">{level.title}</p>
-                      <p className="mt-1 text-sm text-muted">{level.goal}</p>
-                      {hydrated && open && i > 0 && !statuses[i - 1].passed && (
-                        <p className="mt-1 text-xs font-bold text-muted">
-                          {t(
-                            `Звание «${levels[i - 1].name}» — после всех её упражнений.`,
-                            `«${levels[i - 1].name}» unvoni — hamma mashqlar yechilgach.`,
-                          )}
-                        </p>
-                      )}
-                      <div className="mt-3 flex items-center gap-2">
-                        <ProgressBar value={hydrated ? st.solved : 0} max={st.total} className="flex-1" />
-                        <span className="text-xs font-extrabold whitespace-nowrap text-muted">
-                          {t(`${hydrated ? st.solved : 0} из ${st.total}`, `${hydrated ? st.solved : 0} / ${st.total}`)}
-                        </span>
-                      </div>
-                    </>
+      <section aria-labelledby="learn-path">
+        <h2 id="learn-path" className="mb-3 flex items-center gap-2 text-2xl font-black">
+          <Route className="h-6 w-6 text-brand" aria-hidden />
+          {t("Учиться: ступени курса", "Oʻrganish: kurs bosqichlari")}
+        </h2>
+        <ol className="grid gap-2" data-learn-path>
+          {steps.map((st, i) => {
+            const done = hydrated && firstOpen(st.list) < 0;
+            const isCurrent = st.href === courseHref;
+            return (
+              <li key={st.href}>
+                <Link
+                  href={st.href}
+                  aria-current={isCurrent ? "step" : undefined}
+                  className={cn(
+                    "flex items-center gap-3 rounded-2xl bg-white p-3 shadow-card transition hover:-translate-y-0.5",
+                    isCurrent && "ring-2 ring-brand",
                   )}
-                </>
-              );
-              return (
-                <li key={level.id}>
-                  {open ? (
-                    <Link
-                      href={chessLevelHref(level.id)}
-                      className="block h-full rounded-3xl border-2 border-transparent bg-white p-4 shadow-card transition hover:-translate-y-0.5 hover:border-brand/30"
-                    >
-                      {inner}
-                    </Link>
-                  ) : (
-                    <div
-                      className="h-full rounded-3xl border-2 border-dashed border-line bg-white/70 p-4"
-                      aria-disabled
-                    >
-                      {inner}
-                      <p className="mt-2 text-xs font-bold text-muted">
-                        {t(
-                          `Откроется после звания «${levels[i - 1]?.name}».`,
-                          `«${levels[i - 1]?.name}» unvonidan keyin ochiladi.`,
-                        )}
-                      </p>
-                    </div>
-                  )}
-                </li>
-              );
-            })}
-          </ol>
-        </div>
-        <aside className="space-y-4">
-          <DidYouKnow />
-          <Link
-            href="/chess/puzzles#daily"
-            className="block rounded-3xl bg-white p-4 shadow-card transition hover:-translate-y-0.5"
-          >
-            <p className="text-xs font-extrabold tracking-wide text-muted uppercase">
-              {t("📅 Задача дня", "📅 Kun masalasi")}
-            </p>
-            <p className="text-lg font-black">{daily.title}</p>
-            <p className="mb-2 text-xs font-bold text-muted">
-              {"⭐".repeat(daily.stars)} ·{" "}
-              {daily.fen.split(" ")[1] === "w" ? t("ходят белые", "oqlar yuradi") : t("ходят чёрные", "qoralar yuradi")}
-              {hydrated && state.chessPuzzles[daily.id]?.solvedAt ? " · ✅" : ""}
-            </p>
-            <ChessBoard
-              id="hub-daily"
-              position={daily.fen}
-              orientation={daily.fen.split(" ")[1] === "w" ? "white" : "black"}
-              maxWidth={280}
-              className="!mx-0"
-            />
-          </Link>
-          <div className="rounded-3xl bg-white p-4 shadow-card">
-            <h2 className="text-lg font-black">{t("🧭 Как заниматься", "🧭 Qanday shugʻullanamiz")}</h2>
-            <ul className="mt-2 space-y-1.5 text-sm">
-              <li>
-                {t("📖 Прочитай урок уровня и понажимай на фигуры.", "📖 Daraja darsini oʻqi va donalarni bosib koʻr.")}
-              </li>
-              <li>
-                🖨{" "}
-                <Link href="/chess/print" className="font-extrabold text-brand hover:underline">
-                  {t("Распечатай задачи", "Masalalarni chop et")}
-                </Link>{" "}
-                {t("— решай на бумаге.", "— qogʻozda yech.")}
-              </li>
-              <li>
-                {t(
-                  "🎯 Реши упражнения — получишь звание и следующий уровень.",
-                  "🎯 Mashqlarni yech — unvon va keyingi darajani olasan.",
-                )}
-              </li>
-              <li>
-                {t(
-                  `🤖 Сыграй с роботом «${robotName}» — он тебе по силам.`,
-                  `🤖 «${robotName}» roboti bilan oʻyna — u aynan sening darajangda.`,
-                )}
-              </li>
-              <li>
-                {t(
-                  "🏛️ Разбери знаменитую партию — там самые красивые идеи.",
-                  "🏛️ Mashhur partiyani koʻrib chiq — eng chiroyli gʻoyalar oʻsha yerda.",
-                )}
-              </li>
-              <li>
-                {t(
-                  "♟ И играй с папой или мамой — записывай партии в дневник.",
-                  "♟ Dadang yoki oying bilan ham oʻyna — partiyalarni kundalikka yozib bor.",
-                )}
-              </li>
-            </ul>
-          </div>
-          <details className="rounded-3xl bg-white p-4 shadow-card">
-            <summary className="cursor-pointer text-lg font-black">
-              {t("📚 Словарик", "📚 Lugʻat")}{" "}
-              <span className="text-sm font-bold text-muted">
-                {t(`(${glossary.length} слов)`, `(${glossary.length} ta soʻz)`)}
-              </span>
-            </summary>
-            <dl className="mt-3 space-y-2">
-              {glossary.map((term, i) => (
-                <div key={i}>
-                  <dt className="font-black">
-                    {term.term}
-                    {term.uz && lang === "ru" && (
-                      <span lang="uz" className="ml-2 text-sm font-extrabold text-brand-dark">
-                        {term.uz}
-                      </span>
+                >
+                  <span
+                    className={cn(
+                      "grid h-10 w-10 shrink-0 place-items-center rounded-full text-lg font-black",
+                      done ? "bg-mint text-white" : isCurrent ? "bg-brand text-white" : "bg-line/60 text-muted",
                     )}
-                  </dt>
-                  <dd className="text-sm text-muted">{term.text}</dd>
-                </div>
-              ))}
-            </dl>
-          </details>
-        </aside>
+                    aria-hidden
+                  >
+                    {done ? <Check className="h-5 w-5" /> : st.n}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block leading-tight font-black">{stepTitles[i]}</span>
+                    <span className="mt-1 flex items-center gap-2">
+                      <ProgressBar value={solvedIn(st.list)} max={totalIn(st.list)} className="flex-1" />
+                      <span className="text-xs font-extrabold whitespace-nowrap text-muted">
+                        {hydrated
+                          ? `${solvedIn(st.list)}/${totalIn(st.list)}`
+                          : t(`${st.list.length} уроков`, `${st.list.length} ta dars`)}
+                      </span>
+                    </span>
+                  </span>
+                </Link>
+              </li>
+            );
+          })}
+        </ol>
       </section>
 
       <section aria-labelledby="chess-sections">
-        <h2 id="chess-sections" className="mb-3 text-2xl font-black">
-          {t("Разделы школы", "Maktab boʻlimlari")}
+        <h2 id="chess-sections" className="mb-3 flex items-center gap-2 text-2xl font-black">
+          <Dumbbell className="h-6 w-6 text-brand" aria-hidden />
+          {t("Тренироваться", "Mashq qilish")}
         </h2>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {ordered.slice(0, MAIN_SECTIONS).map((s) => (
+        <div className="grid gap-3 sm:grid-cols-3">
+          {orderedPractice.slice(0, MAIN_SECTIONS).map((s) => (
             <SectionCard key={s.href} s={s} />
           ))}
         </div>
-        <details className="group mt-3 rounded-3xl border border-line bg-white p-3 shadow-card" data-more-sections>
+
+        <h3 id="daily-home" className="mt-6 mb-2 text-lg font-black">
+          {t("Уровни и звания", "Darajalar va unvonlar")}
+        </h3>
+        <ol className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+          {levels.map((level, i) => {
+            const st = statuses[i];
+            const open = !hydrated || st.unlocked;
+            const tile = (
+              <>
+                <PieceIcon
+                  piece={level.piece}
+                  className={cn("mx-auto h-12 w-12 rounded-xl bg-[#f0d9b5] p-0.5", !open && "opacity-40 grayscale")}
+                />
+                <p className="mt-1 text-sm leading-tight font-black">{level.name}</p>
+                {open ? (
+                  <ProgressBar value={hydrated ? st.solved : 0} max={st.total} className="mt-1" />
+                ) : (
+                  <Lock className="mx-auto mt-1 h-4 w-4 text-muted" aria-label={t("закрыт", "yopiq")} />
+                )}
+                {hydrated && st.passed && (
+                  <p className="mt-1 text-xs font-extrabold text-[#7a4b00]">{t("🏅 звание", "🏅 unvon")}</p>
+                )}
+              </>
+            );
+            return (
+              <li key={level.id}>
+                {open ? (
+                  <Link
+                    href={chessLevelHref(level.id)}
+                    className="block h-full rounded-2xl bg-white p-2 text-center shadow-card transition hover:-translate-y-0.5"
+                  >
+                    {tile}
+                  </Link>
+                ) : (
+                  <div
+                    className="h-full rounded-2xl border-2 border-dashed border-line bg-white/70 p-2 text-center"
+                    aria-disabled
+                  >
+                    {tile}
+                  </div>
+                )}
+              </li>
+            );
+          })}
+        </ol>
+
+        <details className="group mt-4 rounded-3xl border border-line bg-white p-3 shadow-card" data-more-sections>
           <summary className="flex min-h-12 cursor-pointer list-none items-center gap-2 rounded-2xl px-3 text-lg font-black select-none [&::-webkit-details-marker]:hidden">
             <span className="flex-1">{t("Ещё разделы", "Yana boʻlimlar")}</span>
-            <span aria-hidden className="text-muted transition group-open:rotate-180">
-              ▾
-            </span>
+            <ChevronDown className="h-5 w-5 text-muted transition group-open:rotate-180" aria-hidden />
           </summary>
           <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {ordered.slice(MAIN_SECTIONS).map((s) => (
+            {orderedPractice.slice(MAIN_SECTIONS).map((s) => (
               <SectionCard key={s.href} s={s} />
             ))}
           </div>
+        </details>
+      </section>
+
+      <section className="grid gap-4 md:grid-cols-2" aria-label={t("Полезное", "Foydali")}>
+        <DidYouKnow />
+        <Link
+          href="/chess/puzzles#daily"
+          className="block rounded-3xl bg-white p-4 shadow-card transition hover:-translate-y-0.5"
+        >
+          <p className="text-xs font-extrabold tracking-wide text-muted uppercase">
+            {t("📅 Задача дня", "📅 Kun masalasi")}
+          </p>
+          <p className="text-lg font-black">{daily.title}</p>
+          <p className="mb-2 text-xs font-bold text-muted">
+            {"⭐".repeat(daily.stars)} ·{" "}
+            {daily.fen.split(" ")[1] === "w" ? t("ходят белые", "oqlar yuradi") : t("ходят чёрные", "qoralar yuradi")}
+            {hydrated && state.chessPuzzles[daily.id]?.solvedAt ? " · ✅" : ""}
+          </p>
+          <ChessBoard
+            id="hub-daily"
+            position={daily.fen}
+            orientation={daily.fen.split(" ")[1] === "w" ? "white" : "black"}
+            maxWidth={240}
+            className="!mx-0"
+          />
+        </Link>
+        <details className="rounded-3xl bg-white p-4 shadow-card md:col-span-2">
+          <summary className="cursor-pointer text-lg font-black">
+            {t("О школе и как заниматься", "Maktab haqida va qanday shugʻullanish")}
+          </summary>
+          <p className="mt-2 text-muted">{school.about}</p>
+          <ul className="mt-3 space-y-1.5 text-sm">
+            <li>{t("📖 Прочитай урок и понажимай на фигуры.", "📖 Darsni oʻqi va donalarni bosib koʻr.")}</li>
+            <li>
+              🖨{" "}
+              <Link href="/chess/print" className="font-extrabold text-brand hover:underline">
+                {t("Распечатай задачи", "Masalalarni chop et")}
+              </Link>{" "}
+              {t("— решай на бумаге.", "— qogʻozda yech.")}
+            </li>
+            <li>
+              {t(
+                `🤖 Сыграй с роботом «${robotName}» — он тебе по силам.`,
+                `🤖 «${robotName}» roboti bilan oʻyna — u aynan sening darajangda.`,
+              )}
+            </li>
+            <li>
+              {t(
+                "♟ И играй с папой или мамой — записывай партии в дневник.",
+                "♟ Dadang yoki oying bilan ham oʻyna — partiyalarni kundalikka yozib bor.",
+              )}
+            </li>
+          </ul>
+        </details>
+        <details className="rounded-3xl bg-white p-4 shadow-card md:col-span-2">
+          <summary className="cursor-pointer text-lg font-black">
+            {t("📚 Словарик", "📚 Lugʻat")}{" "}
+            <span className="text-sm font-bold text-muted">
+              {t(`(${glossary.length} слов)`, `(${glossary.length} ta soʻz)`)}
+            </span>
+          </summary>
+          <dl className="mt-3 space-y-2">
+            {glossary.map((term, i) => (
+              <div key={i}>
+                <dt className="font-black">
+                  {term.term}
+                  {term.uz && lang === "ru" && (
+                    <span lang="uz" className="ml-2 text-sm font-extrabold text-brand-dark">
+                      {term.uz}
+                    </span>
+                  )}
+                </dt>
+                <dd className="text-sm text-muted">{term.text}</dd>
+              </div>
+            ))}
+          </dl>
         </details>
       </section>
     </div>
@@ -732,7 +646,7 @@ export function ChessSchool({ counts }: { counts: ChessSchoolCounts }) {
 }
 
 /** Сколько разделов видно сразу; остальные — под «Ещё разделы». */
-const MAIN_SECTIONS = 4;
+const MAIN_SECTIONS = 3;
 
 function SectionCard({ s }: { s: { href: string; emoji: string; title: string; text: string; stat: string } }) {
   return (

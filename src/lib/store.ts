@@ -33,6 +33,7 @@ import {
   WOODPECKER_ROUNDS,
 } from "./state";
 import { ratePuzzle, startRating, type PuzzleRating } from "./puzzleRating";
+import { chessArea, trackLearning } from "./analytics";
 
 export * from "./state";
 
@@ -157,6 +158,7 @@ export function saveTaskInput(taskId: string, input: Record<string, unknown>) {
 }
 
 export function markSolved(taskId: string) {
+  if (getState().tasks[taskId]?.status !== "solved") trackLearning("task_solved");
   updateTask(taskId, (t) =>
     t.status === "solved" ? {} : { status: "solved", solvedAt: Date.now(), firstTry: t.missed === 0 && t.checks <= 1 },
   );
@@ -214,6 +216,7 @@ export function updateDay(dayId: string, patch: Partial<DayProgress>) {
 }
 
 export function startDay(dayId: string) {
+  if (!getState().days[dayId]?.startedAt) trackLearning("day_start");
   setState((s) =>
     s.days[dayId]?.startedAt ? s : { ...s, days: { ...s.days, [dayId]: { ...s.days[dayId], startedAt: Date.now() } } },
   );
@@ -246,6 +249,7 @@ function updateChess(id: string, update: (p: ChessExerciseProgress) => Partial<C
 
 /** Упражнение шахматной школы решено; best — сколько ходов понадобилось. */
 export function chessSolved(id: string, best?: number) {
+  if (!getState().chess[id]?.solvedAt) trackLearning("chess_solved", { area: chessArea(id) });
   updateChess(id, (p) => ({
     solvedAt: p.solvedAt ?? Date.now(),
     ...(best !== undefined ? { best: Math.min(best, p.best ?? Infinity) } : {}),

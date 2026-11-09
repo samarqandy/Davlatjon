@@ -1,3 +1,4 @@
+import { Analytics } from "@vercel/analytics/next";
 import { SkipLink } from "@/components/SkipLink";
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
@@ -87,6 +88,8 @@ export default async function RootLayout({
           <RestCard />
           <AccountSync />
         </ServerLangProvider>
+        {/* Обезличенная статистика без cookie: см. /privacy. */}
+        <Analytics />
       </body>
     </html>
   );
