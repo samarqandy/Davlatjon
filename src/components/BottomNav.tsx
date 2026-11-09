@@ -2,28 +2,27 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { House, PencilLine, ChessKnight, Trophy } from "lucide-react";
 import { cn } from "@/components/ui";
-import { loginAvailable, useAccount } from "@/lib/account";
 import { useT } from "@/lib/i18n";
 
 /** Корни разделов: нижнее меню показываем только там, а внутри задач и партий оно не отвлекает. */
-const ROOTS = ["/", "/chess", "/my-problems", "/leaderboard"];
+const ROOTS = ["/", "/chess", "/my-problems", "/achievements", "/leaderboard"];
 
 /**
- * Нижнее меню на телефоне: четыре больших кнопки под большой палец («Главная», «Шахматы», «Мои задачи», «Рейтинг»).
+ * Нижнее меню на телефоне: четыре больших кнопки под большой палец («Главная», «Шахматы», «Мои задачи», «Успехи»).
+ * Рейтинг — внутри «Успехов» (он есть, только когда подключён вход).
  * Взрослым — ссылка «Для взрослых» внизу страницы, а не в шапке.
  */
 export function BottomNav() {
   const path = usePathname().replace(/(.)\/$/, "$1");
   const t = useT();
-  // Рейтинг виден только там, где подключён вход: без него вкладка вела бы в тупик.
-  const ranked = loginAvailable(useAccount());
   if (!ROOTS.includes(path)) return null;
   const tabs = [
-    { href: "/", emoji: "🏠", label: t("Главная", "Bosh sahifa") },
-    { href: "/chess", emoji: "♞", label: t("Шахматы", "Shaxmat") },
-    { href: "/my-problems", emoji: "✍️", label: t("Мои задачи", "Masalalarim") },
-    ...(ranked ? [{ href: "/leaderboard", emoji: "🏆", label: t("Рейтинг", "Reyting") }] : []),
+    { href: "/", Icon: House, label: t("Главная", "Bosh sahifa") },
+    { href: "/chess", Icon: ChessKnight, label: t("Шахматы", "Shaxmat") },
+    { href: "/my-problems", Icon: PencilLine, label: t("Мои задачи", "Masalalarim") },
+    { href: "/achievements", Icon: Trophy, label: t("Успехи", "Yutuqlar") },
   ];
   return (
     <>
@@ -33,7 +32,7 @@ export function BottomNav() {
         aria-label={t("Нижнее меню", "Pastki menyu")}
         className="no-print fixed inset-x-0 bottom-0 z-30 border-t border-line bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur sm:hidden"
       >
-        <ul className={cn("mx-auto grid max-w-md", tabs.length === 4 ? "grid-cols-4" : "grid-cols-3")}>
+        <ul className="mx-auto grid max-w-md grid-cols-4">
           {tabs.map((tab) => {
             const active = tab.href === path;
             return (
@@ -46,11 +45,8 @@ export function BottomNav() {
                     active ? "text-brand-dark" : "text-muted",
                   )}
                 >
-                  <span
-                    aria-hidden
-                    className={cn("rounded-2xl px-5 py-0.5 text-2xl leading-none", active && "bg-brand-soft")}
-                  >
-                    {tab.emoji}
+                  <span aria-hidden className={cn("rounded-2xl px-5 py-1", active && "bg-brand-soft")}>
+                    <tab.Icon className="h-6 w-6" strokeWidth={2.25} />
                   </span>
                   {tab.label}
                 </Link>
