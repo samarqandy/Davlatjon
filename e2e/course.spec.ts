@@ -269,7 +269,7 @@ test("ступень 5 «Ферзь»: страница курса, завлеч
   await expect(page.locator('a[href="/chess/course-5"]').first()).toBeVisible();
   await page.goto("/chess/course-5");
   await expect(page.getByRole("heading", { level: 1, name: /Ступень 5/ })).toBeVisible();
-  for (const id of ["q-pin", "q-double", "q-decoy"])
+  for (const id of ["q-pin", "q-double", "q-decoy", "q-trap", "q-attack", "q-sacrifice"])
     await expect(page.locator(`[data-course-module="${id}"]`)).toBeVisible();
   await page.goto("/chess/course-5#c5-decoy-net-exercise-1");
   await page.locator('[data-choice="c8f8"]').click();
