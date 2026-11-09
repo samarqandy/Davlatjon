@@ -5,7 +5,7 @@ export const course5Uz: Uz<typeof COURSE_5> = {
   title: "5-bosqich «Farzin»",
   subtitle: "Kombinatsiyalar va shohga hujum",
   about:
-    "Hujumda bogʻlash va qoʻsh bogʻlash, qoʻsh shoh, qoʻsh zarba, mot toʻriga jalb qilish, Edvard Laskerning durdonasi, qisilgan mot, farzinni tutish, donalar hamkorligi, rokirovka qilmagan shohga hujum, f7 dagi qurbon va jim yurish. Darslar mavzusi va tartibi M.I. Glotovning «Shaxmat mahorati bosqichlari. 5-bosqich „Farzin“» kitobi asosida; pozitsiyalar maktab uchun tuzilgan va shaxmat dvigateli bilan tekshirilgan.",
+    "Hujumda bogʻlash va qoʻsh bogʻlash, qoʻsh shoh, qoʻsh zarba, mot toʻriga jalb qilish, Edvard Laskerning durdonasi, qisilgan mot, farzinni tutish, donalar hamkorligi, rokirovka qilmagan shohga hujum, f7 dagi qurbon, jim yurish, Steynits va Rubinshteyn durdonalari. Darslar mavzusi va tartibi M.I. Glotovning «Shaxmat mahorati bosqichlari. 5-bosqich „Farzin“» kitobi asosida; pozitsiyalar maktab uchun tuzilgan va shaxmat dvigateli bilan tekshirilgan.",
 };
 
 export const course5ModulesUz: Uz<typeof COURSE_5_MODULES> = {
@@ -15,6 +15,8 @@ export const course5ModulesUz: Uz<typeof COURSE_5_MODULES> = {
   "q-trap": { title: "«Farzinga mot»" },
   "q-attack": { title: "Shohga hujum" },
   "q-sacrifice": { title: "Odatiy qurbonlar" },
+  "q-classics": { title: "Shaxmat klassikasi" },
+  "finish-5": { title: "Bosqich marrasi" },
 };
 
 export const course5LessonsUz: Uz<typeof COURSE_5_LESSONS> = {
@@ -293,6 +295,107 @@ export const course5LessonsUz: Uz<typeof COURSE_5_LESSONS> = {
         prompt: "Oqlar yuradi va 2 yurishda mot qiladi. Birinchi yurish qaysi?",
         hint: "Farzinni shunday qoʻyki, u ham g7 da, ham oxirgi gorizontalda mot bilan tahdid qilsin.",
         why: "♕f7! — jim yurish. ♕xg7# (a1 dagi fil qoʻllab-quvvatlaydi) va ♕f8# yoki ♕e8# bilan tahdid qiladi. Qoralar bitta yurish bilan hamma tahdiddan himoyalana olmaydi. ♕g8+? dan keyin ♚xg8 — farzin yoʻqoladi.",
+      },
+    },
+  },
+  "c5-steinitz": {
+    title: "Steynits durdonasi",
+    idea: "Rux oʻzini qurbon qilib, toʻxtovsiz shoh beradi — uni urib boʻlmaydi.",
+    lesson: [
+      {
+        title: "Gastings, 1895",
+        text: [
+          "Vilgelm Steynits — birinchi rasmiy jahon chempioni. 1895 yili Gastingsda u Kurt fon Bardeleben bilan tarixdagi eng chiroyli partiyalardan biri deb ataladigan partiyani oʻynagan.",
+          "Oq rux shoh berib e7 ga bordi va shoh berishda davom etdi: f7, g7, h7. Agar shoh ruxni urib olsa, g4 dagi oq farzin d7 dagi farzinni shoh berib urib oladi.",
+        ],
+      },
+    ],
+    terms: [{ term: "Qutirgan rux", text: "Rux toʻxtovsiz shoh beradi va uni urish foydasiz." }],
+    exercises: {
+      "c5-steinitz-choose": {
+        title: "Rux e7 ga boradi",
+        prompt: "Steynits (oqlar) yuradi. Mashhur kombinatsiya qaysi yurishdan boshlangan?",
+        hint: "e1 dagi rux e7 dagi otga, g4 dagi farzin esa d7 dagi farzinga qarab turibdi.",
+        why: "22. ♖xe7+! ♚f8 23. ♖f7+ ♚g8 24. ♖g7+ ♚h8 25. ♖xh7+ — rux toʻxtovsiz shoh beradi. Bardeleben turnir zalidan chiqib ketdi, Steynits esa tomoshabinlarga motni koʻrsatdi: 25... ♚g8 26. ♖g7+ ♚h8 27. ♕h4+ ♚xg7 28. ♕h7+ ♚f8 29. ♕h8+ ♚e7 30. ♕g7+ ♚e8 31. ♕g8+ ♚e7 32. ♕f7+ ♚d8 33. ♕f8+ ♛e8 34. ♘f7+ ♚d7 35. ♕d6#. ♕xd7+? dan keyin ♚xd7 — farzinlar almashildi va hujum tugadi.",
+      },
+    },
+  },
+  "c5-rubinstein": {
+    title: "Rubinshteyn durdonasi",
+    idea: "Rux qurbonligi fillarga shoh tomon yoʻl ochadi.",
+    lesson: [
+      {
+        title: "Lodz, 1907",
+        text: [
+          "Akiba Rubinshteyn qora donalar bilan Georg Rotlevi bilan oʻynagan. b6 va b7 dagi qora fillar allaqachon oq shohga qarab turgan edi — ularga faqat c3 dagi ot va e4 dagi fil xalaqit berardi.",
+          "Rubinshteyn bu diagonallarni ochish uchun farzin va ikki ruxni qurbon qildi. Bu partiya «Rubinshteynning oʻlmas partiyasi» deb ataladi.",
+        ],
+      },
+    ],
+    terms: [{ term: "Diagonal hujum", text: "Fillar uzoqdan rokirovkaga uradi." }],
+    exercises: {
+      "c5-rubinstein-choose": {
+        title: "Rux c3 da",
+        prompt: "Rubinshteyn (qoralar) yuradi. h4 dagi farzin zarba ostida. Hujumni qanday davom ettirish kerak?",
+        hint: "c3 dagi otni yoʻqot — u b7 dagi filning diagonalini toʻsib turibdi.",
+        why: "22... ♜xc3!! 23. gxh4 ♜d2!! 24. ♕xd2 ♝xe4+ 25. ♕g2 ♜h3 — oqlar taslim boʻldi: ularning deyarli har qanday yurishiga qoralarda bir yurishda mot bor. ♜d2? dan keyin ♕xd2 — rux shunchaki yoʻqoladi.",
+      },
+    },
+  },
+  "c5-final-test": {
+    title: "«Farzin» bosqichining yakuniy testi",
+    idea: "Oʻzingni sinab koʻr: qurbon, jalb qilish, qisilgan mot va shohga hujum.",
+    lesson: [
+      {
+        title: "Test oldidan",
+        text: [
+          "Beshinchi bosqich ortda qoldi — kombinatsiyalar va shohga hujum. Har bir masalada shohlar, urishlar va tahdidlarni qidir va oʻzingdan soʻra: raqibning qaysi donasi mot katagini himoya qilyapti va uni qanday yoʻqotish mumkin?",
+        ],
+      },
+    ],
+    terms: [{ term: "«Farzin» bosqichi", text: "Kursning beshinchi bosqichi: kombinatsiyalar va shohga hujum." }],
+    exercises: {
+      "c5-final-smothered": {
+        title: "1-masala",
+        prompt: "Oqlar yuradi. Mot qil.",
+        hint: "Shohni oʻz donalari qamab qoʻygan.",
+        why: "♘f7# — qisilgan mot: g8 dagi rux va g7, h7 piyodalari shohni qochirmaydi.",
+      },
+      "c5-final-rook": {
+        title: "2-masala",
+        prompt: "Oqlar yuradi va 2 yurishda mot qiladi. Birinchi yurish qaysi?",
+        hint: "Sakkizinchi gorizontal boʻylab shoh.",
+        why: "♖c8+! — faqat rux bilan toʻsish mumkin: ♜f8. Keyin ♖xf8#. ♕xg7+? dan keyin ♜xg7 — mot yoʻq.",
+      },
+      "c5-final-queen": {
+        title: "3-masala",
+        prompt: "Oqlar yuradi va 2 yurishda mot qiladi. Birinchi yurish qaysi?",
+        hint: "Shoh markazda qolib ketgan. Sakkizinchi gorizontal boʻylab shoh.",
+        why: "♕h8+! — faqat ot bilan toʻsish mumkin: ♞g8. Keyin ♕xg8# — markazdagi shoh yashirinishga ulgurmadi. ♖xf6? dan keyin ♚d8 — shoh qochadi.",
+      },
+      "c5-final-quiz": {
+        title: "4-masala: savollar",
+        prompt: "Bosqich boʻyicha savollarga javob ber.",
+        questions: [
+          {
+            text: "Oʻz donalari qamab qoʻygan shohga ot bilan qilingan mot qanday ataladi?",
+            options: ["qisilgan mot", "chiziqli mot", "Legal moti"],
+          },
+          {
+            text: "Jalb qilish nima?",
+            options: [
+              "raqib donasini yomon katakka chorlaydigan qurbon",
+              "farzinlarni almashish",
+              "shohni burchakka yurish",
+            ],
+          },
+          {
+            text: "Shaxmat boʻyicha birinchi rasmiy jahon chempioni kim boʻlgan?",
+            options: ["Vilgelm Steynits", "Pol Morfi", "Akiba Rubinshteyn"],
+          },
+        ],
+        hint: "Qisilgan mot, jalb qilish va Steynits durdonasi haqidagi darslarni esla.",
+        why: "Qisilgan motni shohni oʻz donalari qamab qoʻyganda ot qiladi. Jalb qilish — raqib donasini yomon katakka chorlaydigan qurbon. Birinchi rasmiy jahon chempioni Vilgelm Steynits boʻlgan (1886).",
       },
     },
   },
