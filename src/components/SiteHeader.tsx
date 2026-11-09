@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { BarChart3, ChessKnight, Lock, PencilLine, Trophy, type LucideIcon } from "lucide-react";
 import { loginAvailable, useAccount } from "@/lib/account";
 import { useT } from "@/lib/i18n";
 import { BRAND, BRAND_TAGLINE } from "@/lib/brand";
@@ -15,7 +16,7 @@ export function SiteHeader({
 }) {
   const t = useT();
   const ranked = loginAvailable(useAccount());
-  const link = (href: string, emoji: string, label: string, key: typeof active) => (
+  const link = (href: string, Icon: LucideIcon, label: string, key: typeof active) => (
     <Link
       href={href}
       aria-label={label}
@@ -24,9 +25,7 @@ export function SiteHeader({
         active === key ? "bg-brand-soft text-brand-dark" : "text-muted hover:bg-black/5 hover:text-ink"
       }`}
     >
-      <span aria-hidden className="text-lg leading-none sm:text-base">
-        {emoji}
-      </span>
+      <Icon aria-hidden className="h-5 w-5 shrink-0" strokeWidth={2.25} />
       <span className="hidden sm:inline">{label}</span>
     </Link>
   );
@@ -47,11 +46,11 @@ export function SiteHeader({
           </span>
         </Link>
         <nav className="hidden items-center gap-1 sm:flex" aria-label={t("Разделы", "Boʻlimlar")}>
-          {link("/chess", "♞", t("Шахматы", "Shaxmat"), "chess")}
-          {link("/my-problems", "✍️", t("Мои задачи", "Masalalarim"), "problems")}
-          {link("/achievements", "🏅", t("Успехи", "Yutuqlar"), "achievements")}
-          {ranked && link("/leaderboard", "🏆", t("Рейтинг", "Reyting"), "leaderboard")}
-          {link("/parent", "🔒", t("Родителям", "Ota-onalarga"), "parent")}
+          {link("/chess", ChessKnight, t("Шахматы", "Shaxmat"), "chess")}
+          {link("/my-problems", PencilLine, t("Мои задачи", "Masalalarim"), "problems")}
+          {link("/achievements", Trophy, t("Успехи", "Yutuqlar"), "achievements")}
+          {ranked && link("/leaderboard", BarChart3, t("Рейтинг", "Reyting"), "leaderboard")}
+          {link("/parent", Lock, t("Родителям", "Ota-onalarga"), "parent")}
         </nav>
         {/* На телефоне нижнее меню — детское, поэтому вход для взрослых — маленький замок рядом с языком. */}
         <Link
@@ -60,7 +59,7 @@ export function SiteHeader({
           data-parent-lock
           className="flex min-h-11 min-w-11 items-center justify-center rounded-xl text-lg text-muted hover:bg-black/5 sm:hidden"
         >
-          <span aria-hidden>🔒</span>
+          <Lock aria-hidden className="h-5 w-5" strokeWidth={2.25} />
         </Link>
         <ProfileSwitcher />
         <LangSwitch />

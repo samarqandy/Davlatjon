@@ -84,7 +84,10 @@ export function TodayCard({ className }: { className?: string }) {
       <div className="grid gap-5 @xl:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
         <div>
           <h2 id="today" className="text-xl font-black">
-            🎯 {t("Задание дня", "Kun vazifasi")}
+            <span className="deco" aria-hidden>
+              🎯{" "}
+            </span>
+            {t("Задание дня", "Kun vazifasi")}
           </h2>
           <ul className="mt-2 space-y-1.5" data-quest={done ? "done" : "open"}>
             {goals.map((g) => {
