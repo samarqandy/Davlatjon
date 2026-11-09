@@ -93,6 +93,8 @@ test("режим «Сам»: подсказки и отмены нет", async (
   await page.goto("/chess/play#robot-1-w?s=1");
   await expect(page.getByRole("button", { name: /Подсказка/ })).toHaveCount(0);
   await expect(page.getByRole("button", { name: /Отменить/ })).toHaveCount(0);
+  // Якорь на той же странице меняем только после гидратации: иначе Next при запуске перепишет адрес без него.
+  await page.waitForLoadState("networkidle");
   await page.goto("/chess/play#robot-1-w");
   await expect(page.getByRole("button", { name: /Подсказка/ })).toBeVisible();
 });

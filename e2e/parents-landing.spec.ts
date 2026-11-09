@@ -24,6 +24,10 @@ test("«О платформе»: цифры, ссылка на конфиден�
   await page.goto("/about");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   await expect(page.locator("[data-about-stats]")).toContainText(/\d/);
+  // Две программы с настоящими цифрами и путь ученика из четырёх шагов.
+  await expect(page.locator("[data-about-programs]")).toContainText("Ферзь");
+  await expect(page.locator("[data-about-programs]")).toContainText(/\d+ уроков/);
+  await expect(page.locator("[data-about-path] > li")).toHaveCount(4);
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /index/);
   await expect(page.locator('meta[name="robots"]')).not.toHaveAttribute("content", /noindex/);
   await expect(page.locator('meta[property="og:image"]')).toHaveCount(1);

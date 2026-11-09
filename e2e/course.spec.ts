@@ -23,6 +23,15 @@ async function prepare(page: Page, lang: "ru" | "uz" = "ru") {
 const square = (page: Page, id: string, sq: string) =>
   page.locator(`[data-board="mo-${id}"] [data-square="${sq}"]`).click();
 
+/**
+ * Открыть урок по якорю. Если это та же страница, переход идёт без перезагрузки, и до конца гидратации
+ * Next перепишет адрес на начальный — якорь пропадёт. Поэтому сначала ждём, пока страница загрузится целиком.
+ */
+async function openHash(page: Page, url: string) {
+  await page.waitForLoadState("networkidle");
+  await page.goto(url);
+}
+
 test("курс: из школы — модули по порядку, урок открывается, номер урока в заголовке", async ({ page }) => {
   await prepare(page);
   await page.goto("/chess");
@@ -37,7 +46,7 @@ test("курс: из школы — модули по порядку, урок �
 
 test("курс: «объяви шах» — ход без шаха получает подсказку, шах засчитывается", async ({ page }) => {
   await prepare(page);
-  await page.goto("/chess/course#c1-check-exercise-2");
+  await openHash(page, "/chess/course#c1-check-exercise-2");
   await square(page, "c1-check-rook", "a1");
   await square(page, "c1-check-rook", "a5");
   await expect(page.getByText("Это не шах.")).toBeVisible();
@@ -56,7 +65,7 @@ test("курс: упражнение из уровня подключено к �
     s.chess = { "rook-moves": { solvedAt: Date.now(), misses: 0 } };
     localStorage.setItem(key, JSON.stringify(s));
   }, KEY);
-  await page.goto("/chess/course#c1-rook-exercises");
+  await openHash(page, "/chess/course#c1-rook-exercises");
   await expect(page.getByRole("button", { name: /Упражнение 1: .*\(решено\)/ })).toBeVisible();
 });
 
@@ -83,7 +92,7 @@ test("курс на узком телефоне: страница не шире 
 
 test("курс: повтор того же неверного хода снова показывает ответ (новая карточка)", async ({ page }) => {
   await prepare(page);
-  await page.goto("/chess/course#c1-check-exercise-2");
+  await openHash(page, "/chess/course#c1-check-exercise-2");
   await square(page, "c1-check-rook", "a1");
   await square(page, "c1-check-rook", "a5");
   const card = page.getByText("Это не шах.");
@@ -111,11 +120,11 @@ test("курс: мат, рокировка и дебют — новые моду
   await page.goto("/chess/course");
   for (const id of ["mate", "castle", "opening"])
     await expect(page.locator(`[data-course-module="${id}"]`)).toBeVisible();
-  await page.goto("/chess/course#c1-mate-rook-exercise-3");
+  await openHash(page, "/chess/course#c1-mate-rook-exercise-3");
   await square(page, "c1-mate-rook-corner", "a1");
   await square(page, "c1-mate-rook-corner", "a8");
   await expect(page.getByText(/Почему так/)).toBeVisible();
-  await page.goto("/chess/course#c1-castle-rules-exercise-1");
+  await openHash(page, "/chess/course#c1-castle-rules-exercise-1");
   await square(page, "c1-castle-only-long", "e1");
   await square(page, "c1-castle-only-long", "c1");
   await expect(page.getByText(/Почему так/)).toBeVisible();
@@ -129,11 +138,11 @@ test("курс: вилка конём, сквозной удар и финиш �
   await page.goto("/chess/course");
   for (const id of ["double", "tactics", "special", "finish"])
     await expect(page.locator(`[data-course-module="${id}"]`)).toBeVisible();
-  await page.goto("/chess/course#c1-fork-knight-exercise-3");
+  await openHash(page, "/chess/course#c1-fork-knight-exercise-3");
   await square(page, "c1-fork-knight-c7", "b5");
   await square(page, "c1-fork-knight-c7", "c7");
   await expect(page.getByText(/Почему так/)).toBeVisible();
-  await page.goto("/chess/course#c1-skewer-exercise-5");
+  await openHash(page, "/chess/course#c1-skewer-exercise-5");
   await square(page, "c1-skewer-rook-a5", "a1");
   await square(page, "c1-skewer-rook-a5", "a5");
   await expect(page.getByText(/Почему так/)).toBeVisible();
@@ -146,7 +155,7 @@ test("курс: «как сыграть лучше» — неверный выб
   await prepare(page);
   const id = "c1-stalemate-choose";
   // Пятое упражнение урока: после трёх подключённых и «Мат, а не пат».
-  await page.goto("/chess/course#c1-stalemate-exercise-5");
+  await openHash(page, "/chess/course#c1-stalemate-exercise-5");
   const board = page.locator(`[data-board="ch-${id}"]`);
   await expect(board).toBeVisible();
   await page.locator('[data-choice="f1f7"]').click();
@@ -167,7 +176,7 @@ test("ступень 2 «Конь»: страница курса, урок дв�
   await expect(page.getByRole("heading", { level: 1, name: /Ступень 2/ })).toBeVisible();
   for (const id of ["tactic-mates", "attack", "games"])
     await expect(page.locator(`[data-course-module="${id}"]`)).toBeVisible();
-  await page.goto("/chess/course-2#c2-double-check-exercise-1");
+  await openHash(page, "/chess/course-2#c2-double-check-exercise-1");
   await page.locator('[data-board="mo-c2-double-check-knight"] [data-square="e6"]').click();
   await page.locator('[data-board="mo-c2-double-check-knight"] [data-square="c7"]').click();
   await expect(page.getByText(/Почему так/)).toBeVisible();
@@ -180,7 +189,7 @@ test("ступень 2: открытый шах выигрывает ферзя,
   await page.goto("/chess/course-2");
   for (const id of ["defence", "trap", "advantage", "endgame"])
     await expect(page.locator(`[data-course-module="${id}"]`)).toBeVisible();
-  await page.goto("/chess/course-2#c2-discover-win-exercise-3");
+  await openHash(page, "/chess/course-2#c2-discover-win-exercise-3");
   await page.locator('[data-board="mo-c2-discover-win-knight"] [data-square="e4"]').click();
   await page.locator('[data-board="mo-c2-discover-win-knight"] [data-square="d2"]').click();
   await expect(page.getByText(/Почему так/)).toBeVisible();
@@ -208,7 +217,7 @@ test("ступень 3 «Слон»: тактика — открытое нап�
     "finish-3",
   ])
     await expect(page.locator(`[data-course-module="${id}"]`)).toBeVisible();
-  await page.goto("/chess/course-3#c3-disc-attack-exercise-1");
+  await openHash(page, "/chess/course-3#c3-disc-attack-exercise-1");
   await page.locator('[data-choice="d4e6"]').click();
   await expect(page.getByText("не лучший выбор")).toBeVisible();
   await page.locator('[data-choice="d4f5"]').click();
@@ -227,7 +236,7 @@ test("ступень 4 «Ладья»: страница курса, мат сл�
   await expect(page.getByRole("heading", { level: 1, name: /Ступень 4/ })).toBeVisible();
   for (const id of ["horwitz", "seventh", "passer"])
     await expect(page.locator(`[data-course-module="${id}"]`)).toBeVisible();
-  await page.goto("/chess/course-4#c4-horwitz-exercise-1");
+  await openHash(page, "/chess/course-4#c4-horwitz-exercise-1");
   await page.locator('[data-board="mo-c4-horwitz-g7"] [data-square="g2"]').click();
   await page.locator('[data-board="mo-c4-horwitz-g7"] [data-square="g7"]').click();
   await expect(page.getByText(/Почему так/)).toBeVisible();
@@ -240,7 +249,7 @@ test("ступень 4: оппозиция — «как сыграть лучш�
   await page.goto("/chess/course-4");
   for (const id of ["pawns-squares", "pawn-endgame"])
     await expect(page.locator(`[data-course-module="${id}"]`)).toBeVisible();
-  await page.goto("/chess/course-4#c4-opposition-exercise-1");
+  await openHash(page, "/chess/course-4#c4-opposition-exercise-1");
   await page.locator('[data-choice="e4e5"]').click();
   await expect(page.getByText("не лучший выбор")).toBeVisible();
   await page.locator('[data-choice="d4e5"]').click();
@@ -252,7 +261,7 @@ test("ступень 4: ловушка пата — слабое превращ�
   await page.goto("/chess/course-4");
   for (const id of ["kpk", "activity", "saving", "bishops-finale", "finish-4"])
     await expect(page.locator(`[data-course-module="${id}"]`)).toBeVisible();
-  await page.goto("/chess/course-4#c4-study-exercise-1");
+  await openHash(page, "/chess/course-4#c4-study-exercise-1");
   await page.locator('[data-choice="c7c8q"]').click();
   await expect(page.getByText("не лучший выбор")).toBeVisible();
   await page.locator('[data-choice="c7c8r"]').click();
@@ -271,7 +280,7 @@ test("ступень 5 «Ферзь»: страница курса, завлеч
   await expect(page.getByRole("heading", { level: 1, name: /Ступень 5/ })).toBeVisible();
   for (const id of ["q-pin", "q-double", "q-decoy", "q-trap", "q-attack", "q-sacrifice", "q-classics", "finish-5"])
     await expect(page.locator(`[data-course-module="${id}"]`)).toBeVisible();
-  await page.goto("/chess/course-5#c5-decoy-net-exercise-1");
+  await openHash(page, "/chess/course-5#c5-decoy-net-exercise-1");
   await page.locator('[data-choice="c8f8"]').click();
   await expect(page.getByText("не лучший выбор")).toBeVisible();
   await page.locator('[data-choice="g6h7"]').click();
