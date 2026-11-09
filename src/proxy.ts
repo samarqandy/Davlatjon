@@ -28,5 +28,5 @@ export function proxy(request: NextRequest) {
 
 export const config = {
   // Страницы — да; API, сборка, файлы из public/ и всё с точкой в адресе (иконки, sw.js, robots.txt) — мимо.
-  matcher: ["/((?!api/|_next/|vendor/|audio/|animations/|images/|puzzles/|.*\\.).*)"],
+  matcher: ["/((?!api/|_next/|_vercel/|vendor/|audio/|animations/|images/|puzzles/|.*\\.).*)"],
 };

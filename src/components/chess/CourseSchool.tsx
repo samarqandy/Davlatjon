@@ -10,12 +10,13 @@ import type { ChessTactic } from "@/content/chess/types";
 import { useTitleTranslation } from "@/lib/docTitle";
 import { useT } from "@/lib/i18n";
 import type { CourseStep } from "@/lib/course/step";
-import { useHydrated } from "@/lib/store";
+import { useHydrated, useStore } from "@/lib/store";
 import { useChessPart } from "@/lib/useChess";
 import { setHash, useHash } from "@/lib/useHash";
 import { DiplomaCard } from "./CourseDiploma";
 import { PieceIcon } from "./ChessBoard";
 import { parseHash, TopicView, useSolved } from "./TacticsSchool";
+import { ChevronDown, Play } from "lucide-react";
 
 /**
  * Курс по ступеням: уроки ступени по порядку, сгруппированные в модули.
@@ -57,6 +58,12 @@ function Overview({ step, lessons }: { step: CourseStep; lessons: (ChessTactic &
   const t = useT();
   const { info: course1, modules: course1Modules } = step.useContent();
   const byId = new Map(lessons.map((l, i) => [l.id, { lesson: l, n: i + 1 }]));
+  const hydrated = useHydrated();
+  const chess = useStore((s) => s.chess);
+  // Первый урок, где ещё есть нерешённые упражнения: его кнопка — первое, что видно на странице.
+  const nextIndex = hydrated ? lessons.findIndex((l) => l.exercises.some((e) => !chess[e.id]?.solvedAt)) : 0;
+  const next = nextIndex >= 0 ? lessons[nextIndex] : null;
+  const started = hydrated && lessons.some((l) => l.exercises.some((e) => chess[e.id]?.solvedAt));
   return (
     <>
       <Link
@@ -65,10 +72,35 @@ function Overview({ step, lessons }: { step: CourseStep; lessons: (ChessTactic &
       >
         {t("← Шахматная школа", "← Shaxmat maktabi")}
       </Link>
-      <header className="rounded-[2rem] bg-linear-to-br from-[#3b2f23] via-[#5b4632] to-[#7c5a33] p-6 text-white shadow-lift sm:p-8">
-        <h1 className="text-3xl font-black sm:text-4xl">♟️ {course1.title}</h1>
-        <p className="mt-1 text-lg font-bold text-white/85">{course1.subtitle}</p>
-        <p className="mt-3 text-lg text-white/90">{course1.about}</p>
+      <header className="rounded-[2rem] bg-linear-to-br from-[#3b2f23] via-[#5b4632] to-[#7c5a33] p-5 text-white shadow-lift sm:p-6">
+        <h1 className="text-2xl leading-tight font-black sm:text-3xl">♟️ {course1.title}</h1>
+        <p className="mt-1 font-bold text-white/85">{course1.subtitle}</p>
+        {next && (
+          <button
+            type="button"
+            data-course-next
+            onClick={() => setHash(`#${next.id}`)}
+            className="mt-4 flex w-full items-center gap-3 rounded-2xl bg-white/12 p-3 text-left ring-1 ring-white/25 transition hover:bg-white/20"
+          >
+            <span className="min-w-0 flex-1">
+              <span className="block text-xs font-extrabold tracking-wide text-white/75 uppercase">
+                {t(`Урок ${nextIndex + 1} из ${lessons.length}`, `${lessons.length} tadan ${nextIndex + 1}-dars`)}
+              </span>
+              <span className="block text-lg leading-tight font-black">{next.title}</span>
+            </span>
+            <span className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-sun px-4 py-2.5 font-black text-ink shadow-[0_3px_0_0_#b45309]">
+              <Play className="h-4 w-4 fill-current" aria-hidden />
+              {started ? t("Дальше", "Davom") : t("Начать", "Boshlash")}
+            </span>
+          </button>
+        )}
+        <details className="group mt-3">
+          <summary className="inline-flex min-h-11 cursor-pointer list-none items-center gap-1 text-sm font-extrabold text-white/80 select-none [&::-webkit-details-marker]:hidden">
+            {t("О курсе", "Kurs haqida")}
+            <ChevronDown className="h-4 w-4 transition group-open:rotate-180" aria-hidden />
+          </summary>
+          <p className="mt-1 text-white/90">{course1.about}</p>
+        </details>
       </header>
       {course1Modules.map((m, mi) => (
         <section key={m.id} className="space-y-3" aria-labelledby={`module-${m.id}`} data-course-module={m.id}>

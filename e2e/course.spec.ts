@@ -279,3 +279,19 @@ test("ступень 5 «Ферзь»: страница курса, завлеч
   const stored = await page.evaluate((key) => JSON.parse(localStorage.getItem(key) ?? "{}").chess ?? {}, KEY);
   expect(stored["c5-decoy-net-choose"]?.solvedAt).toBeTruthy();
 });
+
+test("школа: путь из пяти ступеней, текущая отмечена; на странице ступени — кнопка следующего урока", async ({
+  page,
+}) => {
+  await prepare(page);
+  await page.goto("/chess");
+  const path = page.locator("[data-learn-path] a");
+  await expect(path).toHaveCount(5);
+  await expect(path.first()).toHaveAttribute("aria-current", "step");
+  await path.first().click();
+  await expect(page).toHaveURL(/\/chess\/course$/);
+  const next = page.locator("[data-course-next]");
+  await expect(next).toContainText("Шахматная партия");
+  await next.click();
+  await expect(page).toHaveURL(/\/chess\/course#c1-game$/);
+});

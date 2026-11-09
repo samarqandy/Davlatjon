@@ -388,9 +388,11 @@ test("первый запуск: ребёнок называет имя и вы�
   // Переходим по ссылке, а не через goto: при новой загрузке init-скрипты заново запишут localStorage.
   await page.locator('a[href="/chess"]:visible').first().click();
   await expect(page).toHaveURL(/\/chess$/);
+  // Совет про робота — в блоке «О школе»; уровни по возрасту: «Слон» открыт, «Ладья» ещё закрыта.
+  await page.getByText("О школе и как заниматься").click();
   await expect(page.getByText(/Сыграй с роботом «Конь»/)).toBeVisible();
-  await expect(page.getByRole("listitem").filter({ hasText: "Слон" }).first().getByText("открыт")).toBeVisible();
-  await expect(page.getByRole("listitem").filter({ hasText: "Ладья" }).first().getByText("🔒 закрыт")).toBeVisible();
+  await expect(page.locator('a[href="/chess/bishop"]').first()).toBeVisible();
+  await expect(page.locator('a[href="/chess/rook"]')).toHaveCount(0);
 });
 
 test("шахматы: тайны — загадка, зёрна, легенда уровня и вопрос дня", async ({ page }) => {
