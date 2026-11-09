@@ -80,6 +80,7 @@ test.describe("oʻzbek tili", () => {
     "/chess/course-3",
     "/chess/course-4",
     "/chess/course-5",
+    "/achievements",
     "/certificate/week/1",
     "/privacy",
   ];

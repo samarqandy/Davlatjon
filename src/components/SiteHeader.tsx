@@ -8,7 +8,11 @@ import { LangSwitch } from "./LangSwitch";
 import { ProfileSwitcher } from "./ProfileSwitcher";
 import { LogoMark } from "./Logo";
 
-export function SiteHeader({ active }: { active?: "home" | "chess" | "problems" | "parent" | "leaderboard" }) {
+export function SiteHeader({
+  active,
+}: {
+  active?: "home" | "chess" | "problems" | "parent" | "leaderboard" | "achievements";
+}) {
   const t = useT();
   const ranked = loginAvailable(useAccount());
   const link = (href: string, emoji: string, label: string, key: typeof active) => (
@@ -45,6 +49,7 @@ export function SiteHeader({ active }: { active?: "home" | "chess" | "problems" 
         <nav className="hidden items-center gap-1 sm:flex" aria-label={t("Разделы", "Boʻlimlar")}>
           {link("/chess", "♞", t("Шахматы", "Shaxmat"), "chess")}
           {link("/my-problems", "✍️", t("Мои задачи", "Masalalarim"), "problems")}
+          {link("/achievements", "🏅", t("Успехи", "Yutuqlar"), "achievements")}
           {ranked && link("/leaderboard", "🏆", t("Рейтинг", "Reyting"), "leaderboard")}
           {link("/parent", "🔒", t("Родителям", "Ota-onalarga"), "parent")}
         </nav>

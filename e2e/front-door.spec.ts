@@ -40,7 +40,7 @@ test("знакомство: язык → возраст; без имени и в
   await expect(page.locator("[data-name-banner]")).toHaveCount(0);
 });
 
-test("нижнее меню на телефоне: три раздела без входа; ссылка «Для взрослых» внизу страницы", async ({
+test("нижнее меню на телефоне: четыре раздела, «Успехи» — всегда; ссылка «Для взрослых» внизу страницы", async ({
   page,
   isMobile,
 }) => {
@@ -49,7 +49,8 @@ test("нижнее меню на телефоне: три раздела без 
   const bar = page.locator("[data-bottom-nav]");
   if (isMobile) {
     await expect(bar).toBeVisible();
-    await expect(bar.getByRole("link")).toHaveCount(3);
+    await expect(bar.getByRole("link")).toHaveCount(4);
+    await expect(bar.getByRole("link", { name: /Успехи/ })).toHaveAttribute("href", "/achievements");
     await expect(bar.getByRole("link", { name: /Главная/ })).toHaveAttribute("aria-current", "page");
     // Внутри задач меню не отвлекает.
     await page.goto("/week/1/day/1#task-1");
@@ -113,7 +114,7 @@ test("старшим остановки нет: после третьей зад
   await expect(page.locator("[data-rest-stop]")).toHaveCount(0);
 });
 
-test("с подключённым входом в меню появляется «Рейтинг»; ссылка «к содержимому» ведёт в main", async ({
+test("с подключённым входом «Рейтинг» есть в шапке и в «Успехах»; ссылка «к содержимому» ведёт в main", async ({
   page,
   isMobile,
 }) => {
@@ -122,8 +123,11 @@ test("с подключённым входом в меню появляется 
     route.fulfill({ json: { user: null, providers: { google: true, telegram: false }, reports: false } }),
   );
   await page.goto("/");
-  if (isMobile) await expect(page.locator("[data-bottom-nav]").getByRole("link")).toHaveCount(4);
-  else
+  if (isMobile) {
+    await page.goto("/achievements");
+    await expect(page.getByRole("link", { name: "Рейтинг" })).toBeVisible();
+    await page.goto("/");
+  } else
     await expect(
       page.getByRole("navigation", { name: "Разделы" }).getByRole("link", { name: "Рейтинг" }),
     ).toBeVisible();
