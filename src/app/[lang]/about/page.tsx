@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { AboutView } from "@/components/about/AboutView";
 import { SiteFooter, SiteHeader } from "@/components/SiteHeader";
 import { allTasks, WEEKS } from "@/content/program";
-import { CHESS_LEVELS } from "@/content/chess";
+import { CHESS_RU } from "@/content/chess/content";
 import { SECRETS } from "@/content/chess/secrets";
 import bank from "@/content/chess/puzzle-bank.json";
 
@@ -15,11 +15,29 @@ export const metadata: Metadata = {
   alternates: { canonical: "/about" },
 };
 
+const COURSE_LESSONS = [
+  CHESS_RU.course1Lessons,
+  CHESS_RU.course2Lessons,
+  CHESS_RU.course3Lessons,
+  CHESS_RU.course4Lessons,
+  CHESS_RU.course5Lessons,
+];
+
+/** Разные упражнения шахматной школы: уровни, тактика и собственные упражнения уроков курса (ссылки на уровни не считаем дважды). */
+function chessExerciseCount() {
+  const ids = new Set<string>();
+  for (const l of CHESS_RU.levels) for (const e of l.exercises) ids.add(e.id);
+  for (const t of CHESS_RU.tactics) for (const e of t.exercises) ids.add(e.id);
+  for (const lessons of COURSE_LESSONS) for (const l of lessons) for (const e of l.exercises) ids.add(e.id);
+  return ids.size;
+}
+
 export default function AboutPage() {
   const stats = {
     tasks: allTasks().length,
     weeks: WEEKS.length,
-    chessExercises: CHESS_LEVELS.reduce((n, l) => n + l.exercises.length, 0),
+    chessExercises: chessExerciseCount(),
+    courseLessons: COURSE_LESSONS.reduce((n, l) => n + l.length, 0),
     puzzles: (bank as { total: number }).total,
     stories: SECRETS.length,
   };
