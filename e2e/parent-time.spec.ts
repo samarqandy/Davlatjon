@@ -155,3 +155,19 @@ test("время вышло посреди дела — карточка ждё�
   await page.locator('a[href="/chess"]:visible').first().click();
   await expect(page.locator("[data-rest-card]")).toBeVisible();
 });
+
+test("главная родителя: «Эта неделя» — дни, минуты, решённое и совет; без процентов", async ({ page }) => {
+  await prepare(page, { tasks: solvedToday, activity: { TODAY: { ms: 12 * 60_000 } } });
+  await createPin(page);
+  const card = page.locator("[data-parent-week]");
+  await expect(card).toBeVisible();
+  await expect(card.locator('[data-week-metric="active"]')).toContainText("1 / 7");
+  await expect(card.locator('[data-week-metric="minutes"]')).toContainText("12");
+  await expect(card.locator('[data-week-metric="solved"]')).toContainText("1");
+  await expect(card.locator("[data-week-tip]")).toHaveAttribute("data-week-tip", "rhythm");
+  expect(await card.innerText()).not.toMatch(/%/);
+  // Курс по ступеням: пять ступеней с прогрессом.
+  await expect(page.locator("[data-parent-course] li")).toHaveCount(5);
+  await card.getByRole("link", { name: /Подробные итоги недели/ }).click();
+  await expect(page).toHaveURL(/\/parent\/report$/);
+});
