@@ -55,6 +55,8 @@ export function HintLadder({ taskId, hints }: { taskId: string; hints: readonly 
         </h3>
         <div
           className="flex gap-1"
+          // role="img": без роли подпись у простого блока не считается (и диктор её не читает).
+          role="img"
           aria-label={t(
             `Открыто подсказок: ${opened} из ${hints.length}`,
             `${hints.length} ta maslahatdan ${opened} tasi ochildi`,

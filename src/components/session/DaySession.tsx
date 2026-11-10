@@ -111,7 +111,14 @@ export function DaySession({
             </p>
             <p className="line-clamp-2 leading-tight font-black">{day.title}</p>
           </div>
-          <ButtonLink href={printHref(day)} variant="secondary" size="sm" className="shrink-0">
+          <ButtonLink
+            href={printHref(day)}
+            variant="secondary"
+            size="sm"
+            className="shrink-0"
+            // На телефоне подпись скрыта, остаётся значок — ссылке нужно название.
+            aria-label={t("Распечатать", "Chop etish")}
+          >
             <Icon icon={Printer} /> <span className="hidden sm:inline">{t("Распечатать", "Chop etish")}</span>
           </ButtonLink>
         </div>

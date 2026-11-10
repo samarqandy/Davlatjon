@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 /** На телефоне ни одна детская страница не должна прокручиваться вбок: иначе всё рисуется вдвое мельче. */
 
@@ -39,6 +39,24 @@ const PAGES = [
   "/privacy",
 ];
 
+/** Адреса, которых нет в общем списке: курс по ступеням, центр задач в режиме решения, экран игры, «Успехи». */
+const MORE = ["/chess/course", "/chess/course-5", "/chess/puzzles#practice", "/chess/play", "/achievements"];
+
+/** Какие страницы шире экрана и на сколько пикселей. */
+async function tooWide(page: Page, urls: string[]): Promise<string[]> {
+  const wide: string[] = [];
+  for (const url of urls) {
+    await page.goto(url);
+    await page.waitForLoadState("load");
+    await page.waitForTimeout(400);
+    // «Весь путь» на главной у младших свёрнут — раскрываем: под ним самая широкая часть страницы.
+    await page.evaluate(() => document.querySelectorAll("details").forEach((d) => (d.open = true)));
+    const over = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    if (over > 1) wide.push(`${url} (+${over}px)`);
+  }
+  return wide;
+}
+
 for (const lang of ["ru", "uz"] as const) {
   test(`${lang}: страницы не шире экрана`, async ({ page }, info) => {
     test.skip(info.project.name !== "phone", "проверка нужна для телефона");
@@ -50,16 +68,22 @@ for (const lang of ["ru", "uz"] as const) {
         ),
       [lang, KEY] as const,
     );
-    const wide: string[] = [];
-    for (const url of PAGES) {
-      await page.goto(url);
-      await page.waitForLoadState("load");
-      await page.waitForTimeout(400);
-      const over = await page.evaluate(
-        () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
-      );
-      if (over > 1) wide.push(`${url} (+${over}px)`);
-    }
-    expect(wide).toEqual([]);
+    expect(await tooWide(page, [...PAGES, ...MORE])).toEqual([]);
+  });
+
+  // Самые узкие телефоны — 320 px (iPhone SE первого поколения, недорогие Android).
+  test(`${lang}: страницы не шире экрана 320 px`, async ({ page }, info) => {
+    test.skip(info.project.name !== "phone", "проверка нужна для телефона");
+    test.slow();
+    await page.setViewportSize({ width: 320, height: 640 });
+    await page.addInitScript(
+      ([l, key]) =>
+        localStorage.setItem(
+          key,
+          JSON.stringify({ version: 1, welcomed: true, settings: { age: 9, lang: l, childName: "Анна" } }),
+        ),
+      [lang, KEY] as const,
+    );
+    expect(await tooWide(page, [...PAGES, ...MORE])).toEqual([]);
   });
 }
