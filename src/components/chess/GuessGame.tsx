@@ -1,8 +1,9 @@
 "use client";
 
+import { RotateCcw } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Feedback, type FeedbackState } from "@/components/answers/Feedback";
-import { Button } from "@/components/ui";
+import { Button, Icon } from "@/components/ui";
 import type { FamousGame } from "@/content/chess/games";
 import { type Color, isInCheck, isPromotionMove, legalTargets, pieceAt, playMove } from "@/lib/chess";
 import { isAlmostBest } from "@/lib/engine/analysis";
@@ -188,7 +189,7 @@ export function GuessGame({ game, onExit }: { game: FamousGame; onExit: () => vo
             </p>
             <div className="mt-2 flex flex-wrap gap-2">
               <Button size="sm" onClick={restart}>
-                ↺ {t("Ещё раз", "Yana bir bor")}
+                <Icon icon={RotateCcw} /> {t("Ещё раз", "Yana bir bor")}
               </Button>
               <Button size="sm" variant="secondary" onClick={onExit}>
                 {t("К разбору партии", "Partiya tahliliga")}

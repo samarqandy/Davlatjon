@@ -1,9 +1,20 @@
 "use client";
 
-import { Bird, CalendarDays, ChevronRight, Flame, type LucideIcon, Play, Puzzle, Repeat, Zap } from "lucide-react";
+import {
+  Bird,
+  CalendarDays,
+  ChevronRight,
+  Flame,
+  type LucideIcon,
+  Play,
+  Puzzle,
+  Repeat,
+  Zap,
+  RotateCcw,
+} from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { Button, cn, ProgressBar } from "@/components/ui";
+import { Button, cn, ProgressBar, Icon } from "@/components/ui";
 import {
   PUZZLES,
   PUZZLE_THEMES,
@@ -174,7 +185,7 @@ export function PuzzleHub() {
           )}
           {dueCount > 0 && (
             <Button variant="secondary" size="sm" onClick={() => setHash("#repeat")}>
-              🔁 {t(`Исправить ошибки (${dueCount})`, `Xatolarni tuzatish (${dueCount})`)}
+              <Icon icon={Repeat} /> {t(`Исправить ошибки (${dueCount})`, `Xatolarni tuzatish (${dueCount})`)}
             </Button>
           )}
         </div>
@@ -615,7 +626,7 @@ function StreakView() {
                 setRound((r) => r + 1);
               }}
             >
-              ↺ {t("Ещё раз", "Yana bir bor")}
+              <Icon icon={RotateCcw} /> {t("Ещё раз", "Yana bir bor")}
             </Button>
             <Button variant="secondary" onClick={() => setHash("#all")}>
               {t("К задачам", "Masalalarga")}

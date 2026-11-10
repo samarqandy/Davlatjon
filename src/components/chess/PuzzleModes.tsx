@@ -1,7 +1,8 @@
 "use client";
 
+import { Repeat, Play, RotateCcw } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { Button, cn } from "@/components/ui";
+import { Button, cn, Icon } from "@/components/ui";
 import { PUZZLES, getPuzzle } from "@/content/chess/puzzles";
 import { useT } from "@/lib/i18n";
 import { stopVoice } from "@/lib/voice";
@@ -143,7 +144,8 @@ export function StormView() {
             </>
           )}
           <Button size="lg" className="mt-4" onClick={start} disabled={mix === null}>
-            {over ? t("↺ Ещё раз", "↺ Yana bir bor") : t("▶ Старт", "▶ Boshlash")}
+            <Icon icon={over ? RotateCcw : Play} className={over ? undefined : "fill-current"} />
+            {over ? t("Ещё раз", "Yana bir bor") : t("Старт", "Boshlash")}
           </Button>
         </div>
       )}
@@ -185,7 +187,9 @@ export function RepeatView() {
     <div className="space-y-4">
       <Back />
       <header>
-        <h1 className="text-2xl font-black">🔁 {t("Повторение", "Takrorlash")}</h1>
+        <h1 className="text-2xl font-black">
+          <Icon icon={Repeat} /> {t("Повторение", "Takrorlash")}
+        </h1>
         <p className="text-muted">
           {t(
             "Задачи, в которых были ошибки, возвращаются через день, потом через 3, 7 и 21 день. Реши без ошибки — и задача уйдёт дальше. Так трудное запоминается навсегда.",

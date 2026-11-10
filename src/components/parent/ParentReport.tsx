@@ -1,7 +1,8 @@
 "use client";
 
+import { Printer } from "lucide-react";
 import { useState } from "react";
-import { Button, Card, cn } from "@/components/ui";
+import { Button, Card, cn, Icon } from "@/components/ui";
 import { useTitleTranslation } from "@/lib/docTitle";
 import { useLang, useT } from "@/lib/i18n";
 import { addDays, rangeText, reportLines, weeklyReport } from "@/lib/report";
@@ -60,7 +61,7 @@ export function ParentReport() {
               →
             </Button>
             <Button variant="soft" size="sm" className="min-h-11" onClick={() => window.print()}>
-              🖨 {t("Распечатать", "Chop etish")}
+              <Icon icon={Printer} /> {t("Распечатать", "Chop etish")}
             </Button>
           </div>
         </div>

@@ -1,7 +1,8 @@
 "use client";
 
+import { RotateCcw } from "lucide-react";
 import { useRef, useState } from "react";
-import { Button, cn } from "@/components/ui";
+import { Button, cn, Icon } from "@/components/ui";
 import { askExplain, praise } from "@/lib/feedback";
 import { countText, useLang, useT, type Lang } from "@/lib/i18n";
 import { applyJugs, isUseless, jugsReached, replayJugs, type JugsAction, type JugsState } from "@/lib/jugs";
@@ -229,7 +230,7 @@ export function JugsPuzzle({
           }}
           disabled={actions.length === 0}
         >
-          ↺ {t("Сначала", "Qaytadan boshlash")}
+          <Icon icon={RotateCcw} /> {t("Сначала", "Qaytadan boshlash")}
         </Button>
       </div>
 

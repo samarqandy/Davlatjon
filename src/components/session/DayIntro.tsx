@@ -1,7 +1,8 @@
 "use client";
 
+import { Play, Printer } from "lucide-react";
 import { RichText } from "@/components/RichText";
-import { ButtonLink, Button, LevelBadge } from "@/components/ui";
+import { ButtonLink, Button, LevelBadge, Icon } from "@/components/ui";
 import { sectionsFor } from "@/content/meta";
 import { printHref } from "@/lib/routes";
 import type { Day } from "@/content/types";
@@ -49,11 +50,12 @@ export function DayIntro({ day, onStart }: { day: Day; onStart: () => void }) {
         </div>
         <div className="mt-6 flex flex-wrap gap-3">
           <Button size="lg" onClick={onStart}>
-            {started ? t("Продолжить ▶", "Davom etish ▶") : t("Начать занятие ▶", "Mashgʻulotni boshlash ▶")}
+            {started ? t("Продолжить", "Davom etish") : t("Начать занятие", "Mashgʻulotni boshlash")}{" "}
+            <Icon icon={Play} className="fill-current" />
           </Button>
           {/* Печать — для взрослых: тише главной кнопки (та же кнопка есть и в шапке занятия). */}
           <ButtonLink href={printHref(day)} variant="ghost" size="md" className="self-center">
-            🖨 {t("Распечатать", "Chop etish")}
+            <Icon icon={Printer} /> {t("Распечатать", "Chop etish")}
           </ButtonLink>
         </div>
         <p className="mt-4 text-sm text-muted">

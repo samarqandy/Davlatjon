@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, Play, SlidersHorizontal } from "lucide-react";
+import { ChevronDown, Play, SlidersHorizontal, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { Button, cn } from "@/components/ui";
@@ -269,9 +269,7 @@ function ModeChooser() {
               )}
             </span>
           </span>
-          <span className="text-2xl" aria-hidden>
-            ▶
-          </span>
+          <ChevronRight className="h-7 w-7 shrink-0" strokeWidth={2.5} aria-hidden />
         </Link>
       )}
 

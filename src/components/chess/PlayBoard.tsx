@@ -1,8 +1,9 @@
 "use client";
 
+import { RotateCcw } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Confetti } from "@/components/rewards/Confetti";
-import { Button, ButtonLink, cn } from "@/components/ui";
+import { Button, ButtonLink, cn, Icon } from "@/components/ui";
 import { playReward } from "@/lib/sfx";
 import {
   illegalReason,
@@ -518,7 +519,7 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
             </Button>
           )}
           <Button size="sm" variant={status.over ? "primary" : "secondary"} onClick={restart}>
-            ↺ {t("Новая партия", "Yangi partiya")}
+            <Icon icon={RotateCcw} /> {t("Новая партия", "Yangi partiya")}
           </Button>
         </div>
         {previous && (

@@ -1,5 +1,6 @@
 "use client";
 
+import { Icon } from "@/components/ui";
 import Link from "next/link";
 import { BarChart3, ChessKnight, Lock, PencilLine, Trophy, type LucideIcon } from "lucide-react";
 import { loginAvailable, useAccount } from "@/lib/account";
@@ -113,7 +114,7 @@ export function SiteFooter() {
             data-adults-link
             className="inline-flex min-h-11 items-center font-extrabold whitespace-nowrap underline underline-offset-4 hover:text-ink"
           >
-            🔒 {t("Для взрослых", "Kattalar uchun")}
+            <Icon icon={Lock} /> {t("Для взрослых", "Kattalar uchun")}
           </Link>
         </nav>
       </div>

@@ -1,7 +1,8 @@
 "use client";
 
+import { RotateCcw } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { Button, cn } from "@/components/ui";
+import { Button, cn, Icon } from "@/components/ui";
 import { askExplain } from "@/lib/feedback";
 import { countText, useLang, useT, type Lang } from "@/lib/i18n";
 import { robotMove } from "@/lib/nim";
@@ -152,7 +153,7 @@ export function NimGame({ taskId, stones, take }: { taskId: string; stones: numb
 
       <div className="flex flex-wrap items-center gap-3">
         <Button variant={over ? "primary" : "ghost"} onClick={restart}>
-          ↺ {t("Новая игра", "Yangi oʻyin")}
+          <Icon icon={RotateCcw} /> {t("Новая игра", "Yangi oʻyin")}
         </Button>
         {won && (
           <span className="rounded-2xl bg-mint-soft px-3 py-1.5 text-sm font-extrabold text-mint-ink">

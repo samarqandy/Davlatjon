@@ -1,9 +1,10 @@
 "use client";
 
+import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Feedback, type FeedbackState } from "@/components/answers/Feedback";
-import { Button, cn } from "@/components/ui";
+import { Button, cn, Icon } from "@/components/ui";
 import { getOpening, type Opening, type OpeningCategory } from "@/content/chess/openings";
 import { legalTargets, pieceAt, playMove, type Color } from "@/lib/chess";
 import { useSan, useT, type T } from "@/lib/i18n";
@@ -172,7 +173,7 @@ function OpeningDetail({ opening }: { opening: Opening }) {
               onClick={() => setPly((p) => Math.min(positions.length - 1, p + 1))}
               disabled={ply === positions.length - 1}
             >
-              {t("Дальше ▶", "Oldinga ▶")}
+              {t("Дальше", "Oldinga")} <Icon icon={ChevronRight} />
             </Button>
             <span className="ml-auto text-sm font-extrabold text-muted">
               {ply} / {positions.length - 1}

@@ -1,7 +1,8 @@
 "use client";
 
+import { RotateCcw } from "lucide-react";
 import { Fragment, useRef, useState } from "react";
-import { Button, cn } from "@/components/ui";
+import { Button, cn, Icon } from "@/components/ui";
 import { askExplain, praise } from "@/lib/feedback";
 import { countText, useLang, useT, type Lang } from "@/lib/i18n";
 import { addFound, recordCheck, saveTaskInput, useTask } from "@/lib/store";
@@ -144,7 +145,7 @@ export function SwapSortPuzzle({ taskId, cards, optimal }: { taskId: string; car
           {t(`Обменов: ${swaps}`, `Almashtirishlar: ${swaps}`)}
         </span>
         <Button variant="ghost" onClick={restart} disabled={swaps === 0}>
-          ↺ {t("Сначала", "Qaytadan boshlash")}
+          <Icon icon={RotateCcw} /> {t("Сначала", "Qaytadan boshlash")}
         </Button>
       </div>
       <Feedback state={feedback} />

@@ -1,8 +1,9 @@
 "use client";
 
+import { Play, RotateCcw } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Button, cn } from "@/components/ui";
+import { Button, cn, Icon } from "@/components/ui";
 import { legalTargets, pieceAt } from "@/lib/chess";
 import {
   DRILL_SECONDS,
@@ -305,7 +306,8 @@ function Drill({ mode, onExit }: { mode: DrillMode; onExit: () => void }) {
           </div>
           {!running && (
             <Button size="lg" className="w-full" onClick={start}>
-              {over ? t("↺ Ещё раз", "↺ Yana bir marta") : t("▶ Старт", "▶ Boshlash")}
+              <Icon icon={over ? RotateCcw : Play} className={over ? undefined : "fill-current"} />
+              {over ? t("Ещё раз", "Yana bir marta") : t("Старт", "Boshlash")}
             </Button>
           )}
           {over && (

@@ -1,7 +1,8 @@
 "use client";
 
+import { RotateCcw, Play } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import { Button, cn, ProgressBar } from "@/components/ui";
+import { Button, cn, ProgressBar, Icon } from "@/components/ui";
 import { getPuzzle, type PuzzleTheme } from "@/content/chess/puzzles";
 import { useT } from "@/lib/i18n";
 import { pluralize } from "@/lib/plural";
@@ -190,7 +191,7 @@ export function LoadError({ onRetry }: { onRetry: () => void }) {
         )}
       </p>
       <Button className="mt-3" onClick={onRetry}>
-        ↺ {t("Ещё раз", "Yana bir bor")}
+        <Icon icon={RotateCcw} /> {t("Ещё раз", "Yana bir bor")}
       </Button>
     </div>
   );
@@ -396,7 +397,8 @@ export function WoodpeckerView() {
         )}
         {creating === "error" && <LoadError onRetry={create} />}
         <Button size="lg" onClick={create} disabled={creating === "busy"}>
-          {w ? t("Новый набор задач", "Yangi toʻplam") : t("▶ Начать первый круг", "▶ Birinchi aylanani boshlash")}
+          {!w && <Icon icon={Play} className="fill-current" />}
+          {w ? t("Новый набор задач", "Yangi toʻplam") : t("Начать первый круг", "Birinchi aylanani boshlash")}
         </Button>
       </div>
     );

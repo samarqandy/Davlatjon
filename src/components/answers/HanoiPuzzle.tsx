@@ -1,7 +1,8 @@
 "use client";
 
+import { RotateCcw } from "lucide-react";
 import { useRef, useState } from "react";
-import { Button, cn } from "@/components/ui";
+import { Button, cn, Icon } from "@/components/ui";
 import { askExplain, praise } from "@/lib/feedback";
 import { canMove, hanoiSolved, hanoiStart, moveDisk, topDisk, type HanoiState } from "@/lib/hanoi";
 import { countText, useLang, useT, type Lang } from "@/lib/i18n";
@@ -256,7 +257,7 @@ export function HanoiPuzzle({ taskId, disks, optimal }: { taskId: string; disks:
           {t(`Ходов: ${moves}`, `Yurishlar: ${moves}`)}
         </span>
         <Button variant="secondary" onClick={() => restart(size)} disabled={moves === 0}>
-          ↺ {t("Сначала", "Qaytadan boshlash")}
+          <Icon icon={RotateCcw} /> {t("Сначала", "Qaytadan boshlash")}
         </Button>
         <span className="text-sm font-bold text-muted">
           {selected === null

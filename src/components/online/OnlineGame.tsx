@@ -1,12 +1,13 @@
 "use client";
 
+import { Repeat } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { AccountPanel } from "@/components/AccountPanel";
 import { ChessBoard, type PromotionPiece, type SquareMark } from "@/components/chess/ChessBoard";
 import { illegalText, usePromotion } from "@/components/chess/useMoveInput";
-import { Button, ButtonLink, cn } from "@/components/ui";
+import { Button, ButtonLink, cn, Icon } from "@/components/ui";
 import { useAccount } from "@/lib/account";
 import { illegalReason, isInCheck, isPromotionMove, legalTargets, pieceAt, playMove } from "@/lib/chess";
 import { useSan, useT } from "@/lib/i18n";
@@ -374,7 +375,9 @@ function Table({ id }: { id: string }) {
               </Button>
             ))}
           {finished && game.reason !== "aborted" && (
-            <Button onClick={() => void rematch()}>🔁 {t("Сыграть ещё", "Yana oʻynash")}</Button>
+            <Button onClick={() => void rematch()}>
+              <Icon icon={Repeat} /> {t("Сыграть ещё", "Yana oʻynash")}
+            </Button>
           )}
         </div>
       </div>

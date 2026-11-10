@@ -1,9 +1,10 @@
 "use client";
 
+import { Printer } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { ParentGate } from "@/components/parent/ParentGate";
-import { Button, cn } from "@/components/ui";
+import { Button, cn, Icon } from "@/components/ui";
 import type { Day } from "@/content/types";
 import { useTitleTranslation } from "@/lib/docTitle";
 import { useBoth, useT, type Both } from "@/lib/i18n";
@@ -109,7 +110,7 @@ export function PrintView({
             {t("Место для решения", "Yechish uchun joy")}
           </label>
           <Button onClick={() => window.print()} size="md">
-            🖨 {t("Печать", "Chop etish")}
+            <Icon icon={Printer} /> {t("Печать", "Chop etish")}
           </Button>
         </div>
         <p className="mx-auto max-w-5xl px-4 pb-2 text-xs text-muted">

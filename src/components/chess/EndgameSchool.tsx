@@ -1,10 +1,11 @@
 "use client";
 
+import { RotateCcw } from "lucide-react";
 import { Chess } from "chess.js";
 import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
 import { RichText } from "@/components/RichText";
-import { Button, ProgressBar, cn } from "@/components/ui";
+import { Button, ProgressBar, cn, Icon } from "@/components/ui";
 import type { EndgameDrill, EndgameLesson } from "@/content/chess/endgames";
 import { legalTargets, pieceAt, playMove } from "@/lib/chess";
 import { bestMoves, kingCatches, moveOutcome, pawnSquare, robotMove } from "@/lib/endgame";
@@ -208,7 +209,7 @@ function SquareDrill({ drill, solved }: { drill: EndgameDrill; solved: boolean }
           </p>
           <p className="text-sm">{drill.why}</p>
           <Button variant="ghost" size="sm" onClick={() => setAnswer(null)}>
-            ↺ {t("Ещё раз", "Yana bir bor")}
+            <Icon icon={RotateCcw} /> {t("Ещё раз", "Yana bir bor")}
           </Button>
         </div>
       )}
@@ -469,7 +470,7 @@ function PlayDrill({ drill, solved }: { drill: EndgameDrill; solved: boolean }) 
         )}
         {history.length > 0 && (
           <Button variant="ghost" size="sm" onClick={restart}>
-            ↺ {t("Начать заново", "Qaytadan boshlash")}
+            <Icon icon={RotateCcw} /> {t("Начать заново", "Qaytadan boshlash")}
           </Button>
         )}
         {state === "playing" && drill.hint && !hint && (

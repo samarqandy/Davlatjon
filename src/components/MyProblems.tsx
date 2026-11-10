@@ -1,8 +1,9 @@
 "use client";
 
+import { Printer } from "lucide-react";
 import { dayText } from "@/lib/dates";
 import { useState, type FormEvent } from "react";
-import { Button, Card } from "@/components/ui";
+import { Button, Card, Icon } from "@/components/ui";
 import { useT } from "@/lib/i18n";
 import { addProblem, removeProblem, useHydrated, useStore } from "@/lib/store";
 
@@ -55,7 +56,7 @@ export function MyProblems() {
         </div>
         {hydrated && problems.length > 0 && (
           <Button variant="secondary" onClick={() => window.print()} className="no-print">
-            🖨 {t("Распечатать задачник", "Toʻplamni chop etish")}
+            <Icon icon={Printer} /> {t("Распечатать задачник", "Toʻplamni chop etish")}
           </Button>
         )}
       </div>

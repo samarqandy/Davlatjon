@@ -1,7 +1,8 @@
 "use client";
 
+import { Play } from "lucide-react";
 import Link from "next/link";
-import { ProgressBar } from "@/components/ui";
+import { ProgressBar, Icon } from "@/components/ui";
 import { chessLevelHref } from "@/content/chess";
 import { currentRank, levelStatuses } from "@/lib/chessProgress";
 import type { ChessLevelId } from "@/content/chess/types";
@@ -73,7 +74,8 @@ export function ChessHomeCard({ summary }: { summary: Both<ChessHomeSummary> }) 
         href={next ? chessLevelHref(next.id) : "/chess"}
         className="inline-flex min-h-14 items-center justify-center rounded-2xl bg-sun px-6 py-2 text-lg font-bold text-on-sun shadow-[0_4px_0_0_#b45309] transition hover:bg-[#f7a81d]"
       >
-        {solved > 0 ? t("Продолжить ▶", "Davom etish ▶") : t("Начать ▶", "Boshlash ▶")}
+        {solved > 0 ? t("Продолжить", "Davom etish") : t("Начать", "Boshlash")}{" "}
+        <Icon icon={Play} className="fill-current" />
       </Link>
     </section>
   );
