@@ -483,6 +483,8 @@ test("разбор партии: ошибки объясняются и стан
 test("вдвоём с часами и форой", async ({ page }) => {
   await page.goto("/chess/play");
   await page.getByRole("group", { name: "Шахматные часы" }).getByRole("button", { name: "5 мин + 3 с" }).click();
+  // Фора — в раскрывающемся блоке: открываем его.
+  await page.locator("[data-two-odds] summary").click();
   await page.getByRole("group", { name: "Фора", exact: true }).getByRole("button", { name: "без ферзя" }).click();
   await page.getByRole("button", { name: "Начать партию" }).click();
   await expect(page.getByText(/Фора: белые без ферзя/)).toBeVisible();

@@ -1,6 +1,6 @@
 "use client";
 
-import { Play } from "lucide-react";
+import { ChevronDown, Play, SlidersHorizontal } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { Button, cn } from "@/components/ui";
@@ -137,71 +137,100 @@ function ModeChooser() {
             `Robotning kuchini tanla. Senga «${robotName}»dan boshlashni maslahat beramiz — yuta boshlaganingda esa yuqoriroqqa koʻtaril.`,
           )}
         </p>
-        <div
-          className="mt-3 flex flex-wrap items-center gap-1.5"
-          role="group"
-          aria-label={t("Фора от робота", "Robotdan fora")}
-        >
-          <span className="text-sm font-extrabold text-muted">
-            {t("Фора — робот играет:", "Fora — robot oʻynaydi:")}
-          </span>
-          <button type="button" className={chip(robotOdds === "")} onClick={() => setRobotOdds("")}>
-            {t("со всеми фигурами", "barcha donalar bilan")}
-          </button>
-          {ODDS_PIECES.map((o) => (
-            <button key={o.id} type="button" className={chip(robotOdds === o.id)} onClick={() => setRobotOdds(o.id)}>
-              {oddsPieceLabel(o.id, lang)}
-            </button>
-          ))}
-        </div>
-        <div className="mt-2 flex flex-wrap items-center gap-1.5" role="group" aria-label={t("Режим", "Rejim")}>
-          <span className="text-sm font-extrabold text-muted">{t("Режим:", "Rejim:")}</span>
-          <button type="button" className={chip(!solo)} aria-pressed={!solo} onClick={() => setSolo(false)}>
-            {t("с помощью", "yordam bilan")}
-          </button>
-          <button type="button" className={chip(solo)} aria-pressed={solo} onClick={() => setSolo(true)} data-solo>
-            {t(
-              "Сам: без подсказок и отмены → корона с блеском ✨",
-              "Oʻzim: maslahatsiz va qaytarishsiz → yaltiroq toj ✨",
-            )}
-          </button>
-        </div>
+        {/* Фора и режим «Сам» нужны редко: они в раскрывающемся блоке, а уровни робота — сразу на виду. */}
+        <details className="group mt-3 rounded-2xl border border-line" data-robot-settings>
+          <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 px-3 text-sm font-extrabold select-none [&::-webkit-details-marker]:hidden">
+            <SlidersHorizontal className="h-5 w-5 shrink-0 text-muted" strokeWidth={2.25} aria-hidden />
+            <span className="min-w-0 flex-1 truncate">
+              {t("Настройки партии", "Partiya sozlamalari")}
+              <span className="font-bold text-muted">
+                {" · "}
+                {robotOdds ? oddsPieceLabel(robotOdds, lang) : t("со всеми фигурами", "barcha donalar bilan")}
+                {solo ? t(" · сам", " · oʻzim") : ""}
+              </span>
+            </span>
+            <ChevronDown
+              className="h-5 w-5 shrink-0 text-muted transition group-open:rotate-180"
+              strokeWidth={2.25}
+              aria-hidden
+            />
+          </summary>
+          <div className="px-3 pb-3">
+            <div
+              className="flex flex-wrap items-center gap-1.5"
+              role="group"
+              aria-label={t("Фора от робота", "Robotdan fora")}
+            >
+              <span className="text-sm font-extrabold text-muted">
+                {t("Фора — робот играет:", "Fora — robot oʻynaydi:")}
+              </span>
+              <button type="button" className={chip(robotOdds === "")} onClick={() => setRobotOdds("")}>
+                {t("со всеми фигурами", "barcha donalar bilan")}
+              </button>
+              {ODDS_PIECES.map((o) => (
+                <button
+                  key={o.id}
+                  type="button"
+                  className={chip(robotOdds === o.id)}
+                  onClick={() => setRobotOdds(o.id)}
+                >
+                  {oddsPieceLabel(o.id, lang)}
+                </button>
+              ))}
+            </div>
+            <div className="mt-2 flex flex-wrap items-center gap-1.5" role="group" aria-label={t("Режим", "Rejim")}>
+              <span className="text-sm font-extrabold text-muted">{t("Режим:", "Rejim:")}</span>
+              <button type="button" className={chip(!solo)} aria-pressed={!solo} onClick={() => setSolo(false)}>
+                {t("с помощью", "yordam bilan")}
+              </button>
+              <button type="button" className={chip(solo)} aria-pressed={solo} onClick={() => setSolo(true)} data-solo>
+                {t(
+                  "Сам: без подсказок и отмены → корона с блеском ✨",
+                  "Oʻzim: maslahatsiz va qaytarishsiz → yaltiroq toj ✨",
+                )}
+              </button>
+            </div>
+          </div>
+        </details>
         <div className="mt-3 grid gap-2 sm:grid-cols-5">
           {robotLevels(lang).map((l) => (
             <div
               key={l.id}
+              // На телефоне уровень — одна строка: слева робот, справа кнопки; на широком экране — карточка.
               className={cn(
-                "flex flex-col rounded-2xl border-2 p-3",
+                "flex items-center gap-3 rounded-2xl border-2 p-3 sm:flex-col sm:items-stretch sm:gap-0",
                 hydrated && l.id === profile.robotLevel ? "border-brand/60 bg-brand-soft/30" : "border-line",
               )}
             >
-              <div className="flex items-center gap-2">
-                <PieceIcon piece={l.piece} className="h-10 w-10 rounded-xl bg-[#f0d9b5] p-0.5" />
-                <div>
-                  <p className="font-black">{l.name}</p>
-                  <p className="text-xs font-bold text-muted">{t(`уровень ${l.id}`, `${l.id}-daraja`)}</p>
-                  {hydrated && l.id === profile.robotLevel && (
-                    <p className="text-xs font-extrabold text-brand">{t("★ советуем тебе", "★ senga tavsiya")}</p>
-                  )}
+              <div className="min-w-0 flex-1 sm:flex sm:flex-col">
+                <div className="flex items-center gap-2">
+                  <PieceIcon piece={l.piece} className="h-10 w-10 rounded-xl bg-[#f0d9b5] p-0.5" />
+                  <div>
+                    <p className="font-black">{l.name}</p>
+                    <p className="text-xs font-bold text-muted">{t(`уровень ${l.id}`, `${l.id}-daraja`)}</p>
+                    {hydrated && l.id === profile.robotLevel && (
+                      <p className="text-xs font-extrabold text-brand">{t("★ советуем тебе", "★ senga tavsiya")}</p>
+                    )}
+                  </div>
                 </div>
+                <p className="mt-2 hidden flex-1 text-xs text-muted sm:block">{l.about}</p>
+                {hydrated && wins(l.id) > 0 && (
+                  <p className="mt-1 text-xs font-extrabold text-mint-ink">
+                    🏆 {t("побед", "gʻalabalar")}: {wins(l.id)}{" "}
+                    <span
+                      className="ml-1 whitespace-nowrap"
+                      data-best-crowns={bestCrowns(robotGames, l.id)}
+                      title={t("Лучший результат: короны", "Eng yaxshi natija: tojlar")}
+                    >
+                      {bestCrowns(robotGames, l.id) >= 3 ? "👑✨" : bestCrowns(robotGames, l.id) === 2 ? "👑👑" : "👑"}
+                    </span>
+                  </p>
+                )}
+                {l.id === BOSS_LEVEL && (
+                  <p className="mt-1 text-xs font-extrabold text-rose">{t("😈 Главный босс", "😈 Bosh boss")}</p>
+                )}
               </div>
-              <p className="mt-2 hidden flex-1 text-xs text-muted sm:block">{l.about}</p>
-              {hydrated && wins(l.id) > 0 && (
-                <p className="mt-1 text-xs font-extrabold text-mint-ink">
-                  🏆 {t("побед", "gʻalabalar")}: {wins(l.id)}{" "}
-                  <span
-                    className="ml-1 whitespace-nowrap"
-                    data-best-crowns={bestCrowns(robotGames, l.id)}
-                    title={t("Лучший результат: короны", "Eng yaxshi natija: tojlar")}
-                  >
-                    {bestCrowns(robotGames, l.id) >= 3 ? "👑✨" : bestCrowns(robotGames, l.id) === 2 ? "👑👑" : "👑"}
-                  </span>
-                </p>
-              )}
-              {l.id === BOSS_LEVEL && (
-                <p className="mt-1 text-xs font-extrabold text-rose">{t("😈 Главный босс", "😈 Bosh boss")}</p>
-              )}
-              <div className="mt-2 flex gap-1">
+              <div className="flex shrink-0 flex-col gap-1 sm:mt-2 sm:flex-row">
                 <Button size="sm" className="flex-1" onClick={() => setHash(`#robot-${l.id}-w${robotQuerySuffix}`)}>
                   {t("Белыми", "Oqlar bilan")}
                 </Button>
@@ -268,27 +297,56 @@ function ModeChooser() {
               </button>
             ))}
           </div>
-          <p className="mt-3 text-sm font-extrabold text-muted">
-            🎁 {t("Фора — сильный играет без фигуры", "Fora — kuchliroq oʻyinchi bitta donasiz oʻynaydi")}
-          </p>
-          <div className="mt-1 flex flex-wrap gap-1.5" role="group" aria-label={t("Кто даёт фору", "Kim fora beradi")}>
-            <button type="button" className={chip(oddsSide === "w")} onClick={() => setOddsSide("w")}>
-              {t("белые", "oqlar")}
-            </button>
-            <button type="button" className={chip(oddsSide === "b")} onClick={() => setOddsSide("b")}>
-              {t("чёрные", "qoralar")}
-            </button>
-          </div>
-          <div className="mt-1.5 flex flex-wrap gap-1.5" role="group" aria-label={t("Фора", "Fora")}>
-            <button type="button" className={chip(oddsPiece === "")} onClick={() => setOddsPiece("")}>
-              {t("без форы", "forasiz")}
-            </button>
-            {ODDS_PIECES.map((o) => (
-              <button key={o.id} type="button" className={chip(oddsPiece === o.id)} onClick={() => setOddsPiece(o.id)}>
-                {oddsPieceLabel(o.id, lang)}
-              </button>
-            ))}
-          </div>
+          <details className="group mt-3 rounded-2xl border border-line" data-two-odds>
+            <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 px-3 text-sm font-extrabold select-none [&::-webkit-details-marker]:hidden">
+              <span className="min-w-0 flex-1 truncate">
+                {t("Фора", "Fora")}
+                <span className="font-bold text-muted">
+                  {" · "}
+                  {oddsPiece
+                    ? `${oddsSide === "w" ? t("белые", "oqlar") : t("чёрные", "qoralar")} ${oddsPieceLabel(oddsPiece, lang)}`
+                    : t("без форы", "forasiz")}
+                </span>
+              </span>
+              <ChevronDown
+                className="h-5 w-5 shrink-0 text-muted transition group-open:rotate-180"
+                strokeWidth={2.25}
+                aria-hidden
+              />
+            </summary>
+            <div className="px-3 pb-3">
+              <p className="text-sm font-bold text-muted">
+                {t("Сильный играет без фигуры.", "Kuchliroq oʻyinchi bitta donasiz oʻynaydi.")}
+              </p>
+              <div
+                className="mt-1 flex flex-wrap gap-1.5"
+                role="group"
+                aria-label={t("Кто даёт фору", "Kim fora beradi")}
+              >
+                <button type="button" className={chip(oddsSide === "w")} onClick={() => setOddsSide("w")}>
+                  {t("белые", "oqlar")}
+                </button>
+                <button type="button" className={chip(oddsSide === "b")} onClick={() => setOddsSide("b")}>
+                  {t("чёрные", "qoralar")}
+                </button>
+              </div>
+              <div className="mt-1.5 flex flex-wrap gap-1.5" role="group" aria-label={t("Фора", "Fora")}>
+                <button type="button" className={chip(oddsPiece === "")} onClick={() => setOddsPiece("")}>
+                  {t("без форы", "forasiz")}
+                </button>
+                {ODDS_PIECES.map((o) => (
+                  <button
+                    key={o.id}
+                    type="button"
+                    className={chip(oddsPiece === o.id)}
+                    onClick={() => setOddsPiece(o.id)}
+                  >
+                    {oddsPieceLabel(o.id, lang)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </details>
           <Button className="mt-3" onClick={() => setHash(twoParams ? `#two?${twoParams}` : "#two")}>
             {t("Начать партию", "Partiyani boshlash")}
           </Button>
