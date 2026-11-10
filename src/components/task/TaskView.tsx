@@ -1,6 +1,5 @@
 "use client";
 
-import { currentScrollBehavior } from "@/lib/useMotion";
 import { useEffect } from "react";
 import { AnswerPanel } from "@/components/answers/AnswerPanel";
 import { ListenButton } from "@/components/ListenButton";
@@ -44,41 +43,48 @@ export function TaskView({ task, number, total }: { task: Task; number: number; 
   useTaskTimer(task.id);
   const solved = progress.status === "solved";
   const young = useStore((s) => (s.settings.age ?? 9) < 9);
-  const hintsLeft = !solved && progress.hints < task.hints.length;
 
   return (
     <TaskIdContext.Provider value={task.id}>
       <article className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
-        <div className="space-y-5">
-          <div className="rounded-3xl border border-line bg-surface p-5 shadow-card sm:p-7">
-            <div className="mb-3 flex flex-wrap items-center gap-2">
-              <SectionTag section={task.section} lang={lang} />
-              <LevelBadge level={task.level} lang={lang} />
-              <span className="ml-auto text-sm font-bold text-muted">
-                {t(`Задача ${number} из ${total}`, `${number}-masala (jami ${total} ta)`)}
-              </span>
-              <ListenButton
-                src={VOICE_CLIPS.task(task.id, lang)}
-                label={t("Прочитать", "Oʻqib berish")}
-                large={young}
-                className={young ? "order-last w-full justify-center sm:order-none sm:w-auto" : undefined}
-              />
-            </div>
-            <h2
-              data-step-heading
-              tabIndex={-1}
-              className="mb-4 flex items-center gap-2 text-2xl font-black outline-none sm:text-3xl"
-            >
-              {task.title}
-              {solved && (
-                <span
-                  className="rounded-full bg-mint px-2.5 py-0.5 text-sm font-extrabold text-white"
-                  title={t("Решено", "Yechildi")}
-                >
-                  ✓
+        <div className="space-y-3 sm:space-y-5">
+          <div className="rounded-3xl border border-line bg-surface p-4 shadow-card sm:p-7">
+            {/*
+             * На телефоне — одна строка: название задачи и «Прочитать». Раздел, уровень и номер задачи занимали
+             * три строки над условием и отодвигали поле ответа за край экрана; с планшета они на месте.
+             */}
+            <div className="mb-3 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-2 sm:mb-4 sm:block">
+              <div className="contents sm:mb-3 sm:flex sm:flex-wrap sm:items-center sm:gap-2">
+                <span className="hidden sm:contents">
+                  <SectionTag section={task.section} lang={lang} />
+                  <LevelBadge level={task.level} lang={lang} />
                 </span>
-              )}
-            </h2>
+                <span className="ml-auto hidden text-sm font-bold text-muted sm:inline">
+                  {t(`Задача ${number} из ${total}`, `${number}-masala (jami ${total} ta)`)}
+                </span>
+                <ListenButton
+                  src={VOICE_CLIPS.task(task.id, lang)}
+                  label={t("Прочитать", "Oʻqib berish")}
+                  large={young}
+                  className="max-sm:col-start-2 max-sm:row-start-1"
+                />
+              </div>
+              <h2
+                data-step-heading
+                tabIndex={-1}
+                className="flex items-center gap-2 text-2xl font-black outline-none max-sm:col-start-1 max-sm:row-start-1 sm:text-3xl"
+              >
+                {task.title}
+                {solved && (
+                  <span
+                    className="rounded-full bg-mint px-2.5 py-0.5 text-sm font-extrabold text-white"
+                    title={t("Решено", "Yechildi")}
+                  >
+                    ✓
+                  </span>
+                )}
+              </h2>
+            </div>
             <div className="child-text space-y-3.5 text-lg sm:text-xl">
               {task.body.map((b, i) => (
                 <BlockView key={i} block={b} />
@@ -87,31 +93,16 @@ export function TaskView({ task, number, total }: { task: Task; number: number; 
           </div>
 
           <section
-            className="rounded-3xl border-2 border-brand/15 bg-brand-soft/40 p-4 sm:p-5"
+            className="rounded-3xl border-2 border-brand/15 bg-brand-soft/40 p-3 sm:p-5"
             aria-label={t("Мой ответ", "Javobim")}
           >
-            <div className="mb-3 flex items-center justify-between gap-2">
-              <h3 className="text-lg font-extrabold text-brand-dark">
-                <span className="deco" aria-hidden>
-                  ✏️{" "}
-                </span>
-                {t("Мой ответ", "Javobim")}
-              </h3>
-              {hintsLeft && (
-                <button
-                  type="button"
-                  data-hint-jump
-                  onClick={() =>
-                    document
-                      .getElementById("hints")
-                      ?.scrollIntoView({ behavior: currentScrollBehavior(), block: "center" })
-                  }
-                  className="inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-sun-soft px-3.5 text-sm font-extrabold text-sun-ink lg:hidden"
-                >
-                  💡 {t("Подсказка", "Maslahat")}
-                </button>
-              )}
-            </div>
+            {/* На телефоне подпись «Мой ответ» лишняя — поле ответа говорит само за себя; вход к подсказкам — в нижней панели. */}
+            <h3 className="mb-3 text-lg font-extrabold text-brand-dark max-sm:sr-only">
+              <span className="deco" aria-hidden>
+                ✏️{" "}
+              </span>
+              {t("Мой ответ", "Javobim")}
+            </h3>
             <AnswerPanel task={task} hintsLeft={progress.hints < task.hints.length} />
           </section>
         </div>
