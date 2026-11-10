@@ -59,7 +59,7 @@ export function ChessDiary() {
         </p>
       </header>
 
-      <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <section className="space-y-3 rounded-3xl bg-surface p-5 shadow-card" aria-labelledby="add">
           <h2 id="add" className="text-xl font-black">
             <span className="deco" aria-hidden>

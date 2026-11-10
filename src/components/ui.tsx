@@ -77,8 +77,8 @@ export function LevelBadge({ level, compact = false, lang = "ru" }: { level: Lev
   const meta = levelsFor(lang)[level];
   return (
     <span
-      // Цвет уровня — через переменную: в тёмной теме тот же оттенок светлее, иначе на тёмном фоне он не читается.
-      className="inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-sm font-bold text-(--badge) dark:text-[color-mix(in_oklab,var(--badge)_50%,white)]"
+      // Цвет уровня — через переменную: текст темнее самого цвета (иначе контраст около 3:1), в тёмной теме — светлее.
+      className="inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-sm font-bold text-[color-mix(in_oklab,var(--badge)_68%,black)] dark:text-[color-mix(in_oklab,var(--badge)_50%,white)]"
       style={
         {
           "--badge": meta.color,

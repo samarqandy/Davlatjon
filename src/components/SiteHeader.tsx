@@ -34,14 +34,14 @@ export function SiteHeader({
   return (
     <header className="no-print sticky top-0 z-30 border-b border-line/70 bg-paper/85 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center gap-2 px-4 py-2.5">
-        <Link
-          href="/"
-          className="mr-auto flex items-center gap-2.5 rounded-xl pr-2"
-          aria-label={t(`${BRAND} — на главную`, `${BRAND} — bosh sahifaga`)}
-        >
+        <Link href="/" className="mr-auto flex items-center gap-2.5 rounded-xl pr-2">
           <LogoMark size={46} />
           <span className="leading-tight">
-            <span className="block text-[15px] font-black sm:text-lg">{BRAND}</span>
+            {/* Имя ссылки собирается из видимого текста: так голосовое управление находит её по надписи на экране. */}
+            <span className="block text-[15px] font-black sm:text-lg">
+              {BRAND}
+              <span className="sr-only">{t(" — на главную", " — bosh sahifaga")}</span>
+            </span>
             <span className="hidden text-xs font-bold text-muted sm:block">
               {t(BRAND_TAGLINE.ru, BRAND_TAGLINE.uz)}
             </span>

@@ -72,7 +72,7 @@ export function FamousGamesList() {
           )}
         </p>
       </header>
-      <ol className="grid gap-4 md:grid-cols-2">
+      <ol className="grid grid-cols-[minmax(0,1fr)] gap-4 md:grid-cols-2">
         {games.map((g) => {
           const positions = replayPositions(g.moves);
           const level = levels.find((l) => l.id === g.level);
@@ -80,7 +80,7 @@ export function FamousGamesList() {
             <li key={g.id}>
               <Link
                 href={`/chess/games/${g.id}`}
-                className="flex h-full gap-4 rounded-3xl bg-surface p-4 shadow-card transition hover:-translate-y-0.5"
+                className="flex h-full flex-col gap-4 rounded-3xl bg-surface p-4 shadow-card transition hover:-translate-y-0.5 min-[380px]:flex-row"
               >
                 <ChessBoard
                   id={`preview-${g.id}`}
@@ -93,7 +93,7 @@ export function FamousGamesList() {
                     {g.year ? `${g.year} · ` : ""}
                     {g.place}
                   </p>
-                  <p className="text-xl font-black">{g.title}</p>
+                  <p className="text-xl font-black wrap-anywhere">{g.title}</p>
                   <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-bold">
                     <Faces images={chessImagesIn(lang, g.pictures)} size={28} />
                     <span>

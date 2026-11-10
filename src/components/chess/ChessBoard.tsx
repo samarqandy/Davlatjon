@@ -210,19 +210,24 @@ export function ChessBoard({
   }, [key, id]);
 
   // Фигуры библиотеки — каждая отдельная остановка Tab (32 на полной доске). Доска с клавиатуры — одна
-  // остановка; фигуры убираем из порядка Tab (и после каждого хода — новые узлы).
+  // остановка; фигуры убираем из порядка Tab (и после каждого хода — новые узлы). Библиотека даёт фигуре
+  // роль кнопки без названия — подписываем её: «белый конь, g1».
   useEffect(() => {
     const frame = frameRef.current;
     if (!frame) return;
-    const strip = () =>
-      frame
-        .querySelectorAll('[aria-roledescription="draggable"][tabindex]')
-        .forEach((el) => el.removeAttribute("tabindex"));
-    strip();
-    const mo = new MutationObserver(strip);
+    const tidy = () =>
+      frame.querySelectorAll('[aria-roledescription="draggable"]').forEach((el) => {
+        if (el.hasAttribute("tabindex")) el.removeAttribute("tabindex");
+        const square = el.closest('[id*="-square-"]')?.id.match(/-square-([a-z]\d+)$/)?.[1];
+        const words = square ? PIECE_WORDS[onBoard[square]] : undefined;
+        const name = words && square ? `${words[lang === "uz" ? 1 : 0]}, ${square}` : null;
+        if (name && el.getAttribute("aria-label") !== name) el.setAttribute("aria-label", name);
+      });
+    tidy();
+    const mo = new MutationObserver(tidy);
     mo.observe(frame, { subtree: true, childList: true, attributes: true, attributeFilter: ["tabindex"] });
     return () => mo.disconnect();
-  }, []);
+  }, [onBoard, lang]);
 
   const squareStyles: Record<string, CSSProperties> = {};
   for (const [sq, m] of Object.entries(marks)) if (m) squareStyles[sq] = MARK_STYLE[m];
