@@ -23,14 +23,15 @@ export function DayIntro({ day, onStart }: { day: Day; onStart: () => void }) {
   return (
     <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
       <section className="animate-fade-up rounded-[2rem] border border-line bg-surface p-6 shadow-card sm:p-8">
-        <div className="mb-4 flex items-center gap-4">
+        {/* На телефоне значок стоит над заголовком: рядом с ним длинное слово не помещается и рвётся посередине. */}
+        <div className="mb-4 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-4">
           <span
-            className="flex h-20 w-20 shrink-0 animate-float items-center justify-center rounded-3xl bg-brand-soft text-5xl"
+            className="flex h-14 w-14 shrink-0 animate-float items-center justify-center rounded-2xl bg-brand-soft text-4xl sm:h-20 sm:w-20 sm:rounded-3xl sm:text-5xl"
             aria-hidden
           >
             {day.emoji}
           </span>
-          <div>
+          <div className="min-w-0">
             <p className="text-sm font-extrabold tracking-wide text-brand uppercase">
               {t(`День ${day.day}`, `${day.day}-kun`)}
             </p>
