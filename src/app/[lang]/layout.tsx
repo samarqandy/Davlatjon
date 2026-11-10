@@ -8,6 +8,7 @@ import { AccountSync } from "@/components/AccountSync";
 import { BottomNav } from "@/components/BottomNav";
 import { LangSync } from "@/components/LangSwitch";
 import { MotionSync } from "@/components/MotionSync";
+import { ThemeSync } from "@/components/ThemeSync";
 import { AgeSync } from "@/components/AgeSync";
 import { ServiceWorker } from "@/components/ServiceWorker";
 import { ActivityTracker } from "@/components/progress/ActivityTracker";
@@ -84,6 +85,7 @@ export default async function RootLayout({
           <ServiceWorker />
           <LangSync />
           <MotionSync />
+          <ThemeSync />
           <AgeSync />
           <XpToast />
           <ActivityTracker />

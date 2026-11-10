@@ -349,7 +349,7 @@ export function RobotPuzzle({
   return (
     <div className="space-y-4" onKeyDown={onKey}>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-[minmax(0,360px)_minmax(0,1fr)] md:items-start">
-        <div className={cn("rounded-3xl bg-white p-2 shadow-card", exec.crash && "animate-shake")}>
+        <div className={cn("rounded-3xl bg-surface p-2 shadow-card", exec.crash && "animate-shake")}>
           <RobotBoard
             map={map}
             legend={puzzle.legend}
@@ -396,7 +396,7 @@ export function RobotPuzzle({
           )}
 
           {puzzle.mode === "trace" && (
-            <div className="space-y-2 rounded-2xl bg-white p-3 shadow-card">
+            <div className="space-y-2 rounded-2xl bg-surface p-3 shadow-card">
               <p className="font-bold">{t("Какой предмет найдёт робот?", "Robot qaysi narsani topadi?")}</p>
               <div className="flex flex-wrap gap-2">
                 {map.items.map((it) => {
@@ -410,7 +410,7 @@ export function RobotPuzzle({
                         "flex items-center gap-1.5 rounded-2xl border-2 px-3 py-2 font-bold transition",
                         traceChoice === it.key
                           ? "border-brand bg-brand-soft"
-                          : "border-line bg-white hover:border-brand/40",
+                          : "border-line bg-surface hover:border-brand/40",
                       )}
                     >
                       <span className="text-2xl">{lg?.emoji}</span>
@@ -464,7 +464,7 @@ export function RobotPuzzle({
               )}
             </div>
             <div
-              className="flex min-h-14 flex-wrap items-center gap-1.5 rounded-2xl border-2 border-dashed border-brand/30 bg-white p-2"
+              className="flex min-h-14 flex-wrap items-center gap-1.5 rounded-2xl border-2 border-dashed border-brand/30 bg-surface p-2"
               aria-label={t("Программа робота", "Robot dasturi")}
             >
               {program.length === 0 && (
@@ -513,7 +513,7 @@ export function RobotPuzzle({
       <Feedback state={feedback} />
 
       {puzzle.mode === "paths" && found.length > 0 && (
-        <div className="rounded-2xl bg-white p-3 shadow-card">
+        <div className="rounded-2xl bg-surface p-3 shadow-card">
           <p className="mb-2 text-sm font-extrabold text-muted">
             {t(`Найденные пути: ${found.length}`, `Topilgan yoʻllar: ${found.length}`)}
           </p>

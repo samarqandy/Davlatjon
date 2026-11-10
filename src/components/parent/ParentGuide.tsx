@@ -94,7 +94,7 @@ export function ParentGuide({ content }: { content: Both<GuideContent> }) {
                   {s.pairs.map((p) => (
                     <tr key={p.say} className="border-t border-line">
                       <td className="py-1.5 pr-3 text-rose line-through decoration-2">{p.avoid}</td>
-                      <td className="py-1.5 font-bold text-[#047857]">{p.say}</td>
+                      <td className="py-1.5 font-bold text-success-ink">{p.say}</td>
                     </tr>
                   ))}
                 </tbody>

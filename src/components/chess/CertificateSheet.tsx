@@ -56,7 +56,7 @@ export function CertificateSheet({
           <p className="relative text-[1.9cqi] font-extrabold tracking-[0.3em] text-[#9a6b17] uppercase">
             {t(`Шахматная школа ${BRAND}`, `${BRAND} shaxmat maktabi`)}
           </p>
-          <h2 className="relative text-[6.2cqi] leading-none font-black tracking-wide text-[#7a4b00] uppercase">
+          <h2 className="relative text-[6.2cqi] leading-none font-black tracking-wide text-sun-ink uppercase">
             {heading ?? t("Сертификат", "Sertifikat")}
           </h2>
           {icon}
@@ -68,7 +68,7 @@ export function CertificateSheet({
               {name}
             </p>
             <p className="mt-[1.4cqi] text-[2.6cqi] font-bold">{award}</p>
-            <p className="text-[4.6cqi] leading-tight font-black text-[#7a4b00]">«{title}»</p>
+            <p className="text-[4.6cqi] leading-tight font-black text-sun-ink">«{title}»</p>
             <p className="mt-[0.8cqi] text-[1.9cqi] font-semibold text-[#6b5a45]">{detail}</p>
           </div>
           <div className="relative grid w-full grid-cols-3 items-end gap-[3cqi] text-[1.8cqi] font-bold">

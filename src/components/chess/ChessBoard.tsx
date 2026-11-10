@@ -297,7 +297,7 @@ export function ChessBoard({
     <div
       className={cn(
         "board-frame mx-auto w-full touch-manipulation overflow-hidden select-none",
-        frame === "print" ? "rounded-md bg-white ring-1 ring-black" : "rounded-xl shadow-card",
+        frame === "print" ? "rounded-md bg-surface ring-1 ring-black" : "rounded-xl shadow-card",
         className,
       )}
       // Доска не выше экрана: на ноутбуке и в альбомной ориентации телефона она целиком видна вместе с заголовком.
@@ -483,7 +483,7 @@ function PromotionPicker({
             data-piece={p}
             onClick={() => request.onPick(p)}
             className={cn(
-              "absolute grid place-items-center rounded-full bg-white shadow-lift outline-offset-2 hover:bg-sun-soft focus-visible:outline-3 focus-visible:outline-brand",
+              "absolute grid place-items-center rounded-full bg-surface shadow-lift outline-offset-2 hover:bg-sun-soft focus-visible:outline-3 focus-visible:outline-brand",
               i === 0 && "ring-4 ring-sun",
             )}
             style={{

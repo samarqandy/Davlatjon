@@ -39,11 +39,11 @@ interface Dash {
   games: GameView[];
 }
 
-const card = "rounded-3xl bg-white p-5 shadow-card";
+const card = "rounded-3xl bg-surface p-5 shadow-card";
 const chip = (on: boolean) =>
   cn(
     "min-h-9 rounded-xl border-2 px-3 py-1 text-sm font-bold transition",
-    on ? "border-brand bg-brand-soft text-brand-dark" : "border-line bg-white hover:border-brand/40",
+    on ? "border-brand bg-brand-soft text-brand-dark" : "border-line bg-surface hover:border-brand/40",
   );
 
 /** Игра по сети: вход, имя, друзья и партии. */
@@ -135,7 +135,7 @@ function UsernameForm({ onDone, current }: { onDone: () => void; current?: strin
           maxLength={16}
           placeholder="chess_tiger"
           aria-label={t("Имя в игре", "Oʻyindagi ism")}
-          className="min-h-11 min-w-0 flex-1 rounded-2xl border-2 border-line bg-white px-3 font-mono text-base outline-none focus:border-brand"
+          className="min-h-11 min-w-0 flex-1 rounded-2xl border-2 border-line bg-surface px-3 font-mono text-base outline-none focus:border-brand"
           autoCapitalize="none"
           autoCorrect="off"
           spellCheck={false}
@@ -146,7 +146,7 @@ function UsernameForm({ onDone, current }: { onDone: () => void; current?: strin
         </Button>
       </div>
       {error && (
-        <p className="mt-2 rounded-xl bg-rose/10 px-3 py-1.5 text-sm font-bold text-[#b42318]" role="alert">
+        <p className="mt-2 rounded-xl bg-rose/10 px-3 py-1.5 text-sm font-bold text-danger-ink" role="alert">
           {error}
         </p>
       )}
@@ -236,7 +236,7 @@ function Dashboard({ profile, onRename }: { profile: Profile; onRename: () => vo
         </p>
       )}
       {notice && (
-        <p className="rounded-2xl bg-rose/10 px-4 py-2 text-sm font-bold text-[#b42318]" role="alert">
+        <p className="rounded-2xl bg-rose/10 px-4 py-2 text-sm font-bold text-danger-ink" role="alert">
           {notice}
         </p>
       )}
@@ -512,7 +512,7 @@ function FindFriend({ onChanged }: { onChanged: () => void }) {
   };
 
   return (
-    <section className="rounded-3xl bg-white p-5 shadow-card" aria-labelledby="find" data-find>
+    <section className="rounded-3xl bg-surface p-5 shadow-card" aria-labelledby="find" data-find>
       <h2 id="find" className="text-xl font-black">
         🔎 {t("Найти друга", "Doʻst qidirish")}
       </h2>
@@ -528,7 +528,7 @@ function FindFriend({ onChanged }: { onChanged: () => void }) {
           onChange={(e) => setQ(e.target.value)}
           placeholder={t("Имя друга в игре", "Doʻstning oʻyindagi ismi")}
           aria-label={t("Имя друга", "Doʻst ismi")}
-          className="min-h-11 min-w-0 flex-1 rounded-2xl border-2 border-line bg-white px-3 font-mono text-base outline-none focus:border-brand"
+          className="min-h-11 min-w-0 flex-1 rounded-2xl border-2 border-line bg-surface px-3 font-mono text-base outline-none focus:border-brand"
           autoCapitalize="none"
           autoCorrect="off"
           spellCheck={false}
@@ -539,7 +539,7 @@ function FindFriend({ onChanged }: { onChanged: () => void }) {
         </Button>
       </form>
       {error && (
-        <p className="mt-2 rounded-xl bg-rose/10 px-3 py-1.5 text-sm font-bold text-[#b42318]" role="alert">
+        <p className="mt-2 rounded-xl bg-rose/10 px-3 py-1.5 text-sm font-bold text-danger-ink" role="alert">
           {error}
         </p>
       )}

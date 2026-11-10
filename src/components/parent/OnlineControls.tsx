@@ -111,7 +111,7 @@ export function OnlineControls() {
                 >
                   <span
                     className={cn(
-                      "absolute top-1 h-5 w-5 rounded-full bg-white shadow transition-[left]",
+                      "absolute top-1 h-5 w-5 rounded-full bg-surface shadow transition-[left]",
                       profile[r.key] ? "left-6" : "left-1",
                     )}
                   />
@@ -149,7 +149,7 @@ export function OnlineControls() {
             >
               <span
                 className={cn(
-                  "absolute top-1 h-5 w-5 rounded-full bg-white shadow transition-[left]",
+                  "absolute top-1 h-5 w-5 rounded-full bg-surface shadow transition-[left]",
                   ranked ? "left-6" : "left-1",
                 )}
               />
@@ -158,7 +158,7 @@ export function OnlineControls() {
         </>
       )}
       {error && (
-        <p className="rounded-xl bg-rose/10 px-3 py-1.5 text-sm font-bold text-[#b42318]" role="alert">
+        <p className="rounded-xl bg-rose/10 px-3 py-1.5 text-sm font-bold text-danger-ink" role="alert">
           {error}
         </p>
       )}

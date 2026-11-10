@@ -262,7 +262,7 @@ export function AnalysisBoard() {
               )}
             >
               <div
-                className="absolute inset-x-0 bg-white transition-all duration-500"
+                className="absolute inset-x-0 bg-surface transition-all duration-500"
                 style={flipped ? { top: 0, height: `${whiteChance}%` } : { bottom: 0, height: `${whiteChance}%` }}
               />
             </div>
@@ -294,7 +294,7 @@ export function AnalysisBoard() {
         </div>
 
         <div className="mt-4 min-w-0 flex-1 space-y-4 lg:mt-0">
-          <div className="rounded-3xl bg-white p-4 shadow-card">
+          <div className="rounded-3xl bg-surface p-4 shadow-card">
             <p className="text-sm font-extrabold text-muted">
               {over ?? (turn === "w" ? t("Ход белых", "Oqlar yuradi") : t("Ход чёрных", "Qoralar yuradi"))}
             </p>
@@ -357,7 +357,7 @@ export function AnalysisBoard() {
             </Button>
           </div>
 
-          <div className="rounded-3xl bg-white p-4 shadow-card">
+          <div className="rounded-3xl bg-surface p-4 shadow-card">
             <p className="mb-2 text-sm font-extrabold text-muted">{t("Ходы", "Yurishlar")}</p>
             {plies.length === 0 ? (
               <p className="text-sm text-muted">{t("Сделай первый ход на доске.", "Taxtada birinchi yurishni qil.")}</p>
@@ -398,7 +398,7 @@ export function AnalysisBoard() {
             </Button>
           </div>
           {pasteOpen && (
-            <div className="space-y-2 rounded-3xl bg-white p-4 shadow-card">
+            <div className="space-y-2 rounded-3xl bg-surface p-4 shadow-card">
               <label htmlFor="analysis-paste" className="text-sm font-bold">
                 {t("Позиция (FEN) или партия (PGN):", "Holat (FEN) yoki partiya (PGN):")}
               </label>
@@ -414,7 +414,7 @@ export function AnalysisBoard() {
                 placeholder="rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1"
               />
               {pasteError && (
-                <p role="alert" className="text-sm font-bold text-[#b42318]">
+                <p role="alert" className="text-sm font-bold text-danger-ink">
                   {t("Не получилось прочитать — проверь запись.", "Oʻqib boʻlmadi — yozuvni tekshirib koʻr.")}
                 </p>
               )}

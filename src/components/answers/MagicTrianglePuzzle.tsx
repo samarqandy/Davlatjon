@@ -177,7 +177,7 @@ export function MagicTrianglePuzzle({ taskId, numbers, sums }: { taskId: string;
         )}
       </p>
       <div className="flex flex-wrap items-start gap-5">
-        <div className="w-full max-w-[340px] rounded-3xl bg-white p-2 shadow-card">
+        <div className="w-full max-w-[340px] rounded-3xl bg-surface p-2 shadow-card">
           <TriangleBoard
             values={values}
             selected={selected}
@@ -199,7 +199,7 @@ export function MagicTrianglePuzzle({ taskId, numbers, sums }: { taskId: string;
                     "h-14 w-14 rounded-2xl border-2 text-2xl font-black transition",
                     used
                       ? "border-[#e9d5ff] bg-[#faf5ff] text-[#a78bfa]"
-                      : "border-[#a21caf] bg-white text-[#86198f] hover:bg-[#fdf4ff]",
+                      : "border-[#a21caf] bg-surface text-[#86198f] hover:bg-[#fdf4ff]",
                   )}
                 >
                   {n}
@@ -210,7 +210,7 @@ export function MagicTrianglePuzzle({ taskId, numbers, sums }: { taskId: string;
           <Button variant="ghost" onClick={clear}>
             {t("Очистить треугольник", "Uchburchakni tozalash")}
           </Button>
-          <div className="rounded-2xl bg-white p-3 shadow-card">
+          <div className="rounded-2xl bg-surface p-3 shadow-card">
             <p className="mb-2 text-sm font-extrabold text-muted">
               {t("Дневник исследователя: какие суммы получились?", "Tadqiqotchi kundaligi: qanday yigʻindilar chiqdi?")}
             </p>

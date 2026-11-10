@@ -98,7 +98,7 @@ function TopicCard({ topic }: { topic: ChessTactic }) {
       type="button"
       data-tactic={topic.id}
       onClick={() => setHash(`#${topic.id}`)}
-      className="rounded-3xl bg-white p-5 text-left shadow-card transition hover:-translate-y-0.5 hover:shadow-lift"
+      className="rounded-3xl bg-surface p-5 text-left shadow-card transition hover:-translate-y-0.5 hover:shadow-lift"
     >
       <p className="text-4xl" aria-hidden>
         {topic.emoji}
@@ -195,7 +195,7 @@ export function TopicView({
       </header>
 
       <nav
-        className="grid grid-cols-3 gap-1.5 rounded-2xl bg-white p-1.5 shadow-card"
+        className="grid grid-cols-3 gap-1.5 rounded-2xl bg-surface p-1.5 shadow-card"
         aria-label={t("Разделы темы", "Mavzu boʻlimlari")}
       >
         {(
@@ -254,8 +254,8 @@ export function TopicView({
                   i === exercise
                     ? "border-brand bg-brand text-white"
                     : ids.has(e.id)
-                      ? "border-mint/50 bg-mint-soft text-[#065f46]"
-                      : "border-line bg-white hover:border-brand/40",
+                      ? "border-mint/50 bg-mint-soft text-mint-ink"
+                      : "border-line bg-surface hover:border-brand/40",
                 )}
               >
                 {ids.has(e.id) && i !== exercise ? "✓" : i + 1}
@@ -299,7 +299,7 @@ export function TopicView({
       )}
 
       {tab === "dictionary" && (
-        <section className="rounded-3xl bg-white p-5 shadow-card">
+        <section className="rounded-3xl bg-surface p-5 shadow-card">
           <h3 className="text-xl font-black">{t("🔤 Словарик", "🔤 Lugʻat")}</h3>
           <dl className="mt-3 space-y-3">
             {topic.terms.map((term, i) => (

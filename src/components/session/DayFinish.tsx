@@ -60,7 +60,7 @@ export function DayFinish({
     <div className="mx-auto max-w-3xl space-y-5">
       {/* Все задачи решены — салют (один раз на открытие страницы; без анимаций ничего не рисует). */}
       {allSolved && <Confetti />}
-      <section className="animate-pop rounded-[2rem] border border-line bg-white p-6 text-center shadow-card sm:p-8">
+      <section className="animate-pop rounded-[2rem] border border-line bg-surface p-6 text-center shadow-card sm:p-8">
         <MascotSays className="mx-auto mb-3 w-fit" size={80} mood={allSolved ? "celebration" : "happy"}>
           {allSolved
             ? t("Парвоз гордится тобой! Все задачи решены!", "Parvoz sen bilan faxrlanadi! Hamma masala yechildi!")
@@ -90,13 +90,13 @@ export function DayFinish({
             emoji="🧗"
           />
         </div>
-        <div className="mt-5 inline-flex items-center gap-2 rounded-2xl bg-sun-soft px-4 py-2 font-extrabold text-[#7a4b00]">
+        <div className="mt-5 inline-flex items-center gap-2 rounded-2xl bg-sun-soft px-4 py-2 font-extrabold text-sun-ink">
           <span aria-hidden>{day.habit.emoji}</span>{" "}
           {t(`Новая привычка мыслителя: «${day.habit.name}»`, `Yangi fikrlash odati: «${day.habit.name}»`)}
         </div>
       </section>
 
-      <section className="rounded-[2rem] border border-line bg-white p-5 shadow-card sm:p-6">
+      <section className="rounded-[2rem] border border-line bg-surface p-5 shadow-card sm:p-6">
         <h2 className="mb-3 text-xl font-extrabold">
           {t("Какая задача была самой интересной?", "Qaysi masala eng qiziq boʻldi?")}
         </h2>
@@ -119,7 +119,7 @@ export function DayFinish({
                 "flex flex-col items-center gap-1 rounded-2xl border-2 px-4 py-2 transition",
                 progress?.mood === m.emoji
                   ? "border-brand bg-brand-soft"
-                  : "border-line bg-white hover:border-brand/40",
+                  : "border-line bg-surface hover:border-brand/40",
               )}
             >
               <span className="text-3xl">{m.emoji}</span>
@@ -200,7 +200,7 @@ function TaskPicker({ day, value, onPick }: { day: Day; value?: string; onPick: 
             "flex items-center gap-1.5 rounded-2xl border-2 px-3 py-2 text-sm font-bold transition",
             value === task.id
               ? "border-brand bg-brand-soft text-brand-dark"
-              : "border-line bg-white hover:border-brand/40",
+              : "border-line bg-surface hover:border-brand/40",
           )}
         >
           {/* Значок раздела одинаковый на обоих языках. */}

@@ -116,7 +116,7 @@ export function ParentDayView({ day: both }: { day: Both<Day> }) {
             key={hydrated ? "h" : "s"}
             onBlur={(e) => updateDay(day.id, { parentNote: e.target.value })}
             rows={4}
-            className="w-full rounded-2xl border-2 border-line bg-white px-3 py-2 outline-none focus:border-brand"
+            className="w-full rounded-2xl border-2 border-line bg-surface px-3 py-2 outline-none focus:border-brand"
           />
         </label>
       </Card>
@@ -325,7 +325,7 @@ function TaskAnswerCard({ task, number, p }: { task: Task; number: number; p: Ta
               💬 <RichText text={d} />
             </p>
           ))}
-          <details className="rounded-2xl border border-[#fde68a] bg-[#fffbeb] px-4 py-2.5">
+          <details className="rounded-2xl border border-[#fde68a] bg-[#fffbeb] px-4 py-2.5 dark:border-[#6b5a1e] dark:bg-[#332a12]">
             <summary className="cursor-pointer font-extrabold">
               💡 {t("Подсказки по порядку", "Maslahatlar tartib bilan")}
             </summary>
@@ -363,7 +363,7 @@ function TaskAnswerCard({ task, number, p }: { task: Task; number: number; p: Ta
                     "rounded-xl border-2 px-2.5 py-1 text-sm font-bold transition",
                     chips.includes(c.id)
                       ? "border-brand bg-brand text-white"
-                      : "border-line bg-white text-muted hover:border-brand/40",
+                      : "border-line bg-surface text-muted hover:border-brand/40",
                   )}
                 >
                   {t(c.label, c.uz)}
@@ -378,7 +378,7 @@ function TaskAnswerCard({ task, number, p }: { task: Task; number: number; p: Ta
                 "Nimani payqadingiz? Masalan: «avval 6 deb javob berdi, keyin katta kvadratlarni oʻzi topdi».",
               )}
               rows={2}
-              className="mt-2 w-full rounded-2xl border-2 border-line bg-white px-3 py-2 text-sm outline-none focus:border-brand"
+              className="mt-2 w-full rounded-2xl border-2 border-line bg-surface px-3 py-2 text-sm outline-none focus:border-brand"
             />
           </div>
         </div>

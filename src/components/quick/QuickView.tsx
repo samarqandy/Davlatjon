@@ -115,7 +115,7 @@ export function QuickView() {
       </Link>
 
       {phase.name === "idle" && (
-        <section className="space-y-5 rounded-3xl bg-white p-6 shadow-card" data-quick="idle">
+        <section className="space-y-5 rounded-3xl bg-surface p-6 shadow-card" data-quick="idle">
           <div className="flex items-center gap-3">
             <Mascot size={72} mood="happy" />
             <div>
@@ -138,7 +138,7 @@ export function QuickView() {
                 onClick={() => setChosen(d)}
                 className={cn(
                   "min-h-20 rounded-2xl border-2 px-3 text-lg font-black transition",
-                  deck === d ? "border-brand bg-brand-soft" : "border-line bg-white hover:border-brand/40",
+                  deck === d ? "border-brand bg-brand-soft" : "border-line bg-surface hover:border-brand/40",
                 )}
               >
                 <span className="block text-3xl" aria-hidden>
@@ -149,7 +149,7 @@ export function QuickView() {
             ))}
           </div>
           {today !== undefined && (
-            <p className="rounded-2xl bg-mint-soft px-3 py-2 text-sm font-bold text-[#047857]" data-quick-today>
+            <p className="rounded-2xl bg-mint-soft px-3 py-2 text-sm font-bold text-success-ink" data-quick-today>
               {t(
                 `Сегодня лучший результат: ${today} из ${QUICK_COUNT}`,
                 `Bugungi eng yaxshi natija: ${QUICK_COUNT} tadan ${today} tasi`,
@@ -165,7 +165,7 @@ export function QuickView() {
       {phase.name === "play" && <Play phase={phase} onPick={pick} autoplay={deck === "little"} />}
 
       {phase.name === "done" && (
-        <section className="space-y-4 rounded-3xl bg-white p-6 text-center shadow-card" data-quick="done">
+        <section className="space-y-4 rounded-3xl bg-surface p-6 text-center shadow-card" data-quick="done">
           {phase.score >= QUICK_PASS && <Confetti />}
           <Mascot
             size={88}
@@ -226,7 +226,7 @@ function Play({
   const wide = q.options.length > 4;
   return (
     <section
-      className="space-y-5 rounded-3xl bg-white p-5 shadow-card sm:p-6"
+      className="space-y-5 rounded-3xl bg-surface p-5 shadow-card sm:p-6"
       data-quick="play"
       data-quick-kind={q.kind}
     >
@@ -265,7 +265,7 @@ function Play({
                 "min-h-20 rounded-2xl border-2 px-2 text-3xl font-black transition sm:text-4xl",
                 state === "right" && "border-mint bg-mint-soft",
                 state === "wrong" && "border-rose bg-rose/10",
-                state === "idle" && "border-line bg-white enabled:hover:border-brand/50 enabled:active:scale-95",
+                state === "idle" && "border-line bg-surface enabled:hover:border-brand/50 enabled:active:scale-95",
                 answered && state === "idle" && "opacity-50",
               )}
             >

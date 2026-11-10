@@ -65,7 +65,7 @@ export function FriendChat({ friend, className }: { friend: string; className?: 
   };
 
   return (
-    <section className={cn("flex flex-col rounded-3xl bg-white p-4 shadow-card", className)} data-chat={friend}>
+    <section className={cn("flex flex-col rounded-3xl bg-surface p-4 shadow-card", className)} data-chat={friend}>
       <h3 className="text-lg font-black">💬 {friend}</h3>
       <div
         ref={box}
@@ -82,7 +82,7 @@ export function FriendChat({ friend, className }: { friend: string; className?: 
             key={m.id}
             className={cn(
               "max-w-[85%] rounded-2xl px-3 py-1.5 text-sm break-words",
-              m.mine ? "ml-auto bg-brand text-white" : "bg-white text-ink shadow-card",
+              m.mine ? "ml-auto bg-brand text-white" : "bg-surface text-ink shadow-card",
             )}
           >
             {m.text}
@@ -90,7 +90,7 @@ export function FriendChat({ friend, className }: { friend: string; className?: 
         ))}
       </div>
       {error && (
-        <p className="mt-2 rounded-xl bg-rose/10 px-3 py-1.5 text-sm font-bold text-[#b42318]" role="alert">
+        <p className="mt-2 rounded-xl bg-rose/10 px-3 py-1.5 text-sm font-bold text-danger-ink" role="alert">
           {error}
         </p>
       )}
@@ -107,7 +107,7 @@ export function FriendChat({ friend, className }: { friend: string; className?: 
           onChange={(e) => setText(e.target.value)}
           placeholder={t("Написать другу…", "Doʻstga yozish…")}
           aria-label={t("Сообщение", "Xabar")}
-          className="min-h-11 min-w-0 flex-1 rounded-2xl border-2 border-line bg-white px-3 text-base outline-none focus:border-brand"
+          className="min-h-11 min-w-0 flex-1 rounded-2xl border-2 border-line bg-surface px-3 text-base outline-none focus:border-brand"
           autoComplete="off"
         />
         <Button type="submit" disabled={sending || !text.trim() || !!blocked}>

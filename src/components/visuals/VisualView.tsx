@@ -91,7 +91,7 @@ export function VisualView({ visual, print = false }: { visual: Visual; print?: 
         regions[region] = labels.map((label, i) => ({ id: `${region}-${i}`, label }));
       }
       return (
-        <div className={print ? "max-w-[110mm]" : "rounded-2xl border border-line bg-white p-1.5"}>
+        <div className={print ? "max-w-[110mm]" : "rounded-2xl border border-line bg-surface p-1.5"}>
           <VennDiagram sets={visual.sets} regions={regions} />
         </div>
       );

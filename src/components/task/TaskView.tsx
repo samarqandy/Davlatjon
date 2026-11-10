@@ -50,7 +50,7 @@ export function TaskView({ task, number, total }: { task: Task; number: number; 
     <TaskIdContext.Provider value={task.id}>
       <article className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
         <div className="space-y-5">
-          <div className="rounded-3xl border border-line bg-white p-5 shadow-card sm:p-7">
+          <div className="rounded-3xl border border-line bg-surface p-5 shadow-card sm:p-7">
             <div className="mb-3 flex flex-wrap items-center gap-2">
               <SectionTag section={task.section} lang={lang} />
               <LevelBadge level={task.level} lang={lang} />
@@ -101,7 +101,7 @@ export function TaskView({ task, number, total }: { task: Task; number: number; 
                       .getElementById("hints")
                       ?.scrollIntoView({ behavior: currentScrollBehavior(), block: "center" })
                   }
-                  className="inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-sun-soft px-3.5 text-sm font-extrabold text-[#7a4b00] lg:hidden"
+                  className="inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-sun-soft px-3.5 text-sm font-extrabold text-sun-ink lg:hidden"
                 >
                   💡 {t("Подсказка", "Maslahat")}
                 </button>

@@ -37,7 +37,7 @@ export function OnlineGame({ id }: { id: string }) {
     return <p className="text-muted">{t("Проверяем вход…", "Kirish tekshirilmoqda…")}</p>;
   if (!ready) {
     return (
-      <section className="mx-auto max-w-xl rounded-3xl bg-white p-5 shadow-card">
+      <section className="mx-auto max-w-xl rounded-3xl bg-surface p-5 shadow-card">
         <p className="mb-3 font-bold">
           {t("Чтобы открыть партию, войди в аккаунт.", "Partiyani ochish uchun hisobga kir.")}
         </p>
@@ -91,7 +91,7 @@ function Table({ id }: { id: string }) {
 
   if (!game) {
     return lost === "not-found" ? (
-      <section className="mx-auto max-w-xl rounded-3xl bg-white p-5 shadow-card">
+      <section className="mx-auto max-w-xl rounded-3xl bg-surface p-5 shadow-card">
         <p className="font-bold">
           {t("Такой партии нет, или она не твоя.", "Bunday partiya yoʻq yoki u senga tegishli emas.")}
         </p>
@@ -186,7 +186,7 @@ function Table({ id }: { id: string }) {
       <div
         className={cn(
           "rounded-xl px-3 py-1 font-mono text-xl font-black tabular-nums",
-          running && game.turn === side ? "bg-ink text-white" : "bg-white text-ink shadow-card",
+          running && game.turn === side ? "bg-ink text-white" : "bg-surface text-ink shadow-card",
           left(side) < 20_000 && game.clockRunning && "text-rose",
         )}
         data-clock={side}
@@ -293,7 +293,7 @@ function Table({ id }: { id: string }) {
         <p
           className={cn(
             "rounded-2xl px-4 py-3 font-bold",
-            finished ? "bg-sun-soft" : myTurn ? "bg-brand-soft text-brand-dark" : "bg-white shadow-card",
+            finished ? "bg-sun-soft" : myTurn ? "bg-brand-soft text-brand-dark" : "bg-surface shadow-card",
           )}
           role="status"
           data-online-status
@@ -302,7 +302,7 @@ function Table({ id }: { id: string }) {
         </p>
         {illegal && <p className="rounded-2xl bg-sun-soft px-4 py-2 text-sm font-bold">{illegal}</p>}
         {error && (
-          <p className="rounded-2xl bg-rose/10 px-4 py-2 text-sm font-bold text-[#b42318]" role="alert">
+          <p className="rounded-2xl bg-rose/10 px-4 py-2 text-sm font-bold text-danger-ink" role="alert">
             {error}
           </p>
         )}
@@ -380,7 +380,7 @@ function Table({ id }: { id: string }) {
       </div>
 
       <aside className="space-y-3">
-        <section className="rounded-3xl bg-white p-4 shadow-card" aria-labelledby="moves">
+        <section className="rounded-3xl bg-surface p-4 shadow-card" aria-labelledby="moves">
           <h2 id="moves" className="text-lg font-black">
             {t("Ходы", "Yurishlar")}
           </h2>

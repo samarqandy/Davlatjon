@@ -8,14 +8,14 @@ import { useT } from "@/lib/i18n";
 function LevelBadge({ level }: { level: QuoteLevel }) {
   const t = useT();
   const map: Record<QuoteLevel, { text: string; cls: string }> = {
-    primary: { text: t("📖 Из книги автора", "📖 Muallifning kitobidan"), cls: "bg-mint-soft text-[#047857]" },
+    primary: { text: t("📖 Из книги автора", "📖 Muallifning kitobidan"), cls: "bg-mint-soft text-success-ink" },
     quoted: {
       text: t("🔎 По цитате в другом источнике", "🔎 Boshqa manbadagi keltirish"),
       cls: "bg-brand-soft text-brand-dark",
     },
     attributed: {
       text: t("❓ Приписывают, источника не нашли", "❓ Nisbat beriladi, manba topilmadi"),
-      cls: "bg-sun-soft text-[#7a4b00]",
+      cls: "bg-sun-soft text-sun-ink",
     },
   };
   return (
@@ -31,7 +31,7 @@ export function Thoughts({ thoughts }: { thoughts: Thought[] }) {
   return (
     <ul className="grid gap-3 sm:grid-cols-2" data-thoughts>
       {thoughts.map((q) => (
-        <li key={q.id} className="flex flex-col rounded-3xl bg-white p-4 shadow-card sm:p-5" data-thought={q.id}>
+        <li key={q.id} className="flex flex-col rounded-3xl bg-surface p-4 shadow-card sm:p-5" data-thought={q.id}>
           <blockquote className="text-lg leading-snug font-black">«{q.quote}»</blockquote>
           <p className="mt-2 font-extrabold">
             {q.author} <span className="text-sm font-bold text-muted">· {q.where}</span>
@@ -44,7 +44,7 @@ export function Thoughts({ thoughts }: { thoughts: Thought[] }) {
             <b>{t("Что это значит: ", "Bu nima degani: ")}</b>
             {q.meaning}
           </p>
-          <p className="mt-2 rounded-2xl bg-sun-soft/70 px-3 py-2 text-[0.95rem] font-semibold text-[#7a4b00]">
+          <p className="mt-2 rounded-2xl bg-sun-soft/70 px-3 py-2 text-[0.95rem] font-semibold text-sun-ink">
             <span aria-hidden>🎯</span> <b>{t("Попробуй: ", "Sinab koʻr: ")}</b>
             {q.try}
           </p>
@@ -65,7 +65,7 @@ export function Dialogues({ dialogues }: { dialogues: Dialogue[] }) {
           <details
             key={d.id}
             id={`dialogue-${d.id}`}
-            className="group rounded-3xl bg-white shadow-card"
+            className="group rounded-3xl bg-surface shadow-card"
             data-dialogue={d.id}
           >
             <summary className="flex min-h-14 cursor-pointer list-none items-start gap-3 rounded-3xl p-4 select-none hover:bg-brand-soft/30 sm:p-5 [&::-webkit-details-marker]:hidden">
@@ -99,7 +99,7 @@ export function Dialogues({ dialogues }: { dialogues: Dialogue[] }) {
                   );
                 })}
               </ol>
-              <p className="rounded-2xl bg-mint-soft/70 px-4 py-3 font-bold text-[#065f46]">💡 {d.insight}</p>
+              <p className="rounded-2xl bg-mint-soft/70 px-4 py-3 font-bold text-mint-ink">💡 {d.insight}</p>
               <p className="text-xs font-bold text-muted">
                 {t("Придуманный разговор. На чём он держится: ", "Oʻylab topilgan suhbat. Nimaga tayanadi: ")}
                 {d.basis}
@@ -118,7 +118,7 @@ export function NewViews({ views }: { views: NewView[] }) {
   return (
     <ul className="grid gap-3 lg:grid-cols-2" data-views>
       {views.map((v) => (
-        <li key={v.id} className="rounded-3xl bg-white p-4 shadow-card sm:p-5" data-view={v.id}>
+        <li key={v.id} className="rounded-3xl bg-surface p-4 shadow-card sm:p-5" data-view={v.id}>
           <p className="text-3xl" aria-hidden>
             {v.emoji}
           </p>

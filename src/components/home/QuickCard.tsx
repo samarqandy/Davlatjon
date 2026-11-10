@@ -15,7 +15,7 @@ export function QuickCard() {
     <Link
       href="/quick"
       data-quick-card
-      className="flex items-center gap-4 rounded-[2rem] border border-line bg-white p-4 shadow-card transition hover:-translate-y-0.5 hover:shadow-lift sm:p-5"
+      className="flex items-center gap-4 rounded-[2rem] border border-line bg-surface p-4 shadow-card transition hover:-translate-y-0.5 hover:shadow-lift sm:p-5"
     >
       <span className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-sun-soft text-3xl" aria-hidden>
         ⚡

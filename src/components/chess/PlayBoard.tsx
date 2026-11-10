@@ -348,7 +348,7 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
       <div
         className={cn(
           "ml-auto rounded-xl px-3 py-1 font-mono text-xl font-black tabular-nums",
-          clockRunning && turn === side ? "bg-ink text-white" : "bg-white text-ink shadow-card",
+          clockRunning && turn === side ? "bg-ink text-white" : "bg-surface text-ink shadow-card",
           clock[side] < 20_000 && "text-rose",
         )}
         aria-label={t(`Часы ${side === "w" ? "белых" : "чёрных"}`, `${side === "w" ? "Oqlar" : "Qoralar"}ning soati`)}
@@ -433,12 +433,12 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
             !status.over
               ? inCheck
                 ? "bg-rose/10 text-rose"
-                : "bg-white shadow-card"
+                : "bg-surface shadow-card"
               : status.winner === "draw"
-                ? "bg-sun-soft text-[#7a4b00]"
+                ? "bg-sun-soft text-sun-ink"
                 : withRobot && status.winner !== config.color
                   ? "bg-brand-soft text-brand-dark"
-                  : "bg-mint-soft text-[#065f46]",
+                  : "bg-mint-soft text-mint-ink",
           )}
           aria-live="polite"
           data-play-status
@@ -466,7 +466,7 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
         )}
         {withRobot && status.over && status.winner === config.color && plies.length > 0 && <Confetti />}
         {crowns > 0 && (
-          <p className="rounded-2xl bg-sun-soft px-4 py-2 font-black text-[#7a4b00]" data-crowns={crowns}>
+          <p className="rounded-2xl bg-sun-soft px-4 py-2 font-black text-sun-ink" data-crowns={crowns}>
             <span className="mr-1 text-2xl">{"👑".repeat(crowns)}</span>
             {crowns === 3
               ? t("Корона с золотым блеском: без подсказок!", "Oltin yaltiroq toj: maslahatsiz!")
@@ -483,7 +483,7 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
         {robotSays && robot && (
           <div className="flex items-start gap-2" data-robot-says>
             <PieceIcon piece={robot.piece} className="h-10 w-10 shrink-0 rounded-xl bg-[#f0d9b5] p-0.5" />
-            <p className="rounded-2xl rounded-tl-sm bg-white px-3 py-2 text-sm font-bold shadow-card">{robotSays}</p>
+            <p className="rounded-2xl rounded-tl-sm bg-surface px-3 py-2 text-sm font-bold shadow-card">{robotSays}</p>
           </div>
         )}
         {status.over && (config.mode === "robot" || config.mode === "two") && plies.length > 1 && (
@@ -525,7 +525,7 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
           <p
             role="status"
             data-previous-game
-            className="flex flex-wrap items-center gap-2 rounded-2xl bg-white px-4 py-2 text-sm font-bold shadow-card"
+            className="flex flex-wrap items-center gap-2 rounded-2xl bg-surface px-4 py-2 text-sm font-bold shadow-card"
           >
             {t("Началась новая партия.", "Yangi partiya boshlandi.")}
             <Button size="sm" variant="soft" onClick={restorePrevious}>
@@ -538,7 +538,7 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
             role="alertdialog"
             aria-labelledby="end-title"
             data-confirm-end
-            className="space-y-3 rounded-2xl border-2 border-line bg-white p-4 shadow-card"
+            className="space-y-3 rounded-2xl border-2 border-line bg-surface p-4 shadow-card"
           >
             <p id="end-title" className="text-lg font-black">
               {t("Закончим партию?", "Partiyani tugatamizmi?")}
@@ -562,7 +562,7 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
             </div>
           </div>
         )}
-        <div className="rounded-2xl bg-white p-3 shadow-card">
+        <div className="rounded-2xl bg-surface p-3 shadow-card">
           <p className="mb-2 text-sm font-extrabold text-muted">
             {t("Ходы", "Yurishlar")} ·{" "}
             {t(movesWord(Math.ceil(plies.length / 2)), `${Math.ceil(plies.length / 2)} ta yurish`)}

@@ -182,7 +182,7 @@ export function JugsPuzzle({
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-2 sm:gap-3">
         {([0, 1] as const).map((j) => (
-          <div key={j} className="flex flex-col items-center gap-2 rounded-3xl bg-white p-2 shadow-card sm:p-3">
+          <div key={j} className="flex flex-col items-center gap-2 rounded-3xl bg-surface p-2 shadow-card sm:p-3">
             <p className="text-sm font-extrabold text-muted">
               {t(`Ведро на ${capacities[j]} л`, `${capacities[j]} litrli chelak`)}
             </p>
@@ -208,7 +208,7 @@ export function JugsPuzzle({
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        <span className={cn("tabular rounded-2xl bg-white px-4 py-2 text-lg font-black shadow-card")}>
+        <span className={cn("tabular rounded-2xl bg-surface px-4 py-2 text-lg font-black shadow-card")}>
           {t(`Действий: ${actions.length}`, `Harakatlar: ${actions.length}`)}
         </span>
         <Button
@@ -236,7 +236,7 @@ export function JugsPuzzle({
       <Feedback state={feedback} />
 
       {actions.length > 0 && (
-        <div className="rounded-2xl bg-white p-3 shadow-card">
+        <div className="rounded-2xl bg-surface p-3 shadow-card">
           <p className="mb-2 text-sm font-extrabold text-muted">{t("Мои действия", "Harakatlarim")}</p>
           <ol className="space-y-1 text-[0.95rem]">
             {actions.map((a, i) => (

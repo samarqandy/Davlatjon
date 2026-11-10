@@ -81,7 +81,7 @@ function ModeChooser() {
   const chip = (on: boolean) =>
     cn(
       "rounded-xl border-2 px-2.5 py-1 text-sm font-extrabold transition",
-      on ? "border-brand bg-brand text-white" : "border-line bg-white hover:border-brand/40",
+      on ? "border-brand bg-brand text-white" : "border-line bg-surface hover:border-brand/40",
     );
 
   return (
@@ -127,7 +127,7 @@ function ModeChooser() {
         </Button>
       </section>
 
-      <section className="rounded-3xl bg-white p-5 shadow-card" aria-labelledby="robot">
+      <section className="rounded-3xl bg-surface p-5 shadow-card" aria-labelledby="robot">
         <h2 id="robot" className="text-xl font-black">
           🤖 {t("С роботом", "Robot bilan")}
         </h2>
@@ -187,7 +187,7 @@ function ModeChooser() {
               </div>
               <p className="mt-2 hidden flex-1 text-xs text-muted sm:block">{l.about}</p>
               {hydrated && wins(l.id) > 0 && (
-                <p className="mt-1 text-xs font-extrabold text-[#065f46]">
+                <p className="mt-1 text-xs font-extrabold text-mint-ink">
                   🏆 {t("побед", "gʻalabalar")}: {wins(l.id)}{" "}
                   <span
                     className="ml-1 whitespace-nowrap"
@@ -247,7 +247,7 @@ function ModeChooser() {
       )}
 
       <div className="grid gap-4 md:grid-cols-3">
-        <section className="rounded-3xl bg-white p-5 shadow-card" aria-labelledby="two">
+        <section className="rounded-3xl bg-surface p-5 shadow-card" aria-labelledby="two">
           <h2 id="two" className="text-xl font-black">
             👨‍👦 {t("Вдвоём", "Ikki kishilik oʻyin")}
           </h2>
@@ -294,7 +294,7 @@ function ModeChooser() {
           </Button>
         </section>
 
-        <section className="rounded-3xl bg-white p-5 shadow-card" aria-labelledby="pawns">
+        <section className="rounded-3xl bg-surface p-5 shadow-card" aria-labelledby="pawns">
           <h2 id="pawns" className="text-xl font-black">
             ♟ {t("Пешечный бой", "Piyodalar jangi")}
           </h2>
@@ -318,7 +318,7 @@ function ModeChooser() {
           </div>
         </section>
 
-        <section className="rounded-3xl bg-white p-5 shadow-card" aria-labelledby="endgames">
+        <section className="rounded-3xl bg-surface p-5 shadow-card" aria-labelledby="endgames">
           <h2 id="endgames" className="text-xl font-black">
             🏁 {t("Поставь мат", "Mot qil")}
           </h2>
@@ -346,7 +346,7 @@ function ModeChooser() {
         </section>
       </div>
 
-      <details className="rounded-3xl bg-white p-5 shadow-card" data-board-look-details>
+      <details className="rounded-3xl bg-surface p-5 shadow-card" data-board-look-details>
         <summary className="cursor-pointer text-lg font-black">
           🎨 {t("Моя доска и звук", "Mening taxtam va ovozi")}
         </summary>
@@ -354,7 +354,7 @@ function ModeChooser() {
       </details>
 
       {hydrated && games.length > 0 && (
-        <section className="flex flex-wrap items-center justify-between gap-3 rounded-3xl bg-white p-5 shadow-card">
+        <section className="flex flex-wrap items-center justify-between gap-3 rounded-3xl bg-surface p-5 shadow-card">
           <div>
             <h2 className="text-lg font-black">{t("Мои партии", "Mening partiyalarim")}</h2>
             <p className="mt-1 text-sm font-bold text-muted">

@@ -409,7 +409,7 @@ export function ChessSchool({ counts }: { counts: ChessSchoolCounts }) {
           <h1 className="text-3xl leading-tight font-black">{school.title}</h1>
         </div>
         {rank && (
-          <div className="flex items-center gap-2 rounded-2xl bg-white px-3 py-2 shadow-card">
+          <div className="flex items-center gap-2 rounded-2xl bg-surface px-3 py-2 shadow-card">
             <PieceIcon piece={rank.piece} className="h-10 w-10 rounded-xl bg-[#f0d9b5] p-0.5" />
             <div>
               <p className="text-xs font-extrabold tracking-wide text-muted uppercase">
@@ -440,7 +440,7 @@ export function ChessSchool({ counts }: { counts: ChessSchoolCounts }) {
           <span className="mt-1 block text-2xl leading-tight font-black sm:text-3xl">{courseLesson.title}</span>
           <span className="mt-4 flex items-center gap-4">
             <ProgressBar value={courseSolved} max={courseTotal} className="flex-1 bg-white/20" />
-            <span className="inline-flex shrink-0 items-center gap-2 rounded-2xl bg-sun px-5 py-3 text-lg font-black text-ink shadow-[0_4px_0_0_#b45309]">
+            <span className="inline-flex shrink-0 items-center gap-2 rounded-2xl bg-sun px-5 py-3 text-lg font-black text-on-sun shadow-[0_4px_0_0_#b45309]">
               <Play className="h-5 w-5 fill-current" aria-hidden />
               {courseSolved > 0 ? t("Дальше", "Davom") : t("Начать", "Boshlash")}
             </span>
@@ -465,7 +465,7 @@ export function ChessSchool({ counts }: { counts: ChessSchoolCounts }) {
                   href={st.href}
                   aria-current={isCurrent ? "step" : undefined}
                   className={cn(
-                    "flex items-center gap-3 rounded-2xl bg-white p-3 shadow-card transition hover:-translate-y-0.5",
+                    "flex items-center gap-3 rounded-2xl bg-surface p-3 shadow-card transition hover:-translate-y-0.5",
                     isCurrent && "ring-2 ring-brand",
                   )}
                 >
@@ -527,7 +527,7 @@ export function ChessSchool({ counts }: { counts: ChessSchoolCounts }) {
                   <Lock className="mx-auto mt-1 h-4 w-4 text-muted" aria-label={t("закрыт", "yopiq")} />
                 )}
                 {hydrated && st.passed && (
-                  <p className="mt-1 text-xs font-extrabold text-[#7a4b00]">{t("🏅 звание", "🏅 unvon")}</p>
+                  <p className="mt-1 text-xs font-extrabold text-sun-ink">{t("🏅 звание", "🏅 unvon")}</p>
                 )}
               </>
             );
@@ -536,13 +536,13 @@ export function ChessSchool({ counts }: { counts: ChessSchoolCounts }) {
                 {open ? (
                   <Link
                     href={chessLevelHref(level.id)}
-                    className="block h-full rounded-2xl bg-white p-2 text-center shadow-card transition hover:-translate-y-0.5"
+                    className="block h-full rounded-2xl bg-surface p-2 text-center shadow-card transition hover:-translate-y-0.5"
                   >
                     {tile}
                   </Link>
                 ) : (
                   <div
-                    className="h-full rounded-2xl border-2 border-dashed border-line bg-white/70 p-2 text-center"
+                    className="h-full rounded-2xl border-2 border-dashed border-line bg-surface/70 p-2 text-center"
                     aria-disabled
                   >
                     {tile}
@@ -553,7 +553,7 @@ export function ChessSchool({ counts }: { counts: ChessSchoolCounts }) {
           })}
         </ol>
 
-        <details className="group mt-4 rounded-3xl border border-line bg-white p-3 shadow-card" data-more-sections>
+        <details className="group mt-4 rounded-3xl border border-line bg-surface p-3 shadow-card" data-more-sections>
           <summary className="flex min-h-12 cursor-pointer list-none items-center gap-2 rounded-2xl px-3 text-lg font-black select-none [&::-webkit-details-marker]:hidden">
             <span className="flex-1">{t("Ещё разделы", "Yana boʻlimlar")}</span>
             <ChevronDown className="h-5 w-5 text-muted transition group-open:rotate-180" aria-hidden />
@@ -570,7 +570,7 @@ export function ChessSchool({ counts }: { counts: ChessSchoolCounts }) {
         <DidYouKnow />
         <Link
           href="/chess/puzzles#daily"
-          className="block rounded-3xl bg-white p-4 shadow-card transition hover:-translate-y-0.5"
+          className="block rounded-3xl bg-surface p-4 shadow-card transition hover:-translate-y-0.5"
         >
           <p className="text-xs font-extrabold tracking-wide text-muted uppercase">
             {t("📅 Задача дня", "📅 Kun masalasi")}
@@ -589,7 +589,7 @@ export function ChessSchool({ counts }: { counts: ChessSchoolCounts }) {
             className="!mx-0"
           />
         </Link>
-        <details className="rounded-3xl bg-white p-4 shadow-card md:col-span-2">
+        <details className="rounded-3xl bg-surface p-4 shadow-card md:col-span-2">
           <summary className="cursor-pointer text-lg font-black">
             {t("О школе и как заниматься", "Maktab haqida va qanday shugʻullanish")}
           </summary>
@@ -617,7 +617,7 @@ export function ChessSchool({ counts }: { counts: ChessSchoolCounts }) {
             </li>
           </ul>
         </details>
-        <details className="rounded-3xl bg-white p-4 shadow-card md:col-span-2">
+        <details className="rounded-3xl bg-surface p-4 shadow-card md:col-span-2">
           <summary className="cursor-pointer text-lg font-black">
             {t("📚 Словарик", "📚 Lugʻat")}{" "}
             <span className="text-sm font-bold text-muted">
@@ -652,7 +652,7 @@ function SectionCard({ s }: { s: { href: string; emoji: string; title: string; t
   return (
     <Link
       href={s.href}
-      className="flex flex-col rounded-3xl border-2 border-transparent bg-white p-4 shadow-card transition hover:-translate-y-0.5 hover:border-brand/30"
+      className="flex flex-col rounded-3xl border-2 border-transparent bg-surface p-4 shadow-card transition hover:-translate-y-0.5 hover:border-brand/30"
     >
       <p className="text-3xl" aria-hidden>
         {s.emoji}

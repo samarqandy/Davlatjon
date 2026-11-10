@@ -70,7 +70,7 @@ export function ProfilesCard() {
                   </p>
                 </div>
                 {active ? (
-                  <span className="rounded-full bg-mint-soft px-3 py-1 text-sm font-extrabold text-[#047857]">
+                  <span className="rounded-full bg-mint-soft px-3 py-1 text-sm font-extrabold text-success-ink">
                     {t("сейчас открыт", "hozir ochiq")}
                   </span>
                 ) : (
@@ -110,7 +110,7 @@ export function ProfilesCard() {
                     onClick={() => (active ? updateSettings({ avatar: a }) : setOtherAvatar(p.id, a))}
                     className={cn(
                       "h-10 w-10 rounded-xl border-2 text-xl transition",
-                      shownAvatar === a ? "border-brand bg-brand-soft" : "border-line bg-white hover:border-brand/40",
+                      shownAvatar === a ? "border-brand bg-brand-soft" : "border-line bg-surface hover:border-brand/40",
                     )}
                   >
                     {a}
@@ -136,7 +136,7 @@ export function ProfilesCard() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               maxLength={24}
-              className="mt-1 block min-h-11 w-full rounded-xl border-2 border-line bg-white px-3 text-base font-bold outline-none focus:border-brand"
+              className="mt-1 block min-h-11 w-full rounded-xl border-2 border-line bg-surface px-3 text-base font-bold outline-none focus:border-brand"
               data-new-profile-name
             />
           </label>
@@ -145,7 +145,7 @@ export function ProfilesCard() {
             <select
               value={age}
               onChange={(e) => setAge(Number(e.target.value))}
-              className="mt-1 block min-h-11 rounded-xl border-2 border-line bg-white px-3 text-base font-bold"
+              className="mt-1 block min-h-11 rounded-xl border-2 border-line bg-surface px-3 text-base font-bold"
             >
               {Array.from({ length: AGE_MAX - AGE_MIN + 1 }, (_, i) => AGE_MIN + i).map((a) => (
                 <option key={a} value={a}>
@@ -163,7 +163,7 @@ export function ProfilesCard() {
                 onClick={() => setAvatar(a)}
                 className={cn(
                   "h-10 w-10 rounded-xl border-2 text-xl transition",
-                  avatar === a ? "border-brand bg-brand-soft" : "border-line bg-white hover:border-brand/40",
+                  avatar === a ? "border-brand bg-brand-soft" : "border-line bg-surface hover:border-brand/40",
                 )}
               >
                 {a}
@@ -171,7 +171,7 @@ export function ProfilesCard() {
             ))}
           </div>
           {error && (
-            <p className="text-sm font-bold text-[#b42318]" role="alert">
+            <p className="text-sm font-bold text-danger-ink" role="alert">
               {error}
             </p>
           )}

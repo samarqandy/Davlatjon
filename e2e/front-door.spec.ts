@@ -40,6 +40,30 @@ test("знакомство: язык → возраст; без имени и в
   await expect(page.locator("[data-name-banner]")).toHaveCount(0);
 });
 
+test("тёмная тема: включается кнопкой в шапке, сохраняется и ставится до отрисовки", async ({ page }) => {
+  await prepare(page);
+  await page.goto("/");
+  const html = page.locator("html");
+  const toggle = page.locator("[data-theme-toggle]");
+  await expect(html).not.toHaveAttribute("data-theme", "dark");
+  await expect(toggle).toHaveAttribute("aria-pressed", "false");
+  const light = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+  await toggle.click();
+  await expect(html).toHaveAttribute("data-theme", "dark");
+  await expect(toggle).toHaveAttribute("aria-pressed", "true");
+  expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).not.toBe(light);
+  // Карточки берут фон из токена поверхности: в тёмной теме он не белый.
+  const surface = await page.evaluate(() =>
+    getComputedStyle(document.documentElement).getPropertyValue("--color-surface").trim(),
+  );
+  expect(surface).not.toBe("#ffffff");
+  // После перезагрузки тема уже стоит (её ставит скрипт в <head>).
+  await page.reload();
+  await expect(html).toHaveAttribute("data-theme", "dark");
+  await page.locator("[data-theme-toggle]").click();
+  await expect(html).not.toHaveAttribute("data-theme", "dark");
+});
+
 test("нижнее меню на телефоне: четыре раздела, «Успехи» — всегда; ссылка «Для взрослых» внизу страницы", async ({
   page,
   isMobile,

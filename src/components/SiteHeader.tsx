@@ -8,6 +8,7 @@ import { BRAND, BRAND_TAGLINE } from "@/lib/brand";
 import { LangSwitch } from "./LangSwitch";
 import { ProfileSwitcher } from "./ProfileSwitcher";
 import { LogoMark } from "./Logo";
+import { ThemeToggle } from "./ThemeSync";
 
 export function SiteHeader({
   active,
@@ -61,6 +62,7 @@ export function SiteHeader({
         >
           <Lock aria-hidden className="h-5 w-5" strokeWidth={2.25} />
         </Link>
+        <ThemeToggle />
         <ProfileSwitcher />
         <LangSwitch />
       </div>

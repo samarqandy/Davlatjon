@@ -35,7 +35,7 @@ test("«Дальше» не главнее «Проверить», пока за
   await page.goto("/week/1/day/1#task-1");
   const next = page.getByRole("button", { name: "Дальше →" });
   await expect(next).toBeVisible();
-  await expect(next).toHaveClass(/bg-white/);
+  await expect(next).toHaveClass(/bg-surface/);
   await expect(page.getByRole("button", { name: "← Назад" })).toBeVisible();
 });
 

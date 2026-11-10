@@ -30,7 +30,7 @@ export function BottomNav() {
       <nav
         data-bottom-nav
         aria-label={t("Нижнее меню", "Pastki menyu")}
-        className="no-print fixed inset-x-0 bottom-0 z-30 border-t border-line bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur sm:hidden"
+        className="no-print fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur sm:hidden"
       >
         <ul className="mx-auto grid max-w-md grid-cols-4">
           {tabs.map((tab) => {

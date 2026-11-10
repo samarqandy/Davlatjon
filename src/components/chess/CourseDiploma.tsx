@@ -63,7 +63,7 @@ export function CourseDiploma({ step }: { step: CourseStep }) {
     return (
       <div className="space-y-5">
         {back}
-        <section className="space-y-4 rounded-3xl bg-white p-6 shadow-card" data-diploma="locked">
+        <section className="space-y-4 rounded-3xl bg-surface p-6 shadow-card" data-diploma="locked">
           <h1 className="text-2xl font-black">🔒 {t("Диплом ступени пока закрыт", "Bosqich diplomi hali yopiq")}</h1>
           <p className="text-lg">
             {t(
@@ -157,13 +157,13 @@ export function DiplomaCard({ step }: { step: CourseStep }) {
     <Link
       href={diplomaHref(step)}
       data-diploma-card={hydrated && earned ? "earned" : "locked"}
-      className="flex items-center gap-4 rounded-3xl border-2 border-[#d8b46a] bg-[#fffaf0] p-5 shadow-card transition hover:-translate-y-0.5"
+      className="flex items-center gap-4 rounded-3xl border-2 border-[#d8b46a] bg-[#fffaf0] p-5 shadow-card transition hover:-translate-y-0.5 dark:border-[#6b5a1e] dark:bg-[#332a12]"
     >
       <span className="text-5xl" aria-hidden>
         🎓
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block text-xl font-black text-[#7a4b00]">
+        <span className="block text-xl font-black text-sun-ink">
           {hydrated && earned
             ? t("Диплом ступени получен — открыть и распечатать", "Bosqich diplomi olindi — ochish va chop etish")
             : t(`Диплом ступени «${step.award.ru}»`, `«${step.award.uz}» bosqichi diplomi`)}

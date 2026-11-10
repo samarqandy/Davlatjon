@@ -63,7 +63,7 @@ export function SignsPuzzle({ taskId, spec, hintsLeft }: { taskId: string; spec:
       <p className="text-sm font-bold text-muted">{t("Нажимай на окошки: + или −.", "Katakchalarni bos: + yoki −.")}</p>
       <div className="space-y-3">
         {spec.rows.map((row, ri) => (
-          <div key={ri} className="flex flex-wrap items-center gap-1.5 rounded-2xl bg-white px-3 py-2.5 shadow-card">
+          <div key={ri} className="flex flex-wrap items-center gap-1.5 rounded-2xl bg-surface px-3 py-2.5 shadow-card">
             {row.numbers.map((num, i) => (
               <span key={i} className="flex items-center gap-1.5">
                 <span className="tabular text-3xl font-black">{num}</span>
@@ -75,7 +75,7 @@ export function SignsPuzzle({ taskId, spec, hintsLeft }: { taskId: string; spec:
                       "flex h-11 w-11 items-center justify-center rounded-xl border-2 text-3xl font-black transition",
                       signs[ri][i]
                         ? "border-brand bg-brand-soft text-brand-dark"
-                        : "border-dashed border-brand/60 bg-white text-brand/40",
+                        : "border-dashed border-brand/60 bg-surface text-brand/40",
                     )}
                     aria-label={t(
                       `Знак ${i + 1}: ${signs[ri][i] || "пусто"}`,
@@ -92,7 +92,7 @@ export function SignsPuzzle({ taskId, spec, hintsLeft }: { taskId: string; spec:
               <span
                 className={cn(
                   "ml-2 rounded-lg px-2 py-0.5 text-sm font-extrabold",
-                  results[ri] === row.result ? "bg-mint-soft text-[#047857]" : "bg-sun-soft text-[#7a4b00]",
+                  results[ri] === row.result ? "bg-mint-soft text-success-ink" : "bg-sun-soft text-sun-ink",
                 )}
               >
                 {results[ri] === row.result
@@ -208,7 +208,7 @@ export function ExpressionsPuzzle({
                   onClick={() => press(k)}
                   className={cn(
                     "relative h-11 rounded-lg text-xl font-bold transition active:scale-95",
-                    broken ? "bg-[#4b5563] text-[#9ca3af]" : "bg-[#f3f4f6] text-[#111827] hover:bg-white",
+                    broken ? "bg-[#4b5563] text-[#9ca3af]" : "bg-[#f3f4f6] text-[#111827] hover:bg-surface",
                   )}
                   aria-label={
                     broken
@@ -240,20 +240,20 @@ export function ExpressionsPuzzle({
               type="button"
               onClick={equals}
               disabled={!expr}
-              className="h-11 rounded-lg bg-sun text-xl font-black text-ink disabled:opacity-50"
+              className="h-11 rounded-lg bg-sun text-xl font-black text-on-sun disabled:opacity-50"
             >
               =
             </button>
           </div>
         </div>
         {found.length > 0 && (
-          <div className="min-w-48 flex-1 rounded-2xl bg-white p-3 shadow-card">
+          <div className="min-w-48 flex-1 rounded-2xl bg-surface p-3 shadow-card">
             <p className="mb-2 text-sm font-extrabold text-muted">
               {t(`Мои способы: ${found.length}`, `Usullarim: ${found.length}`)}
             </p>
             <ul className="flex flex-wrap gap-2">
               {found.map((f) => (
-                <li key={f} className="tabular rounded-xl bg-mint-soft px-3 py-1 font-extrabold text-[#065f46]">
+                <li key={f} className="tabular rounded-xl bg-mint-soft px-3 py-1 font-extrabold text-mint-ink">
                   {f} = {target}
                 </li>
               ))}
@@ -334,7 +334,7 @@ export function RulesAnswer({ taskId, spec }: { taskId: string; spec: RulesSpec 
             value={value}
             onChange={(e) => setValue(e.target.value.replace(/\D/g, "").slice(0, 3))}
             onKeyDown={(e) => e.key === "Enter" && check()}
-            className="tabular h-12 w-28 rounded-xl border-2 border-line bg-white px-3 text-center text-2xl font-extrabold outline-none focus:border-brand"
+            className="tabular h-12 w-28 rounded-xl border-2 border-line bg-surface px-3 text-center text-2xl font-extrabold outline-none focus:border-brand"
             placeholder="?"
           />
         </label>
@@ -386,7 +386,7 @@ export function OpenAnswer({ taskId, prompt }: { taskId: string; prompt: string 
             saveTaskInput(taskId, { notes: e.target.value });
           }}
           rows={3}
-          className="w-full rounded-2xl border-2 border-line bg-white px-3 py-2 text-lg outline-none focus:border-brand"
+          className="w-full rounded-2xl border-2 border-line bg-surface px-3 py-2 text-lg outline-none focus:border-brand"
         />
       </label>
       <Button variant={solved ? "success" : "primary"} size="lg" onClick={() => markSolved(taskId)} disabled={solved}>

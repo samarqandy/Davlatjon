@@ -25,7 +25,7 @@ export function LangSwitch({ className }: { className?: string }) {
           title={l.label}
           className={cn(
             "min-h-8 rounded-[10px] px-2 transition",
-            hydrated && lang === l.id ? "bg-white text-brand-dark shadow-sm" : "text-muted hover:text-ink",
+            hydrated && lang === l.id ? "bg-surface text-brand-dark shadow-sm" : "text-muted hover:text-ink",
           )}
         >
           {l.short}

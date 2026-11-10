@@ -16,9 +16,9 @@ export function SpeechVisual({ items }: { items: { emoji: string; name: string; 
             </span>
             <span className="mt-1 text-xs font-extrabold text-muted">{it.name}</span>
           </span>
-          <span className="relative rounded-2xl border-2 border-line bg-white px-4 py-2.5 font-bold">
+          <span className="relative rounded-2xl border-2 border-line bg-surface px-4 py-2.5 font-bold">
             <span
-              className="absolute top-4 -left-[7px] h-3 w-3 rotate-45 border-b-2 border-l-2 border-line bg-white"
+              className="absolute top-4 -left-[7px] h-3 w-3 rotate-45 border-b-2 border-l-2 border-line bg-surface"
               aria-hidden
             />
             «{it.text}»
@@ -38,7 +38,7 @@ export function CodeTableVisual({ pairs }: { pairs: [string, string][] }) {
         <div
           key={sign}
           role="row"
-          className="flex w-9 flex-col overflow-hidden rounded-lg border border-line bg-white text-center"
+          className="flex w-9 flex-col overflow-hidden rounded-lg border border-line bg-surface text-center"
         >
           <span role="cell" className="bg-brand-soft py-0.5 text-base font-black text-brand-dark">
             {sign}
@@ -65,7 +65,10 @@ export function StrokesVisual({
   return (
     <div className="flex flex-wrap gap-4">
       {figures.map((f) => (
-        <figure key={f.label} className="flex flex-col items-center gap-1 rounded-2xl border border-line bg-white p-2">
+        <figure
+          key={f.label}
+          className="flex flex-col items-center gap-1 rounded-2xl border border-line bg-surface p-2"
+        >
           <svg
             width={size}
             height={size}

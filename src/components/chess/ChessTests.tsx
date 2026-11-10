@@ -94,7 +94,7 @@ function Overview() {
               type="button"
               data-chess-test={test.id}
               onClick={() => setHash(`#${test.id}`)}
-              className="rounded-3xl bg-white p-5 text-left shadow-card transition hover:-translate-y-0.5 hover:shadow-lift"
+              className="rounded-3xl bg-surface p-5 text-left shadow-card transition hover:-translate-y-0.5 hover:shadow-lift"
             >
               <p className="text-4xl" aria-hidden>
                 {test.emoji}
@@ -175,10 +175,10 @@ function TestRun({ test, index }: { test: ChessTest; index: number | null }) {
                 i === current
                   ? "border-brand bg-brand text-white"
                   : mark === "perfect"
-                    ? "border-mint/50 bg-mint-soft text-[#065f46]"
+                    ? "border-mint/50 bg-mint-soft text-mint-ink"
                     : mark === "retry"
-                      ? "border-sun/60 bg-sun-soft text-[#7a4b00]"
-                      : "border-line bg-white hover:border-brand/40",
+                      ? "border-sun/60 bg-sun-soft text-sun-ink"
+                      : "border-line bg-surface hover:border-brand/40",
               )}
             >
               {mark === "perfect" && i !== current ? "✓" : i + 1}
@@ -197,7 +197,7 @@ function TestRun({ test, index }: { test: ChessTest; index: number | null }) {
         />
       )}
       {current === null ? (
-        <section className="rounded-3xl bg-white p-6 text-center shadow-card" data-test-result={r.score}>
+        <section className="rounded-3xl bg-surface p-6 text-center shadow-card" data-test-result={r.score}>
           <p className="text-5xl" aria-hidden>
             {starsFor(r.score) === 3 ? "🏆" : starsFor(r.score) > 0 ? "🎉" : "🌱"}
           </p>

@@ -47,7 +47,7 @@ export function ProfileSwitcher() {
           `Сейчас занимается: ${current.name}. Сменить`,
           `Hozir shugʻullanmoqda: ${current.name}. Almashtirish`,
         )}
-        className="flex min-h-11 items-center gap-1.5 rounded-xl bg-white px-2.5 py-1 text-sm font-extrabold shadow-card hover:bg-brand-soft/50"
+        className="flex min-h-11 items-center gap-1.5 rounded-xl bg-surface px-2.5 py-1 text-sm font-extrabold shadow-card hover:bg-brand-soft/50"
       >
         <span aria-hidden className="text-2xl leading-none">
           {current.avatar}
@@ -60,7 +60,7 @@ export function ProfileSwitcher() {
       {open && (
         <ul
           role="menu"
-          className="absolute right-0 z-40 mt-2 w-60 space-y-1 rounded-2xl border border-line bg-white p-2 shadow-lift"
+          className="absolute right-0 z-40 mt-2 w-60 space-y-1 rounded-2xl border border-line bg-surface p-2 shadow-lift"
         >
           <li
             role="presentation"

@@ -63,7 +63,7 @@ function OpeningsList() {
         </p>
       </header>
 
-      <section aria-labelledby="principles" className="rounded-3xl bg-white p-5 shadow-card">
+      <section aria-labelledby="principles" className="rounded-3xl bg-surface p-5 shadow-card">
         <h2 id="principles" className="text-xl font-black">
           {t("Пять правил дебюта", "Debyutning beshta qoidasi")}
         </h2>
@@ -99,7 +99,7 @@ function OpeningsList() {
                     key={o.id}
                     type="button"
                     onClick={() => setHash(`#open-${o.id}`)}
-                    className="flex gap-3 rounded-3xl bg-white p-3 text-left shadow-card transition hover:-translate-y-0.5"
+                    className="flex gap-3 rounded-3xl bg-surface p-3 text-left shadow-card transition hover:-translate-y-0.5"
                   >
                     <ChessBoard
                       id={`op-${o.id}`}
@@ -179,7 +179,7 @@ function OpeningDetail({ opening }: { opening: Opening }) {
             </span>
           </div>
           <p
-            className="flex flex-wrap gap-x-3 gap-y-1 rounded-2xl bg-white px-4 py-3 font-bold shadow-card"
+            className="flex flex-wrap gap-x-3 gap-y-1 rounded-2xl bg-surface px-4 py-3 font-bold shadow-card"
             aria-label={t("Ходы дебюта", "Debyut yurishlari")}
           >
             {opening.moves.map((m, i) => (
@@ -200,7 +200,7 @@ function OpeningDetail({ opening }: { opening: Opening }) {
         </div>
         <aside className="space-y-3">
           {picture && <Figure image={picture} sizes="(max-width: 1024px) 100vw, 340px" />}
-          <div className="rounded-2xl bg-white p-4 shadow-card">
+          <div className="rounded-2xl bg-surface p-4 shadow-card">
             <p className="text-sm font-extrabold text-muted">{t("Как играть", "Qanday oʻynash kerak")}</p>
             <ul className="mt-2 space-y-2">
               {opening.plan.map((p) => (
@@ -219,14 +219,14 @@ function OpeningDetail({ opening }: { opening: Opening }) {
             )}
           </div>
           <div className="rounded-2xl bg-sun-soft/70 p-4">
-            <p className="text-sm font-extrabold text-[#7a4b00]">💡 {t("Интересно", "Qiziqarli")}</p>
+            <p className="text-sm font-extrabold text-sun-ink">💡 {t("Интересно", "Qiziqarli")}</p>
             {opening.facts.map((f) => (
               <p key={f} className="mt-1 text-sm">
                 {f}
               </p>
             ))}
           </div>
-          <div className="rounded-2xl bg-white p-4 shadow-card">
+          <div className="rounded-2xl bg-surface p-4 shadow-card">
             <p className="text-sm font-extrabold text-muted">
               {t("Тренажёр: повтори ходы на доске", "Trenajyor: yurishlarni taxtada takrorla")}
             </p>
@@ -400,7 +400,7 @@ function OpeningTrainer({ opening, side }: { opening: Opening; side: "white" | "
           <Feedback state={feedback} />
         </div>
         <aside className="space-y-3">
-          <div className="rounded-2xl bg-white p-4 shadow-card">
+          <div className="rounded-2xl bg-surface p-4 shadow-card">
             <p className="text-sm font-extrabold text-muted">
               {t(`Ход ${Math.min(ply, total)} из ${total}`, `Yurish: ${Math.min(ply, total)} / ${total}`)}
             </p>
@@ -413,7 +413,7 @@ function OpeningTrainer({ opening, side }: { opening: Opening; side: "white" | "
             </p>
             <p className="mt-2 flex flex-wrap gap-x-2 gap-y-1 text-sm font-bold">
               {opening.moves.map((m, i) => (
-                <span key={i} className={cn("rounded px-1", i < ply ? "bg-mint-soft text-[#065f46]" : "text-muted")}>
+                <span key={i} className={cn("rounded px-1", i < ply ? "bg-mint-soft text-mint-ink" : "text-muted")}>
                   {i % 2 === 0 ? `${i / 2 + 1}.` : ""}
                   {i < ply ? san(m) : "…"}
                 </span>

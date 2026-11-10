@@ -154,7 +154,7 @@ export function ParentDashboard({ weeks: both }: { weeks: Both<ParentWeek[]> }) 
               </ButtonLink>
             </div>
           </div>
-          <div className="overflow-hidden rounded-3xl border border-line bg-white shadow-card">
+          <div className="overflow-hidden rounded-3xl border border-line bg-surface shadow-card">
             {w.days.map((d, i) => {
               const solved = hydrated ? d.tasks.filter((task) => state.tasks[task.id]?.status === "solved").length : 0;
               const done = hydrated && state.days[d.id]?.completedAt;
@@ -277,7 +277,7 @@ function CourseStepRow({ step }: { step: CourseStep }) {
     <li className="rounded-2xl bg-paper px-3 py-2">
       <p className="flex items-center justify-between gap-2 text-sm font-extrabold">
         <span>{t(`Ступень ${step.n} «${step.award.ru}»`, `${step.n}-bosqich «${step.award.uz}»`)}</span>
-        {diploma && <span className="text-[#7a4b00]">{t("🎓 диплом", "🎓 diplom")}</span>}
+        {diploma && <span className="text-sun-ink">{t("🎓 диплом", "🎓 diplom")}</span>}
       </p>
       <div className="mt-1 flex items-center gap-2">
         <ProgressBar value={solved} max={all.length} className="flex-1" />

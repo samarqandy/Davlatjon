@@ -94,7 +94,7 @@ export function ChoiceAnswer({ taskId, spec, hintsLeft }: { taskId: string; spec
                 "flex min-h-14 items-center justify-center gap-2 rounded-2xl border-2 px-3 py-3 transition",
                 on
                   ? "border-brand bg-brand-soft shadow-[inset_0_0_0_2px_var(--color-brand)]"
-                  : "border-line bg-white hover:border-brand/40",
+                  : "border-line bg-surface hover:border-brand/40",
                 !hasVisuals && "justify-start text-left",
               )}
             >
@@ -166,7 +166,7 @@ export function AssignAnswer({ taskId, spec, hintsLeft }: { taskId: string; spec
         {spec.items.map((item) => (
           <div
             key={item.id}
-            className="flex flex-wrap items-center gap-2 rounded-2xl border border-line bg-white px-3 py-2"
+            className="flex flex-wrap items-center gap-2 rounded-2xl border border-line bg-surface px-3 py-2"
           >
             <span className="min-w-32 font-extrabold">{item.label}</span>
             <div className="flex flex-wrap gap-1.5">
@@ -243,7 +243,7 @@ export function OrderAnswer({ taskId, spec, hintsLeft }: { taskId: string; spec:
               key={i.id}
               type="button"
               onClick={() => update([...order, i.id])}
-              className="h-12 rounded-2xl border-2 border-line bg-white px-4 text-lg font-bold hover:border-brand/40"
+              className="h-12 rounded-2xl border-2 border-line bg-surface px-4 text-lg font-bold hover:border-brand/40"
             >
               {i.label}
             </button>

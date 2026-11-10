@@ -65,7 +65,7 @@ export function TodayCard({ className }: { className?: string }) {
   const state = useStore((s) => s);
   const goal = state.settings.goalDays ?? GOAL_DAYS_DEFAULT;
   const days = useMemo(() => activityDays(state), [state]);
-  if (!hydrated || !today) return <section className={cn("min-h-40 rounded-3xl bg-white shadow-card", className)} />;
+  if (!hydrated || !today) return <section className={cn("min-h-40 rounded-3xl bg-surface shadow-card", className)} />;
 
   const goals = questFor(state, today);
   const done = questDone(goals);
@@ -77,7 +77,7 @@ export function TodayCard({ className }: { className?: string }) {
   return (
     // Делится на две колонки по своей ширине, а не по ширине окна: в узкой колонке главной — одна колонка.
     <section
-      className={cn("@container rounded-3xl bg-white p-5 shadow-card", className)}
+      className={cn("@container rounded-3xl bg-surface p-5 shadow-card", className)}
       aria-labelledby="today"
       data-today
     >

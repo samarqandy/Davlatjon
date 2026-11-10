@@ -47,7 +47,7 @@ export function WeekCertificateView({ week: both, weeksTotal }: { week: Both<Wee
     return (
       <div className="space-y-5">
         {back}
-        <section className="rounded-3xl bg-white p-6 shadow-card" data-week-certificate="locked">
+        <section className="rounded-3xl bg-surface p-6 shadow-card" data-week-certificate="locked">
           <h1 className="text-2xl font-black">
             🔒 {t(`Сертификат недели ${week.number} пока закрыт`, `${week.number}-hafta sertifikati hali yopiq`)}
           </h1>

@@ -354,7 +354,7 @@ function ActivitySummary() {
           </ul>
         </Card>
       </div>
-      <details className="rounded-2xl bg-white p-4 shadow-card">
+      <details className="rounded-2xl bg-surface p-4 shadow-card">
         <summary className="cursor-pointer text-sm font-extrabold text-brand">
           {t(
             `Ответы ко всем задачам тренажёра (${chess.puzzles.length})`,

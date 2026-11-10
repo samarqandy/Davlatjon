@@ -108,7 +108,7 @@ export function StormView() {
       </div>
       <h1 className="text-2xl font-black">⚡ {t("Шторм", "Boʻron")}</h1>
       {!running && (
-        <div className="rounded-3xl bg-white p-6 text-center shadow-card">
+        <div className="rounded-3xl bg-surface p-6 text-center shadow-card">
           {over ? (
             <>
               <p className="text-5xl" aria-hidden>
@@ -194,7 +194,7 @@ export function RepeatView() {
         </p>
       </header>
       {queue === null ? (
-        <div className="rounded-3xl bg-white p-6 text-center shadow-card">
+        <div className="rounded-3xl bg-surface p-6 text-center shadow-card">
           <p className="text-xl font-black">
             {due.length
               ? t(
@@ -217,7 +217,7 @@ export function RepeatView() {
         <Loading />
       ) : found === "missing" && index < list.length ? (
         <div className="rounded-3xl bg-sun-soft p-6 text-center">
-          <p className="font-bold text-[#7a4b00]">
+          <p className="font-bold text-sun-ink">
             {t("Эту задачу не удалось загрузить.", "Bu masalani yuklab boʻlmadi.")}
           </p>
           <Button className="mt-3" onClick={() => setIndex((i) => i + 1)}>

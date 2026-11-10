@@ -28,7 +28,7 @@ export function SymmetryGrid({
   const t = useT();
   const half = left[0].length;
   return (
-    <div className="inline-block rounded-2xl bg-white p-2 shadow-card">
+    <div className="inline-block rounded-2xl bg-surface p-2 shadow-card">
       <div className="relative grid" style={{ gridTemplateColumns: `repeat(${half * 2}, ${cell}px)` }}>
         {left.map((row, r) =>
           Array.from({ length: half * 2 }, (_, c) => {
@@ -42,7 +42,7 @@ export function SymmetryGrid({
                 <span
                   key={`${r}-${c}`}
                   style={style}
-                  className={cn(border, filled ? (isLeft ? "bg-brand" : "bg-sun") : "bg-white")}
+                  className={cn(border, filled ? (isLeft ? "bg-brand" : "bg-sun") : "bg-surface")}
                 />
               );
             }
@@ -57,7 +57,7 @@ export function SymmetryGrid({
                   `${r + 1}-qator, oʻngdagi ${c - half + 1}-katak: ${filled ? "boʻyalgan" : "boʻsh"}`,
                 )}
                 aria-pressed={filled}
-                className={cn(border, filled ? "bg-sun" : "bg-white hover:bg-sun-soft")}
+                className={cn(border, filled ? "bg-sun" : "bg-surface hover:bg-sun-soft")}
               />
             );
           }),
@@ -325,7 +325,7 @@ export function PartitionPuzzle({
       </div>
       <Feedback state={feedback} />
       {found.length > 0 && (
-        <div className="rounded-2xl bg-white p-3 shadow-card">
+        <div className="rounded-2xl bg-surface p-3 shadow-card">
           <p className="mb-2 text-sm font-extrabold text-muted">
             {t(`Найденные способы: ${found.length}`, `Topilgan usullar: ${found.length}`)}
           </p>
@@ -410,7 +410,7 @@ export function MagicSquarePuzzle({
                 key={c}
                 className={cn(
                   cellSize,
-                  "tabular flex items-center justify-center rounded-2xl border-2 border-[#c4b5fd] bg-white text-3xl font-black",
+                  "tabular flex items-center justify-center rounded-2xl border-2 border-[#c4b5fd] bg-surface text-3xl font-black",
                 )}
               >
                 {v !== null ? (

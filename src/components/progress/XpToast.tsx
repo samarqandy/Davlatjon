@@ -48,7 +48,7 @@ export function XpToast() {
     <Link
       href={COLLECTION_HREF}
       data-card-toast
-      className="pointer-events-auto mt-2 block rounded-xl bg-white/90 px-3 py-1 text-base font-black text-ink"
+      className="pointer-events-auto mt-2 block rounded-xl bg-surface/90 px-3 py-1 text-base font-black text-ink"
     >
       🃏 {t("Новая карточка героя!", "Yangi qahramon kartochkasi!")}
     </Link>
@@ -81,7 +81,7 @@ export function XpToast() {
       role="status"
       data-xp-toast
       className={
-        "pointer-events-none fixed top-20 right-4 z-50 rounded-2xl bg-sun px-4 py-2 text-lg font-black text-ink shadow-lift " +
+        "pointer-events-none fixed top-20 right-4 z-50 rounded-2xl bg-sun px-4 py-2 text-lg font-black text-on-sun shadow-lift " +
         (motion ? "animate-[xp-chip_1.8s_ease-out_both]" : "animate-pop")
       }
     >

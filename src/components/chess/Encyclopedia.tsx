@@ -124,7 +124,7 @@ export function Encyclopedia() {
             <a
               key={id}
               href={`#${id}`}
-              className="rounded-xl bg-white px-3 py-1.5 text-sm font-extrabold text-brand-dark shadow-sm hover:bg-brand-soft"
+              className="rounded-xl bg-surface px-3 py-1.5 text-sm font-extrabold text-brand-dark shadow-sm hover:bg-brand-soft"
             >
               {label}
             </a>
@@ -136,17 +136,17 @@ export function Encyclopedia() {
         <h2 id="history-h" className="text-2xl font-black">
           {t("🗺️ Путь шахмат: полторы тысячи лет", "🗺️ Shaxmat yoʻli: bir yarim ming yil")}
         </h2>
-        <div className="rounded-3xl bg-white p-3 shadow-card">
+        <div className="rounded-3xl bg-surface p-3 shadow-card">
           <JourneyMap />
         </div>
         <ol className="relative space-y-3 border-l-4 border-[#e5c07b] pl-5">
           {timeline.map((ev) => (
             <li
               key={ev.title}
-              className={cn("relative rounded-2xl p-4 shadow-card", ev.local ? "bg-sun-soft/70" : "bg-white")}
+              className={cn("relative rounded-2xl p-4 shadow-card", ev.local ? "bg-sun-soft/70" : "bg-surface")}
             >
               <span
-                className="absolute top-5 -left-[31px] flex h-8 w-8 items-center justify-center rounded-full bg-white text-lg shadow-sm"
+                className="absolute top-5 -left-[31px] flex h-8 w-8 items-center justify-center rounded-full bg-surface text-lg shadow-sm"
                 aria-hidden
               >
                 {ev.emoji}
@@ -175,7 +175,7 @@ export function Encyclopedia() {
         <h2 id="uz-h" className="text-2xl font-black">
           🇺🇿 {uzbekChess.title}
         </h2>
-        <div className="rounded-3xl bg-white p-5 shadow-card">
+        <div className="rounded-3xl bg-surface p-5 shadow-card">
           {uzbekChess.paragraphs.map((p) => (
             <p key={p} className="mt-2 text-lg leading-relaxed first:mt-0">
               {p}
@@ -204,7 +204,7 @@ export function Encyclopedia() {
           tabIndex={0}
           role="region"
           aria-labelledby="champ-h"
-          className="overflow-x-auto rounded-3xl bg-white p-2 shadow-card"
+          className="overflow-x-auto rounded-3xl bg-surface p-2 shadow-card"
         >
           <table className="w-full text-left text-sm">
             <thead>
@@ -238,7 +238,7 @@ export function Encyclopedia() {
         <h3 className="text-xl font-black">{t("Чемпионки мира", "Ayollar orasida jahon chempionlari")}</h3>
         <ul className="grid gap-3 md:grid-cols-5">
           {womenChampions.map((c) => (
-            <li key={c.n} className="rounded-2xl bg-white p-3 shadow-card">
+            <li key={c.n} className="rounded-2xl bg-surface p-3 shadow-card">
               <Face id={c.image} size={72} className="mb-2" />
               <p className="font-black">{c.name}</p>
               <p className="text-xs font-bold text-muted">
@@ -260,7 +260,7 @@ export function Encyclopedia() {
         </h2>
         <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {pieceNamesTable.map((p) => (
-            <li key={p.piece} className="flex gap-3 rounded-3xl bg-white p-4 shadow-card">
+            <li key={p.piece} className="flex gap-3 rounded-3xl bg-surface p-4 shadow-card">
               <PieceIcon piece={p.piece} className="h-16 w-16 shrink-0 rounded-2xl bg-[#f0d9b5] p-1" />
               {lang === "uz" ? (
                 // По-узбекски главное — узбекское имя, русское и английское подписаны, чтобы было понятно, где какое.
@@ -310,7 +310,7 @@ export function Encyclopedia() {
           {records.map((r) => (
             <li
               key={r.title}
-              className={cn("rounded-3xl bg-white p-4 shadow-card", r.image && "sm:col-span-2 sm:flex sm:gap-4")}
+              className={cn("rounded-3xl bg-surface p-4 shadow-card", r.image && "sm:col-span-2 sm:flex sm:gap-4")}
             >
               <Pic id={r.image} className="mb-3 sm:mb-0 sm:w-64 sm:shrink-0" sizes="(max-width: 640px) 100vw, 256px" />
               <div>
@@ -337,7 +337,7 @@ export function Encyclopedia() {
         </p>
         <ul className="grid gap-3 md:grid-cols-2">
           {chessMath.map((m, i) => (
-            <li key={i} className="rounded-3xl bg-white p-4 shadow-card">
+            <li key={i} className="rounded-3xl bg-surface p-4 shadow-card">
               <p className="text-lg font-bold">
                 <span aria-hidden>{m.emoji} </span>
                 <RichText text={m.question} />
@@ -373,7 +373,7 @@ export function Encyclopedia() {
             "Ensiklopediyadagi barcha fotosuratlar va rasmlar Wikimedia Commons saytidan olingan. Ular jamoat mulki hisoblanadi yoki Creative Commons erkin litsenziyalari bilan tarqatiladi: muallifi koʻrsatilsa, bunday rasmdan foydalanish mumkin. Sayt uchun rasmlar kichraytirilgan.",
           )}
         </p>
-        <div className="rounded-3xl bg-white p-4 shadow-card">
+        <div className="rounded-3xl bg-surface p-4 shadow-card">
           <ImageCredits images={images} />
         </div>
       </section>

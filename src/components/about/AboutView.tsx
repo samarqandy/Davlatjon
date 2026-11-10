@@ -29,7 +29,7 @@ export interface AboutStats {
   stories: number;
 }
 
-const card = "rounded-3xl bg-white p-5 shadow-card";
+const card = "rounded-3xl bg-surface p-5 shadow-card";
 const icon = "h-6 w-6";
 
 /** Ступени шахматного курса — те же названия, что у дипломов (src/lib/course). */

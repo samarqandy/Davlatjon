@@ -68,7 +68,7 @@ export function MyProblems() {
               value={title}
               onChange={(e) => (setTitle(e.target.value), setSaved(false))}
               placeholder={t("Например: «Хитрый робот»", "Masalan: «Ayyor robot»")}
-              className="h-12 w-full rounded-2xl border-2 border-line bg-white px-3 text-lg outline-none focus:border-brand"
+              className="h-12 w-full rounded-2xl border-2 border-line bg-surface px-3 text-lg outline-none focus:border-brand"
             />
           </label>
           <label className="block">
@@ -81,7 +81,7 @@ export function MyProblems() {
                 "Напиши условие. Можно попросить взрослого записать с твоих слов.",
                 "Shartni yoz. Kattalardan aytganlaringni yozib berishni soʻrasang ham boʻladi.",
               )}
-              className="w-full rounded-2xl border-2 border-line bg-white px-3 py-2 text-lg outline-none focus:border-brand"
+              className="w-full rounded-2xl border-2 border-line bg-surface px-3 py-2 text-lg outline-none focus:border-brand"
             />
           </label>
           <label className="block">
@@ -94,7 +94,7 @@ export function MyProblems() {
             <input
               value={answer}
               onChange={(e) => (setAnswer(e.target.value), setSaved(false))}
-              className="h-12 w-full rounded-2xl border-2 border-line bg-white px-3 text-lg outline-none focus:border-brand"
+              className="h-12 w-full rounded-2xl border-2 border-line bg-surface px-3 text-lg outline-none focus:border-brand"
             />
           </label>
           <div className="flex flex-wrap items-center gap-3">
@@ -113,7 +113,7 @@ export function MyProblems() {
           </p>
           <div className="flex flex-wrap gap-2">
             {IDEAS.map((idea) => (
-              <span key={idea.ru} className="rounded-xl bg-sun-soft px-3 py-1.5 text-sm font-bold text-[#7a4b00]">
+              <span key={idea.ru} className="rounded-xl bg-sun-soft px-3 py-1.5 text-sm font-bold text-sun-ink">
                 💡 {t(idea.ru, idea.uz)}
               </span>
             ))}

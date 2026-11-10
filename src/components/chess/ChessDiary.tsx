@@ -60,7 +60,7 @@ export function ChessDiary() {
       </header>
 
       <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-        <section className="space-y-3 rounded-3xl bg-white p-5 shadow-card" aria-labelledby="add">
+        <section className="space-y-3 rounded-3xl bg-surface p-5 shadow-card" aria-labelledby="add">
           <h2 id="add" className="text-xl font-black">
             ✍️ {t("Записать партию", "Partiyani yozish")}
           </h2>
@@ -128,7 +128,7 @@ export function ChessDiary() {
           <Button onClick={submit} disabled={!opponent.trim()}>
             {t("Записать в дневник", "Kundalikka yozish")}
           </Button>
-          {saved && <p className="text-sm font-bold text-[#065f46]">{t("Записано ✓", "Yozildi ✓")}</p>}
+          {saved && <p className="text-sm font-bold text-mint-ink">{t("Записано ✓", "Yozildi ✓")}</p>}
         </section>
 
         <section className="space-y-3" aria-labelledby="list">
@@ -137,7 +137,7 @@ export function ChessDiary() {
             {hydrated && entries.length ? ` (${entries.length})` : ""}
           </h2>
           {hydrated && robotWins > 0 && (
-            <p className="rounded-2xl bg-sun-soft/70 px-4 py-2 text-sm font-bold text-[#7a4b00]">
+            <p className="rounded-2xl bg-sun-soft/70 px-4 py-2 text-sm font-bold text-sun-ink">
               {t(
                 `А ещё на этой доске ты выиграл у робота ${pluralize(robotWins, "партию", "партии", "партий")}.`,
                 `Yana shu taxtada robotni ${robotWins} marta yutding.`,
@@ -155,7 +155,7 @@ export function ChessDiary() {
                 <li
                   key={e.id}
                   className={cn(
-                    "rounded-2xl bg-white p-4 shadow-card",
+                    "rounded-2xl bg-surface p-4 shadow-card",
                     e.result === "win" && "border-2 border-mint/40",
                   )}
                 >

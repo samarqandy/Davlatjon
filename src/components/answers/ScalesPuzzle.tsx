@@ -281,7 +281,7 @@ export function ScalesPuzzle({ taskId, coins, weighings }: { taskId: string; coi
         )}
       </p>
 
-      <div className="flex flex-col items-center rounded-3xl bg-white p-3 shadow-card">
+      <div className="flex flex-col items-center rounded-3xl bg-surface p-3 shadow-card">
         <CoinScale left={left} right={right} tilt={shown} />
         <div className="mt-2 flex flex-wrap justify-center gap-1.5" role="group" aria-label={t("Монеты", "Tangalar")}>
           {all.map((c) => (
@@ -302,7 +302,7 @@ export function ScalesPuzzle({ taskId, coins, weighings }: { taskId: string; coi
                     ? "border-brand bg-brand-soft"
                     : places[c] === "right"
                       ? "border-[#d97706] bg-[#fff7ed]"
-                      : "border-line bg-white hover:border-brand/40",
+                      : "border-line bg-surface hover:border-brand/40",
               )}
             >
               <Coin n={c} size={30} muted={!!places[c] && !naming} />
@@ -373,7 +373,7 @@ export function ScalesPuzzle({ taskId, coins, weighings }: { taskId: string; coi
       <Feedback state={feedback} />
 
       {history.length > 0 && (
-        <div className="rounded-2xl bg-white p-3 shadow-card">
+        <div className="rounded-2xl bg-surface p-3 shadow-card">
           <p className="mb-2 text-sm font-extrabold text-muted">{t("Дневник взвешиваний", "Tortishlar kundaligi")}</p>
           <ol className="space-y-2">
             {history.map((h, i) => (

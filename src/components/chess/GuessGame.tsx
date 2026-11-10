@@ -146,7 +146,7 @@ export function GuessGame({ game, onExit }: { game: FamousGame; onExit: () => vo
         <Feedback state={feedback} />
       </div>
       <aside className="space-y-3">
-        <div className="rounded-2xl bg-white p-4 shadow-card">
+        <div className="rounded-2xl bg-surface p-4 shadow-card">
           <p className="text-xs font-extrabold tracking-wide text-muted uppercase">
             🎯 {t(`Сыграй как ${hero.name}`, `${hero.name} kabi oʻyna`)}
           </p>

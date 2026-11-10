@@ -80,11 +80,11 @@ function PinForm({ mode, compact }: { mode: "create" | "enter"; compact: boolean
   };
 
   const input =
-    "h-14 w-44 rounded-2xl border-2 border-line bg-white text-center text-3xl font-black tracking-[0.5em] outline-none focus:border-brand";
+    "h-14 w-44 rounded-2xl border-2 border-line bg-surface text-center text-3xl font-black tracking-[0.5em] outline-none focus:border-brand";
 
   return (
     <div className={compact ? "py-6" : "mx-auto max-w-md py-10"}>
-      <div className="rounded-[2rem] border border-line bg-white p-6 text-center shadow-card sm:p-8">
+      <div className="rounded-[2rem] border border-line bg-surface p-6 text-center shadow-card sm:p-8">
         <div className="text-5xl" aria-hidden>
           🔒
         </div>

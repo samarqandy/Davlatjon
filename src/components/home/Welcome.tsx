@@ -55,7 +55,7 @@ export function Welcome() {
       aria-labelledby="welcome-title"
       data-welcome-step={step}
     >
-      <div className="my-auto w-full max-w-lg animate-pop rounded-[2rem] bg-white p-6 shadow-lift sm:p-8">
+      <div className="my-auto w-full max-w-lg animate-pop rounded-[2rem] bg-surface p-6 shadow-lift sm:p-8">
         {step === 0 ? (
           <div className="space-y-5">
             <div className="flex items-center gap-3" aria-hidden>
@@ -73,7 +73,7 @@ export function Welcome() {
                   aria-pressed={lang === l.id}
                   className={cn(
                     "min-h-16 rounded-2xl border-2 px-3 text-xl font-black transition",
-                    lang === l.id ? "border-brand bg-brand text-white" : "border-line bg-white hover:border-brand/40",
+                    lang === l.id ? "border-brand bg-brand text-white" : "border-line bg-surface hover:border-brand/40",
                   )}
                 >
                   {l.label}
@@ -127,7 +127,7 @@ export function Welcome() {
                   aria-pressed={age === a}
                   className={cn(
                     "min-h-14 rounded-2xl border-2 text-xl font-black transition",
-                    age === a ? "border-brand bg-brand text-white" : "border-line bg-white hover:border-brand/40",
+                    age === a ? "border-brand bg-brand text-white" : "border-line bg-surface hover:border-brand/40",
                   )}
                 >
                   {a === AGE_MAX ? `${a}+` : a}
