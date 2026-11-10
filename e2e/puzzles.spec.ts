@@ -175,7 +175,7 @@ test("центр задач: главная кнопка и короткий с�
 test("«Дятел»: набор из 20 задач, круг идёт по порядку, время считается", async ({ page }) => {
   await prepare(page);
   await page.goto("/chess/puzzles#woodpecker");
-  await page.getByRole("button", { name: "▶ Начать первый круг" }).click();
+  await page.getByRole("button", { name: "Начать первый круг" }).click();
   await expect(page.getByText(/Круг 1 из 3 · задача 1 из 20/)).toBeVisible();
   await solveShown(page);
   await expect(page.getByText(/— (мат|верно)!/)).toBeVisible();

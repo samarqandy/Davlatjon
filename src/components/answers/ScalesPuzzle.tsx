@@ -1,7 +1,8 @@
 "use client";
 
+import { RotateCcw } from "lucide-react";
 import { useRef, useState } from "react";
-import { Button, cn } from "@/components/ui";
+import { Button, cn, Icon } from "@/components/ui";
 import { askExplain, praise } from "@/lib/feedback";
 import { countText, useLang, useT, type Both, type Lang } from "@/lib/i18n";
 import { candidates, trickyWeigh, type Weighing, type WeighingRecord } from "@/lib/scales";
@@ -354,7 +355,7 @@ export function ScalesPuzzle({ taskId, coins, weighings }: { taskId: string; coi
           {t("Снять монеты", "Tangalarni olish")}
         </Button>
         <Button variant="ghost" onClick={restart}>
-          ↺ {t("Начать заново", "Qaytadan boshlash")}
+          <Icon icon={RotateCcw} /> {t("Начать заново", "Qaytadan boshlash")}
         </Button>
       </div>
 

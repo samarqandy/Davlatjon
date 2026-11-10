@@ -1,10 +1,11 @@
 "use client";
 
+import { RotateCcw } from "lucide-react";
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { Feedback, type FeedbackState } from "@/components/answers/Feedback";
 import { ListenButton } from "@/components/ListenButton";
 import { RichText } from "@/components/RichText";
-import { Button } from "@/components/ui";
+import { Button, Icon } from "@/components/ui";
 import type { ChessExercise } from "@/content/chess/types";
 import {
   kingSquare,
@@ -172,7 +173,7 @@ function SquaresExercise({ ex }: { ex: Of<"squares"> }) {
             setFeedback(null);
           }}
         >
-          {t("↺ Ещё раз", "↺ Yana bir marta")}
+          <Icon icon={RotateCcw} /> {t("Ещё раз", "Yana bir marta")}
         </Button>
       )}
     </ExerciseShell>
@@ -373,7 +374,7 @@ function StarsExercise({ ex }: { ex: Of<"stars"> }) {
           </span>
         )}
         <Button variant="ghost" onClick={restart} disabled={moves === 0}>
-          {t("↺ Сначала", "↺ Boshidan")}
+          <Icon icon={RotateCcw} /> {t("Сначала", "Boshidan")}
         </Button>
       </div>
     </ExerciseShell>
@@ -633,7 +634,7 @@ function MoveExercise({ ex }: { ex: Of<"move"> }) {
             setFeedback(null);
           }}
         >
-          {t("↺ Решить ещё раз", "↺ Yana bir bor yechish")}
+          <Icon icon={RotateCcw} /> {t("Решить ещё раз", "Yana bir bor yechish")}
         </Button>
       )}
     </ExerciseShell>
@@ -747,7 +748,7 @@ function QuizExercise({ ex }: { ex: Of<"quiz"> }) {
             setFeedback(null);
           }}
         >
-          {t("↺ Пройти ещё раз", "↺ Qaytadan boshlash")}
+          <Icon icon={RotateCcw} /> {t("Пройти ещё раз", "Qaytadan boshlash")}
         </Button>
       )}
     </ExerciseShell>
@@ -854,7 +855,7 @@ function ChooseExercise({ ex }: { ex: Of<"choose"> }) {
             setFeedback(null);
           }}
         >
-          {t("↺ Решить ещё раз", "↺ Yana bir bor yechish")}
+          <Icon icon={RotateCcw} /> {t("Решить ещё раз", "Yana bir bor yechish")}
         </Button>
       )}
     </ExerciseShell>

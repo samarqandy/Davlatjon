@@ -1,9 +1,10 @@
 "use client";
 
+import { Printer } from "lucide-react";
 import { useState } from "react";
 import { RichText } from "@/components/RichText";
 import { BlockView } from "@/components/task/BlockView";
-import { ButtonLink, Card, cn, LevelBadge, SectionTag } from "@/components/ui";
+import { ButtonLink, Card, cn, LevelBadge, SectionTag, Icon } from "@/components/ui";
 import { hintLabel } from "@/content/meta";
 import type { Day, Task } from "@/content/types";
 import { useBoth, useLang, useT, type Both, type Lang, type T } from "@/lib/i18n";
@@ -40,7 +41,7 @@ export function ParentDayView({ day: both }: { day: Both<Day> }) {
         </div>
         <div className="flex flex-wrap gap-2">
           <ButtonLink href={`/week/${day.week}/day/${day.day}/print#answers`} variant="secondary">
-            🖨 {t("Лист с ответами", "Javoblar varagʻi")}
+            <Icon icon={Printer} /> {t("Лист с ответами", "Javoblar varagʻi")}
           </ButtonLink>
           <ButtonLink href={`/week/${day.week}/day/${day.day}`} variant="soft">
             {t("Открыть занятие", "Mashgʻulotni ochish")}

@@ -1,10 +1,11 @@
 "use client";
 
+import { Play as PlayIcon } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Mascot } from "@/components/Mascot";
 import { Confetti } from "@/components/rewards/Confetti";
-import { Button, ButtonLink, ProgressBar, cn } from "@/components/ui";
+import { Button, ButtonLink, ProgressBar, cn, Icon } from "@/components/ui";
 import { useTitleTranslation } from "@/lib/docTitle";
 import { useLang, useT } from "@/lib/i18n";
 import {
@@ -157,7 +158,7 @@ export function QuickView() {
             </p>
           )}
           <Button size="lg" className="w-full" onClick={start} data-quick-start>
-            {t("Поехали! ▶", "Ketdik! ▶")}
+            {t("Поехали!", "Ketdik!")} <Icon icon={PlayIcon} className="fill-current" />
           </Button>
         </section>
       )}

@@ -1,7 +1,8 @@
 "use client";
 
+import { Printer } from "lucide-react";
 import Link from "next/link";
-import { ButtonLink, Card, cn, ProgressBar } from "@/components/ui";
+import { ButtonLink, Card, cn, ProgressBar, Icon } from "@/components/ui";
 import { useBoth, useLang, useT, type Both } from "@/lib/i18n";
 import { currentRank, levelStatuses } from "@/lib/chessProgress";
 import { weekTotals } from "@/lib/insights";
@@ -150,7 +151,7 @@ export function ParentDashboard({ weeks: both }: { weeks: Both<ParentWeek[]> }) 
                 📝 {t("Недельный обзор", "Haftalik sharh")}
               </ButtonLink>
               <ButtonLink href={`/week/${w.number}/print#all`} variant="secondary" size="sm">
-                🖨 {t("Вся неделя с ответами", "Butun hafta — javoblari bilan")}
+                <Icon icon={Printer} /> {t("Вся неделя с ответами", "Butun hafta — javoblari bilan")}
               </ButtonLink>
             </div>
           </div>
@@ -197,7 +198,7 @@ export function ParentDashboard({ weeks: both }: { weeks: Both<ParentWeek[]> }) 
                       size="sm"
                       aria-label={t(`Распечатать день ${d.day}`, `${d.day}-kunni chop etish`)}
                     >
-                      🖨
+                      <Icon icon={Printer} />
                     </ButtonLink>
                   </div>
                 </div>

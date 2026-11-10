@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { LucideIcon } from "lucide-react";
 import type { ComponentProps, ReactNode } from "react";
 import { levelsFor, sectionsFor } from "@/content/meta";
 import type { Level, SectionId } from "@/content/types";
@@ -30,6 +31,20 @@ const SIZES: Record<Size, string> = {
 
 const BASE =
   "inline-flex items-center justify-center font-bold select-none transition-[background,transform,box-shadow,border-color] duration-150 disabled:opacity-45 disabled:pointer-events-none text-center leading-tight";
+
+/**
+ * Значок интерфейса (DESIGN.md, раздел 5): lucide, одна толщина линии, размер — от размера текста рядом.
+ * Ставится перед подписью кнопки или ссылки вместо эмодзи; для экранного диктора скрыт.
+ */
+export function Icon({ icon: Glyph, className }: { icon: LucideIcon; className?: string }) {
+  return (
+    <Glyph
+      aria-hidden
+      strokeWidth={2.25}
+      className={cn("inline-block h-[1.15em] w-[1.15em] shrink-0 align-[-0.18em]", className)}
+    />
+  );
+}
 
 export function Button({
   variant = "primary",

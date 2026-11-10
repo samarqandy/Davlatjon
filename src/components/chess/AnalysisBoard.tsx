@@ -1,9 +1,10 @@
 "use client";
 
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { Chess } from "chess.js";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Button, cn } from "@/components/ui";
+import { Button, cn, Icon } from "@/components/ui";
 import { illegalReason, isPromotionMove, legalTargets, pieceAt, playMove, type PieceType } from "@/lib/chess";
 import { evaluatePosition, winChance, type PositionEval } from "@/lib/engine/analysis";
 import { MATE } from "@/lib/engine/search";
@@ -323,7 +324,7 @@ export function AnalysisBoard() {
               disabled={cursor === 0}
               aria-label={t("В начало", "Boshiga")}
             >
-              ⏮
+              <Icon icon={ChevronsLeft} />
             </Button>
             <Button
               variant="secondary"
@@ -332,7 +333,7 @@ export function AnalysisBoard() {
               disabled={cursor === 0}
               aria-label={t("Назад", "Orqaga")}
             >
-              ◀
+              <Icon icon={ChevronLeft} />
             </Button>
             <Button
               variant="secondary"
@@ -341,7 +342,7 @@ export function AnalysisBoard() {
               disabled={cursor >= plies.length}
               aria-label={t("Вперёд", "Oldinga")}
             >
-              ▶
+              <Icon icon={ChevronRight} />
             </Button>
             <Button
               variant="secondary"
@@ -350,7 +351,7 @@ export function AnalysisBoard() {
               disabled={cursor >= plies.length}
               aria-label={t("В конец", "Oxiriga")}
             >
-              ⏭
+              <Icon icon={ChevronsRight} />
             </Button>
             <Button variant="secondary" size="sm" onClick={() => setFlipped((f) => !f)}>
               🔄 {t("Перевернуть", "Aylantirish")}

@@ -1,9 +1,10 @@
 "use client";
 
+import { Lock, Printer } from "lucide-react";
 import Link from "next/link";
 import { useMemo } from "react";
 import { ChildNameBanner } from "@/components/home/ChildNameBanner";
-import { Button, ButtonLink, ProgressBar } from "@/components/ui";
+import { Button, ButtonLink, ProgressBar, Icon } from "@/components/ui";
 import { courseLessons } from "@/content/chess/courseLessons";
 import { LEVELS } from "@/content/chess/parts/levels";
 import { TACTIC_PART } from "@/content/chess/parts/tactics";
@@ -64,7 +65,9 @@ export function CourseDiploma({ step }: { step: CourseStep }) {
       <div className="space-y-5">
         {back}
         <section className="space-y-4 rounded-3xl bg-surface p-6 shadow-card" data-diploma="locked">
-          <h1 className="text-2xl font-black">🔒 {t("Диплом ступени пока закрыт", "Bosqich diplomi hali yopiq")}</h1>
+          <h1 className="text-2xl font-black">
+            <Icon icon={Lock} /> {t("Диплом ступени пока закрыт", "Bosqich diplomi hali yopiq")}
+          </h1>
           <p className="text-lg">
             {t(
               `Реши итоговый тест и не меньше ${need} упражнений курса — и получишь диплом с твоим именем.`,
@@ -110,7 +113,7 @@ export function CourseDiploma({ step }: { step: CourseStep }) {
           </p>
         </div>
         <Button variant="sun" onClick={() => window.print()}>
-          🖨️ {t("Распечатать", "Chop etish")}
+          <Icon icon={Printer} /> {t("Распечатать", "Chop etish")}
         </Button>
       </div>
       {!hasName && (

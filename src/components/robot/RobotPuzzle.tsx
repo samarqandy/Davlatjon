@@ -1,8 +1,9 @@
 "use client";
 
+import { RotateCcw, Play } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { Feedback, type FeedbackState } from "@/components/answers/Feedback";
-import { Button, cn } from "@/components/ui";
+import { Button, cn, Icon } from "@/components/ui";
 import type { Cell, Dir, RobotPuzzle as RobotPuzzleSpec } from "@/content/types";
 import { askExplain, praise, retrySub } from "@/lib/feedback";
 import { useLang, useT } from "@/lib/i18n";
@@ -388,7 +389,7 @@ export function RobotPuzzle({
                   </>
                 ) : (
                   <Button variant="secondary" size="sm" onClick={clear} disabled={running || changes === 0}>
-                    ↺ {t("Как было", "Asl holiga")}
+                    <Icon icon={RotateCcw} /> {t("Как было", "Asl holiga")}
                   </Button>
                 )}
               </div>
@@ -431,7 +432,7 @@ export function RobotPuzzle({
               onClick={run}
               disabled={running || program.length === 0 || (puzzle.mode === "trace" && !traceAnswered)}
             >
-              ▶{" "}
+              <Icon icon={Play} className="fill-current" />
               {puzzle.mode === "trace"
                 ? t("Запустить и проверить", "Ishga tushirib tekshirish")
                 : t("Запустить", "Ishga tushirish")}
@@ -444,7 +445,7 @@ export function RobotPuzzle({
               {t("Шаг ⏭", "Qadam ⏭")}
             </Button>
             <Button variant="ghost" onClick={resetExec} disabled={exec.pc === 0 && !exec.crash}>
-              ↺ {t("На старт", "Boshiga")}
+              <Icon icon={RotateCcw} /> {t("На старт", "Boshiga")}
             </Button>
           </div>
           <div>

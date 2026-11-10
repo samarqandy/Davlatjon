@@ -1,8 +1,9 @@
 "use client";
 
+import { Lock } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ButtonLink, Card, cn } from "@/components/ui";
+import { ButtonLink, Card, cn, Icon } from "@/components/ui";
 import { loginAvailable, useAccount } from "@/lib/account";
 import { useT } from "@/lib/i18n";
 import {
@@ -134,7 +135,9 @@ export function LeaderboardView() {
       <>
         {!ranked && (
           <Card className="space-y-2 border-sun/50 bg-sun/10 p-4" data-leaderboard-optin>
-            <p className="font-extrabold">🔒 {t("Тебя в рейтинге пока нет", "Sen hali reytingda yoʻqsan")}</p>
+            <p className="font-extrabold">
+              <Icon icon={Lock} /> {t("Тебя в рейтинге пока нет", "Sen hali reytingda yoʻqsan")}
+            </p>
             <p className="text-[0.95rem]">
               {t(
                 "Попроси взрослого включить участие: «Для взрослых» → «Настройки» → «Участвовать в общем рейтинге». Другие увидят только имя в игре, аватарку и очки.",

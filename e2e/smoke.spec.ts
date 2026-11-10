@@ -510,7 +510,7 @@ test("сыграй как Морфи: угадай ход победителя",
 test("тренажёр координат: цвет клетки", async ({ page }) => {
   await page.goto("/chess/coordinates");
   await page.getByRole("button", { name: /Какого цвета\?/ }).click();
-  await page.getByRole("button", { name: "▶ Старт" }).click();
+  await page.getByRole("button", { name: "Старт" }).click();
   const sq = (await page.locator("p.text-7xl").innerText()).trim();
   const light = ("abcdefgh".indexOf(sq[0]) + Number(sq[1])) % 2 === 0;
   // exact: в шапке есть кнопка «Тёмная тема».
@@ -586,7 +586,7 @@ test("шторм, повторение, награды и PGN", async ({ page })
   await page.getByRole("button", { name: "Начать повторение" }).click();
   await expect(page.getByText("Задача 1 из 1")).toBeVisible();
   await page.goto("/chess/puzzles#storm");
-  await page.getByRole("button", { name: "▶ Старт" }).click();
+  await page.getByRole("button", { name: "Старт" }).click();
   await expect(page.getByText(/⚡ 0 · ⏱ 2:5\d|⚡ 0 · ⏱ 3:00/)).toBeVisible();
   await page.goto("/chess/awards");
   await expect(page.getByRole("heading", { name: "Мои награды и занятия" })).toBeVisible();

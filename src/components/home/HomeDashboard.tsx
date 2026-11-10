@@ -1,10 +1,10 @@
 "use client";
 
-import { Compass, Printer, ScrollText } from "lucide-react";
+import { Compass, Printer, ScrollText, Play } from "lucide-react";
 import Link from "next/link";
 import { PathStop } from "@/components/PathStop";
 import { ChessHomeCard, type ChessHomeSummary } from "@/components/chess/ChessHomeCard";
-import { ButtonLink, cn } from "@/components/ui";
+import { ButtonLink, cn, Icon } from "@/components/ui";
 import { sectionsFor } from "@/content/meta";
 import type { DaySummary, WeekSummary } from "@/content/summary";
 import { QuickCard } from "@/components/home/QuickCard";
@@ -85,7 +85,7 @@ export function HomeDashboard({ weeks: both, chess }: { weeks: Both<WeekSummary[
                 <span aria-hidden>🍎 ⭐ 🐟</span> {t("Считаем и угадываем", "Sanaymiz va topamiz")}
               </p>
               <ButtonLink href="/quick" variant="sun" size="lg" className="mt-4 w-full sm:w-auto">
-                {t("Играть ▶", "Oʻynash ▶")}
+                {t("Играть", "Oʻynash")} <Icon icon={Play} className="fill-current" />
               </ButtonLink>
             </div>
           ) : next ? (
@@ -121,7 +121,8 @@ export function HomeDashboard({ weeks: both, chess }: { weeks: Both<WeekSummary[
                 size="lg"
                 className="mt-4 w-full sm:w-auto"
               >
-                {step?.started ? t("Продолжить ▶", "Davom etish ▶") : t("Начать ▶", "Boshlash ▶")}
+                {step?.started ? t("Продолжить", "Davom etish") : t("Начать", "Boshlash")}{" "}
+                <Icon icon={Play} className="fill-current" />
               </ButtonLink>
             </div>
           ) : (

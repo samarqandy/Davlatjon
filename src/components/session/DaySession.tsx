@@ -1,11 +1,12 @@
 "use client";
 
+import { Printer } from "lucide-react";
 import { currentScrollBehavior } from "@/lib/useMotion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { TaskView } from "@/components/task/TaskView";
-import { Button, ButtonLink, cn } from "@/components/ui";
+import { Button, ButtonLink, cn, Icon } from "@/components/ui";
 import { sectionsFor } from "@/content/meta";
 import { printHref } from "@/lib/routes";
 import type { Day } from "@/content/types";
@@ -111,7 +112,7 @@ export function DaySession({
             <p className="line-clamp-2 leading-tight font-black">{day.title}</p>
           </div>
           <ButtonLink href={printHref(day)} variant="secondary" size="sm" className="shrink-0">
-            🖨 <span className="hidden sm:inline">{t("Распечатать", "Chop etish")}</span>
+            <Icon icon={Printer} /> <span className="hidden sm:inline">{t("Распечатать", "Chop etish")}</span>
           </ButtonLink>
         </div>
         <ProgressDots day={day} step={step} onGo={go} />

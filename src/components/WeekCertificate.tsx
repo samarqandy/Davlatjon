@@ -1,9 +1,10 @@
 "use client";
 
+import { Lock, Printer } from "lucide-react";
 import Link from "next/link";
 import { ChildNameBanner } from "@/components/home/ChildNameBanner";
 import { Mascot } from "@/components/Mascot";
-import { Button, ButtonLink, ProgressBar } from "@/components/ui";
+import { Button, ButtonLink, ProgressBar, Icon } from "@/components/ui";
 import type { WeekSummary } from "@/content/summary";
 import { BRAND } from "@/lib/brand";
 import { longDate, weekEarnedAt } from "@/lib/certificate";
@@ -49,7 +50,8 @@ export function WeekCertificateView({ week: both, weeksTotal }: { week: Both<Wee
         {back}
         <section className="rounded-3xl bg-surface p-6 shadow-card" data-week-certificate="locked">
           <h1 className="text-2xl font-black">
-            🔒 {t(`Сертификат недели ${week.number} пока закрыт`, `${week.number}-hafta sertifikati hali yopiq`)}
+            <Icon icon={Lock} />{" "}
+            {t(`Сертификат недели ${week.number} пока закрыт`, `${week.number}-hafta sertifikati hali yopiq`)}
           </h1>
           <p className="mt-2 text-lg">
             {t(
@@ -86,7 +88,7 @@ export function WeekCertificateView({ week: both, weeksTotal }: { week: Both<Wee
           </p>
         </div>
         <Button variant="sun" onClick={() => window.print()}>
-          🖨️ {t("Распечатать", "Chop etish")}
+          <Icon icon={Printer} /> {t("Распечатать", "Chop etish")}
         </Button>
       </div>
       {!hasName && (

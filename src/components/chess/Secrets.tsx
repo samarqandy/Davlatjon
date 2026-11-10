@@ -1,8 +1,9 @@
 "use client";
 
+import { ChevronRight, RotateCcw } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { Button, cn } from "@/components/ui";
+import { Button, cn, Icon } from "@/components/ui";
 import { chessImageIn } from "@/content/chess/imageLookup";
 import {
   ENVOY_ROUNDS,
@@ -400,7 +401,7 @@ function EnvoyGame() {
             setPicked(null);
           }}
         >
-          {t("↺ Ещё раз", "↺ Yana bir marta")}
+          <Icon icon={RotateCcw} /> {t("Ещё раз", "Yana bir marta")}
         </Button>
       </div>
     );
@@ -625,7 +626,7 @@ function DilaramStory() {
               ◀
             </Button>
             <Button size="sm" onClick={() => setI(i + 1)} disabled={i === dilaram.length - 1}>
-              {t("Дальше ▶", "Keyingisi ▶")}
+              {t("Дальше", "Keyingisi")} <Icon icon={ChevronRight} />
             </Button>
             <Button size="sm" variant="ghost" onClick={() => setI(0)} disabled={i === 0}>
               {t("Сначала", "Boshidan")}

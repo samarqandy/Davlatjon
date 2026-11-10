@@ -1,7 +1,8 @@
 "use client";
 
+import { Printer } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui";
+import { Button, Icon } from "@/components/ui";
 import { PUZZLES, PUZZLE_THEMES } from "@/content/chess/puzzles";
 import { BRAND } from "@/lib/brand";
 import { useT } from "@/lib/i18n";
@@ -20,7 +21,9 @@ export function ChessPrint() {
         <Link href="/chess" className="text-sm font-extrabold text-brand hover:underline">
           {t("← Шахматная школа", "← Shaxmat maktabi")}
         </Link>
-        <Button onClick={() => window.print()}>🖨 {t("Печать", "Chop etish")}</Button>
+        <Button onClick={() => window.print()}>
+          <Icon icon={Printer} /> {t("Печать", "Chop etish")}
+        </Button>
       </div>
       <p className="no-print text-sm text-muted">
         {t(

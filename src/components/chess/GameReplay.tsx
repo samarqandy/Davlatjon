@@ -1,10 +1,11 @@
 "use client";
 
+import { ChevronRight, Pause, Play } from "lucide-react";
 import { Chess } from "chess.js";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { RichText } from "@/components/RichText";
-import { Button, cn } from "@/components/ui";
+import { Button, cn, Icon } from "@/components/ui";
 import { chessImagesIn } from "@/content/chess/imageLookup";
 import type { FamousGame } from "@/content/chess/games";
 import type { ChessImage } from "@/content/chess/images";
@@ -272,7 +273,7 @@ export function GameReplay({ game: ruGame }: { game: FamousGame }) {
                 disabled={ply === total}
                 aria-label={t("Ход вперёд", "Bir yurish oldinga")}
               >
-                {t("Дальше ▶", "Oldinga ▶")}
+                {t("Дальше", "Oldinga")} <Icon icon={ChevronRight} />
               </Button>
               <Button
                 variant="secondary"
@@ -294,7 +295,8 @@ export function GameReplay({ game: ruGame }: { game: FamousGame }) {
                   }
                 }}
               >
-                {isPlaying ? t("⏸ Пауза", "⏸ Pauza") : t("▶ Смотреть", "▶ Koʻrish")}
+                <Icon icon={isPlaying ? Pause : Play} className="fill-current" />
+                {isPlaying ? t("Пауза", "Pauza") : t("Смотреть", "Koʻrish")}
               </Button>
               <span className="ml-auto text-sm font-extrabold text-muted">
                 {ply} / {total}

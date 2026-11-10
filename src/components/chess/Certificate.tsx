@@ -1,8 +1,9 @@
 "use client";
 
+import { Lock, Printer } from "lucide-react";
 import Link from "next/link";
 import { ChildNameBanner } from "@/components/home/ChildNameBanner";
-import { Button, ButtonLink, ProgressBar } from "@/components/ui";
+import { Button, ButtonLink, ProgressBar, Icon } from "@/components/ui";
 import { CHESS_LEVELS, chessLevelHref } from "@/content/chess";
 import { rankEarnedAt } from "@/lib/certificate";
 import { nameFor } from "@/lib/childName";
@@ -49,7 +50,7 @@ export function CertificateView({ levelId }: { levelId: string }) {
         {back}
         <section className="rounded-3xl bg-surface p-6 shadow-card" data-certificate="locked">
           <h1 className="text-2xl font-black">
-            🔒 {t(`Сертификат «${level.name}» пока закрыт`, `«${level.name}» sertifikati hali yopiq`)}
+            <Icon icon={Lock} /> {t(`Сертификат «${level.name}» пока закрыт`, `«${level.name}» sertifikati hali yopiq`)}
           </h1>
           <p className="mt-2 text-lg">
             {t(
@@ -84,7 +85,7 @@ export function CertificateView({ levelId }: { levelId: string }) {
           </p>
         </div>
         <Button variant="sun" onClick={() => window.print()}>
-          🖨️ {t("Распечатать", "Chop etish")}
+          <Icon icon={Printer} /> {t("Распечатать", "Chop etish")}
         </Button>
       </div>
       {!hasName && (

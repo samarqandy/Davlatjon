@@ -1,5 +1,6 @@
 "use client";
 
+import { Lock } from "lucide-react";
 import { currentScrollBehavior } from "@/lib/useMotion";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
@@ -255,9 +256,7 @@ function LockedLevel({ prev, level, need }: { prev: ChessLevel | undefined; leve
   const t = useT();
   return (
     <section className="rounded-3xl border-2 border-dashed border-line bg-surface p-6 text-center shadow-card">
-      <p className="text-5xl" aria-hidden>
-        🔒
-      </p>
+      <Lock className="mx-auto h-12 w-12 text-muted" strokeWidth={2} aria-hidden />
       <h2 className="mt-2 text-2xl font-black">{t("Этот уровень пока закрыт", "Bu daraja hozircha yopiq")}</h2>
       <p className="mt-2 text-lg font-bold text-brand-dark">
         {t("Здесь ты узнаешь", "Bu yerda bilib olasan")}: {level.legend.hook}

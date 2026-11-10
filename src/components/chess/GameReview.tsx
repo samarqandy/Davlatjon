@@ -1,10 +1,11 @@
 "use client";
 
+import { ChevronRight } from "lucide-react";
 import { currentScrollBehavior } from "@/lib/useMotion";
 import { stampText } from "@/lib/dates";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { Button, ButtonLink, cn, ProgressBar } from "@/components/ui";
+import { Button, ButtonLink, cn, ProgressBar, Icon } from "@/components/ui";
 import {
   KIND_META,
   analysisRecord,
@@ -390,7 +391,7 @@ function ReviewBody({
               disabled={ply === total}
               aria-label={t("Ход вперёд", "Bir yurish oldinga")}
             >
-              {t("Дальше ▶", "Oldinga ▶")}
+              {t("Дальше", "Oldinga")} <Icon icon={ChevronRight} />
             </Button>
             <Button
               variant="secondary"

@@ -1,8 +1,9 @@
 "use client";
 
+import { RotateCcw } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Button, cn, ProgressBar } from "@/components/ui";
+import { Button, cn, ProgressBar, Icon } from "@/components/ui";
 import { PIECE_WORDS } from "@/lib/board";
 import { attackersOf, pieceAt, type Color } from "@/lib/chess";
 import { useLang, useT } from "@/lib/i18n";
@@ -150,7 +151,7 @@ function Finish({ id, score, onAgain }: { id: DrillId; score: number; onAgain: (
           : t(`Рекорд — ${record}. Попробуй ещё!`, `Rekord — ${record}. Yana urinib koʻr!`)}
       </p>
       <Button className="mt-4" onClick={onAgain}>
-        ↺ {t("Ещё раз", "Yana bir bor")}
+        <Icon icon={RotateCcw} /> {t("Ещё раз", "Yana bir bor")}
       </Button>
     </div>
   );
@@ -525,7 +526,7 @@ function KnightDrill() {
         ) : (
           path.length > 0 && (
             <Button variant="secondary" size="sm" onClick={() => setPath([])}>
-              ↺ {t("Начать путь заново", "Yoʻlni qaytadan boshlash")}
+              <Icon icon={RotateCcw} /> {t("Начать путь заново", "Yoʻlni qaytadan boshlash")}
             </Button>
           )
         )}

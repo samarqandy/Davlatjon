@@ -1,11 +1,12 @@
 "use client";
 
+import { Lock } from "lucide-react";
 import { useRef, useState } from "react";
 import { AccountPanel } from "@/components/AccountPanel";
 import { BoardLookPicker } from "@/components/chess/BoardLookPicker";
 import { OnlineControls } from "@/components/parent/OnlineControls";
 import { ProfilesCard } from "@/components/parent/ProfilesCard";
-import { Button, Card, cn } from "@/components/ui";
+import { Button, Card, cn, Icon } from "@/components/ui";
 import { AGE_MAX, AGE_MIN, profileMeta, profileText } from "@/lib/age";
 import { CHILD_NAME_MAX, cleanChildName, latinize } from "@/lib/childName";
 import { LANGS, setLang, useLang, useT } from "@/lib/i18n";
@@ -162,7 +163,9 @@ export function SettingsPanel() {
       </Card>
 
       <Card className="space-y-3 p-5">
-        <h2 className="text-lg font-extrabold">🔒 {t("PIN-код", "PIN-kod")}</h2>
+        <h2 className="text-lg font-extrabold">
+          <Icon icon={Lock} /> {t("PIN-код", "PIN-kod")}
+        </h2>
         <p className="text-[0.95rem] text-muted">
           {t(
             "Можно придумать новый PIN-код: текущий удалится, и при следующем входе в раздел система попросит задать новый.",

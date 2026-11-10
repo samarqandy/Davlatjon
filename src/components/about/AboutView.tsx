@@ -13,10 +13,11 @@ import {
   Trophy,
   UserRound,
   Users,
+  Play,
 } from "lucide-react";
 import Link from "next/link";
 import { Mascot } from "@/components/Mascot";
-import { ButtonLink } from "@/components/ui";
+import { ButtonLink, Icon } from "@/components/ui";
 import { useT } from "@/lib/i18n";
 
 export interface AboutStats {
@@ -141,7 +142,7 @@ export function AboutView({ stats }: { stats: AboutStats }) {
           </p>
           <div className="mt-5 flex flex-wrap gap-3">
             <ButtonLink href="/" variant="sun" size="lg" data-about-start>
-              {t("Начать ▶", "Boshlash ▶")}
+              {t("Начать", "Boshlash")} <Icon icon={Play} className="fill-current" />
             </ButtonLink>
             <ButtonLink href="/privacy" variant="secondary" size="lg">
               {t("Конфиденциальность", "Maxfiylik")}
@@ -344,7 +345,7 @@ export function AboutView({ stats }: { stats: AboutStats }) {
           )}
         </p>
         <ButtonLink href="/" size="lg">
-          {t("Начать ▶", "Boshlash ▶")}
+          {t("Начать", "Boshlash")} <Icon icon={Play} className="fill-current" />
         </ButtonLink>
         <Link
           href="/parent"

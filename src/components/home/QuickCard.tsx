@@ -1,5 +1,6 @@
 "use client";
 
+import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { useT } from "@/lib/i18n";
 import { useHydrated, useStore } from "@/lib/store";
@@ -31,9 +32,7 @@ export function QuickCard() {
             : t("Десять вопросов за пару минут — каждый раз новые.", "Ikki daqiqada oʻnta savol — har safar yangi.")}
         </span>
       </span>
-      <span className="text-2xl font-black text-brand" aria-hidden>
-        ▶
-      </span>
+      <ChevronRight className="h-7 w-7 shrink-0 text-brand" strokeWidth={2.5} aria-hidden />
     </Link>
   );
 }

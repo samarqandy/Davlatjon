@@ -1,7 +1,8 @@
 "use client";
 
+import { RotateCcw } from "lucide-react";
 import { useRef, useState } from "react";
-import { Button } from "@/components/ui";
+import { Button, Icon } from "@/components/ui";
 import type { GraphPuzzle as GraphSpec } from "@/content/types";
 import { askExplain, praise } from "@/lib/feedback";
 import { edgeBetween, pathTime } from "@/lib/graph";
@@ -225,7 +226,7 @@ export function GraphPuzzle({ taskId, puzzle }: { taskId: string; puzzle: GraphS
         }}
         disabled={path.length === 1}
       >
-        ↺ {t("Заново", "Qaytadan boshlash")}
+        <Icon icon={RotateCcw} /> {t("Заново", "Qaytadan boshlash")}
       </Button>
       <Feedback state={feedback} />
     </div>

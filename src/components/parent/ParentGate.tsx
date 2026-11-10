@@ -1,5 +1,6 @@
 "use client";
 
+import { Lock } from "lucide-react";
 import { stampText } from "@/lib/dates";
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { Button } from "@/components/ui";
@@ -85,9 +86,7 @@ function PinForm({ mode, compact }: { mode: "create" | "enter"; compact: boolean
   return (
     <div className={compact ? "py-6" : "mx-auto max-w-md py-10"}>
       <div className="rounded-[2rem] border border-line bg-surface p-6 text-center shadow-card sm:p-8">
-        <div className="text-5xl" aria-hidden>
-          🔒
-        </div>
+        <Lock className="mx-auto h-12 w-12 text-muted" strokeWidth={2} aria-hidden />
         <h1 className="mt-2 text-2xl font-black">{t("Раздел для взрослых", "Kattalar uchun boʻlim")}</h1>
         <p className="mt-1 text-muted">
           {mode === "create"

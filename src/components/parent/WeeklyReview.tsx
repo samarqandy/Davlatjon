@@ -1,6 +1,7 @@
 "use client";
 
-import { Button, Card } from "@/components/ui";
+import { Printer } from "lucide-react";
+import { Button, Card, Icon } from "@/components/ui";
 import type { Week } from "@/content/types";
 import { useBoth, useLang, useT, type Both } from "@/lib/i18n";
 import { weekEvidence, weekTotals, type WeekFacts } from "@/lib/insights";
@@ -37,7 +38,7 @@ export function WeeklyReview({ week: both }: { week: Both<ReviewWeek> }) {
           </p>
         </div>
         <Button variant="secondary" onClick={() => window.print()} className="no-print">
-          🖨 {t("Распечатать обзор", "Sharhni chop etish")}
+          <Icon icon={Printer} /> {t("Распечатать обзор", "Sharhni chop etish")}
         </Button>
       </div>
 
