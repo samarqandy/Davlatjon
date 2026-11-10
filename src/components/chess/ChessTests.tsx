@@ -77,7 +77,12 @@ function Overview() {
         {t("← Шахматная школа", "← Shaxmat maktabi")}
       </Link>
       <header className="rounded-[2rem] bg-linear-to-br from-[#3b2f23] via-[#5b4632] to-[#7c5a33] p-6 text-white shadow-lift sm:p-8">
-        <h1 className="text-3xl font-black sm:text-4xl">📝 {t("Контрольные тесты", "Nazorat testlari")}</h1>
+        <h1 className="text-3xl font-black sm:text-4xl">
+          <span className="deco" aria-hidden>
+            📝{" "}
+          </span>
+          {t("Контрольные тесты", "Nazorat testlari")}
+        </h1>
         <p className="mt-3 text-lg text-white/90">
           {t(
             "Три теста по двенадцать вопросов. Подсказок нет. Балл даётся за ответ с первой попытки, но ошибиться можно: правильный ответ всё равно нужно найти.",

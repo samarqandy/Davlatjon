@@ -371,7 +371,12 @@ export function WoodpeckerView() {
     return (
       <div className="space-y-4">
         <Back />
-        <h1 className="text-2xl font-black">🐦 {t("Дятел", "Qizilishton")}</h1>
+        <h1 className="text-2xl font-black">
+          <span className="deco" aria-hidden>
+            🐦{" "}
+          </span>
+          {t("Дятел", "Qizilishton")}
+        </h1>
         {intro}
         {w && finished && (
           <div className="rounded-3xl bg-sun-soft p-6 text-center">
@@ -411,7 +416,12 @@ export function WoodpeckerView() {
     return (
       <div className="space-y-4">
         <Back />
-        <h1 className="text-2xl font-black">🐦 {t("Дятел", "Qizilishton")}</h1>
+        <h1 className="text-2xl font-black">
+          <span className="deco" aria-hidden>
+            🐦{" "}
+          </span>
+          {t("Дятел", "Qizilishton")}
+        </h1>
         <div className="rounded-3xl bg-mint-soft p-6 text-center">
           <p className="text-xl font-black">
             {t(`Круг ${summary + 1} пройден!`, `${summary + 1}-aylana yakunlandi!`)} ⏱ {clock(r.ms)} ·{" "}

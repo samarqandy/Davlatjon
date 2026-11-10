@@ -318,7 +318,12 @@ function Dictionary({ level }: { level: ChessLevel }) {
   return (
     <div className="grid gap-5 lg:grid-cols-2">
       <section className="rounded-3xl bg-surface p-5 shadow-card">
-        <h3 className="text-xl font-black">{t("📏 Правила", "📏 Qoidalar")}</h3>
+        <h3 className="text-xl font-black">
+          <span className="deco" aria-hidden>
+            📏{" "}
+          </span>
+          {t("Правила", "Qoidalar")}
+        </h3>
         <ul className="mt-3 space-y-2">
           {level.rules.map((r) => (
             <li key={r} className="flex gap-2 text-lg">
@@ -333,7 +338,12 @@ function Dictionary({ level }: { level: ChessLevel }) {
         </ul>
       </section>
       <section className="rounded-3xl bg-surface p-5 shadow-card">
-        <h3 className="text-xl font-black">{t("🔤 Словарик", "🔤 Lugʻat")}</h3>
+        <h3 className="text-xl font-black">
+          <span className="deco" aria-hidden>
+            🔤{" "}
+          </span>
+          {t("Словарик", "Lugʻat")}
+        </h3>
         <dl className="mt-3 space-y-3">
           {level.terms.map((term, i) => (
             <div key={i}>
@@ -355,7 +365,12 @@ function Dictionary({ level }: { level: ChessLevel }) {
         </dl>
       </section>
       <section className="rounded-3xl bg-surface p-5 shadow-card lg:col-span-2">
-        <h3 className="text-xl font-black">{t("💡 Интересные факты", "💡 Qiziqarli faktlar")}</h3>
+        <h3 className="text-xl font-black">
+          <span className="deco" aria-hidden>
+            💡{" "}
+          </span>
+          {t("Интересные факты", "Qiziqarli faktlar")}
+        </h3>
         <ul className="mt-3 grid gap-3 md:grid-cols-3">
           {level.facts.map((f) => (
             <li key={f} className="rounded-2xl bg-sun-soft/60 p-4 font-semibold">
@@ -383,7 +398,10 @@ function Extras({ levelId }: { levelId: ChessLevel["id"] }) {
   return (
     <section className="space-y-3" aria-labelledby="extras">
       <h2 id="extras" className="text-xl font-black">
-        {t("🎮 Что ещё есть на этом уровне", "🎮 Bu darajada yana nimalar bor")}
+        <span className="deco" aria-hidden>
+          🎮{" "}
+        </span>
+        {t("Что ещё есть на этом уровне", "Bu darajada yana nimalar bor")}
       </h2>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {x.play && (

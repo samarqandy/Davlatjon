@@ -153,7 +153,9 @@ export function HomeDashboard({ weeks: both, chess }: { weeks: Both<WeekSummary[
         className="group rounded-[2rem] border border-line bg-surface p-3 shadow-card sm:p-5"
       >
         <summary className="flex min-h-14 cursor-pointer list-none items-center gap-3 rounded-2xl px-3 text-xl font-black select-none [&::-webkit-details-marker]:hidden">
-          <span aria-hidden>🗺</span>
+          <span className="deco" aria-hidden>
+            🗺
+          </span>
           <span className="flex-1">{t("Весь путь: все дни", "Butun yoʻl: barcha kunlar")}</span>
           <span aria-hidden className="text-muted transition group-open:rotate-180">
             ▾

@@ -120,7 +120,12 @@ export function QuickView() {
           <div className="flex items-center gap-3">
             <Mascot size={72} mood="happy" />
             <div>
-              <h1 className="text-3xl font-black">⚡ {t("Быстрые примеры", "Tez mashq")}</h1>
+              <h1 className="text-3xl font-black">
+                <span className="deco" aria-hidden>
+                  ⚡{" "}
+                </span>
+                {t("Быстрые примеры", "Tez mashq")}
+              </h1>
               <p className="text-muted">
                 {t(
                   `${QUICK_COUNT} вопросов подряд. Нажимай на ответ — ошибаться можно, правильный ответ покажется.`,

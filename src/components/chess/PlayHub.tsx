@@ -129,7 +129,10 @@ function ModeChooser() {
 
       <section className="rounded-3xl bg-surface p-5 shadow-card" aria-labelledby="robot">
         <h2 id="robot" className="text-xl font-black">
-          🤖 {t("С роботом", "Robot bilan")}
+          <span className="deco" aria-hidden>
+            🤖{" "}
+          </span>
+          {t("С роботом", "Robot bilan")}
         </h2>
         <p className="mt-1 hidden text-sm text-muted sm:block">
           {t(
@@ -276,7 +279,10 @@ function ModeChooser() {
       <div className="grid gap-4 md:grid-cols-3">
         <section className="rounded-3xl bg-surface p-5 shadow-card" aria-labelledby="two">
           <h2 id="two" className="text-xl font-black">
-            👨‍👦 {t("Вдвоём", "Ikki kishilik oʻyin")}
+            <span className="deco" aria-hidden>
+              👨‍👦{" "}
+            </span>
+            {t("Вдвоём", "Ikki kishilik oʻyin")}
           </h2>
           <p className="mt-1 hidden text-sm text-muted sm:block">
             {t(
@@ -352,7 +358,10 @@ function ModeChooser() {
 
         <section className="rounded-3xl bg-surface p-5 shadow-card" aria-labelledby="pawns">
           <h2 id="pawns" className="text-xl font-black">
-            ♟ {t("Пешечный бой", "Piyodalar jangi")}
+            <span className="deco" aria-hidden>
+              ♟{" "}
+            </span>
+            {t("Пешечный бой", "Piyodalar jangi")}
           </h2>
           <p className="mt-1 hidden text-sm text-muted sm:block">
             {t(
@@ -376,7 +385,10 @@ function ModeChooser() {
 
         <section className="rounded-3xl bg-surface p-5 shadow-card" aria-labelledby="endgames">
           <h2 id="endgames" className="text-xl font-black">
-            🏁 {t("Поставь мат", "Mot qil")}
+            <span className="deco" aria-hidden>
+              🏁{" "}
+            </span>
+            {t("Поставь мат", "Mot qil")}
           </h2>
           <p className="mt-1 hidden text-sm text-muted sm:block">
             {t(
@@ -404,7 +416,10 @@ function ModeChooser() {
 
       <details className="rounded-3xl bg-surface p-5 shadow-card" data-board-look-details>
         <summary className="cursor-pointer text-lg font-black">
-          🎨 {t("Моя доска и звук", "Mening taxtam va ovozi")}
+          <span className="deco" aria-hidden>
+            🎨{" "}
+          </span>
+          {t("Моя доска и звук", "Mening taxtam va ovozi")}
         </summary>
         <BoardLookPicker className="mt-4" />
       </details>

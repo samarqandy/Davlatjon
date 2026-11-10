@@ -143,7 +143,10 @@ export function NewViews({ views }: { views: NewView[] }) {
           {v.note && (
             <details className="mt-3 rounded-2xl bg-brand-soft/50 px-3 py-2">
               <summary className="cursor-pointer text-sm font-extrabold text-brand-dark">
-                {t("🔎 Взрослым: что сказано осторожно", "🔎 Kattalarga: nima ehtiyotkorlik bilan aytilgan")}
+                <span className="deco" aria-hidden>
+                  🔎{" "}
+                </span>
+                {t("Взрослым: что сказано осторожно", "Kattalarga: nima ehtiyotkorlik bilan aytilgan")}
               </summary>
               <p className="mt-1 text-sm">{v.note}</p>
             </details>

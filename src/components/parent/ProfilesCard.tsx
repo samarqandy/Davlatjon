@@ -45,7 +45,12 @@ export function ProfilesCard() {
 
   return (
     <Card className="space-y-3 p-5" data-profiles-card>
-      <h2 className="text-lg font-extrabold">👨‍👩‍👧 {t("Дети на этом устройстве", "Bu qurilmadagi bolalar")}</h2>
+      <h2 className="text-lg font-extrabold">
+        <span className="deco" aria-hidden>
+          👨‍👩‍👧{" "}
+        </span>
+        {t("Дети на этом устройстве", "Bu qurilmadagi bolalar")}
+      </h2>
       <p className="text-[0.95rem] text-muted">
         {t(
           "У каждого ребёнка свой прогресс, свои медали и серия. Когда профилей больше одного, в шапке сайта появляется кнопка с картинкой: ребёнок выбирает себя сам. Вход в аккаунт сохраняет прогресс каждого профиля отдельно; список профилей на другом устройстве нужно завести заново.",

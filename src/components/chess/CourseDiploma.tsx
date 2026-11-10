@@ -103,7 +103,10 @@ export function CourseDiploma({ step }: { step: CourseStep }) {
       <div className="no-print flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-black">
-            🎓 {t(`Диплом ступени «${step.award.ru}»`, `«${step.award.uz}» bosqichi diplomi`)}
+            <span className="deco" aria-hidden>
+              🎓{" "}
+            </span>
+            {t(`Диплом ступени «${step.award.ru}»`, `«${step.award.uz}» bosqichi diplomi`)}
           </h1>
           <p className="text-muted">
             {t(

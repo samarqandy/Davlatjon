@@ -65,7 +65,10 @@ export function EndgameSchool() {
 
       <section className="rounded-3xl bg-surface p-5 shadow-card" aria-labelledby="mates-h">
         <h2 id="mates-h" className="text-2xl font-black">
-          ♛ {t("Пешка стала ферзём — что дальше?", "Piyoda farzin boʻldi — endi-chi?")}
+          <span className="deco" aria-hidden>
+            ♛{" "}
+          </span>
+          {t("Пешка стала ферзём — что дальше?", "Piyoda farzin boʻldi — endi-chi?")}
         </h2>
         <p className="mt-1 text-muted">
           {t(

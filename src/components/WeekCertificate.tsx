@@ -78,7 +78,10 @@ export function WeekCertificateView({ week: both, weeksTotal }: { week: Both<Wee
       <div className="no-print flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-black">
-            📜 {t(`Сертификат: неделя ${week.number}`, `Sertifikat: ${week.number}-hafta`)}
+            <span className="deco" aria-hidden>
+              📜{" "}
+            </span>
+            {t(`Сертификат: неделя ${week.number}`, `Sertifikat: ${week.number}-hafta`)}
           </h1>
           <p className="text-muted">
             {t(

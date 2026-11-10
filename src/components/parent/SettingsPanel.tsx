@@ -124,14 +124,24 @@ export function SettingsPanel() {
       <ProfilesCard />
 
       <Card id="account" className="scroll-mt-24 space-y-3 p-5">
-        <h2 className="text-lg font-extrabold">👤 {t("Аккаунт", "Hisob")}</h2>
+        <h2 className="text-lg font-extrabold">
+          <span className="deco" aria-hidden>
+            👤{" "}
+          </span>
+          {t("Аккаунт", "Hisob")}
+        </h2>
         <AccountPanel />
       </Card>
 
       <OnlineControls />
 
       <Card className="space-y-3 p-5">
-        <h2 className="text-lg font-extrabold">💾 {t("Прогресс", "Natijalar")}</h2>
+        <h2 className="text-lg font-extrabold">
+          <span className="deco" aria-hidden>
+            💾{" "}
+          </span>
+          {t("Прогресс", "Natijalar")}
+        </h2>
         <p className="text-[0.95rem] text-muted">
           {t(
             "Без входа в аккаунт всё хранится только в этом браузере. Чтобы перенести прогресс на другое устройство (или сохранить копию), сохраните его в файл, а на другом устройстве загрузите этот файл.",

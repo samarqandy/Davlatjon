@@ -430,7 +430,12 @@ function DailyView() {
   return (
     <div className="space-y-4">
       <Back />
-      <h1 className="text-2xl font-black">📅 {t("Задача дня", "Kun masalasi")}</h1>
+      <h1 className="text-2xl font-black">
+        <span className="deco" aria-hidden>
+          📅{" "}
+        </span>
+        {t("Задача дня", "Kun masalasi")}
+      </h1>
       <PuzzlePlayer
         key={puzzle.id}
         puzzle={puzzle}

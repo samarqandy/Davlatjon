@@ -202,7 +202,10 @@ export function GameReplay({ game: ruGame }: { game: FamousGame }) {
       {pictures.length > 0 && (
         <section aria-labelledby="pictures">
           <h2 id="pictures" className="mb-3 text-2xl font-black">
-            📷 {t("Кто играл и где", "Kim va qayerda oʻynagan")}
+            <span className="deco" aria-hidden>
+              📷{" "}
+            </span>
+            {t("Кто играл и где", "Kim va qayerda oʻynagan")}
           </h2>
           <PhotoStrip images={pictures} />
         </section>
@@ -354,7 +357,10 @@ export function GameReplay({ game: ruGame }: { game: FamousGame }) {
 
       <section aria-labelledby="moments">
         <h2 id="moments" className="mb-3 text-2xl font-black">
-          🖼️ {t("Главные моменты", "Muhim lahzalar")}
+          <span className="deco" aria-hidden>
+            🖼️{" "}
+          </span>
+          {t("Главные моменты", "Muhim lahzalar")}
         </h2>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {game.keyMoments.map((k) => (
@@ -384,7 +390,12 @@ export function GameReplay({ game: ruGame }: { game: FamousGame }) {
 
       <section className="grid gap-4 md:grid-cols-2">
         <div className="rounded-3xl bg-mint-soft/70 p-5">
-          <h2 className="text-lg font-black">🎓 {t("Чему учит партия", "Partiya nimaga oʻrgatadi")}</h2>
+          <h2 className="text-lg font-black">
+            <span className="deco" aria-hidden>
+              🎓{" "}
+            </span>
+            {t("Чему учит партия", "Partiya nimaga oʻrgatadi")}
+          </h2>
           <p className="mt-1 text-lg">
             <RichText text={game.lesson} />
           </p>
@@ -398,7 +409,12 @@ export function GameReplay({ game: ruGame }: { game: FamousGame }) {
           )}
         </div>
         <div className="rounded-3xl bg-sun-soft/70 p-5">
-          <h2 className="text-lg font-black">💡 {t("Интересно", "Qiziqarli")}</h2>
+          <h2 className="text-lg font-black">
+            <span className="deco" aria-hidden>
+              💡{" "}
+            </span>
+            {t("Интересно", "Qiziqarli")}
+          </h2>
           <ul className="mt-1 space-y-1.5">
             {game.facts.map((f) => (
               <li key={f} className="flex gap-2">

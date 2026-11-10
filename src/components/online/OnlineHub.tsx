@@ -57,7 +57,12 @@ export function OnlineHub() {
   return (
     <div className="mx-auto max-w-3xl space-y-4">
       <header>
-        <h1 className="text-3xl font-black">👥 {t("Играть с друзьями", "Doʻstlar bilan oʻynash")}</h1>
+        <h1 className="text-3xl font-black">
+          <span className="deco" aria-hidden>
+            👥{" "}
+          </span>
+          {t("Играть с друзьями", "Doʻstlar bilan oʻynash")}
+        </h1>
         <p className="mt-1 text-muted">
           {t(
             "Найди друга по имени, подружитесь и играйте партии по сети — как на больших шахматных сайтах.",
@@ -244,7 +249,10 @@ function Dashboard({ profile, onRename }: { profile: Profile; onRename: () => vo
       {invitesForMe.length > 0 && (
         <section className={card} aria-labelledby="invites" data-invites>
           <h2 id="invites" className="text-xl font-black">
-            ⚔️ {t("Тебя зовут играть", "Seni oʻynashga chaqirishyapti")}
+            <span className="deco" aria-hidden>
+              ⚔️{" "}
+            </span>
+            {t("Тебя зовут играть", "Seni oʻynashga chaqirishyapti")}
           </h2>
           <ul className="mt-3 space-y-2">
             {invitesForMe.map((g) => (
@@ -272,7 +280,10 @@ function Dashboard({ profile, onRename }: { profile: Profile; onRename: () => vo
       {ongoing.length > 0 && (
         <section className={card} aria-labelledby="ongoing" data-ongoing>
           <h2 id="ongoing" className="text-xl font-black">
-            ♟ {t("Партии", "Partiyalar")}
+            <span className="deco" aria-hidden>
+              ♟{" "}
+            </span>
+            {t("Партии", "Partiyalar")}
           </h2>
           <ul className="mt-3 space-y-2">
             {ongoing.map((g) => {
@@ -306,7 +317,10 @@ function Dashboard({ profile, onRename }: { profile: Profile; onRename: () => vo
 
       <section className={card} aria-labelledby="friends" data-friends>
         <h2 id="friends" className="text-xl font-black">
-          🤝 {t("Друзья", "Doʻstlar")}
+          <span className="deco" aria-hidden>
+            🤝{" "}
+          </span>
+          {t("Друзья", "Doʻstlar")}
         </h2>
         {data && data.friends.length === 0 && (
           <p className="mt-2 text-sm text-muted">
@@ -407,7 +421,10 @@ function Dashboard({ profile, onRename }: { profile: Profile; onRename: () => vo
       {finished.length > 0 && (
         <section className={card} aria-labelledby="recent">
           <h2 id="recent" className="text-xl font-black">
-            🏁 {t("Недавние партии", "Soʻnggi partiyalar")}
+            <span className="deco" aria-hidden>
+              🏁{" "}
+            </span>
+            {t("Недавние партии", "Soʻnggi partiyalar")}
           </h2>
           <ul className="mt-3 space-y-2">
             {finished.map((g) => {
@@ -514,7 +531,10 @@ function FindFriend({ onChanged }: { onChanged: () => void }) {
   return (
     <section className="rounded-3xl bg-surface p-5 shadow-card" aria-labelledby="find" data-find>
       <h2 id="find" className="text-xl font-black">
-        🔎 {t("Найти друга", "Doʻst qidirish")}
+        <span className="deco" aria-hidden>
+          🔎{" "}
+        </span>
+        {t("Найти друга", "Doʻst qidirish")}
       </h2>
       <form
         className="mt-3 flex flex-wrap gap-2"

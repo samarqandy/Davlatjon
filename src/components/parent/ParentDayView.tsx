@@ -60,7 +60,12 @@ export function ParentDayView({ day: both }: { day: Both<Day> }) {
         />
         <NoteList title={t("🙂 Какие ошибки нормальны", "🙂 Qaysi xatolar tabiiy")} items={day.parent.mistakes} />
         <div>
-          <h2 className="mb-1.5 font-extrabold">{t("❓ Вопрос после занятия", "❓ Mashgʻulotdan keyingi savol")}</h2>
+          <h2 className="mb-1.5 font-extrabold">
+            <span className="deco" aria-hidden>
+              ❓{" "}
+            </span>
+            {t("Вопрос после занятия", "Mashgʻulotdan keyingi savol")}
+          </h2>
           <p className="rounded-2xl bg-brand-soft px-4 py-3 font-bold text-brand-dark">{day.parent.question}</p>
         </div>
       </Card>
@@ -68,7 +73,10 @@ export function ParentDayView({ day: both }: { day: Both<Day> }) {
       {hydrated && (progress?.favorite || progress?.hardest || progress?.mood) && (
         <Card className="p-5">
           <h2 className="mb-2 font-extrabold">
-            {t("🏁 Итоги дня глазами ребёнка", "🏁 Kun yakunlari — farzandingiz nigohida")}
+            <span className="deco" aria-hidden>
+              🏁{" "}
+            </span>
+            {t("Итоги дня глазами ребёнка", "Kun yakunlari — farzandingiz nigohida")}
           </h2>
           <ul className="space-y-1 text-[0.95rem]">
             {progress?.favorite && (
@@ -328,7 +336,10 @@ function TaskAnswerCard({ task, number, p }: { task: Task; number: number; p: Ta
           ))}
           <details className="rounded-2xl border border-[#fde68a] bg-[#fffbeb] px-4 py-2.5 dark:border-[#6b5a1e] dark:bg-[#332a12]">
             <summary className="cursor-pointer font-extrabold">
-              💡 {t("Подсказки по порядку", "Maslahatlar tartib bilan")}
+              <span className="deco" aria-hidden>
+                💡{" "}
+              </span>
+              {t("Подсказки по порядку", "Maslahatlar tartib bilan")}
             </summary>
             <ol className="mt-2 space-y-1.5 text-[0.95rem]">
               {task.hints.map((h, j) => (
