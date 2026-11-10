@@ -79,7 +79,8 @@ test("на телефоне у взрослых есть замок в шапк�
   await expect(page.locator("[data-parent-lock]")).toHaveAttribute("href", "/parent");
 });
 
-test("уровни сложности называются одинаково по смыслу: «Qulay» по-узбекски", async ({ page }) => {
+test("уровни сложности называются одинаково по смыслу: «Qulay» по-узбекски", async ({ page, isMobile }) => {
+  test.skip(isMobile, "на телефоне уровень в карточке задачи не показан: место отдано условию и ответу");
   await seed(page, { lang: "uz" });
   await page.goto("/week/1/day/1#task-3");
   await expect(page.getByText("Qulay").first()).toBeVisible();

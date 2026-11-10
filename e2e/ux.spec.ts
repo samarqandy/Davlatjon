@@ -130,7 +130,7 @@ test("пустое поле: «Проверить» мягко подсказы�
   await expect(page.getByText("✏️ Сначала впиши ответ").first()).toBeVisible();
 });
 
-test("кнопка «Подсказка» рядом с ответом ведёт к подсказкам (телефон)", async ({ page, isMobile }) => {
+test("кнопка «Подсказка» в нижней панели ведёт к подсказкам (телефон)", async ({ page, isMobile }) => {
   test.skip(!isMobile, "на широком экране подсказки видны сбоку");
   await prepare(page);
   await page.goto("/week/1/day/1#task-1");
@@ -154,4 +154,45 @@ test("партия с роботом: ход робота назван слов�
   const status = page.locator("[data-play-status]");
   await expect(status).toContainText("Твой ход", { timeout: 10_000 });
   await expect(status.locator("[data-robot-move]")).toContainText(/Робот сыграл .+\./);
+});
+
+// Бюджет экрана: младший ребёнок читает с трудом и не любит прокрутку, поэтому задача целиком помещается на телефон.
+test("задача на телефоне: условие, ответ и «Проверить» — на одном экране, без лишних кнопок", async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(!isMobile, "бюджет экрана считаем для телефона");
+  await prepare(page, { age: 7 });
+  await page.setViewportSize({ width: 390, height: 664 });
+  await page.goto("/week/1/day/1#task-1");
+  const navTop = (await page.locator("[data-day-nav]").boundingBox())!.y;
+  const bottomOf = async (name: string | RegExp) => {
+    const box = (await page.getByRole("button", { name }).first().boundingBox())!;
+    return box.y + box.height;
+  };
+  await expect(page.getByRole("heading", { name: "Почти двадцать" })).toBeInViewport();
+  expect(await bottomOf("Проверить")).toBeLessThanOrEqual(navTop);
+  expect(await page.evaluate(() => window.scrollY)).toBe(0);
+
+  // Счётчик задач один — полоска в шапке; подписи «Задача 1 из 8» и «1 / 8» на телефоне не показываем.
+  await expect(page.getByText("Задача 1 из 8")).toBeHidden();
+  await expect(page.locator("[data-task-counter]")).toBeHidden();
+  await expect(page.getByRole("list", { name: "Задачи дня" }).getByRole("button")).toHaveCount(9);
+
+  // Кнопок и полей на экране, не считая полоски задач, — не больше восьми (было семнадцать).
+  const controls = await page.evaluate(
+    () =>
+      [...document.querySelectorAll("a[href],button,input,select,summary")].filter((el) => {
+        const r = el.getBoundingClientRect();
+        return r.width > 0 && r.height > 0 && r.top < innerHeight && r.bottom > 0 && !el.closest("header ol");
+      }).length,
+  );
+  expect(controls).toBeLessThanOrEqual(8);
+
+  // После верного ответа итог и «Дальше» видны сразу, искать их прокруткой не нужно.
+  await page.locator("input").first().fill("57");
+  await page.getByRole("button", { name: "Проверить" }).first().click();
+  await expect(page.getByText(/Ответ совпадает|Так и есть|Сошлось|Точно/).first()).toBeInViewport();
+  await expect(page.getByRole("button", { name: "Дальше →" })).toBeInViewport();
+  await expect(page.locator("[data-task-counter]")).toBeVisible();
 });

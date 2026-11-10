@@ -1,6 +1,6 @@
 "use client";
 
-import { Printer } from "lucide-react";
+import { ArrowLeft, Lightbulb, Printer, X } from "lucide-react";
 import { currentScrollBehavior } from "@/lib/useMotion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -65,6 +65,9 @@ export function DaySession({
   const bigText = useStore((s) => s.settings.bigText);
   const progress = useStore((s) => s.tasks);
   const solved = (i: number) => progress[day.tasks[i]?.id]?.status === "solved";
+  // Остались ли подсказки у задачи на экране: тогда в нижней панели есть вход к ним.
+  const current = day.tasks[step - 1];
+  const hintsLeft = !!current && !solved(step - 1) && (progress[current.id]?.hints ?? 0) < current.hints.length;
 
   useEffect(() => {
     if (step >= 1) startDay(day.id);
@@ -96,36 +99,36 @@ export function DaySession({
 
   return (
     <div className={cn("pb-28", bigText && "big-text")}>
+      {/*
+       * На телефоне шапка — одна строка: «закрыть» и полоска задач. Название дня и печать есть во вступлении,
+       * а место на экране нужно задаче и полю ответа. С планшета — как раньше: название, печать и плитки задач.
+       */}
       <header className="sticky top-0 z-20 border-b border-line/80 bg-paper/90 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-2.5">
+        <div className="mx-auto grid max-w-6xl grid-cols-[auto_minmax(0,1fr)] items-center gap-x-2 px-4 py-1.5 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:gap-x-3 sm:py-2.5">
           <Link
             href="/"
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-xl hover:bg-black/5"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-xl hover:bg-black/5 sm:h-10 sm:w-10"
             aria-label={t("На главную", "Bosh sahifaga")}
           >
-            ←
+            <X aria-hidden className="h-6 w-6 sm:hidden" strokeWidth={2.5} />
+            <span aria-hidden className="hidden sm:inline">
+              ←
+            </span>
           </Link>
-          <div className="min-w-0 flex-1">
+          <div className="hidden min-w-0 sm:block">
             <p className="truncate text-xs font-bold text-muted">
               {t(`Неделя ${day.week} · День ${day.day}`, `${day.week}-hafta · ${day.day}-kun`)}
             </p>
             <p className="line-clamp-2 leading-tight font-black">{day.title}</p>
           </div>
-          <ButtonLink
-            href={printHref(day)}
-            variant="secondary"
-            size="sm"
-            className="shrink-0"
-            // На телефоне подпись скрыта, остаётся значок — ссылке нужно название.
-            aria-label={t("Распечатать", "Chop etish")}
-          >
-            <Icon icon={Printer} /> <span className="hidden sm:inline">{t("Распечатать", "Chop etish")}</span>
+          <ButtonLink href={printHref(day)} variant="secondary" size="sm" className="shrink-0 max-sm:hidden">
+            <Icon icon={Printer} /> {t("Распечатать", "Chop etish")}
           </ButtonLink>
+          <ProgressDots day={day} step={step} onGo={go} />
         </div>
-        <ProgressDots day={day} step={step} onGo={go} />
       </header>
 
-      <main id="main" tabIndex={-1} className="mx-auto max-w-6xl px-4 pt-5">
+      <main id="main" tabIndex={-1} className="mx-auto max-w-6xl px-4 pt-3 sm:pt-5">
         {step === 0 && <DayIntro day={day} onStart={() => go(1)} />}
         {resting && <RestStop onRest={() => router.push("/")} onMore={() => go(step + 1)} />}
         {step >= 1 && step <= total && !resting && (
@@ -140,15 +143,37 @@ export function DaySession({
           className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-surface/95 backdrop-blur"
           aria-label={t("Переход между задачами", "Masalalar orasida oʻtish")}
         >
-          <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
-            <Button variant="secondary" onClick={() => go(step - 1)}>
-              ← {t("Назад", "Orqaga")}
+          <div className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-4 py-3 sm:gap-3">
+            <Button variant="secondary" onClick={() => go(step - 1)} className="shrink-0 max-sm:px-3.5">
+              {/* На телефоне — только стрелка; название кнопки остаётся прежним для чтения с экрана. */}
+              <Icon icon={ArrowLeft} className="sm:hidden" />
+              <span className="max-sm:sr-only">← {t("Назад", "Orqaga")}</span>
             </Button>
-            <span className="text-sm font-bold text-muted">
+            {/* На телефоне посередине — вход к подсказкам: он всегда под рукой и не занимает место над ответом. */}
+            {hintsLeft && (
+              <button
+                type="button"
+                data-hint-jump
+                onClick={() =>
+                  document
+                    .getElementById("hints")
+                    ?.scrollIntoView({ behavior: currentScrollBehavior(), block: "center" })
+                }
+                className="inline-flex min-h-12 min-w-12 items-center justify-center gap-1.5 rounded-2xl bg-sun-soft px-3.5 text-base font-extrabold text-sun-ink lg:hidden"
+              >
+                <Icon icon={Lightbulb} />
+                <span className="max-[359px]:sr-only">{t("Подсказка", "Maslahat")}</span>
+              </button>
+            )}
+            <span data-task-counter className={cn("text-sm font-bold text-muted", hintsLeft && "max-lg:hidden")}>
               {step} / {total}
             </span>
             {/* Пока задача не решена, «Дальше» тише «Проверить»: главным остаётся проверка, но пропустить можно. */}
-            <Button variant={solved(step - 1) || step === total ? "primary" : "secondary"} onClick={forward}>
+            <Button
+              variant={solved(step - 1) || step === total ? "primary" : "secondary"}
+              onClick={forward}
+              className="shrink-0"
+            >
               {step === total ? t("Итоги дня 🏁", "Kun yakuni 🏁") : t("Дальше →", "Keyingi →")}
             </Button>
           </div>
@@ -165,13 +190,14 @@ function ProgressDots({ day, step, onGo }: { day: Day; step: number; onGo: (s: n
   const tasks = useStore((s) => s.tasks);
   return (
     <ol
-      className="mx-auto flex max-w-6xl gap-1 overflow-x-auto px-4 pt-0.5 pb-2.5 sm:gap-1.5"
+      className="flex min-w-0 items-center gap-1 sm:col-span-3 sm:gap-1.5 sm:overflow-x-auto sm:pt-2"
       aria-label={t("Задачи дня", "Kun masalalari")}
     >
       {day.tasks.map((task, i) => {
         const p = hydrated ? tasks[task.id] : undefined;
         const current = step === i + 1;
         const solved = p?.status === "solved";
+        const started = !solved && p?.status === "started";
         return (
           <li key={task.id} className="min-w-0 flex-1 sm:max-w-12">
             <button
@@ -182,29 +208,44 @@ function ProgressDots({ day, step, onGo }: { day: Day; step: number; onGo: (s: n
                 `Задача ${i + 1}: ${task.title}${solved ? " — решена" : ""}`,
                 `${i + 1}-masala: ${task.title}${solved ? " — yechildi" : ""}`,
               )}
+              data-task-step={solved ? "solved" : started ? "started" : "open"}
               className={cn(
-                "relative flex h-10 w-full min-w-8 items-center justify-center rounded-xl border-2 text-base transition sm:min-w-10 sm:text-lg",
+                // Телефон: кнопка высотой 44 px, внутри — тонкая полоска. С планшета — плитка со значком раздела.
+                "relative flex h-11 w-full items-center justify-center transition sm:h-10 sm:min-w-10 sm:rounded-xl sm:border-2 sm:text-lg",
                 current
-                  ? "border-brand bg-brand-soft shadow-[0_0_0_3px_rgb(79_70_229/0.18)]"
+                  ? "sm:border-brand sm:bg-brand-soft sm:shadow-[0_0_0_3px_rgb(79_70_229/0.18)]"
                   : solved
-                    ? "border-mint/50 bg-mint-soft"
-                    : p?.status === "started"
-                      ? "border-sun/60 bg-surface"
-                      : "border-line bg-surface",
+                    ? "sm:border-mint/50 sm:bg-mint-soft"
+                    : started
+                      ? "sm:border-sun/60 sm:bg-surface"
+                      : "sm:border-line sm:bg-surface",
               )}
               title={`${i + 1}. ${task.title}`}
             >
-              <span aria-hidden>{SECTIONS[task.section].emoji}</span>
-              {!solved && p?.status === "started" && (
+              <span
+                aria-hidden
+                className={cn(
+                  "block w-full rounded-full sm:hidden",
+                  current ? "h-3.5" : "h-2.5",
+                  solved ? "bg-mint" : current ? "bg-brand" : started ? "bg-sun" : "bg-line",
+                )}
+              />
+              <span aria-hidden className="hidden sm:inline">
+                {SECTIONS[task.section].emoji}
+              </span>
+              {started && (
                 <span
-                  className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-sun text-[10px] font-black text-on-sun"
+                  className="absolute -top-1.5 -right-1.5 hidden h-4 w-4 items-center justify-center rounded-full bg-sun text-[10px] font-black text-on-sun sm:flex"
                   aria-hidden
                 >
                   …
                 </span>
               )}
               {solved && (
-                <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-mint text-[10px] font-black text-white">
+                <span
+                  className="absolute -top-1.5 -right-1.5 hidden h-4 w-4 items-center justify-center rounded-full bg-mint text-[10px] font-black text-white sm:flex"
+                  aria-hidden
+                >
                   ✓
                 </span>
               )}
@@ -212,13 +253,13 @@ function ProgressDots({ day, step, onGo }: { day: Day; step: number; onGo: (s: n
           </li>
         );
       })}
-      <li className="min-w-0 flex-1 sm:max-w-12">
+      <li className="shrink-0 sm:max-w-12 sm:min-w-0 sm:flex-1">
         <button
           type="button"
           onClick={() => onGo(day.tasks.length + 1)}
           className={cn(
-            "flex h-10 w-full min-w-8 items-center justify-center rounded-xl border-2 text-base sm:min-w-10 sm:text-lg",
-            step > day.tasks.length ? "border-brand bg-brand-soft" : "border-line bg-surface",
+            "flex h-11 w-9 items-center justify-center text-base sm:h-10 sm:w-full sm:min-w-10 sm:rounded-xl sm:border-2 sm:text-lg",
+            step > day.tasks.length ? "sm:border-brand sm:bg-brand-soft" : "sm:border-line sm:bg-surface",
           )}
           aria-label={t("Итоги дня", "Kun yakuni")}
           title={t("Итоги дня", "Kun yakuni")}
