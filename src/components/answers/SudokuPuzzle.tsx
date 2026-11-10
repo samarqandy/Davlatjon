@@ -128,7 +128,7 @@ export function SudokuPuzzle({
                 style={borders(r, c, n, box)}
               >
                 {v !== null ? (
-                  <span className="text-[#475569]">{v}</span>
+                  <span className="text-[#475569] dark:text-[#cbd5e1]">{v}</span>
                 ) : (
                   <input
                     inputMode="numeric"

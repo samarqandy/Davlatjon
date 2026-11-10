@@ -414,7 +414,7 @@ export function MagicSquarePuzzle({
                 )}
               >
                 {v !== null ? (
-                  <span className="text-[#6d28d9]">{v}</span>
+                  <span className="text-[#6d28d9] dark:text-[#c4b5fd]">{v}</span>
                 ) : (
                   <input
                     inputMode="numeric"

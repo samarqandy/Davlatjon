@@ -54,7 +54,7 @@ export function ShiftTable({ alphabet, shift, print = false }: { alphabet: strin
           <span role="cell" className={cn("py-0.5", !print && "bg-brand-soft text-brand-dark")}>
             {ch}
           </span>
-          <span role="cell" className={cn("py-0.5", !print && "text-[#6d28d9]")}>
+          <span role="cell" className={cn("py-0.5", !print && "text-[#6d28d9] dark:text-[#c4b5fd]")}>
             {shiftLetter(ch, shift, alphabet)}
           </span>
         </div>
