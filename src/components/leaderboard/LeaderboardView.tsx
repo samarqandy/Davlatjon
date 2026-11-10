@@ -113,7 +113,12 @@ export function LeaderboardView() {
   } else if (!signedIn) {
     body = (
       <Card className="space-y-3 p-5" data-leaderboard-login>
-        <h2 className="text-lg font-extrabold">🔐 {t("Нужен вход", "Kirish kerak")}</h2>
+        <h2 className="text-lg font-extrabold">
+          <span className="deco" aria-hidden>
+            🔐{" "}
+          </span>
+          {t("Нужен вход", "Kirish kerak")}
+        </h2>
         <p className="text-muted">
           {loginAvailable(account)
             ? t(
@@ -228,7 +233,12 @@ export function LeaderboardView() {
             </Card>
 
             <section className="space-y-3" data-leaderboard-stars>
-              <h2 className="text-lg font-extrabold">💪 {t("Кто в чём силён", "Kim nimada kuchli")}</h2>
+              <h2 className="text-lg font-extrabold">
+                <span className="deco" aria-hidden>
+                  💪{" "}
+                </span>
+                {t("Кто в чём силён", "Kim nimada kuchli")}
+              </h2>
               <div className="grid gap-3 sm:grid-cols-2">
                 {STARS.map((c) => (
                   <Card key={c} className="p-4" data-star={c}>
@@ -262,7 +272,12 @@ export function LeaderboardView() {
   return (
     <div className="space-y-5">
       <header className="space-y-1">
-        <h1 className="text-3xl font-extrabold">🏆 {t("Рейтинг", "Reyting")}</h1>
+        <h1 className="text-3xl font-extrabold">
+          <span className="deco" aria-hidden>
+            🏆{" "}
+          </span>
+          {t("Рейтинг", "Reyting")}
+        </h1>
         <p className="text-muted">
           {t(
             "Очки за задачи, шахматы и быстрый счёт. Неделя начинается в понедельник. Видны только имя в игре, аватарка и очки.",

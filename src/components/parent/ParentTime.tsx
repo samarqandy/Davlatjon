@@ -50,7 +50,12 @@ export function ParentTime() {
     <div className="space-y-5">
       <Card className="space-y-4 p-5 sm:p-6" data-time>
         <div>
-          <h2 className="text-xl font-black">⏳ {t("Время в день", "Kunlik vaqt")}</h2>
+          <h2 className="text-xl font-black">
+            <span className="deco" aria-hidden>
+              ⏳{" "}
+            </span>
+            {t("Время в день", "Kunlik vaqt")}
+          </h2>
           <p className="mt-1 text-muted">
             {t(
               "Когда время закончится, ребёнок доделает начатое и увидит спокойную карточку «На сегодня хватит». Таймера и обратного отсчёта он не видит. Продлить можно здесь или по PIN-коду прямо на карточке.",
@@ -96,7 +101,12 @@ export function ParentTime() {
 
       <Card className="space-y-4 p-5 sm:p-6">
         <div>
-          <h2 className="text-xl font-black">🎯 {t("Приглашение на неделю", "Haftalik taklif")}</h2>
+          <h2 className="text-xl font-black">
+            <span className="deco" aria-hidden>
+              🎯{" "}
+            </span>
+            {t("Приглашение на неделю", "Haftalik taklif")}
+          </h2>
           <p className="mt-1 text-muted">
             {t(
               "Сколько дней в неделю хорошо бы заниматься. Ребёнок видит заполняющиеся точки — без сроков и без «пропущено». Любой день — уже хорошо.",
@@ -143,7 +153,12 @@ function TelegramReport() {
   return (
     <Card className="space-y-4 p-5 sm:p-6" data-telegram-report>
       <div>
-        <h2 className="text-xl font-black">✈️ {t("Итоги недели в Telegram", "Hafta yakunlari Telegram'da")}</h2>
+        <h2 className="text-xl font-black">
+          <span className="deco" aria-hidden>
+            ✈️{" "}
+          </span>
+          {t("Итоги недели в Telegram", "Hafta yakunlari Telegram'da")}
+        </h2>
         <p className="mt-1 text-muted">
           {t(
             "Раз в неделю, в воскресенье вечером, бот пришлёт короткие итоги — без имени ребёнка и без оценок. Выключить можно в любой момент.",

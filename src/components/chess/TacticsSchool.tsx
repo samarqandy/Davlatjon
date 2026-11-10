@@ -76,7 +76,12 @@ function Overview() {
         {t("← Шахматная школа", "← Shaxmat maktabi")}
       </Link>
       <header className="rounded-[2rem] bg-linear-to-br from-[#3b2f23] via-[#5b4632] to-[#7c5a33] p-6 text-white shadow-lift sm:p-8">
-        <h1 className="text-3xl font-black sm:text-4xl">⚔️ {tacticsSchool.title}</h1>
+        <h1 className="text-3xl font-black sm:text-4xl">
+          <span className="deco" aria-hidden>
+            ⚔️{" "}
+          </span>
+          {tacticsSchool.title}
+        </h1>
         <p className="mt-1 text-lg font-bold text-white/85">{tacticsSchool.subtitle}</p>
         <p className="mt-3 text-lg text-white/90">{tacticsSchool.about}</p>
       </header>
@@ -300,7 +305,12 @@ export function TopicView({
 
       {tab === "dictionary" && (
         <section className="rounded-3xl bg-surface p-5 shadow-card">
-          <h3 className="text-xl font-black">{t("🔤 Словарик", "🔤 Lugʻat")}</h3>
+          <h3 className="text-xl font-black">
+            <span className="deco" aria-hidden>
+              🔤{" "}
+            </span>
+            {t("Словарик", "Lugʻat")}
+          </h3>
           <dl className="mt-3 space-y-3">
             {topic.terms.map((term, i) => (
               <div key={i}>

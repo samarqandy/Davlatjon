@@ -38,7 +38,12 @@ export function ParentReport() {
     <div className="space-y-5">
       <Card className="p-5 sm:p-6" data-report>
         <div className="flex flex-wrap items-center gap-2">
-          <h1 className="mr-auto text-2xl font-black">📈 {t("Итоги недели", "Hafta yakunlari")}</h1>
+          <h1 className="mr-auto text-2xl font-black">
+            <span className="deco" aria-hidden>
+              📈{" "}
+            </span>
+            {t("Итоги недели", "Hafta yakunlari")}
+          </h1>
           <div className="no-print flex items-center gap-1.5">
             <Button
               variant="secondary"

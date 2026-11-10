@@ -51,7 +51,10 @@ export function ChessHomeCard({ summary }: { summary: Both<ChessHomeSummary> }) 
       </div>
       <div className="min-w-0 flex-1">
         <h2 id="chess-home" className="text-2xl font-black">
-          ♞ {school.title}
+          <span className="deco" aria-hidden>
+            ♞{" "}
+          </span>
+          {school.title}
         </h2>
         <p className="text-white/85">
           {rank

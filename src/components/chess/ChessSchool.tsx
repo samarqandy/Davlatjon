@@ -619,7 +619,10 @@ export function ChessSchool({ counts }: { counts: ChessSchoolCounts }) {
         </details>
         <details className="rounded-3xl bg-surface p-4 shadow-card md:col-span-2">
           <summary className="cursor-pointer text-lg font-black">
-            {t("📚 Словарик", "📚 Lugʻat")}{" "}
+            <span className="deco" aria-hidden>
+              📚{" "}
+            </span>
+            {t("Словарик", "Lugʻat")}{" "}
             <span className="text-sm font-bold text-muted">
               {t(`(${glossary.length} слов)`, `(${glossary.length} ta soʻz)`)}
             </span>

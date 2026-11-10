@@ -76,7 +76,12 @@ export function CertificateView({ levelId }: { levelId: string }) {
       {back}
       <div className="no-print flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-black">🏅 {t(`Сертификат «${level.name}»`, `«${level.name}» sertifikati`)}</h1>
+          <h1 className="text-2xl font-black">
+            <span className="deco" aria-hidden>
+              🏅{" "}
+            </span>
+            {t(`Сертификат «${level.name}»`, `«${level.name}» sertifikati`)}
+          </h1>
           <p className="text-muted">
             {t(
               "Распечатай на листе A4 (альбомная ориентация) — и повесь на стену!",

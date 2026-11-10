@@ -67,7 +67,10 @@ export function DayFinish({
             : t("Парвоз рад: отличная работа!", "Parvoz xursand: zoʻr ishlading!")}
         </MascotSays>
         <h1 data-step-heading tabIndex={-1} className="text-3xl font-black outline-none">
-          🏁 {t("Итоги дня", "Kun yakuni")}
+          <span className="deco" aria-hidden>
+            🏁{" "}
+          </span>
+          {t("Итоги дня", "Kun yakuni")}
         </h1>
         <ListenButton src={VOICE_CLIPS.short("day-finish", lang)} className="mt-2" />
         <p className="mt-2 text-lg text-muted">

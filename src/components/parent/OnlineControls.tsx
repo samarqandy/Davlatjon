@@ -67,7 +67,12 @@ export function OnlineControls() {
 
   return (
     <Card className="space-y-3 p-5" data-online-controls>
-      <h2 className="text-lg font-extrabold">👥 {t("Шахматы по сети", "Onlayn shaxmat")}</h2>
+      <h2 className="text-lg font-extrabold">
+        <span className="deco" aria-hidden>
+          👥{" "}
+        </span>
+        {t("Шахматы по сети", "Onlayn shaxmat")}
+      </h2>
       <p className="text-[0.95rem] text-muted">
         {t(
           "Ребёнок играет только с теми, кого сам добавил в друзья, под придуманным именем (не настоящим). Здесь вы решаете, что разрешено.",

@@ -125,7 +125,10 @@ export function Secrets() {
 
       <section id="thoughts" className="scroll-mt-24 space-y-3" aria-labelledby="thoughts-h">
         <h2 id="thoughts-h" className="text-2xl font-black">
-          {t("💭 Мысли великих", "💭 Buyuklarning fikrlari")}
+          <span className="deco" aria-hidden>
+            💭{" "}
+          </span>
+          {t("Мысли великих", "Buyuklarning fikrlari")}
         </h2>
         <p className="max-w-2xl text-muted">
           {t(
@@ -138,7 +141,10 @@ export function Secrets() {
 
       <section id="dialogues" className="scroll-mt-24 space-y-3" aria-labelledby="dialogues-h">
         <h2 id="dialogues-h" className="text-2xl font-black">
-          {t("🗣 Разговоры, которые меняют взгляд", "🗣 Nigohni oʻzgartiradigan suhbatlar")}
+          <span className="deco" aria-hidden>
+            🗣{" "}
+          </span>
+          {t("Разговоры, которые меняют взгляд", "Nigohni oʻzgartiradigan suhbatlar")}
         </h2>
         <p className="max-w-2xl text-muted">
           {t(
@@ -151,7 +157,10 @@ export function Secrets() {
 
       <section id="views" className="scroll-mt-24 space-y-3" aria-labelledby="views-h">
         <h2 id="views-h" className="text-2xl font-black">
-          {t("👀 Новый взгляд на шахматы", "👀 Shaxmatga yangi nigoh")}
+          <span className="deco" aria-hidden>
+            👀{" "}
+          </span>
+          {t("Новый взгляд на шахматы", "Shaxmatga yangi nigoh")}
         </h2>
         <p className="max-w-2xl text-muted">
           {t(
@@ -164,7 +173,10 @@ export function Secrets() {
 
       <section id="riddles" className="scroll-mt-24 space-y-3" aria-labelledby="riddles-h">
         <h2 id="riddles-h" className="text-2xl font-black">
-          {t("🧩 Загадки про фигуры", "🧩 Donalar haqida topishmoqlar")}
+          <span className="deco" aria-hidden>
+            🧩{" "}
+          </span>
+          {t("Загадки про фигуры", "Donalar haqida topishmoqlar")}
         </h2>
         <p className="text-muted">
           {t(
@@ -237,7 +249,10 @@ function SecretCard({
           {s.deeper && (
             <details className="rounded-2xl bg-brand-soft/50 px-4 py-3" open={deeperOpen || undefined}>
               <summary className="cursor-pointer font-extrabold text-brand-dark">
-                {t("🔎 Для тех, кто постарше", "🔎 Kattaroqlar uchun")}
+                <span className="deco" aria-hidden>
+                  🔎{" "}
+                </span>
+                {t("Для тех, кто постарше", "Kattaroqlar uchun")}
               </summary>
               <p className="mt-2">{s.deeper}</p>
             </details>

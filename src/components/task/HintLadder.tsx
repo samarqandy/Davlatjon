@@ -47,7 +47,12 @@ export function HintLadder({ taskId, hints }: { taskId: string; hints: readonly 
       aria-label={t("Подсказки", "Maslahatlar")}
     >
       <div className="mb-3 flex items-center justify-between gap-2">
-        <h3 className="text-lg font-extrabold">💡 {t("Подсказки", "Maslahatlar")}</h3>
+        <h3 className="text-lg font-extrabold">
+          <span className="deco" aria-hidden>
+            💡{" "}
+          </span>
+          {t("Подсказки", "Maslahatlar")}
+        </h3>
         <div
           className="flex gap-1"
           aria-label={t(

@@ -185,7 +185,10 @@ export function CipherPuzzle({
 
       <details className="rounded-2xl bg-surface p-3 shadow-card">
         <summary className="cursor-pointer text-sm font-extrabold text-brand">
-          ✍️ {t("Зашифруй своё слово", "Oʻz soʻzingni shifrla")}
+          <span className="deco" aria-hidden>
+            ✍️{" "}
+          </span>
+          {t("Зашифруй своё слово", "Oʻz soʻzingni shifrla")}
         </summary>
         <div className="mt-3 flex flex-wrap items-center gap-3">
           <input

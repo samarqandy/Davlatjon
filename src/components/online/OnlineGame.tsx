@@ -268,9 +268,15 @@ function Table({ id }: { id: string }) {
       <div className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h1 className="text-2xl font-black">
-            ⚔️ {t("Партия с", "Partiya:")} <span className="font-mono">{opponentName}</span>{" "}
+            <span className="deco" aria-hidden>
+              ⚔️{" "}
+            </span>
+            {t("Партия с", "Partiya:")} <span className="font-mono">{opponentName}</span>{" "}
             <span className="text-base font-bold text-muted">
-              ⏱ {game.baseS ? timeControlLabel(game) : t("без часов", "soatsiz")}
+              <span className="deco" aria-hidden>
+                ⏱{" "}
+              </span>
+              {game.baseS ? timeControlLabel(game) : t("без часов", "soatsiz")}
             </span>
           </h1>
           <Link href="/chess/online" className="text-sm font-bold text-brand-dark hover:underline">

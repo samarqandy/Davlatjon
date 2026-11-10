@@ -91,7 +91,12 @@ export function TaskView({ task, number, total }: { task: Task; number: number; 
             aria-label={t("Мой ответ", "Javobim")}
           >
             <div className="mb-3 flex items-center justify-between gap-2">
-              <h3 className="text-lg font-extrabold text-brand-dark">✏️ {t("Мой ответ", "Javobim")}</h3>
+              <h3 className="text-lg font-extrabold text-brand-dark">
+                <span className="deco" aria-hidden>
+                  ✏️{" "}
+                </span>
+                {t("Мой ответ", "Javobim")}
+              </h3>
               {hintsLeft && (
                 <button
                   type="button"

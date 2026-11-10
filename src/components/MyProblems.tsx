@@ -46,7 +46,12 @@ export function MyProblems() {
           <p className="text-sm font-extrabold tracking-wide text-brand uppercase">
             {t("{name} — автор задач", "{name:ning} masalalar toʻplami")}
           </p>
-          <h1 className="text-3xl font-black">✍️ {t("Мои задачи", "Masalalarim")}</h1>
+          <h1 className="text-3xl font-black">
+            <span className="deco" aria-hidden>
+              ✍️{" "}
+            </span>
+            {t("Мои задачи", "Masalalarim")}
+          </h1>
           <p className="mt-1 max-w-2xl text-lg text-muted">
             {t(
               "Настоящие математики не только решают задачи, но и придумывают их. Придумай свою задачу и загадай её маме, папе или другу!",

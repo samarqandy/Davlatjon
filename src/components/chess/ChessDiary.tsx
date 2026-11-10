@@ -62,7 +62,10 @@ export function ChessDiary() {
       <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <section className="space-y-3 rounded-3xl bg-surface p-5 shadow-card" aria-labelledby="add">
           <h2 id="add" className="text-xl font-black">
-            ✍️ {t("Записать партию", "Partiyani yozish")}
+            <span className="deco" aria-hidden>
+              ✍️{" "}
+            </span>
+            {t("Записать партию", "Partiyani yozish")}
           </h2>
           <label className="block text-sm font-extrabold text-muted">
             {t("Когда", "Qachon")}
@@ -133,7 +136,10 @@ export function ChessDiary() {
 
         <section className="space-y-3" aria-labelledby="list">
           <h2 id="list" className="text-xl font-black">
-            📖 {t("Записи", "Yozuvlar")}
+            <span className="deco" aria-hidden>
+              📖{" "}
+            </span>
+            {t("Записи", "Yozuvlar")}
             {hydrated && entries.length ? ` (${entries.length})` : ""}
           </h2>
           {hydrated && robotWins > 0 && (

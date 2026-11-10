@@ -134,7 +134,10 @@ export function Encyclopedia() {
 
       <section id="history" className="scroll-mt-24 space-y-4" aria-labelledby="history-h">
         <h2 id="history-h" className="text-2xl font-black">
-          {t("🗺️ Путь шахмат: полторы тысячи лет", "🗺️ Shaxmat yoʻli: bir yarim ming yil")}
+          <span className="deco" aria-hidden>
+            🗺️{" "}
+          </span>
+          {t("Путь шахмат: полторы тысячи лет", "Shaxmat yoʻli: bir yarim ming yil")}
         </h2>
         <div className="rounded-3xl bg-surface p-3 shadow-card">
           <JourneyMap />
@@ -198,7 +201,10 @@ export function Encyclopedia() {
 
       <section id="champions" className="scroll-mt-24 space-y-3" aria-labelledby="champ-h">
         <h2 id="champ-h" className="text-2xl font-black">
-          {t("🏆 Чемпионы мира", "🏆 Jahon chempionlari")}
+          <span className="deco" aria-hidden>
+            🏆{" "}
+          </span>
+          {t("Чемпионы мира", "Jahon chempionlari")}
         </h2>
         <div
           tabIndex={0}
@@ -256,7 +262,10 @@ export function Encyclopedia() {
 
       <section id="names" className="scroll-mt-24 space-y-3" aria-labelledby="names-h">
         <h2 id="names-h" className="text-2xl font-black">
-          {t("🔤 Имена фигур на трёх языках", "🔤 Donalarning uch tildagi nomlari")}
+          <span className="deco" aria-hidden>
+            🔤{" "}
+          </span>
+          {t("Имена фигур на трёх языках", "Donalarning uch tildagi nomlari")}
         </h2>
         <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {pieceNamesTable.map((p) => (
@@ -304,7 +313,10 @@ export function Encyclopedia() {
 
       <section id="records" className="scroll-mt-24 space-y-3" aria-labelledby="records-h">
         <h2 id="records-h" className="text-2xl font-black">
-          {t("📚 Рекорды и факты", "📚 Rekordlar va faktlar")}
+          <span className="deco" aria-hidden>
+            📚{" "}
+          </span>
+          {t("Рекорды и факты", "Rekordlar va faktlar")}
         </h2>
         <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {records.map((r) => (
@@ -327,7 +339,10 @@ export function Encyclopedia() {
 
       <section id="math" className="scroll-mt-24 space-y-3" aria-labelledby="math-h">
         <h2 id="math-h" className="text-2xl font-black">
-          {t("🧮 Шахматы и математика", "🧮 Shaxmat va matematika")}
+          <span className="deco" aria-hidden>
+            🧮{" "}
+          </span>
+          {t("Шахматы и математика", "Shaxmat va matematika")}
         </h2>
         <p className="text-muted">
           {t(
@@ -365,7 +380,10 @@ export function Encyclopedia() {
 
       <section id="credits" className="scroll-mt-24 space-y-3" aria-labelledby="credits-h">
         <h2 id="credits-h" className="text-2xl font-black">
-          {t("📷 Откуда картинки", "📷 Rasmlar qayerdan olingan")}
+          <span className="deco" aria-hidden>
+            📷{" "}
+          </span>
+          {t("Откуда картинки", "Rasmlar qayerdan olingan")}
         </h2>
         <p className="text-sm text-muted">
           {t(

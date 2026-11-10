@@ -66,7 +66,12 @@ export function FriendChat({ friend, className }: { friend: string; className?: 
 
   return (
     <section className={cn("flex flex-col rounded-3xl bg-surface p-4 shadow-card", className)} data-chat={friend}>
-      <h3 className="text-lg font-black">💬 {friend}</h3>
+      <h3 className="text-lg font-black">
+        <span className="deco" aria-hidden>
+          💬{" "}
+        </span>
+        {friend}
+      </h3>
       <div
         ref={box}
         className="mt-2 h-56 space-y-1.5 overflow-y-auto rounded-2xl bg-brand-soft/40 p-2"

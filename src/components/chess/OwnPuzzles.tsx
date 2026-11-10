@@ -79,7 +79,12 @@ export function OwnPuzzlesView() {
         ← {t("Все задачи", "Barcha masalalar")}
       </button>
       <header>
-        <h1 className="text-2xl font-black">🧩 {t("Задачи из твоих партий", "Oʻz partiyalaringdan masalalar")}</h1>
+        <h1 className="text-2xl font-black">
+          <span className="deco" aria-hidden>
+            🧩{" "}
+          </span>
+          {t("Задачи из твоих партий", "Oʻz partiyalaringdan masalalar")}
+        </h1>
         <p className="text-muted">
           {t(
             "Робот-тренер нашёл в твоих партиях моменты, где был ход сильнее. Найди его сейчас — тогда в следующей партии ты его не пропустишь.",

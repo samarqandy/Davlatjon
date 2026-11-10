@@ -24,7 +24,12 @@ export function AfterSolve({ taskId, followUps }: { taskId: string; followUps: s
     >
       {followUps.length > 0 && (
         <div>
-          <h3 className="mb-2 text-lg font-extrabold">🤔 {t("А ещё подумай", "Yana oʻylab koʻr")}</h3>
+          <h3 className="mb-2 text-lg font-extrabold">
+            <span className="deco" aria-hidden>
+              🤔{" "}
+            </span>
+            {t("А ещё подумай", "Yana oʻylab koʻr")}
+          </h3>
           <ul className="space-y-1.5">
             {followUps.map((q) => (
               <li key={q} className="child-text flex gap-2 leading-relaxed">

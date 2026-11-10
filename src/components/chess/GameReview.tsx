@@ -451,7 +451,10 @@ function ReviewBody({
 
       <section aria-labelledby="moments-h">
         <h2 id="moments-h" className="mb-3 text-2xl font-black">
-          🎯 {t("Главные моменты", "Muhim lahzalar")}
+          <span className="deco" aria-hidden>
+            🎯{" "}
+          </span>
+          {t("Главные моменты", "Muhim lahzalar")}
         </h2>
         {moments.length === 0 ? (
           <p className="rounded-2xl bg-mint-soft px-4 py-3 font-semibold">
@@ -594,7 +597,10 @@ function AdvantageChart({
     <section className="rounded-3xl bg-surface p-4 shadow-card" aria-labelledby="chart-h">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h2 id="chart-h" className="text-lg font-black">
-          📈 {t("Кто был ближе к победе", "Kim gʻalabaga yaqinroq edi")}
+          <span className="deco" aria-hidden>
+            📈{" "}
+          </span>
+          {t("Кто был ближе к победе", "Kim gʻalabaga yaqinroq edi")}
         </h2>
         <p className="text-sm text-muted">
           {hover !== null

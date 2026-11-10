@@ -82,7 +82,10 @@ export function AwardsPage() {
 
       <section aria-labelledby="awards-h">
         <h2 id="awards-h" className="mb-3 text-2xl font-black">
-          🏅 {t("Награды", "Mukofotlar")}
+          <span className="deco" aria-hidden>
+            🏅{" "}
+          </span>
+          {t("Награды", "Mukofotlar")}
         </h2>
         <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {list.map((a) => {
@@ -132,7 +135,10 @@ function Certificates() {
   return (
     <section aria-labelledby="cert-h" className="rounded-3xl bg-surface p-4 shadow-card">
       <h2 id="cert-h" className="text-lg font-black">
-        📜 {t("Сертификаты о званиях", "Unvon sertifikatlari")}
+        <span className="deco" aria-hidden>
+          📜{" "}
+        </span>
+        {t("Сертификаты о званиях", "Unvon sertifikatlari")}
       </h2>
       {earnedLevels.length ? (
         <ul className="mt-2 flex flex-wrap gap-2">
@@ -191,7 +197,10 @@ function Calendar({ days, today }: { days: Record<string, number>; today: string
     <section className="rounded-3xl bg-surface p-4 shadow-card" aria-labelledby="cal-h">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h2 id="cal-h" className="text-lg font-black">
-          📅 {t("Календарь занятий", "Mashgʻulotlar taqvimi")}
+          <span className="deco" aria-hidden>
+            📅{" "}
+          </span>
+          {t("Календарь занятий", "Mashgʻulotlar taqvimi")}
         </h2>
         <p className="text-sm text-muted" aria-live="polite">
           {shown}

@@ -107,7 +107,12 @@ export function StormView() {
           </span>
         </p>
       </div>
-      <h1 className="text-2xl font-black">⚡ {t("Шторм", "Boʻron")}</h1>
+      <h1 className="text-2xl font-black">
+        <span className="deco" aria-hidden>
+          ⚡{" "}
+        </span>
+        {t("Шторм", "Boʻron")}
+      </h1>
       {!running && (
         <div className="rounded-3xl bg-surface p-6 text-center shadow-card">
           {over ? (

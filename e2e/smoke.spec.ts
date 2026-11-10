@@ -339,7 +339,7 @@ test("шахматы: задача по теме решается, серия с
 test("шахматы: разбор знаменитой партии и главные моменты", async ({ page }) => {
   await page.goto("/chess/games/opera");
   await expect(page.getByRole("heading", { name: "Партия в опере" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "📷 Кто играл и где" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Кто играл и где" })).toBeVisible();
   await expect(page.getByRole("img", { name: "Молодой Пол Морфи сидит у шахматного столика" }).first()).toBeVisible();
   await expect(page.getByText("Wikimedia Commons").first()).toBeVisible();
   const next = page.getByRole("button", { name: "Ход вперёд" });
@@ -432,7 +432,7 @@ test("шахматы: энциклопедия и дневник", async ({ page
     page.getByRole("img", { name: "Семь маленьких резных фигурок из слоновой кости" }).first(),
   ).toBeVisible();
   await expect(page.getByText("Гукеш Доммараджу").first()).toBeVisible();
-  await expect(page.getByRole("heading", { name: "📷 Откуда картинки" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Откуда картинки" })).toBeVisible();
   await page.goto("/chess/diary");
   await page.getByPlaceholder(/папа, Али/).fill("папа");
   await page.getByRole("button", { name: /🤝 ничья/ }).click();
@@ -468,12 +468,12 @@ test("разбор партии: ошибки объясняются и стан
   await page.goto("/chess/review");
   await page.getByRole("button", { name: /Робот «Слон» · поражение/ }).click();
   await expect(page.getByText("Твоя точность")).toBeVisible({ timeout: 20_000 });
-  await expect(page.getByRole("heading", { name: "🎯 Главные моменты" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Главные моменты" })).toBeVisible();
   await expect(page.getByText(/Кf6 → лучше/)).toBeVisible();
   await page.getByRole("button", { name: /Кf6 → лучше/ }).click();
   await expect(page.getByText(/соперник ставит мат: Фxf7#/).first()).toBeVisible();
   await page.getByRole("link", { name: "🧩 Реши эти моменты как задачи" }).click();
-  await expect(page.getByRole("heading", { name: "🧩 Задачи из твоих партий" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Задачи из твоих партий" })).toBeVisible();
   await expect(page.getByText(/Найди ход сильнее/)).toBeVisible();
   await square(page, "own-puzzle", "a7");
   await square(page, "own-puzzle", "a6");
@@ -590,7 +590,7 @@ test("шторм, повторение, награды и PGN", async ({ page })
   await expect(page.getByText(/⚡ 0 · ⏱ 2:5\d|⚡ 0 · ⏱ 3:00/)).toBeVisible();
   await page.goto("/chess/awards");
   await expect(page.getByRole("heading", { name: "Мои награды и занятия" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "📅 Календарь занятий" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Календарь занятий" })).toBeVisible();
   await expect(page.getByText("Первая победа").locator("..")).toContainText("получена");
   await page.goto("/chess/review#gpgn");
   await expect(page.getByRole("button", { name: "⬇️ Скачать PGN" })).toBeVisible();
