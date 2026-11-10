@@ -61,6 +61,23 @@ export function starsFor(rating: number): 1 | 2 | 3 | 4 | 5 {
   return rating < 700 ? 1 : rating < 1000 ? 2 : rating < 1300 ? 3 : rating < 1600 ? 4 : 5;
 }
 
+/** Границы звёзд: рейтинг, с которого начинается каждая следующая звезда. */
+const STAR_STEPS = [RATING_MIN, 700, 1000, 1300, 1600, RATING_MAX];
+
+/**
+ * Отрезок шкалы, на котором сейчас рейтинг: для числа — текущая сотня (900–1000), для звёзд — от своей звезды
+ * до следующей. done — сколько единиц отрезка уже пройдено (для полоски прогресса).
+ */
+export function ratingBand(rating: number, numeric: boolean): { from: number; to: number; done: number } {
+  const r = Math.min(RATING_MAX, Math.max(RATING_MIN, rating));
+  if (numeric) {
+    const from = Math.min(Math.floor(r / 100) * 100, RATING_MAX - 100);
+    return { from, to: from + 100, done: r - from };
+  }
+  const i = starsFor(r) - 1;
+  return { from: STAR_STEPS[i], to: STAR_STEPS[i + 1], done: r - STAR_STEPS[i] };
+}
+
 /** Число рейтинга показываем с 10 лет; младшим — только звёзды. */
 export function showsRatingNumber(age: number | undefined): boolean {
   return (age ?? 0) >= 10;

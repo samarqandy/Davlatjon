@@ -608,6 +608,7 @@ function StreakView() {
         key={`${puzzleKey(puzzle)}-${round}-${index}`}
         puzzle={puzzle}
         rated={false}
+        solution={false}
         onSolved={() => {
           const n = streak + 1;
           setStreak(n);

@@ -112,6 +112,54 @@ test("ошибка в задаче из базы: рейтинг падает, �
   expect(s.chessPuzzles[`fork/${expected[0]}`].misses).toBe(1);
 });
 
+test("«задачи по силам»: тема спрятана, решение можно посмотреть и пролистать, задача уходит на повторение", async ({
+  page,
+}) => {
+  await prepare(page);
+  const expected = nearest(file("mix"), null, 700);
+  const key = `${expected[5]}/${expected[0]}`;
+  await page.goto("/chess/puzzles#practice");
+  await expect(shownBoard(page)).toHaveAttribute("data-board", `puzzle-${expected[0]}`);
+  await expect(page.getByText(/Соперник сыграл/)).toBeVisible();
+  // Название темы — подсказка: до решения его нет.
+  await expect(page.locator("[data-puzzle-info]")).toContainText("Задача из базы");
+  // Решение — только после своей попытки или подсказки.
+  await expect(page.locator("[data-puzzle-reveal]")).toHaveCount(0);
+  await page.getByRole("button", { name: /Подсказка/ }).click();
+  await page.locator("[data-puzzle-reveal]").click();
+  await expect(page.locator('[data-puzzle-state="revealed"]')).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText(/Решение: 1/)).toBeVisible();
+  await expect(page.locator("[data-puzzle-info]")).not.toContainText("Задача из базы");
+  // Запись решения: позиция до хода соперника, его ход и все ходы решения.
+  const frames = expected[2].split(" ").length;
+  const replay = page.locator("[data-puzzle-replay]");
+  await expect(replay).toHaveAttribute("data-puzzle-replay", String(frames));
+  await expect(page.getByRole("button", { name: "Ход вперёд" })).toBeDisabled();
+  await page.getByRole("button", { name: "Ход назад" }).click();
+  await expect(replay).toHaveAttribute("data-puzzle-replay", String(frames - 1));
+  await page.getByRole("button", { name: "Ход вперёд" }).click();
+  await expect(replay).toHaveAttribute("data-puzzle-replay", String(frames));
+  const s = await saved(page);
+  expect(s.chessPuzzles[key].solvedAt).toBeUndefined();
+  expect(s.chessPuzzles[key].misses).toBeGreaterThan(0);
+  expect(s.chessRating!.r).toBeLessThan(700);
+  await page.getByRole("button", { name: "Следующая задача →" }).click();
+  await expect(shownBoard(page)).not.toHaveAttribute("data-board", `puzzle-${expected[0]}`);
+});
+
+test("с 10 лет: рейтинг с полоской до следующей сотни, после решения виден прирост", async ({ page }) => {
+  await prepare(page, { settings: { hintPause: false, bigText: false, age: 11, lang: "ru" } });
+  await page.goto("/chess/puzzles#practice");
+  const bar = page.locator("[data-puzzle-rating-bar]");
+  await expect(bar).toContainText("Рейтинг 900");
+  await expect(bar.getByRole("progressbar")).toHaveAttribute("aria-valuemax", "100");
+  await expect(page.locator("[data-puzzle-delta]")).toHaveCount(0);
+  await solveShown(page);
+  await expect(page.locator('[data-puzzle-state="solved"]')).toBeVisible();
+  await expect(page.locator("[data-puzzle-delta]")).toHaveText(/^\+\d+$/);
+  expect((await saved(page)).chessRating!.r).toBeGreaterThan(900);
+});
+
 test("«Дятел»: набор из 20 задач, круг идёт по порядку, время считается", async ({ page }) => {
   await prepare(page);
   await page.goto("/chess/puzzles#woodpecker");

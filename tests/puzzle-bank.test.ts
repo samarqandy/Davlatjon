@@ -19,7 +19,7 @@ import {
   themeOfKey,
   type BankPuzzle,
 } from "@/lib/puzzleBank";
-import { ratePuzzle, showsRatingNumber, startRating, starsFor, targetRating } from "@/lib/puzzleRating";
+import { ratePuzzle, ratingBand, showsRatingNumber, startRating, starsFor, targetRating } from "@/lib/puzzleRating";
 import { accuracy, solvedCount, strongWeak, themeOf, themeStats } from "@/lib/puzzleStats";
 import {
   DEFAULT_STATE,
@@ -239,6 +239,18 @@ describe("скрытый рейтинг", () => {
     const me = startRating(10, 0);
     expect(targetRating(me, "easy")).toBeLessThan(targetRating(me));
     expect(targetRating(me, "hard")).toBeGreaterThan(targetRating(me));
+  });
+
+  it("полоска уровня: число — текущая сотня, звёзды — путь до следующей звезды", () => {
+    expect(ratingBand(912, true)).toEqual({ from: 900, to: 1000, done: 12 });
+    expect(ratingBand(1000, true)).toEqual({ from: 1000, to: 1100, done: 0 });
+    // Верхняя граница шкалы: полоска полная, а не пустая.
+    expect(ratingBand(2800, true)).toEqual({ from: 2700, to: 2800, done: 100 });
+    expect(ratingBand(850, false)).toEqual({ from: 700, to: 1000, done: 150 });
+    expect(ratingBand(450, false)).toEqual({ from: 200, to: 700, done: 250 });
+    expect(ratingBand(1700, false)).toEqual({ from: 1600, to: 2800, done: 100 });
+    // Граница звезды совпадает со starsFor: ровно 700 — уже вторая звезда.
+    expect(ratingBand(700, false).from).toBe(700);
   });
 
   it("первая задача из базы создаёт рейтинг от возраста и сразу его меняет", () => {
