@@ -116,6 +116,8 @@ export const MAX_FRIENDS = 50;
 export const MAX_PENDING_OUT = 20;
 export const MAX_OPEN_GAMES = 6;
 export const MESSAGES_PER_MINUTE = 15;
+/** В lab_friends.by при блокировке: заблокировали оба. Настоящий id аккаунта всегда содержит «:». */
+const BOTH = "*";
 
 export interface Profile {
   userId: string;
@@ -528,6 +530,12 @@ export function playStore(query: SqlQuery, clock: () => number = Date.now) {
       const pair = pairKey(me.userId, other.userId);
       const existing = await link(me.userId, other.userId);
       if (action === "block") {
+        if (existing?.status === "blocked") {
+          // Чужую блокировку своей не заменяем: иначе заблокированный снял бы её через «заблокировать → разблокировать».
+          if (existing.by !== me.userId && existing.by !== BOTH)
+            await q("update lab_friends set by = $2, updated_at = now() where pair = $1", [pair, BOTH]);
+          return { ok: true };
+        }
         const [a, b] = me.userId < other.userId ? [me.userId, other.userId] : [other.userId, me.userId];
         await q(
           `insert into lab_friends (pair, a, b, status, by) values ($1, $2, $3, 'blocked', $4)
@@ -538,8 +546,11 @@ export function playStore(query: SqlQuery, clock: () => number = Date.now) {
       }
       if (!existing) return { error: "not-friends" };
       if (action === "unblock") {
-        if (existing.status === "blocked" && existing.by === me.userId)
-          await q("delete from lab_friends where pair = $1", [pair]);
+        if (existing.status !== "blocked") return { ok: true };
+        if (existing.by === me.userId) await q("delete from lab_friends where pair = $1", [pair]);
+        // Заблокировали оба: снимается только своя блокировка, чужая остаётся.
+        else if (existing.by === BOTH)
+          await q("update lab_friends set by = $2, updated_at = now() where pair = $1", [pair, other.userId]);
         return { ok: true };
       }
       if (existing.status === "blocked") return { error: "blocked" };
@@ -685,6 +696,8 @@ export function playStore(query: SqlQuery, clock: () => number = Date.now) {
       rawFriend: unknown,
       afterId = 0,
     ): Promise<{ messages: Message[] } | { error: PlayError }> {
+      // Родитель выключил переписку или игру по сети — и прежние сообщения тоже не показываем.
+      if (!me.onlineOk || !me.chatOk) return { error: "chat-off" };
       const name = typeof rawFriend === "string" ? rawFriend.trim().toLowerCase() : "";
       const friend = name ? await profileByName(name) : null;
       if (!friend) return { error: "no-user" };

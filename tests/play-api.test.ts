@@ -188,3 +188,35 @@ describe("DELETE /api/account", () => {
     expect((await db.query("select count(*)::int as n from lab_progress")).rows[0]).toEqual({ n: 0 });
   });
 });
+
+describe("выход и секрет сессии", () => {
+  it("выход с чужого сайта отклоняется, со своего — cookie стирается", async () => {
+    const logout = await import("@/app/api/auth/logout/route");
+    const foreign = new NextRequest("http://localhost:3000/api/auth/logout", {
+      method: "POST",
+      headers: { origin: "https://evil.example" },
+    });
+    const refused = await logout.POST(foreign);
+    expect(refused.status).toBe(403);
+    expect(refused.headers.get("set-cookie")).toBeNull();
+    const own = new NextRequest("http://localhost:3000/api/auth/logout", {
+      method: "POST",
+      headers: { origin: "http://localhost:3000" },
+    });
+    const done = await logout.POST(own);
+    expect(done.status).toBe(200);
+    expect(done.headers.get("set-cookie")).toContain(`${SESSION_COOKIE}=;`);
+  });
+
+  it("слишком короткий секрет: cookie, подписанная им, не принимается", async () => {
+    const me = await import("@/app/api/play/me/route");
+    process.env.AUTH_SECRET = "short";
+    try {
+      const cookie = `${SESSION_COOKIE}=${createSession({ id: "u1", provider: "google", name: "Parent" }, "short")}`;
+      const req = new NextRequest("http://localhost:3000/api/play/me", { headers: { cookie } });
+      expect((await me.GET(req)).status).toBe(401);
+    } finally {
+      process.env.AUTH_SECRET = SECRET;
+    }
+  });
+});
