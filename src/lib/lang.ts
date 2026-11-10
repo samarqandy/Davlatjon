@@ -11,6 +11,16 @@ export const LANGS: { id: Lang; label: string; short: string }[] = [
   { id: "uz", label: "Oʻzbekcha", short: "UZ" },
 ];
 
+/**
+ * Адрес страницы без языка и без косой черты в конце: «/ru/chess/» → «/chess», «/uz» → «/».
+ * Нужен там, где адрес сравнивают со списком страниц: при сборке сервер видит внутренний адрес с языком
+ * (/ru/…), а браузер — без него. Без этого сервер и браузер рисуют разное.
+ */
+export function plainPath(path: string): string {
+  const rest = path.replace(/^\/(?:ru|uz)(?=\/|$)/, "").replace(/\/+$/, "");
+  return rest || "/";
+}
+
 /** Пара «по-русски / по-узбекски» → текст на нужном языке. */
 export type T = (ru: string, uz: string) => string;
 

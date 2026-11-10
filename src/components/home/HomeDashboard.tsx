@@ -1,8 +1,10 @@
 "use client";
 
+import { Compass, Printer, ScrollText } from "lucide-react";
 import Link from "next/link";
+import { PathStop } from "@/components/PathStop";
 import { ChessHomeCard, type ChessHomeSummary } from "@/components/chess/ChessHomeCard";
-import { ButtonLink, cn, ProgressBar } from "@/components/ui";
+import { ButtonLink, cn } from "@/components/ui";
 import { sectionsFor } from "@/content/meta";
 import type { DaySummary, WeekSummary } from "@/content/summary";
 import { QuickCard } from "@/components/home/QuickCard";
@@ -11,8 +13,9 @@ import { PlacementCard } from "@/components/home/PlacementCard";
 import { Welcome } from "@/components/home/Welcome";
 import { TodayCard } from "@/components/progress/TodayCard";
 import { weekCertificateHref, weekEarnedAt } from "@/lib/certificate";
-import { useBoth, useLang, useT, type Both, type T } from "@/lib/i18n";
+import { useBoth, useLang, useT, type Both } from "@/lib/i18n";
 import { nextDayStep } from "@/lib/nextStep";
+import { pluralize } from "@/lib/plural";
 import { useHydrated, useStore, type AppState } from "@/lib/store";
 
 type Status = "done" | "active" | "next" | "later";
@@ -155,118 +158,99 @@ export function HomeDashboard({ weeks: both, chess }: { weeks: Both<WeekSummary[
             ▾
           </span>
         </summary>
-        <div className="mt-4 space-y-8">
+        {/* Путь по дням: на широком экране недели стоят рядом, на телефоне — одна под другой. */}
+        <div className="mt-4 grid gap-x-8 gap-y-8 lg:grid-cols-3" data-days-path>
           {weeks.map((w) => (
-            <section key={w.number} aria-labelledby={`week-${w.number}`}>
-              <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
-                <div>
-                  <p className="text-sm font-extrabold tracking-wide text-brand uppercase">
-                    {t(`Неделя ${w.number}`, `${w.number}-hafta`)}
-                  </p>
-                  <h2 id={`week-${w.number}`} className="text-2xl font-black sm:text-3xl">
-                    {w.title}: {w.subtitle.toLowerCase()}
-                  </h2>
-                </div>
+            <section
+              key={w.number}
+              aria-labelledby={`week-${w.number}`}
+              data-week={w.number}
+              // min-w-0: иначе строка состояния дня (без переноса) растягивает колонку шире экрана.
+              className="min-w-0"
+            >
+              <p className="text-sm font-extrabold tracking-wide text-brand uppercase">
+                {t(`Неделя ${w.number}`, `${w.number}-hafta`)}
+              </p>
+              <h2 id={`week-${w.number}`} className="text-xl leading-tight font-black sm:text-2xl">
+                {w.title}: {w.subtitle.toLowerCase()}
+              </h2>
+              <div className="mt-1 mb-2 flex flex-wrap items-center gap-1">
                 {hydrated && weekEarnedAt(w, state) && (
                   <Link
                     href={weekCertificateHref(w.number)}
                     data-week-certificate-link
-                    className="rounded-xl bg-sun-soft px-3 py-2 text-sm font-extrabold text-ink hover:bg-sun/40"
+                    className="inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-sun-soft px-3 text-sm font-extrabold text-sun-ink hover:bg-sun/40"
                   >
-                    📜 {t("Сертификат недели", "Hafta sertifikati")}
+                    <ScrollText className="h-4 w-4" strokeWidth={2.25} aria-hidden />
+                    {t("Сертификат недели", "Hafta sertifikati")}
                   </Link>
                 )}
                 <Link
                   href={`/week/${w.number}/print`}
-                  className="rounded-xl px-3 py-2 text-sm font-extrabold text-brand hover:bg-brand-soft"
+                  className="-ml-2 inline-flex min-h-11 items-center gap-1.5 rounded-xl px-2 text-sm font-extrabold text-brand hover:bg-brand-soft"
                 >
-                  🖨 {t("Распечатать всю неделю", "Butun haftani chop etish")}
+                  <Printer className="h-4 w-4" strokeWidth={2.25} aria-hidden />
+                  {t("Распечатать неделю", "Haftani chop etish")}
                 </Link>
               </div>
-              <ol className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                {w.days.map((d) => {
+              <ol>
+                {w.days.map((d, i) => {
                   const status = hydrated
                     ? dayStatus(d, state, next?.id ?? null)
                     : d.id === next?.id
                       ? "next"
                       : "later";
                   const solved = hydrated ? solvedIn(d) : 0;
+                  const count = t(
+                    `${solved} из ${d.tasks.length} задач`,
+                    `${d.tasks.length} ta masaladan ${solved} tasi`,
+                  );
                   return (
-                    <li key={d.id}>
-                      <Link
-                        href={`/week/${d.week}/day/${d.day}`}
-                        className={cn(
-                          "group flex h-full flex-col rounded-3xl border-2 bg-surface p-4 shadow-card transition hover:-translate-y-0.5 hover:shadow-lift",
-                          status === "next"
-                            ? "border-brand"
-                            : status === "done"
-                              ? "border-mint/50"
-                              : "border-transparent",
-                        )}
-                      >
-                        <div className="mb-2 flex items-center justify-between">
-                          <span className="text-sm font-extrabold text-muted">
-                            {t(`День ${d.day}`, `${d.day}-kun`)}
+                    <PathStop
+                      key={d.id}
+                      n={i + 1}
+                      last={i === w.days.length - 1}
+                      done={status === "done"}
+                      current={status === "next"}
+                      tile={d.emoji}
+                      tileClassName="bg-brand-soft shadow-[0_3px_0_0_rgb(79_70_229/0.25)]"
+                      kicker={t(`День ${d.day}`, `${d.day}-kun`)}
+                      title={d.title}
+                      note={
+                        status === "done" ? (
+                          <span className="text-success-ink">
+                            {t("✓ пройден", "✓ oʻtildi")} · <span aria-hidden>{d.habit.emoji}</span> {d.habit.name}
                           </span>
-                          <StatusBadge status={status} t={t} />
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <span
-                            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-brand-soft text-2xl transition group-hover:scale-105"
-                            aria-hidden
-                          >
-                            {d.emoji}
+                        ) : status === "next" ? (
+                          <span className="text-brand-dark">
+                            {solved > 0 ? count : t("Сегодня — сюда", "Bugun — shu yerga")}
                           </span>
-                          <span className="text-lg leading-tight font-black">{d.title}</span>
-                        </div>
-                        <div className="mt-3 flex flex-wrap gap-1" aria-hidden>
-                          {d.tasks.map((t) => (
-                            <span
-                              key={t.id}
-                              className={cn(
-                                "flex h-7 w-7 items-center justify-center rounded-lg text-sm",
-                                hydrated && state.tasks[t.id]?.status === "solved" ? "bg-mint-soft" : "bg-paper",
-                              )}
-                              title={t.title}
-                            >
-                              {SECTIONS[t.section].emoji}
-                            </span>
-                          ))}
-                        </div>
-                        <div className="mt-auto pt-3">
-                          {status === "done" && (
-                            <p className="mb-1.5 rounded-xl bg-sun-soft px-2 py-1 text-xs font-extrabold text-sun-ink">
-                              <span aria-hidden>{d.habit.emoji}</span> {d.habit.name}
-                            </p>
-                          )}
-                          <ProgressBar value={solved} max={d.tasks.length} />
-                          <p className="mt-1 text-xs font-bold text-muted">
-                            {t(`${solved} из ${d.tasks.length} задач`, `${d.tasks.length} ta masaladan ${solved} tasi`)}
-                          </p>
-                        </div>
-                      </Link>
-                    </li>
+                        ) : status === "active" ? (
+                          <span className="text-sun-ink">{count}</span>
+                        ) : (
+                          t(pluralize(d.tasks.length, "задача", "задачи", "задач"), `${d.tasks.length} ta masala`)
+                        )
+                      }
+                      href={`/week/${d.week}/day/${d.day}`}
+                      attrs={{ "data-day": d.id, "data-day-state": status }}
+                    />
                   );
                 })}
-                {w.number === weeks[weeks.length - 1].number && (
-                  <li>
-                    <div className="flex h-full flex-col justify-center rounded-3xl border-2 border-dashed border-line p-4 text-center">
-                      <p className="text-3xl" aria-hidden>
-                        🧭
-                      </p>
-                      <p className="mt-1 font-extrabold">{t("Дальше — новые недели", "Keyin — yangi haftalar")}</p>
-                      <p className="mt-1 text-sm text-muted">
-                        {t(
-                          "Логика, геометрия, комбинаторика и алгоритмы — шаг за шагом.",
-                          "Mantiq, geometriya, kombinatorika va algoritmlar — qadamma-qadam.",
-                        )}
-                      </p>
-                    </div>
-                  </li>
-                )}
               </ol>
             </section>
           ))}
+        </div>
+        <div className="mt-6 flex items-center gap-3 rounded-3xl border-2 border-dashed border-line p-4">
+          <Compass className="h-8 w-8 shrink-0 text-muted" strokeWidth={2} aria-hidden />
+          <div>
+            <p className="font-extrabold">{t("Дальше — новые недели", "Keyin — yangi haftalar")}</p>
+            <p className="text-sm text-muted">
+              {t(
+                "Логика, геометрия, комбинаторика и алгоритмы — шаг за шагом.",
+                "Mantiq, geometriya, kombinatorika va algoritmlar — qadamma-qadam.",
+              )}
+            </p>
+          </div>
         </div>
       </details>
 
@@ -279,18 +263,6 @@ export function HomeDashboard({ weeks: both, chess }: { weeks: Both<WeekSummary[
         </section>
       )}
     </div>
-  );
-}
-
-function StatusBadge({ status, t }: { status: Status; t: T }) {
-  const map: Record<Status, { text: string; cls: string }> = {
-    done: { text: t("✓ пройден", "✓ oʻtildi"), cls: "bg-mint-soft text-success-ink" },
-    next: { text: t("▶ сегодня", "▶ bugun"), cls: "bg-brand text-white" },
-    active: { text: t("в процессе", "jarayonda"), cls: "bg-sun-soft text-sun-ink" },
-    later: { text: t("впереди", "oldinda"), cls: "bg-paper text-muted" },
-  };
-  return (
-    <span className={cn("rounded-full px-2.5 py-0.5 text-xs font-extrabold", map[status].cls)}>{map[status].text}</span>
   );
 }
 

@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { House, PencilLine, ChessKnight, Trophy } from "lucide-react";
 import { cn } from "@/components/ui";
 import { useT } from "@/lib/i18n";
+import { plainPath } from "@/lib/lang";
 
 /** Корни разделов: нижнее меню показываем только там, а внутри задач и партий оно не отвлекает. */
 const ROOTS = ["/", "/chess", "/my-problems", "/achievements", "/leaderboard"];
@@ -15,7 +16,8 @@ const ROOTS = ["/", "/chess", "/my-problems", "/achievements", "/leaderboard"];
  * Взрослым — ссылка «Для взрослых» внизу страницы, а не в шапке.
  */
 export function BottomNav() {
-  const path = usePathname().replace(/(.)\/$/, "$1");
+  // Без языка в адресе: при сборке сервер видит /ru/…, и без этого меню появлялось только в браузере.
+  const path = plainPath(usePathname());
   const t = useT();
   if (!ROOTS.includes(path)) return null;
   const tabs = [
