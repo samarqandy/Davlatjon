@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo } from "react";
-import { cn } from "@/components/ui";
+import { PathStop } from "@/components/PathStop";
 import { courseLessons } from "@/content/chess/courseLessons";
 import { LEVELS } from "@/content/chess/parts/levels";
 import { TACTIC_PART } from "@/content/chess/parts/tactics";
@@ -16,7 +16,7 @@ import { setHash, useHash } from "@/lib/useHash";
 import { DiplomaCard } from "./CourseDiploma";
 import { PieceIcon } from "./ChessBoard";
 import { parseHash, TopicView, useSolved } from "./TacticsSchool";
-import { Check, ChevronDown, Play } from "lucide-react";
+import { ChevronDown, Play } from "lucide-react";
 
 /**
  * Курс по ступеням: уроки ступени по порядку, сгруппированные в модули.
@@ -137,14 +137,6 @@ function Overview({ step, lessons }: { step: CourseStep; lessons: (ChessTactic &
   );
 }
 
-/** Размеры пути: высота шага, сторона клетки и сдвиг клетки вбок на каждом шаге. */
-const ROW = 92;
-const TILE = 64;
-const SHIFT = 34;
-/** Клетки идут змейкой: вправо, ещё вправо, назад, назад. */
-const ZIGZAG = [0, 1, 2, 1];
-const tileX = (n: number) => ZIGZAG[(n - 1) % ZIGZAG.length] * SHIFT;
-
 /**
  * Урок на пути. Клетка — как поле доски: светлые и тёмные чередуются, урок «на очереди» подсвечен жёлтым,
  * как последний ход на доске, пройденный — с зелёной отметкой. Линия ведёт к следующему уроку модуля.
@@ -168,75 +160,29 @@ function LessonStop({
   const total = lesson.exercises.length;
   const solved = hydrated ? count : 0;
   const done = total > 0 && solved === total;
-  const x = tileX(n);
-  const from = x + TILE / 2;
-  const to = tileX(n + 1) + TILE / 2;
   return (
-    <li className="relative" style={{ height: ROW }}>
-      {!last && (
-        <svg
-          aria-hidden
-          className="pointer-events-none absolute top-1/2 left-0"
-          width={ZIGZAG.length * SHIFT + TILE}
-          height={ROW}
-        >
-          <path
-            d={`M ${from} 0 C ${from} ${ROW / 2}, ${to} ${ROW / 2}, ${to} ${ROW}`}
-            fill="none"
-            strokeWidth={6}
-            strokeLinecap="round"
-            // Пройденный отрезок — сплошной зелёный, остальной путь — точками.
-            className={done ? "stroke-success" : "stroke-[#cfc4ae]"}
-            strokeDasharray={done ? undefined : "1 13"}
-          />
-        </svg>
-      )}
-      <button
-        type="button"
-        data-course-lesson={lesson.id}
-        data-lesson-state={done ? "done" : current ? "current" : "open"}
-        aria-current={current ? "step" : undefined}
-        onClick={() => setHash(`#${lesson.id}`)}
-        className="group relative flex h-full w-full items-center gap-3 rounded-2xl text-left"
-        style={{ paddingLeft: x }}
-      >
-        <span
-          className={cn(
-            "relative grid shrink-0 place-items-center rounded-2xl text-3xl transition group-hover:-translate-y-0.5",
-            current
-              ? "bg-sun shadow-[0_4px_0_0_#b45309] ring-4 ring-sun/30"
-              : n % 2
-                ? "bg-[#f0d9b5] shadow-[0_3px_0_0_#d9bd8e]"
-                : "bg-[#b58863] shadow-[0_3px_0_0_#8f6a4a]",
-          )}
-          style={{ width: TILE, height: TILE }}
-          aria-hidden
-        >
-          {lesson.piece ? <PieceIcon piece={lesson.piece} className="h-12 w-12" /> : lesson.emoji}
-          {done && (
-            <span className="absolute -top-1.5 -right-1.5 grid h-6 w-6 place-items-center rounded-full bg-[#047857] text-white ring-2 ring-paper">
-              <Check className="h-4 w-4" strokeWidth={3} />
-            </span>
-          )}
-        </span>
-        <span className="min-w-0 flex-1">
-          <span className="block text-xs font-extrabold tracking-wide text-muted uppercase">
-            {t(`Урок ${n}`, `${n}-dars`)}
+    <PathStop
+      n={n}
+      last={last}
+      done={done}
+      current={current}
+      tile={lesson.piece ? <PieceIcon piece={lesson.piece} className="h-12 w-12" /> : lesson.emoji}
+      tileClassName={n % 2 ? "bg-[#f0d9b5] shadow-[0_3px_0_0_#d9bd8e]" : "bg-[#b58863] shadow-[0_3px_0_0_#8f6a4a]"}
+      kicker={t(`Урок ${n}`, `${n}-dars`)}
+      title={lesson.title}
+      note={
+        done ? (
+          <span className="text-success-ink">{t("✓ пройден", "✓ oʻtildi")}</span>
+        ) : current ? (
+          <span className="text-brand-dark">
+            {started ? t("Дальше — сюда", "Davomi — shu yerda") : t("Начни отсюда", "Shu yerdan boshla")}
           </span>
-          <span className="line-clamp-2 text-lg leading-tight font-black text-pretty">{lesson.title}</span>
-          <span className="block text-sm font-extrabold text-muted">
-            {done ? (
-              <span className="text-success-ink">{t("✓ пройден", "✓ oʻtildi")}</span>
-            ) : current ? (
-              <span className="text-brand-dark">
-                {started ? t("Дальше — сюда", "Davomi — shu yerda") : t("Начни отсюда", "Shu yerdan boshla")}
-              </span>
-            ) : solved > 0 ? (
-              `${solved} / ${total}`
-            ) : null}
-          </span>
-        </span>
-      </button>
-    </li>
+        ) : solved > 0 ? (
+          `${solved} / ${total}`
+        ) : undefined
+      }
+      onClick={() => setHash(`#${lesson.id}`)}
+      attrs={{ "data-course-lesson": lesson.id, "data-lesson-state": done ? "done" : current ? "current" : "open" }}
+    />
   );
 }

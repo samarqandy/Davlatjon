@@ -64,6 +64,23 @@ test("тёмная тема: включается кнопкой в шапке, 
   await expect(html).not.toHaveAttribute("data-theme", "dark");
 });
 
+test("корневые страницы: нижнее меню приходит уже с сервера, сборка страницы в браузере проходит без ошибок", async ({
+  page,
+  request,
+}) => {
+  await prepare(page);
+  for (const url of ["/", "/chess", "/my-problems", "/achievements"]) {
+    // Раньше сервер видел адрес с языком (/ru/…) и меню не рисовал: браузер пересобирал страницу заново.
+    expect(await (await request.get(url)).text(), url).toContain("data-bottom-nav");
+    const errors: string[] = [];
+    const onError = (e: Error) => errors.push(e.message);
+    page.on("pageerror", onError);
+    await page.goto(url, { waitUntil: "networkidle" });
+    page.off("pageerror", onError);
+    expect(errors, url).toEqual([]);
+  }
+});
+
 test("нижнее меню на телефоне: четыре раздела, «Успехи» — всегда; ссылка «Для взрослых» внизу страницы", async ({
   page,
   isMobile,

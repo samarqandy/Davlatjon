@@ -38,6 +38,9 @@ test("главная: неделя из 7 дней и сегодняшнее з�
   await expect(page.getByText("День 1. Смотри внимательно").first()).toBeVisible();
   await openPath(page);
   for (let d = 1; d <= 7; d++) await expect(page.locator(`a[href="/week/1/day/${d}"]`).first()).toBeVisible();
+  // Путь по дням: сегодняшний день отмечен как шаг «на очереди», и он один.
+  await expect(page.locator('[data-days-path] [data-day="w1d1"]')).toHaveAttribute("aria-current", "step");
+  await expect(page.locator('[data-days-path] [data-day-state="next"]')).toHaveCount(1);
 });
 
 test("задача с числовым ответом: мягкая обратная связь и подсказки", async ({ page }) => {
