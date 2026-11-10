@@ -324,8 +324,8 @@ function GrainsBoard() {
                 aria-pressed={on}
                 className={cn(
                   "aspect-square text-[10px] font-black transition",
-                  dark ? "bg-[#b58863] text-white/80" : "bg-[#f0d9b5] text-sun-ink/80",
-                  on && "!bg-[#facc15] !text-sun-ink",
+                  dark ? "bg-[#b58863] text-white/80" : "bg-[#f0d9b5] text-[#7a4b00]/80",
+                  on && "!bg-[#facc15] !text-[#7a4b00]",
                 )}
               >
                 {on ? k : ""}
@@ -523,8 +523,8 @@ function KnightTour() {
                 disabled={current !== undefined && !canGo}
                 className={cn(
                   "relative flex aspect-square items-center justify-center text-[11px] font-black transition",
-                  dark ? "bg-[#b58863] text-white" : "bg-[#f0d9b5] text-sun-ink",
-                  order.has(sq) && !isCurrent && "!bg-[#facc15]/80 !text-sun-ink",
+                  dark ? "bg-[#b58863] text-white" : "bg-[#f0d9b5] text-[#7a4b00]",
+                  order.has(sq) && !isCurrent && "!bg-[#facc15]/80 !text-[#7a4b00]",
                   canGo && "ring-4 ring-brand/50 ring-inset",
                   hints.includes(sq) && "ring-4 !ring-mint ring-inset",
                 )}

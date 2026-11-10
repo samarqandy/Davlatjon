@@ -15,7 +15,7 @@ const VARIANTS: Record<Variant, string> = {
   primary:
     "bg-brand text-white shadow-[0_4px_0_0_#3730a3] hover:bg-[#4338ca] active:translate-y-[2px] active:shadow-[0_2px_0_0_#3730a3]",
   secondary: "bg-surface text-ink border-2 border-line hover:border-brand/40 hover:bg-brand-soft/40",
-  soft: "bg-brand-soft text-brand-dark hover:bg-[#e0e3ff]",
+  soft: "bg-brand-soft text-brand-dark hover:bg-[#e0e3ff] dark:hover:bg-[#363c80]",
   ghost: "text-muted hover:bg-black/5 hover:text-ink",
   success:
     "bg-mint text-white shadow-[0_4px_0_0_#047857] hover:bg-[#0ea371] active:translate-y-[2px] active:shadow-[0_2px_0_0_#047857]",
@@ -62,8 +62,15 @@ export function LevelBadge({ level, compact = false, lang = "ru" }: { level: Lev
   const meta = levelsFor(lang)[level];
   return (
     <span
-      className="inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-sm font-bold"
-      style={{ color: meta.color, borderColor: `${meta.color}55`, background: `${meta.color}12` }}
+      // Цвет уровня — через переменную: в тёмной теме тот же оттенок светлее, иначе на тёмном фоне он не читается.
+      className="inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-sm font-bold text-(--badge) dark:text-[color-mix(in_oklab,var(--badge)_50%,white)]"
+      style={
+        {
+          "--badge": meta.color,
+          borderColor: `${meta.color}55`,
+          background: `${meta.color}12`,
+        } as React.CSSProperties
+      }
       title={`${lang === "uz" ? "Daraja" : "Уровень"}: ${meta.name} — ${meta.about}`}
     >
       <span aria-hidden>{meta.emoji}</span>
@@ -95,7 +102,8 @@ export function SectionTag({
   return (
     <span
       className={cn("inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-extrabold", className)}
-      style={{ color: meta.color, background: meta.tint }}
+      // Текст темнее цвета раздела: на светлой подложке сам цвет даёт контраст около 3:1, этого мало.
+      style={{ color: `color-mix(in oklab, ${meta.color} 70%, black)`, background: meta.tint }}
     >
       <span aria-hidden>{meta.emoji}</span>
       {meta.name}

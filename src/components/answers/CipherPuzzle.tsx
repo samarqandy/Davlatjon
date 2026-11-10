@@ -22,7 +22,7 @@ export function CipherBoxes({ text, print = false }: { text: string; print?: boo
             "flex items-center justify-center rounded-xl border-2 font-black",
             print
               ? "h-[10mm] w-[9mm] border-ink/60 text-xl"
-              : "h-12 w-9 border-[#7c3aed]/50 bg-[#f5f3ff] text-2xl sm:h-14 sm:w-11 sm:text-3xl",
+              : "light-island h-12 w-9 border-[#7c3aed]/50 bg-[#f5f3ff] text-2xl sm:h-14 sm:w-11 sm:text-3xl",
             ch === " " && "border-transparent bg-transparent",
           )}
         >

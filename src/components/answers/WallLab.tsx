@@ -38,8 +38,8 @@ export function WallBoard({
                   : isBottom && selected === i
                     ? "border-sun bg-sun-soft"
                     : ri === 0 && v !== null
-                      ? "border-[#b45309] bg-[#fde68a]"
-                      : "border-[#d97706] bg-[#ffedd5]",
+                      ? "light-island border-[#b45309] bg-[#fde68a]"
+                      : "light-island border-[#d97706] bg-[#ffedd5]",
               );
               return isBottom && onBrick ? (
                 <button
@@ -153,7 +153,7 @@ export function WallLab({ taskId, numbers, tops }: { taskId: string; numbers: nu
                   "h-14 w-14 rounded-2xl border-2 text-2xl font-black transition",
                   bottom.includes(n)
                     ? "border-[#fed7aa] bg-[#fff7ed] text-[#fdba74]"
-                    : "border-[#d97706] bg-surface text-warning-ink hover:bg-[#fff7ed]",
+                    : "border-[#d97706] bg-surface text-warning-ink hover:bg-[#fff7ed] dark:hover:bg-[#3d3110]",
                 )}
               >
                 {n}

@@ -156,6 +156,31 @@
     --shadow-card: 0 1px 2px rgb(0 0 0 / 0.35), 0 8px 24px -12px rgb(0 0 0 / 0.6);
     --shadow-lift: 0 2px 4px rgb(0 0 0 / 0.4), 0 16px 32px -16px rgb(0 0 0 / 0.7);
   }
+  /*
+   * «Светлый островок»: элемент с фоном, заданным числом (кирпичи, клетки шифра, чек, берег и река), остаётся
+   * светлым и в тёмной теме. Внутри него токены возвращаются к светлым значениям — текст и границы читаются.
+   */
+  html[data-theme="dark"] .light-island {
+    --color-paper: #faf8f3;
+    --color-surface: #ffffff;
+    --color-ink: #1d2140;
+    --color-muted: #5b6078;
+    --color-line: #e6e2d8;
+    --color-brand: #4f46e5;
+    --color-brand-dark: #3730a3;
+    --color-brand-soft: #eef0ff;
+    --color-sun-soft: #fff4d6;
+    --color-mint-soft: #e3f8ef;
+    --color-success-soft: #e3f8ef;
+    --color-warning-soft: #fff4d6;
+    --color-sun-ink: #7a4b00;
+    --color-mint-ink: #065f46;
+    --color-success-ink: #047857;
+    --color-danger-ink: #b42318;
+    --color-warning-ink: #b45309;
+    --color-black: #000000;
+    color: var(--color-ink);
+  }
   /* Один и тот же цвет бренда — и фон кнопок, и текст ссылок: как текст на тёмном фоне он должен быть светлее. */
   html[data-theme="dark"] :is(.text-brand, .hover\:text-brand:hover) {
     color: #a5b4fc;
