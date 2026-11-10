@@ -1,5 +1,6 @@
 "use client";
 
+import { Bird, CalendarDays, ChevronRight, Flame, type LucideIcon, Play, Puzzle, Repeat, Zap } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Button, cn, ProgressBar } from "@/components/ui";
@@ -24,7 +25,6 @@ import { useChessPart } from "@/lib/useChess";
 import { PUZZLE_PART } from "@/content/chess/parts/puzzles";
 import { replaceHash, setHash, useHash } from "@/lib/useHash";
 import { useToday } from "@/lib/useToday";
-import { ChessBoard } from "./ChessBoard";
 import { OwnPuzzlesView, ownPuzzles } from "./OwnPuzzles";
 import {
   BankRun,
@@ -102,7 +102,8 @@ export function PuzzleHub() {
         <div>
           <p className="text-sm font-extrabold tracking-wide text-brand uppercase">{t("Задачи", "Masalalar")}</p>
           <h1 className="text-3xl font-black">{t("Тренажёр тактики", "Taktika trenajyori")}</h1>
-          <p className="mt-1 max-w-2xl text-muted">
+          {/* На телефоне описание не занимает первый экран: сначала — что делать. */}
+          <p className="mt-1 hidden max-w-2xl text-muted sm:block">
             {t(
               `${thousands(PUZZLE_TOTAL)} ${plural(PUZZLE_TOTAL, "задача", "задачи", "задач")}: ${pluralize(PUZZLES.length, "задача", "задачи", "задач")} школы с объяснениями и ${thousands(BANK.total)} ${plural(BANK.total, "задача", "задачи", "задач")} из открытой базы Lichess — от мата в один ход до комбинаций в три хода. Задачи подбираются по силам.`,
               `${thousands(PUZZLE_TOTAL)} ta masala: izohli ${PUZZLES.length} ta maktab masalasi va Lichess ochiq bazasidan ${thousands(BANK.total)} ta masala — bir yurishda motdan tortib uch yurishli kombinatsiyalargacha. Masalalar kuchingga qarab tanlanadi.`,
@@ -121,22 +122,33 @@ export function PuzzleHub() {
       >
         <div className="space-y-3">
           <h2 id="my-level" className="text-xl font-black">
-            🧠 {t("Мой уровень", "Mening darajam")}: <PuzzleLevel />
+            <span className="deco" aria-hidden>
+              🧠{" "}
+            </span>
+            {t("Мой уровень", "Mening darajam")}: <PuzzleLevel />
           </h2>
-          <p className="text-sm text-white/85">
+          <p className="hidden text-sm text-white/85 sm:block">
             {t(
               "Решаешь с первой попытки — задачи становятся труднее, ошибаешься или берёшь подсказку — полегче.",
               "Birinchi urinishda yechsang — masalalar qiyinlashadi, xato qilsang yoki maslahat olsang — osonlashadi.",
             )}
           </p>
+          <Button variant="sun" size="lg" className="w-full sm:w-auto" onClick={() => setHash("#practice")}>
+            <Play className="mr-2 h-5 w-5 fill-current" aria-hidden />
+            {t("Решать задачи по силам", "Kuchimga mos masalalarni yechish")}
+          </Button>
           <div className="rounded-2xl bg-white/10 p-2">
             <LevelChooser />
           </div>
-          <Button variant="sun" size="lg" onClick={() => setHash("#practice")}>
-            ▶ {t("Решать задачи по силам", "Kuchimga mos masalalarni yechish")}
-          </Button>
         </div>
-        <div className="space-y-3 rounded-2xl bg-white/10 p-4" data-theme-dashboard>
+        {/* Пока тем со статистикой нет, на телефоне этот блок — только текст: прячем, чтобы режимы были ближе. */}
+        <div
+          className={cn(
+            "space-y-3 rounded-2xl bg-white/10 p-4",
+            !strong.length && !weak.length && dueCount === 0 && "hidden md:block",
+          )}
+          data-theme-dashboard
+        >
           {strong.length || weak.length ? (
             <>
               {strong.length > 0 && (
@@ -168,126 +180,96 @@ export function PuzzleHub() {
         </div>
       </section>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <section className="flex flex-col gap-3 rounded-3xl bg-white p-5 shadow-card" aria-labelledby="daily">
-          <div>
-            <h2 id="daily" className="text-xl font-black">
-              📅 {t("Задача дня", "Kun masalasi")}
-            </h2>
-            <p className="text-sm text-muted">
-              {STARS(daily.stars)} · {daily.title}
-              {hydrated && progress[daily.id]?.solvedAt ? t(" · ✅ решена", " · ✅ yechilgan") : ""}
-            </p>
-          </div>
-          <ChessBoard
-            id="daily-preview"
-            position={daily.fen}
-            orientation={daily.fen.split(" ")[1] === "w" ? "white" : "black"}
-            maxWidth={260}
-            className="!mx-0"
+      <section aria-labelledby="modes">
+        <h2 id="modes" className="mb-3 text-2xl font-black">
+          {t("Режимы", "Rejimlar")}
+        </h2>
+        {/* Короткий список: на телефоне — название и одна строка, описание — на широком экране и на странице режима. */}
+        <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3" data-puzzle-modes>
+          <Mode
+            id="daily"
+            Icon={CalendarDays}
+            title={t("Задача дня", "Kun masalasi")}
+            status={`${STARS(daily.stars)} · ${daily.title}${
+              hydrated && progress[daily.id]?.solvedAt ? t(" · ✅ решена", " · ✅ yechilgan") : ""
+            }`}
+            about={t("Одна новая задача каждый день.", "Har kuni bitta yangi masala.")}
           />
-          <Button onClick={() => setHash("#daily")}>{t("Решать задачу дня", "Kun masalasini yechish")}</Button>
-        </section>
-
-        <section className="flex flex-col gap-3 rounded-3xl bg-white p-5 shadow-card" aria-labelledby="streak">
-          <div>
-            <h2 id="streak" className="text-xl font-black">
-              🔥 {t("Серия", "Ketma-ket")}
-            </h2>
-            <p className="text-sm text-muted">
-              {t(
-                "Задачи идут одна за другой, каждая чуть труднее. Три ошибки — и серия заканчивается. Сколько решишь подряд?",
-                "Masalalar birin-ketin keladi, har biri avvalgisidan sal qiyinroq. Uch marta xato qilsang — oʻyin tugaydi. Ketma-ket nechta masala yecha olasan?",
-              )}
-            </p>
-          </div>
-          <p className="text-lg font-black">
-            {t("Лучшая серия", "Rekord")}: {hydrated ? streakBest : 0}
-          </p>
-          <Button variant="sun" onClick={() => setHash("#streak")} className="mt-auto">
-            {t("Начать серию", "Boshlash")}
-          </Button>
-        </section>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-3">
-        <section className="flex flex-col gap-2 rounded-3xl bg-white p-5 shadow-card" aria-labelledby="storm">
-          <h2 id="storm" className="text-xl font-black">
-            ⚡ {t("Шторм", "Boʻron")}
-          </h2>
-          <p className="text-sm text-muted">
-            {t(
-              `Три минуты — сколько задач успеешь? Ошибка отнимает 10 секунд. Рекорд: ${hydrated ? stormBest : 0}.`,
-              `Uch daqiqa — nechta masala yechishga ulgurasan? Har bir xato 10 soniyani olib qoʻyadi. Rekord: ${hydrated ? stormBest : 0}.`,
+          <Mode
+            id="streak"
+            Icon={Flame}
+            title={t("Серия", "Ketma-ket")}
+            status={`${t("Лучшая серия", "Rekord")}: ${hydrated ? streakBest : 0}`}
+            about={t(
+              "Задачи идут одна за другой, каждая чуть труднее. Три ошибки — и серия заканчивается.",
+              "Masalalar birin-ketin keladi, har biri avvalgisidan sal qiyinroq. Uch marta xato qilsang — oʻyin tugaydi.",
             )}
-          </p>
-          <Button className="mt-auto" onClick={() => setHash("#storm")}>
-            {t("Начать шторм", "Boʻronni boshlash")}
-          </Button>
-        </section>
-        <section className="flex flex-col gap-2 rounded-3xl bg-white p-5 shadow-card" aria-labelledby="woodpecker">
-          <h2 id="woodpecker" className="text-xl font-black">
-            🐦 {t("Дятел", "Qizilishton")}
-          </h2>
-          <p className="text-sm text-muted">
-            {t(
-              "20 задач твоего уровня — три круга подряд. С каждым кругом решай быстрее: так приёмы запоминаются надолго.",
-              "Darajangga mos 20 ta masala — ketma-ket uch aylana. Har aylanada tezroq yech: shunda usullar uzoq esda qoladi.",
+          />
+          <Mode
+            id="storm"
+            Icon={Zap}
+            title={t("Шторм", "Boʻron")}
+            status={`${t("Рекорд", "Rekord")}: ${hydrated ? stormBest : 0}`}
+            about={t(
+              "Три минуты — сколько задач успеешь? Ошибка отнимает 10 секунд.",
+              "Uch daqiqa — nechta masala yechishga ulgurasan? Har bir xato 10 soniyani olib qoʻyadi.",
             )}
-          </p>
-          <Button variant="secondary" className="mt-auto" onClick={() => setHash("#woodpecker")}>
-            {hydrated && woodpecker && woodpecker.rounds.length < 3
-              ? t(`Продолжить: круг ${woodpeckerRound}`, `Davom etish: ${woodpeckerRound}-aylana`)
-              : t("Начать", "Boshlash")}
-          </Button>
-        </section>
-        <section className="flex flex-col gap-2 rounded-3xl bg-white p-5 shadow-card" aria-labelledby="repeat">
-          <h2 id="repeat" className="text-xl font-black">
-            🔁 {t("Повторение", "Takrorlash")}{" "}
-            {dueCount > 0 && <span className="rounded-full bg-rose px-2 py-0.5 text-sm text-white">{dueCount}</span>}
-          </h2>
-          <p className="text-sm text-muted">
-            {t(
+          />
+          <Mode
+            id="woodpecker"
+            Icon={Bird}
+            title={t("Дятел", "Qizilishton")}
+            status={
+              hydrated && woodpecker && woodpecker.rounds.length < 3
+                ? t(`Продолжить: круг ${woodpeckerRound}`, `Davom etish: ${woodpeckerRound}-aylana`)
+                : t("20 задач — три круга", "20 ta masala — uch aylana")
+            }
+            about={t(
+              "С каждым кругом решай быстрее: так приёмы запоминаются надолго.",
+              "Har aylanada tezroq yech: shunda usullar uzoq esda qoladi.",
+            )}
+          />
+          <Mode
+            id="repeat"
+            Icon={Repeat}
+            title={t("Повторение", "Takrorlash")}
+            status={
+              dueCount
+                ? t(`Повторить (${dueCount})`, `Takrorlash (${dueCount})`)
+                : t("На сегодня повторять нечего", "Bugun takrorlanadigan masala yoʻq")
+            }
+            highlight={dueCount > 0}
+            about={t(
               "Задачи с ошибками возвращаются через 1, 3, 7 и 21 день — пока не будут решены без ошибки.",
               "Xato qilingan masalalar 1, 3, 7 va 21 kundan keyin qaytib keladi — toki xatosiz yechilmaguncha.",
             )}
-          </p>
-          <Button variant="secondary" className="mt-auto" onClick={() => setHash("#repeat")}>
-            {dueCount ? t(`Повторить (${dueCount})`, `Takrorlash (${dueCount})`) : t("Открыть", "Ochish")}
-          </Button>
-        </section>
-      </div>
-
-      <section
-        className="flex flex-wrap items-center gap-4 rounded-3xl border-2 border-sun/50 bg-sun-soft/60 p-5"
-        aria-labelledby="mine"
-      >
-        <div className="min-w-0 flex-1">
-          <h2 id="mine" className="text-xl font-black">
-            🧩 {t("Задачи из твоих партий", "Oʻz partiyalaringdan masalalar")}
-          </h2>
-          <p className="text-sm text-[#7a4b00]">
-            {own.length
-              ? t(
-                  `Робот-тренер нашёл в твоих партиях ${pluralize(own.length, "момент", "момента", "моментов")}, где был ход сильнее. Решено: ${own.filter((p) => ownSolved[p.key]).length}.`,
-                  `Robot-murabbiy partiyalaringda ${own.length} ta lahza topdi — ularda kuchliroq yurish bor edi. Yechilgan: ${own.filter((p) => ownSolved[p.key]).length}.`,
-                )
-              : t(
-                  "Сыграй с роботом и открой разбор партии — твои ошибки станут задачами. Такого нет ни в одном задачнике!",
-                  "Robot bilan oʻyna va partiya tahlilini och — xatolaring masalaga aylanadi. Bunaqasi hech bir masalalar kitobida yoʻq!",
-                )}
-          </p>
-        </div>
-        <Button variant="sun" onClick={() => setHash("#mine")}>
-          {own.length ? t("Решать", "Yechish") : t("Как это работает", "Bu qanday ishlaydi")}
-        </Button>
+          />
+          <Mode
+            id="mine"
+            Icon={Puzzle}
+            title={t("Из твоих партий", "Oʻz partiyalaringdan")}
+            status={
+              own.length
+                ? t(
+                    `${pluralize(own.length, "момент", "момента", "моментов")} · решено ${own.filter((p) => ownSolved[p.key]).length}`,
+                    `${own.length} ta lahza · ${own.filter((p) => ownSolved[p.key]).length} tasi yechilgan`,
+                  )
+                : t("Сыграй с роботом — ошибки станут задачами", "Robot bilan oʻyna — xatolaring masalaga aylanadi")
+            }
+            about={t(
+              "Робот-тренер находит в твоих партиях моменты, где был ход сильнее.",
+              "Robot-murabbiy partiyalaringdan kuchliroq yurish boʻlgan lahzalarni topadi.",
+            )}
+          />
+        </ul>
       </section>
 
       <section aria-labelledby="themes">
         <h2 id="themes" className="mb-3 text-2xl font-black">
           {t("По темам", "Mavzular boʻyicha")}
         </h2>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {/* На телефоне темы — плитками в два ряда: 19 карточек во всю ширину занимали три экрана. */}
+        <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-3">
           {themes.map((theme) => {
             const total = puzzlesByTheme(theme.id).length + bankCount(theme.id);
             const s = stats.get(theme.id);
@@ -296,15 +278,15 @@ export function PuzzleHub() {
                 key={theme.id}
                 type="button"
                 onClick={() => setHash(`#theme-${theme.id}`)}
-                className="flex flex-col rounded-3xl bg-white p-4 text-left shadow-card transition hover:-translate-y-0.5"
+                className="flex min-w-0 flex-col rounded-2xl bg-white p-3 text-left shadow-card transition hover:-translate-y-0.5 sm:rounded-3xl sm:p-4"
               >
                 <div className="flex items-center gap-2">
-                  <span className="text-3xl" aria-hidden>
+                  <span className="text-2xl sm:text-3xl" aria-hidden>
                     {theme.emoji}
                   </span>
-                  <div>
-                    <p className="text-lg font-black">{theme.name}</p>
-                    <p className="text-xs font-bold text-muted">
+                  <div className="min-w-0">
+                    <p className="leading-tight font-black wrap-anywhere sm:text-lg">{theme.name}</p>
+                    <p className="hidden text-xs font-bold text-muted sm:block">
                       {t(pluralize(total, "задача", "задачи", "задач"), `${total} ta masala`)}
                       {s
                         ? t(
@@ -315,11 +297,13 @@ export function PuzzleHub() {
                     </p>
                   </div>
                 </div>
-                {/* На телефоне описание темы — на её странице: 19 карточек с описаниями растягивали раздел на несколько экранов. */}
                 <p className="mt-2 hidden flex-1 text-sm text-muted sm:block">{theme.about}</p>
-                <div className="mt-3 flex items-center gap-2">
+                <div className="mt-auto flex items-center gap-2 pt-2 sm:pt-3">
                   <ProgressBar value={s?.solved ?? 0} max={total} className="flex-1" />
-                  <span className="text-xs font-extrabold text-muted">
+                  <span className="text-xs font-extrabold text-muted tabular-nums sm:hidden">
+                    {s?.solved ?? 0} / {total}
+                  </span>
+                  <span className="hidden text-xs font-extrabold text-muted sm:inline">
                     {t(`решено ${s?.solved ?? 0}`, `${s?.solved ?? 0} ta yechildi`)}
                   </span>
                 </div>
@@ -336,6 +320,53 @@ export function PuzzleHub() {
         )}
       </p>
     </div>
+  );
+}
+
+/** Режим в списке: значок, название, одна строка состояния; описание — только на широком экране. */
+function Mode({
+  id,
+  Icon,
+  title,
+  status,
+  about,
+  highlight = false,
+}: {
+  id: string;
+  Icon: LucideIcon;
+  title: string;
+  status: string;
+  about: string;
+  /** Есть что сделать прямо сейчас (например, задачи на повторение). */
+  highlight?: boolean;
+}) {
+  return (
+    // min-w-0: иначе длинная строка состояния растягивает колонку шире экрана.
+    <li className="min-w-0">
+      <button
+        type="button"
+        data-puzzle-mode={id}
+        onClick={() => setHash(`#${id}`)}
+        className="flex h-full w-full items-center gap-3 rounded-2xl bg-white p-3 text-left shadow-card transition hover:-translate-y-0.5 sm:items-start sm:rounded-3xl sm:p-4"
+      >
+        <span
+          className={cn(
+            "grid h-11 w-11 shrink-0 place-items-center rounded-xl",
+            highlight ? "bg-sun-soft text-[#7a4b00]" : "bg-brand-soft text-brand-dark",
+          )}
+        >
+          <Icon className="h-6 w-6" strokeWidth={2.25} aria-hidden />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-lg leading-tight font-black">{title}</span>
+          <span className={cn("block truncate text-sm font-bold", highlight ? "text-[#7a4b00]" : "text-muted")}>
+            {status}
+          </span>
+          <span className="mt-1 hidden text-sm text-muted sm:block">{about}</span>
+        </span>
+        <ChevronRight className="h-5 w-5 shrink-0 text-muted sm:mt-3" strokeWidth={2.25} aria-hidden />
+      </button>
+    </li>
   );
 }
 

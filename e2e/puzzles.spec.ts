@@ -160,6 +160,18 @@ test("с 10 лет: рейтинг с полоской до следующей �
   expect((await saved(page)).chessRating!.r).toBeGreaterThan(900);
 });
 
+test("центр задач: главная кнопка и короткий список из шести режимов", async ({ page }) => {
+  await prepare(page);
+  await page.goto("/chess/puzzles");
+  await expect(page.getByRole("button", { name: /Решать задачи по силам/ })).toBeVisible();
+  const modes = page.locator("[data-puzzle-modes] [data-puzzle-mode]");
+  await expect(modes).toHaveCount(6);
+  await expect(page.locator('[data-puzzle-mode="repeat"]')).toContainText("На сегодня повторять нечего");
+  await page.locator('[data-puzzle-mode="storm"]').click();
+  await expect(page).toHaveURL(/#storm$/);
+  await expect(page.getByRole("heading", { level: 1, name: /Шторм/ })).toBeVisible();
+});
+
 test("«Дятел»: набор из 20 задач, круг идёт по порядку, время считается", async ({ page }) => {
   await prepare(page);
   await page.goto("/chess/puzzles#woodpecker");

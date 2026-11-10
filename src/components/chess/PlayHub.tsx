@@ -1,5 +1,6 @@
 "use client";
 
+import { Play } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { Button, cn } from "@/components/ui";
@@ -94,7 +95,8 @@ function ModeChooser() {
       <header>
         <p className="text-sm font-extrabold tracking-wide text-brand uppercase">{t("Играть", "Oʻynash")}</p>
         <h1 className="text-3xl font-black">{t("Шахматная доска", "Shaxmat taxtasi")}</h1>
-        <p className="mt-1 max-w-2xl text-muted">
+        {/* На телефоне описание не занимает первый экран: сначала — кнопка «Играть». */}
+        <p className="mt-1 hidden max-w-2xl text-muted sm:block">
           {t(
             "Играй с роботом, вдвоём с мамой или папой на одном экране, устрой пешечный бой или потренируй мат одинокому королю. Доска сама следит за правилами.",
             "Robot bilan oʻyna, onang yoki otang bilan bitta ekranda bellash, piyodalar jangini uyushtir yoki yolgʻiz shohga mot qilishni mashq qil. Qoidalarni taxtaning oʻzi kuzatib boradi.",
@@ -102,18 +104,34 @@ function ModeChooser() {
         </p>
       </header>
 
-      <details className="rounded-3xl bg-white p-5 shadow-card" data-board-look-details>
-        <summary className="cursor-pointer text-lg font-black">
-          🎨 {t("Моя доска и звук", "Mening taxtam va ovozi")}
-        </summary>
-        <BoardLookPicker className="mt-4" />
-      </details>
+      {/* Один главный шаг: партия с роботом своего уровня. Остальные настройки — ниже. */}
+      <section
+        className="rounded-[2rem] bg-linear-to-br from-[#3b2f23] via-[#5b4632] to-[#7c5a33] p-5 text-white shadow-lift sm:p-6"
+        aria-labelledby="quick-play"
+        data-quick-play
+      >
+        <h2 id="quick-play" className="text-xl font-black">
+          {t("Сыграть партию", "Partiya oʻynash")}
+        </h2>
+        <p className="mt-1 font-bold text-white/85">
+          {t(`Робот «${robotName}» · ты играешь белыми`, `«${robotName}» roboti · sen oqlar bilan oʻynaysan`)}
+        </p>
+        <Button
+          variant="sun"
+          size="lg"
+          className="mt-4 w-full sm:w-auto"
+          onClick={() => setHash(`#robot-${profile.robotLevel}-w`)}
+        >
+          <Play className="mr-2 h-5 w-5 fill-current" aria-hidden />
+          {t("Играть", "Oʻynash")}
+        </Button>
+      </section>
 
       <section className="rounded-3xl bg-white p-5 shadow-card" aria-labelledby="robot">
         <h2 id="robot" className="text-xl font-black">
           🤖 {t("С роботом", "Robot bilan")}
         </h2>
-        <p className="mt-1 text-sm text-muted">
+        <p className="mt-1 hidden text-sm text-muted sm:block">
           {t(
             `Выбери силу робота. Тебе советуем начать с «${robotName}» — и подниматься выше, когда начнёшь побеждать.`,
             `Robotning kuchini tanla. Senga «${robotName}»dan boshlashni maslahat beramiz — yuta boshlaganingda esa yuqoriroqqa koʻtaril.`,
@@ -167,7 +185,7 @@ function ModeChooser() {
                   )}
                 </div>
               </div>
-              <p className="mt-2 flex-1 text-xs text-muted">{l.about}</p>
+              <p className="mt-2 hidden flex-1 text-xs text-muted sm:block">{l.about}</p>
               {hydrated && wins(l.id) > 0 && (
                 <p className="mt-1 text-xs font-extrabold text-[#065f46]">
                   🏆 {t("побед", "gʻalabalar")}: {wins(l.id)}{" "}
@@ -233,7 +251,7 @@ function ModeChooser() {
           <h2 id="two" className="text-xl font-black">
             👨‍👦 {t("Вдвоём", "Ikki kishilik oʻyin")}
           </h2>
-          <p className="mt-1 text-sm text-muted">
+          <p className="mt-1 hidden text-sm text-muted sm:block">
             {t(
               "Партия на одном экране: ты и мама, папа или друг. Доска подсвечивает ходы, объявляет шах и мат, считает ходы.",
               "Bitta ekranda partiya: sen va onang, otang yoki doʻsting. Taxta yurishlarni belgilab koʻrsatadi, shoh va motni eʼlon qiladi, yurishlarni sanaydi.",
@@ -280,7 +298,7 @@ function ModeChooser() {
           <h2 id="pawns" className="text-xl font-black">
             ♟ {t("Пешечный бой", "Piyodalar jangi")}
           </h2>
-          <p className="mt-1 text-sm text-muted">
+          <p className="mt-1 hidden text-sm text-muted sm:block">
             {t(
               "Только пешки! Кто первым проведёт пешку до края — победил. Лучшая игра, чтобы понять, как ходят и бьют пешки.",
               "Faqat piyodalar! Kim piyodasini birinchi boʻlib taxta chetiga olib borsa — oʻsha yutadi. Piyodalar qanday yurishi va urishini tushunish uchun eng yaxshi oʻyin.",
@@ -304,7 +322,7 @@ function ModeChooser() {
           <h2 id="endgames" className="text-xl font-black">
             🏁 {t("Поставь мат", "Mot qil")}
           </h2>
-          <p className="mt-1 text-sm text-muted">
+          <p className="mt-1 hidden text-sm text-muted sm:block">
             {t(
               "Робот убегает королём, а ты ставишь мат. Позиция каждый раз новая. Главное — не поставить пат!",
               "Robot shohi bilan qochadi, sen esa mot qilasan. Pozitsiya har safar yangi. Eng muhimi — pat qilib qoʻyma!",
@@ -327,6 +345,13 @@ function ModeChooser() {
           </div>
         </section>
       </div>
+
+      <details className="rounded-3xl bg-white p-5 shadow-card" data-board-look-details>
+        <summary className="cursor-pointer text-lg font-black">
+          🎨 {t("Моя доска и звук", "Mening taxtam va ovozi")}
+        </summary>
+        <BoardLookPicker className="mt-4" />
+      </details>
 
       {hydrated && games.length > 0 && (
         <section className="flex flex-wrap items-center justify-between gap-3 rounded-3xl bg-white p-5 shadow-card">

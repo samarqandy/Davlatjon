@@ -88,6 +88,14 @@ test("«Новая партия» можно вернуть кнопкой «В�
   await expect(page.getByRole("list", { name: "Список ходов" }).getByText("e4", { exact: true })).toBeVisible();
 });
 
+test("экран игры: главная кнопка «Играть» сразу начинает партию с роботом своего уровня", async ({ page }) => {
+  await prepare(page);
+  await page.goto("/chess/play");
+  await page.locator("[data-quick-play]").getByRole("button", { name: "Играть" }).click();
+  await expect(page).toHaveURL(/#robot-\d-w$/);
+  await expect(page.getByRole("button", { name: /Подсказка/ })).toBeVisible();
+});
+
 test("режим «Сам»: подсказки и отмены нет", async ({ page }) => {
   await prepare(page);
   await page.goto("/chess/play#robot-1-w?s=1");
