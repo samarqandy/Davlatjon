@@ -70,6 +70,32 @@ describe("поиск и дружба", () => {
     expect(await store.requestFriend(ann, "bek_king")).toEqual({ error: "blocked" });
   });
 
+  it("блокировку снимает только тот, кто её поставил: встречная блокировка чужую не отменяет", async () => {
+    const ann = await user("u1", "anna");
+    const bek = await user("u2", "bekzod");
+    await store.respondFriend(ann, "bekzod", "block");
+    // Бекзод блокирует в ответ и тут же снимает свою блокировку — блокировка Анны должна остаться.
+    await store.respondFriend(bek, "anna", "block");
+    await store.respondFriend(bek, "anna", "unblock");
+    expect(await store.requestFriend(bek, "anna")).toEqual({ error: "blocked" });
+    expect((await store.search(bek, "anna")) as unknown[]).toEqual([]);
+    expect((await store.friends(ann)).incoming).toEqual([]);
+    // Анна снимает свою — теперь связи нет, и попросить дружбы снова можно.
+    await store.respondFriend(ann, "bekzod", "unblock");
+    expect(await store.requestFriend(bek, "anna")).toEqual({ status: "pending" });
+  });
+
+  it("взаимная блокировка: пока хотя бы один не снял свою, связь закрыта", async () => {
+    const ann = await user("u1", "anna");
+    const bek = await user("u2", "bekzod");
+    await store.respondFriend(ann, "bekzod", "block");
+    await store.respondFriend(bek, "anna", "block");
+    await store.respondFriend(ann, "bekzod", "unblock");
+    expect(await store.requestFriend(ann, "bekzod")).toEqual({ error: "blocked" });
+    await store.respondFriend(bek, "anna", "unblock");
+    expect(await store.requestFriend(ann, "bekzod")).toEqual({ status: "pending" });
+  });
+
   it("просьба → согласие; встречная просьба сразу делает друзьями; нельзя себя и скрытых", async () => {
     const ann = await user("u1", "anna");
     const bek = await user("u2", "bekzod");
@@ -177,6 +203,9 @@ describe("переписка", () => {
     expect(await store.sendMessage(ann, "bekzod", "ещё")).toEqual({ error: "rate" });
     await store.setPrefs("u2", { chatOk: false });
     expect(await store.sendMessage(ann, "bekzod", "hello")).toEqual({ error: "chat-off" });
+    // Родитель выключил переписку — прежние сообщения ребёнку тоже не отдаём.
+    const bekNow = (await store.profileById("u2"))!;
+    expect(await store.messages(bekNow, "anna", 0)).toEqual({ error: "chat-off" });
   });
 });
 

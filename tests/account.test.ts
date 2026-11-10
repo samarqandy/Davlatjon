@@ -29,6 +29,15 @@ describe("сессия", () => {
     expect(safeBack("//evil.example")).toBe("/parent/settings");
     expect(safeBack(null)).toBe("/parent/settings");
   });
+
+  it("возврат после входа: табуляция и перевод строки не уводят на чужой сайт", () => {
+    // Адрес «/<Tab>/evil.example» разбирается как «//evil.example», то есть как чужой сайт.
+    for (const back of ["/\t/evil.example", "/\n/evil.example", "/\r/evil.example", "/\t\\evil.example"]) {
+      expect(safeBack(back)).toBe("/parent/settings");
+      expect(new URL(safeBack(back), "https://parvozedu.uz/api/auth/telegram").origin).toBe("https://parvozedu.uz");
+    }
+    expect(safeBack("/chess/online?tab=friends#top")).toBe("/chess/online?tab=friends#top");
+  });
 });
 
 describe("вход через Telegram", () => {
