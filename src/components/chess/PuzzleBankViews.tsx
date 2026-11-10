@@ -1,12 +1,19 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Button, cn } from "@/components/ui";
+import { Button, cn, ProgressBar } from "@/components/ui";
 import { getPuzzle, type PuzzleTheme } from "@/content/chess/puzzles";
 import { useT } from "@/lib/i18n";
 import { pluralize } from "@/lib/plural";
 import { loadBank, pickNext, themeOfKey, useBank, type BankPuzzle } from "@/lib/puzzleBank";
-import { showsRatingNumber, startRating, starsFor, targetRating, type PuzzleLevel as Level } from "@/lib/puzzleRating";
+import {
+  ratingBand,
+  showsRatingNumber,
+  startRating,
+  starsFor,
+  targetRating,
+  type PuzzleLevel as Level,
+} from "@/lib/puzzleRating";
 import { random } from "@/lib/random";
 import {
   getState,
@@ -49,6 +56,53 @@ export function PuzzleLevel({ className }: { className?: string }) {
     <span className={className} data-puzzle-level={rating.r}>
       {showsRatingNumber(age) ? t(`Рейтинг ${rating.r}`, `Reyting ${rating.r}`) : "⭐".repeat(starsFor(rating.r))}
     </span>
+  );
+}
+
+/**
+ * Уровень с полоской до следующей ступеньки: с 10 лет — рейтинг и текущая сотня, младшим — звёзды и путь до следующей.
+ * После задачи с 10 лет видно, на сколько вырос рейтинг; младшим число не показываем — только полоску.
+ */
+export function PuzzleRatingBar({ className }: { className?: string }) {
+  const t = useT();
+  const hydrated = useHydrated();
+  const rating = usePuzzleRating();
+  const age = useStore((s) => s.settings.age);
+  const numeric = showsRatingNumber(age);
+  // Изменение рейтинга считаем только после загрузки прогресса: до неё рейтинг — стартовый по возрасту.
+  const [seen, setSeen] = useState<number | null>(null);
+  const [delta, setDelta] = useState(0);
+  if (hydrated && seen !== rating.r) {
+    if (seen !== null) setDelta(rating.r - seen);
+    setSeen(rating.r);
+  }
+  if (!hydrated) return <div className={cn("h-11", className)} aria-hidden />;
+  const band = ratingBand(rating.r, numeric);
+  const stars = starsFor(rating.r);
+  return (
+    <div className={cn("flex items-center gap-3", className)} data-puzzle-level={rating.r} data-puzzle-rating-bar>
+      <p className="shrink-0 text-lg leading-none font-black">
+        {numeric ? t(`Рейтинг ${rating.r}`, `Reyting ${rating.r}`) : "⭐".repeat(stars)}
+        {/* Показываем только рост: минус после ошибки ребёнка не подбадривает — полоска и так сдвинется. */}
+        {numeric && delta > 0 && (
+          <span className="ml-1.5 text-sm font-extrabold text-[#065f46] tabular-nums" data-puzzle-delta={delta}>
+            +{delta}
+          </span>
+        )}
+      </p>
+      <ProgressBar
+        value={band.done}
+        max={band.to - band.from}
+        label={
+          numeric
+            ? t(`До ${band.to} осталось ${band.to - rating.r}`, `${band.to} gacha ${band.to - rating.r} qoldi`)
+            : t("Путь до следующей звезды", "Keyingi yulduzgacha yoʻl")
+        }
+      />
+      <span className="shrink-0 text-sm font-extrabold text-muted tabular-nums" aria-hidden>
+        {numeric ? band.to : stars < 5 ? "⭐".repeat(stars + 1) : "🏆"}
+      </span>
+    </div>
   );
 }
 
@@ -164,6 +218,7 @@ export function BankRun({ name, emptyText }: { name: PuzzleTheme | "mix"; emptyT
     <PuzzlePlayer
       key={picker.puzzle.key}
       puzzle={picker.puzzle}
+      themed={name !== "mix"}
       next={{ label: t("Следующая задача →", "Keyingi masala →"), onClick: picker.next }}
     />
   );
@@ -175,22 +230,28 @@ export function PracticeView() {
   return (
     <div className="space-y-4">
       <Back />
-      <header className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-black">🧠 {t("Задачи по силам", "Kuchingga mos masalalar")}</h1>
-          <p className="text-muted">
-            {t(
-              "Темы вперемешку. Решаешь с первой попытки — задачи становятся труднее, ошибаешься — полегче.",
-              "Mavzular aralash keladi. Birinchi urinishda yechsang — masalalar qiyinlashadi, xato qilsang — osonlashadi.",
-            )}
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-3">
-          <PuzzleLevel className="text-lg font-black" />
-          <LevelChooser />
-        </div>
+      <header className="space-y-2">
+        <h1 className="text-2xl font-black">
+          <span className="deco" aria-hidden>
+            🧠{" "}
+          </span>
+          {t("Задачи по силам", "Kuchingga mos masalalar")}
+        </h1>
+        {/* На телефоне пояснение не занимает первый экран: доска важнее. */}
+        <p className="hidden text-muted sm:block">
+          {t(
+            "Темы вперемешку. Решаешь с первой попытки — задачи становятся труднее, ошибаешься — полегче.",
+            "Mavzular aralash keladi. Birinchi urinishda yechsang — masalalar qiyinlashadi, xato qilsang — osonlashadi.",
+          )}
+        </p>
+        <PuzzleRatingBar />
       </header>
       <BankRun name="mix" emptyText={t("Все задачи набора решены!", "Toʻplamdagi barcha masalalarni yechding!")} />
+      {/* Сложность меняют редко — она под задачей, а не над доской. */}
+      <div className="flex flex-wrap items-center gap-2" data-puzzle-level-chooser>
+        <p className="text-sm font-extrabold text-muted">{t("Сложность:", "Qiyinlik:")}</p>
+        <LevelChooser />
+      </div>
     </div>
   );
 }
@@ -416,6 +477,7 @@ export function WoodpeckerView() {
         <PuzzlePlayer
           key={`${puzzle.key}-${round}`}
           puzzle={puzzle}
+          solution={false}
           onSolved={(misses) => setSolved({ ms: Math.max(0, Date.now() - clockStart), misses })}
           next={{
             label: last ? t("Закончить круг →", "Aylanani yakunlash →") : t("Следующая задача →", "Keyingi masala →"),

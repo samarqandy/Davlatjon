@@ -1,5 +1,6 @@
 "use client";
 
+import { ChevronLeft, ChevronRight, Eye, Lightbulb } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Feedback, type FeedbackState } from "@/components/answers/Feedback";
 import { Button } from "@/components/ui";
@@ -19,6 +20,9 @@ import { usePromotion } from "./useMoveInput";
 
 const STARS = (n: number) => "⭐".repeat(n);
 
+const stepButton =
+  "flex h-11 w-11 items-center justify-center rounded-2xl border-2 border-line bg-white text-ink transition hover:border-brand/40 disabled:opacity-40";
+
 /** Задача школы (с текстами) или задача из базы Lichess. */
 export type AnyPuzzle = ChessPuzzle | BankPuzzle;
 
@@ -26,6 +30,12 @@ export const isBankPuzzle = (p: AnyPuzzle): p is BankPuzzle => "moves" in p;
 
 /** Ключ прогресса и React-ключ задачи. */
 export const puzzleKey = (p: AnyPuzzle) => (isBankPuzzle(p) ? p.key : p.id);
+
+/** Позиция в записи решения: по ним после задачи можно пройтись кнопками «назад» и «вперёд». */
+interface Frame {
+  fen: string;
+  last: [string, string] | null;
+}
 
 interface Step {
   fen: string;
@@ -55,6 +65,8 @@ export function PuzzlePlayer({
   next,
   rated = true,
   quiet = false,
+  themed = false,
+  solution = true,
 }: {
   puzzle: AnyPuzzle;
   onSolved?: (misses: number) => void;
@@ -63,6 +75,10 @@ export function PuzzlePlayer({
   rated?: boolean;
   /** Без реплик диктора — для «Шторма», где задачи сменяются за секунды. */
   quiet?: boolean;
+  /** Тема задачи из базы известна заранее (ребёнок сам её выбрал). Иначе название темы — подсказка: до решения прячем. */
+  themed?: boolean;
+  /** Можно ли посмотреть решение. В режимах на время и на серию — нельзя. */
+  solution?: boolean;
 }) {
   const t = useT();
   const san = useSan();
@@ -92,6 +108,11 @@ export function PuzzlePlayer({
   const [lastTone, setLastTone] = useState<"good" | "bad" | null>(null);
   const [misses, setMisses] = useState(0);
   const [done, setDone] = useState(false);
+  // Решение показано по просьбе: задача не засчитана и вернётся на повторение.
+  const [revealed, setRevealed] = useState(false);
+  // Запись решения: позиции по порядку и та, что сейчас на доске после задачи.
+  const [frames, setFrames] = useState<Frame[]>([{ fen: puzzle.fen, last: null }]);
+  const [view, setView] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
   const [feedback, setFeedback] = useState<FeedbackState | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -110,6 +131,7 @@ export function PuzzlePlayer({
       setShown(intro.fen);
       setLast(oppLast.current);
       setLastTone(null);
+      setFrames((f) => [...f, { fen: intro.fen, last: oppLast.current }]);
       setFeedback({
         tone: "info",
         text: t(`Соперник сыграл ${san(intro.san)}. Твой ход!`, `Raqib ${san(intro.san)} yurdi. Navbat senda!`),
@@ -130,6 +152,90 @@ export function PuzzlePlayer({
     if (!bank || !rated || ratedOnce.current) return;
     ratedOnce.current = true;
     if (!getState().chessPuzzles[key]) chessPuzzleRated(bank.rating, win);
+  };
+
+  const record = (fen: string, move: [string, string]) => setFrames((f) => [...f, { fen, last: move }]);
+
+  /** Остаток решения с текущей позиции: ходы решающего и ответы соперника по очереди. */
+  const restOfSolution = (): Frame[] => {
+    const rest: Frame[] = [];
+    let fen = step.fen;
+    const push = (uci: string | undefined) => {
+      const played = uci ? playUci(fen, uci) : null;
+      if (!played) return false;
+      fen = played.fen;
+      rest.push({ fen, last: squares(uci!) });
+      return true;
+    };
+    if (bank) {
+      for (const uci of line.slice(step.ply)) if (!push(uci)) break;
+      return rest;
+    }
+    // Задача школы: мат в N — ход движка к мату и лучшая защита; иначе — первый ход из списка.
+    let matesLeft = step.matesLeft;
+    if (matesLeft === 0) {
+      push(classic!.solution?.[0]);
+      return rest;
+    }
+    while (matesLeft > 0 && push(matingMovesIn(fen, matesLeft)[0])) {
+      matesLeft -= 1;
+      if (matesLeft === 0 || !push(searchBest(fen, { depth: 2, timeMs: 400 }).uci ?? undefined)) break;
+    }
+    return rest;
+  };
+
+  /** «Показать решение»: ходы проигрываются на доске. Это как ошибка — рейтинг не растёт, задача вернётся на повторение. */
+  const reveal = () => {
+    if (done || busy || shown !== step.fen) return;
+    const rest = restOfSolution();
+    if (rest.length === 0) return;
+    rateOnce(false);
+    chessPuzzleMiss(key);
+    if (!failed.current) {
+      failed.current = true;
+      onFailed?.();
+    }
+    setSelected(null);
+    setBusy(true);
+    setFeedback({ tone: "info", text: t("Смотри решение на доске…", "Yechimni taxtada kuzat…") });
+    const from = frames.length;
+    const all = [...frames, ...rest];
+    setFrames(all);
+    const show = (i: number) => {
+      const frame = all[i];
+      setShown(frame.fen);
+      setLast(frame.last);
+      // Ходы решающего — зелёные, ответы соперника — жёлтые.
+      setLastTone((i - from) % 2 === 0 ? "good" : null);
+      if (i < all.length - 1) {
+        timer.current = setTimeout(() => show(i + 1), 900);
+        return;
+      }
+      setBusy(false);
+      setRevealed(true);
+      setDone(true);
+      setView(i);
+      setFeedback({
+        tone: "info",
+        text: t(
+          "Вот решение. Эта задача ещё вернётся — на повторение.",
+          "Yechim shu. Bu masala takrorlashda yana keladi.",
+        ),
+        sub: bank ? t(`Решение: ${solutionLine(bank, san)}`, `Yechim: ${solutionLine(bank, san)}`) : text.explanation,
+      });
+    };
+    timer.current = setTimeout(() => show(from), 400);
+  };
+
+  /** После задачи: пройтись по записи решения. */
+  const at = view ?? frames.length - 1;
+  const go = (i: number) => {
+    const frame = frames[i];
+    if (!done || !frame) return;
+    setView(i);
+    setShown(frame.fen);
+    setLast(frame.last);
+    setLastTone(null);
   };
 
   const solvedText = (played: { san: string; mate: boolean }): FeedbackState => ({
@@ -188,6 +294,7 @@ export function PuzzlePlayer({
   /** Ход в задаче из базы: строка решения, ответы соперника — из неё же. */
   const attemptLine = (played: NonNullable<ReturnType<typeof playMove>>) => {
     const verdict = judgeLineMove(line, step.ply, played);
+    if (verdict.kind !== "wrong") record(played.fen, squares(played.uci));
     if (verdict.kind === "solved") {
       setDone(true);
       rateOnce(misses === 0);
@@ -211,6 +318,7 @@ export function PuzzlePlayer({
       const fen = reply?.fen ?? played.fen;
       const matesLeft = step.matesLeft > 0 ? step.matesLeft - 1 : 0;
       oppLast.current = squares(verdict.reply);
+      if (reply) record(fen, oppLast.current);
       setStep({ fen, matesLeft, ply: step.ply + 2 });
       setShown(fen);
       setLast(oppLast.current);
@@ -243,6 +351,7 @@ export function PuzzlePlayer({
       return true;
     }
     if (accepted.includes(played.uci)) {
+      record(played.fen, [from, to]);
       const matesLeft = step.matesLeft > 0 ? step.matesLeft - 1 : 0;
       if (played.mate || matesLeft === 0) {
         setDone(true);
@@ -267,6 +376,7 @@ export function PuzzlePlayer({
           : null;
         const fen = after?.fen ?? played.fen;
         oppLast.current = reply ? squares(reply) : null;
+        if (after && oppLast.current) record(fen, oppLast.current);
         setStep({ fen, matesLeft, ply: 0 });
         setShown(fen);
         setLast(oppLast.current);
@@ -285,6 +395,7 @@ export function PuzzlePlayer({
     const n = miss(played.mate);
     if (played.mate && step.matesLeft === 1) {
       // Любой мат в один ход — тоже решение.
+      record(played.fen, [from, to]);
       setLastTone("good");
       setDone(true);
       chessPuzzleSolved(key, false);
@@ -334,9 +445,15 @@ export function PuzzlePlayer({
             ? t("Найди ход, который спасает", "Qutqaradigan yurishni top")
             : t("Найди лучший ход", "Eng yaxshi yurishni top");
   const stars = bank ? starsFor(bank.rating) : classic!.stars;
+  // Название темы задачи из базы — готовая подсказка: пока задача не решена, прячем (если тему не выбирали сами).
+  const secret = !!bank && !themed && !done;
+  const canReveal = solution && !quiet;
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
+    <div
+      className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px]"
+      data-puzzle-state={done ? (revealed ? "revealed" : "solved") : "open"}
+    >
       <div className="space-y-3">
         {/* На телефоне задание и чей ход — над доской: раньше они были под ней, и до них приходилось листать. */}
         <div className="lg:hidden" data-puzzle-prompt>
@@ -357,50 +474,90 @@ export function PuzzlePlayer({
           arrows={hintTo && hintFrom && !done ? [{ from: hintFrom, to: hintTo, color: "#10b981" }] : []}
           maxWidth={480}
         />
+        {/* Кнопки — всегда на одном месте, сразу под доской: ответ ниже может быть длинным, а они не «прыгают». */}
+        <div className="mx-auto flex min-h-11 w-full max-w-[480px] flex-wrap items-center gap-2" data-puzzle-actions>
+          {!done && misses < 2 && (
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => {
+                setMisses(2);
+                // Подсказка в задаче из базы — как ошибка: рейтинг не растёт, задача вернётся на повторение.
+                if (bank) {
+                  rateOnce(false);
+                  chessPuzzleMiss(key);
+                }
+                setFeedback({ tone: "info", text: t("Подсказка", "Maslahat"), sub: text.hint });
+              }}
+            >
+              <Lightbulb className="mr-1.5 h-5 w-5" strokeWidth={2.25} aria-hidden />
+              {t("Подсказка", "Maslahat")}
+            </Button>
+          )}
+          {/* Решение — только после своей попытки или подсказки: сначала пробуем сами. */}
+          {!done && canReveal && misses >= 1 && (
+            <Button variant="secondary" size="sm" onClick={reveal} disabled={busy} data-puzzle-reveal>
+              <Eye className="mr-1.5 h-5 w-5" strokeWidth={2.25} aria-hidden />
+              {t("Показать решение", "Yechimni koʻrish")}
+            </Button>
+          )}
+          {done && !quiet && frames.length > 2 && (
+            <div
+              role="group"
+              aria-label={t("Просмотр решения", "Yechimni koʻrib chiqish")}
+              className="flex gap-1.5"
+              data-puzzle-replay={at}
+            >
+              <button
+                type="button"
+                className={stepButton}
+                aria-label={t("Ход назад", "Bir yurish orqaga")}
+                disabled={at <= 0}
+                onClick={() => go(at - 1)}
+              >
+                <ChevronLeft className="h-6 w-6" strokeWidth={2.25} aria-hidden />
+              </button>
+              <button
+                type="button"
+                className={stepButton}
+                aria-label={t("Ход вперёд", "Bir yurish oldinga")}
+                disabled={at >= frames.length - 1}
+                onClick={() => go(at + 1)}
+              >
+                <ChevronRight className="h-6 w-6" strokeWidth={2.25} aria-hidden />
+              </button>
+            </div>
+          )}
+          {done && next && (
+            <Button variant="sun" onClick={next.onClick} size="lg" className="min-w-0 flex-1">
+              {next.label}
+            </Button>
+          )}
+        </div>
         <Feedback state={feedback} silent={quiet} />
       </div>
       <aside className="flex flex-col gap-3">
-        <div className="rounded-2xl bg-white p-4 shadow-card">
+        <div className="rounded-2xl bg-white p-4 shadow-card" data-puzzle-info>
           <p className="hidden text-xs font-extrabold tracking-wide text-muted uppercase lg:block">
             {STARS(stars)} · {solver === "w" ? t("ходят белые", "oqlar yuradi") : t("ходят чёрные", "qoralar yuradi")}
           </p>
           <h2 className="mt-1 text-xl font-black">
-            {bank && theme ? `${theme.emoji} ` : ""}
-            {text.title}
+            {secret ? t("Задача из базы", "Bazadan masala") : `${bank && theme ? `${theme.emoji} ` : ""}${text.title}`}
           </h2>
           <p className="mt-1 hidden text-lg font-bold text-brand-dark lg:block">{goal}</p>
           {text.source && <p className="mt-1 text-xs text-muted">{text.source}</p>}
           <p className="mt-2 text-sm text-muted">
-            {t(
-              "Нажми на фигуру, потом на клетку — или перетащи фигуру.",
-              "Avval donani, keyin katakni bos — yoki donani sudrab olib bor.",
-            )}
+            {secret
+              ? t(
+                  "Тему задачи покажу после решения — так интереснее искать ход.",
+                  "Masala mavzusini yechgandan keyin koʻrsataman — yurishni oʻzing topganing qiziqroq.",
+                )
+              : t(
+                  "Нажми на фигуру, потом на клетку — или перетащи фигуру.",
+                  "Avval donani, keyin katakni bos — yoki donani sudrab olib bor.",
+                )}
           </p>
         </div>
-        {!done && misses < 2 && (
-          <Button
-            variant="secondary"
-            size="sm"
-            // На телефоне кнопки — сразу под доской, выше описания задачи.
-            className="order-first self-start lg:order-none"
-            onClick={() => {
-              setMisses(2);
-              // Подсказка в задаче из базы — как ошибка: рейтинг не растёт, задача вернётся на повторение.
-              if (bank) {
-                rateOnce(false);
-                chessPuzzleMiss(key);
-              }
-              setFeedback({ tone: "info", text: t("Подсказка", "Maslahat"), sub: text.hint });
-            }}
-          >
-            💡 {t("Подсказка", "Maslahat")}
-          </Button>
-        )}
-        {done && next && (
-          <Button onClick={next.onClick} size="lg" className="order-first lg:order-none">
-            {next.label}
-          </Button>
-        )}
       </aside>
     </div>
   );
