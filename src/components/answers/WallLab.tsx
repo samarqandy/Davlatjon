@@ -34,7 +34,7 @@ export function WallBoard({
                 "tabular flex items-center justify-center rounded-lg border-2 font-black",
                 brick,
                 print
-                  ? "border-ink/60 bg-white"
+                  ? "border-ink/60 bg-surface"
                   : isBottom && selected === i
                     ? "border-sun bg-sun-soft"
                     : ri === 0 && v !== null
@@ -138,7 +138,7 @@ export function WallLab({ taskId, numbers, tops }: { taskId: string; numbers: nu
         )}
       </p>
       <div className="flex flex-wrap items-start gap-5">
-        <div className="rounded-3xl bg-white p-4 shadow-card">
+        <div className="rounded-3xl bg-surface p-4 shadow-card">
           <WallBoard bottom={bottom} selected={selected} onBrick={(i) => setSelected(i === selected ? null : i)} />
         </div>
         <div className="space-y-4">
@@ -153,7 +153,7 @@ export function WallLab({ taskId, numbers, tops }: { taskId: string; numbers: nu
                   "h-14 w-14 rounded-2xl border-2 text-2xl font-black transition",
                   bottom.includes(n)
                     ? "border-[#fed7aa] bg-[#fff7ed] text-[#fdba74]"
-                    : "border-[#d97706] bg-white text-[#b45309] hover:bg-[#fff7ed]",
+                    : "border-[#d97706] bg-surface text-warning-ink hover:bg-[#fff7ed]",
                 )}
               >
                 {n}
@@ -163,7 +163,7 @@ export function WallLab({ taskId, numbers, tops }: { taskId: string; numbers: nu
           <Button variant="ghost" onClick={clear}>
             {t("Очистить стенку", "Devorni tozalash")}
           </Button>
-          <div className="rounded-2xl bg-white p-3 shadow-card">
+          <div className="rounded-2xl bg-surface p-3 shadow-card">
             <p className="mb-2 text-sm font-extrabold text-muted">
               {t(
                 "Дневник исследователя: что получалось наверху?",

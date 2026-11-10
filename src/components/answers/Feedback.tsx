@@ -23,8 +23,8 @@ export interface FeedbackState {
 }
 
 const STYLES: Record<FeedbackTone, string> = {
-  success: "border-mint/40 bg-mint-soft text-[#065f46]",
-  retry: "border-sun/40 bg-sun-soft text-[#7a4b00]",
+  success: "border-mint/40 bg-mint-soft text-mint-ink",
+  retry: "border-sun/40 bg-sun-soft text-sun-ink",
   info: "border-brand/25 bg-brand-soft text-brand-dark",
 };
 

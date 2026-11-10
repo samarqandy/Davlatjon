@@ -86,7 +86,7 @@ export function ParentWeekCard() {
           );
         })}
       </ol>
-      <p className="mt-4 flex gap-2 rounded-2xl bg-sun-soft px-4 py-3 font-bold text-[#7a4b00]" data-week-tip={w.tip}>
+      <p className="mt-4 flex gap-2 rounded-2xl bg-sun-soft px-4 py-3 font-bold text-sun-ink" data-week-tip={w.tip}>
         <Lightbulb className="mt-0.5 h-5 w-5 shrink-0" aria-hidden />
         {tips[w.tip]}
       </p>

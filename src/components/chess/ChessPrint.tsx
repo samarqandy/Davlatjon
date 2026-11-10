@@ -28,7 +28,7 @@ export function ChessPrint() {
           "Varaq bola uchun — javoblarsiz. Masalalarning javoblari ota-onalar boʻlimida («Shaxmat»). Format — A4, diagrammalar ikki ustunda.",
         )}
       </p>
-      <div className="mx-auto max-w-[190mm] rounded-2xl bg-white p-6 shadow-card print:max-w-none print:rounded-none print:p-0 print:shadow-none">
+      <div className="mx-auto max-w-[190mm] rounded-2xl bg-surface p-6 shadow-card print:max-w-none print:rounded-none print:p-0 print:shadow-none">
         <header className="mb-4 flex items-baseline justify-between border-b-2 border-ink/70 pb-2">
           <div>
             <p className="text-xs font-extrabold tracking-wide text-muted uppercase">

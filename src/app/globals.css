@@ -18,6 +18,20 @@
   --color-mint-soft: #e3f8ef;
   --color-rose: #e11d48;
 
+  /*
+   * Поверхность карточек и «чернила» на цветных подложках. В светлой теме это белый и тёмные оттенки,
+   * в тёмной (html[data-theme="dark"], ниже) они меняются вместе с фоном. Поэтому в коде — bg-surface,
+   * text-sun-ink и т. п., а не bg-white и цвет числом.
+   */
+  --color-surface: #ffffff;
+  --color-sun-ink: #7a4b00;
+  --color-mint-ink: #065f46;
+  --color-success-ink: #047857;
+  --color-danger-ink: #b42318;
+  --color-warning-ink: #b45309;
+  /* Текст на жёлтой главной кнопке: тёмный в обеих темах. */
+  --color-on-sun: #1d2140;
+
   /* Смысловые цвета (DESIGN.md): в новом коде — они, а не «mint/sun/rose» напрямую. */
   --color-success: #10b981;
   --color-success-soft: #e3f8ef;
@@ -100,6 +114,58 @@
       opacity: 1;
       transform: translateY(0);
     }
+  }
+}
+
+/* Вариант dark: — для редких мест, где одной смены переменных мало (например, кремовая подложка подсказок). Только экран. */
+@custom-variant dark {
+  @media screen {
+    &:where([data-theme="dark"], [data-theme="dark"] *) {
+      @slot;
+    }
+  }
+}
+
+/*
+ * Тёмная тема: включается кнопкой в шапке (html[data-theme="dark"] ставит скрипт в <head> и ThemeSync).
+ * Меняются только переменные — классы в разметке те же. Печать всегда светлая, поэтому @media screen.
+ */
+@media screen {
+  html[data-theme="dark"] {
+    color-scheme: dark;
+    --color-paper: #12142a;
+    --color-surface: #1d2040;
+    --color-ink: #eceefb;
+    --color-muted: #aab0cf;
+    --color-line: #333863;
+    /* Кнопки с белым текстом остаются читаемыми, а индиго на тёмном фоне не «проваливается». */
+    --color-brand: #6366f1;
+    --color-brand-dark: #c7d2fe;
+    --color-brand-soft: #2a2e63;
+    --color-sun-soft: #3d3110;
+    --color-mint-soft: #133a2e;
+    --color-success-soft: #133a2e;
+    --color-warning-soft: #3d3110;
+    --color-sun-ink: #fcd34d;
+    --color-mint-ink: #6ee7b7;
+    --color-success-ink: #6ee7b7;
+    --color-danger-ink: #fda4af;
+    --color-warning-ink: #fdba74;
+    /* Полупрозрачные «чёрные» подложки (bg-black/5 и т. п.) на тёмном фоне должны светлеть, а не темнеть. */
+    --color-black: #ffffff;
+    --shadow-card: 0 1px 2px rgb(0 0 0 / 0.35), 0 8px 24px -12px rgb(0 0 0 / 0.6);
+    --shadow-lift: 0 2px 4px rgb(0 0 0 / 0.4), 0 16px 32px -16px rgb(0 0 0 / 0.7);
+  }
+  /* Один и тот же цвет бренда — и фон кнопок, и текст ссылок: как текст на тёмном фоне он должен быть светлее. */
+  html[data-theme="dark"] :is(.text-brand, .hover\:text-brand:hover) {
+    color: #a5b4fc;
+  }
+  html[data-theme="dark"] .text-rose {
+    color: #fda4af;
+  }
+  /* Тёмная плашка с белым текстом остаётся тёмной (иначе белое на светлом). */
+  html[data-theme="dark"] .bg-ink {
+    background-color: #0a0b1a;
   }
 }
 

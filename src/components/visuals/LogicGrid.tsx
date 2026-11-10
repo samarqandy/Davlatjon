@@ -59,7 +59,7 @@ export function LogicGrid({
                 const key = `${i}-${j}`;
                 const v = marks[key] ?? "";
                 return (
-                  <td key={c} className="h-11 border border-line bg-white p-0 text-center">
+                  <td key={c} className="h-11 border border-line bg-surface p-0 text-center">
                     {print ? null : (
                       <button
                         type="button"

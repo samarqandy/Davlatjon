@@ -46,7 +46,7 @@ export function CollectionView() {
         </p>
       </header>
 
-      <section className="rounded-3xl bg-white p-4 shadow-card" data-collection-progress aria-live="polite">
+      <section className="rounded-3xl bg-surface p-4 shadow-card" data-collection-progress aria-live="polite">
         <div className="flex items-center gap-3">
           <ProgressBar value={open} max={cards.length} className="flex-1" />
           <span className="font-black tabular-nums" data-collection-count>
@@ -85,7 +85,7 @@ function OpenCard({ card }: { card: HeroCard }) {
       data-hero-card="open"
       data-hero-id={card.id}
       className={cn(
-        "h-full rounded-3xl border-2 bg-white p-4 shadow-card",
+        "h-full rounded-3xl border-2 bg-surface p-4 shadow-card",
         card.kind === "sage" ? "border-sun/60" : "border-brand/30",
       )}
     >
@@ -116,7 +116,7 @@ function LockedCard({ card }: { card: HeroCard }) {
   return (
     <article
       data-hero-card="locked"
-      className="flex h-full min-h-40 flex-col items-center justify-center rounded-3xl border-2 border-dashed border-line bg-white/60 p-4 text-center text-muted"
+      className="flex h-full min-h-40 flex-col items-center justify-center rounded-3xl border-2 border-dashed border-line bg-surface/60 p-4 text-center text-muted"
     >
       <span className="text-4xl" aria-hidden>
         ❓

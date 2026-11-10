@@ -125,7 +125,7 @@ export function NimGame({ taskId, stones, take }: { taskId: string; stones: numb
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col items-center gap-3 rounded-3xl bg-white p-4 shadow-card">
+      <div className="flex flex-col items-center gap-3 rounded-3xl bg-surface p-4 shadow-card">
         <p className="text-lg font-black">
           {t("Осталось", "Qoldi")}: <span className="tabular">{stonesWord(left, lang)}</span>
         </p>
@@ -155,7 +155,7 @@ export function NimGame({ taskId, stones, take }: { taskId: string; stones: numb
           ↺ {t("Новая игра", "Yangi oʻyin")}
         </Button>
         {won && (
-          <span className="rounded-2xl bg-mint-soft px-3 py-1.5 text-sm font-extrabold text-[#065f46]">
+          <span className="rounded-2xl bg-mint-soft px-3 py-1.5 text-sm font-extrabold text-mint-ink">
             🏆 {t("Робот побеждён", "Robot yengildi")}
           </span>
         )}
@@ -164,7 +164,7 @@ export function NimGame({ taskId, stones, take }: { taskId: string; stones: numb
       <Feedback state={feedback} />
 
       {moves.length > 0 && (
-        <div className="rounded-2xl bg-white p-3 shadow-card">
+        <div className="rounded-2xl bg-surface p-3 shadow-card">
           <p className="mb-2 text-sm font-extrabold text-muted">{t("Дневник игры", "Oʻyin kundaligi")}</p>
           <ol className="space-y-1 text-[0.95rem]">
             {moves.map((m, i) => (

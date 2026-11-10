@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useT } from "@/lib/i18n";
 
-const card = "rounded-3xl bg-white p-5 shadow-card";
+const card = "rounded-3xl bg-surface p-5 shadow-card";
 
 /** Какие данные есть, где лежат и как их удалить — простыми словами, для родителей. */
 export function PrivacyView({ contact }: { contact: string }) {

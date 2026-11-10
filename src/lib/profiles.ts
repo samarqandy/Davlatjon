@@ -124,8 +124,9 @@ export function addProfile(args: { name: string; age: number; avatar: string }, 
   if (reg.list.length >= MAX_PROFILES) return null;
   let id = randomId();
   while (reg.list.some((p) => p.id === id)) id = randomId();
-  const keep = (({ lang, boardTheme, boardSoundSet, boardSounds, animations, sound, bigText }) => ({
+  const keep = (({ lang, theme, boardTheme, boardSoundSet, boardSounds, animations, sound, bigText }) => ({
     lang,
+    theme,
     boardTheme,
     boardSoundSet,
     boardSounds,

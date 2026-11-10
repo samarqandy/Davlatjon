@@ -38,7 +38,7 @@ export function AccountPanel({ back = "/parent/settings" }: { back?: string }) {
   return (
     <div className="space-y-3">
       {result === "ok" && account.user && (
-        <p className="rounded-2xl bg-mint-soft px-3 py-2 text-sm font-bold text-[#047857]" role="status">
+        <p className="rounded-2xl bg-mint-soft px-3 py-2 text-sm font-bold text-success-ink" role="status">
           {t(
             "Вход выполнен — прогресс теперь сохраняется в аккаунте.",
             "Kirdingiz — endi natijalar hisobingizda saqlanadi.",
@@ -46,7 +46,7 @@ export function AccountPanel({ back = "/parent/settings" }: { back?: string }) {
         </p>
       )}
       {result === "error" && (
-        <p className="rounded-2xl bg-rose/10 px-3 py-2 text-sm font-bold text-[#b42318]" role="alert">
+        <p className="rounded-2xl bg-rose/10 px-3 py-2 text-sm font-bold text-danger-ink" role="alert">
           {t("Войти не получилось. Попробуйте ещё раз.", "Kirish amalga oshmadi. Yana bir bor urinib koʻring.")}
         </p>
       )}
@@ -83,7 +83,7 @@ export function AccountPanel({ back = "/parent/settings" }: { back?: string }) {
             {account.providers.google && (
               <a
                 href={`/api/auth/google?back=${encodeURIComponent(back)}`}
-                className="inline-flex min-h-11 items-center gap-2 rounded-2xl border-2 border-line bg-white px-4 py-2 font-extrabold shadow-card hover:border-brand/40"
+                className="inline-flex min-h-11 items-center gap-2 rounded-2xl border-2 border-line bg-surface px-4 py-2 font-extrabold shadow-card hover:border-brand/40"
               >
                 <GoogleMark />
                 {t("Войти через Google", "Google orqali kirish")}
@@ -163,7 +163,7 @@ function DeleteAccount() {
   };
   if (state === "done")
     return (
-      <p className="rounded-2xl bg-mint-soft px-3 py-2 text-sm font-bold text-[#047857]" role="status">
+      <p className="rounded-2xl bg-mint-soft px-3 py-2 text-sm font-bold text-success-ink" role="status">
         {t(
           "Данные аккаунта удалены, вход завершён. Прогресс на этом устройстве остался — его можно стереть кнопкой «Сбросить прогресс».",
           "Hisob maʼlumotlari oʻchirildi, seans tugadi. Bu qurilmadagi natijalar qoldi — ularni «Natijalarni oʻchirish» tugmasi bilan tozalash mumkin.",
@@ -193,7 +193,7 @@ function DeleteAccount() {
         </Button>
       )}
       {state === "error" && (
-        <p className="text-sm font-bold text-[#b42318]" role="alert">
+        <p className="text-sm font-bold text-danger-ink" role="alert">
           {t("Не получилось. Попробуйте ещё раз.", "Amalga oshmadi. Yana urinib koʻring.")}
         </p>
       )}

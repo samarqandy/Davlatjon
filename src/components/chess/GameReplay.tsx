@@ -79,7 +79,7 @@ export function FamousGamesList() {
             <li key={g.id}>
               <Link
                 href={`/chess/games/${g.id}`}
-                className="flex h-full gap-4 rounded-3xl bg-white p-4 shadow-card transition hover:-translate-y-0.5"
+                className="flex h-full gap-4 rounded-3xl bg-surface p-4 shadow-card transition hover:-translate-y-0.5"
               >
                 <ChessBoard
                   id={`preview-${g.id}`}
@@ -190,7 +190,7 @@ export function GameReplay({ game: ruGame }: { game: FamousGame }) {
         </p>
       </header>
 
-      <section className="grid gap-3 rounded-3xl bg-white p-5 shadow-card md:grid-cols-2">
+      <section className="grid gap-3 rounded-3xl bg-surface p-5 shadow-card md:grid-cols-2">
         {game.story.map((p, i) => (
           <p key={i} className="text-lg leading-relaxed">
             {p}
@@ -303,7 +303,7 @@ export function GameReplay({ game: ruGame }: { game: FamousGame }) {
             <div
               className={cn(
                 "min-h-20 rounded-2xl border-2 px-4 py-3",
-                comment ? "border-brand/30 bg-brand-soft/60" : "border-line bg-white",
+                comment ? "border-brand/30 bg-brand-soft/60" : "border-line bg-surface",
               )}
               aria-live="polite"
             >
@@ -319,7 +319,7 @@ export function GameReplay({ game: ruGame }: { game: FamousGame }) {
               </p>
             </div>
           </div>
-          <aside className="rounded-2xl bg-white p-3 shadow-card">
+          <aside className="rounded-2xl bg-surface p-3 shadow-card">
             <p className="mb-2 text-sm font-extrabold text-muted">{t("Ходы партии", "Partiya yurishlari")}</p>
             <ol className="grid max-h-[420px] grid-cols-[auto_1fr_1fr] gap-x-2 gap-y-0.5 overflow-y-auto text-[0.95rem]">
               {Array.from({ length: Math.ceil(total / 2) }, (_, i) => (
@@ -361,7 +361,7 @@ export function GameReplay({ game: ruGame }: { game: FamousGame }) {
               type="button"
               onClick={() => go(k.ply)}
               className={cn(
-                "rounded-3xl bg-white p-3 text-left shadow-card transition hover:-translate-y-0.5",
+                "rounded-3xl bg-surface p-3 text-left shadow-card transition hover:-translate-y-0.5",
                 k.ply === ply && "ring-4 ring-sun",
               )}
             >

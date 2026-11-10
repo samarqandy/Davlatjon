@@ -206,10 +206,10 @@ export function GraphPuzzle({ taskId, puzzle }: { taskId: string; puzzle: GraphS
           `Joylarni birin-ketin bosib, yoʻl sol. Boshlanishi — «${label(puzzle.start)}», oxiri — «${label(puzzle.finish)}».`,
         )}
       </p>
-      <div className="rounded-3xl bg-white p-2 shadow-card">
+      <div className="rounded-3xl bg-surface p-2 shadow-card">
         <GraphMap puzzle={puzzle} path={path} onNode={onNode} />
       </div>
-      <p className="rounded-2xl bg-white px-4 py-2 font-bold shadow-card">
+      <p className="rounded-2xl bg-surface px-4 py-2 font-bold shadow-card">
         {path.map(label).join(" → ")}
         {path.length > 1 && (
           <span className="ml-2 text-brand">

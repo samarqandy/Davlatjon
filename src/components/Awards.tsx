@@ -60,14 +60,14 @@ export function AwardsPage() {
           </p>
         </div>
         <div className="flex gap-3">
-          <div className="rounded-2xl bg-white px-4 py-2 text-center shadow-card">
+          <div className="rounded-2xl bg-surface px-4 py-2 text-center shadow-card">
             <p className="text-2xl font-black">
               {got.length}
               <span className="text-base text-muted"> / {list.length || "…"}</span>
             </p>
             <p className="text-xs font-bold text-muted">{t("наград", "mukofot")}</p>
           </div>
-          <div className="rounded-2xl bg-white px-4 py-2 text-center shadow-card">
+          <div className="rounded-2xl bg-surface px-4 py-2 text-center shadow-card">
             <p className="text-2xl font-black">🔥 {streak}</p>
             <p className="text-xs font-bold text-muted">
               {t(`${plural(streak, "день", "дня", "дней")} подряд`, "kun ketma-ket")}
@@ -92,7 +92,7 @@ export function AwardsPage() {
                 key={a.id}
                 className={cn(
                   "flex gap-3 rounded-3xl p-4 shadow-card",
-                  ok ? "bg-sun-soft ring-2 ring-sun/50" : "bg-white",
+                  ok ? "bg-sun-soft ring-2 ring-sun/50" : "bg-surface",
                 )}
               >
                 <span className={cn("text-4xl", !ok && "opacity-30 grayscale")} aria-hidden>
@@ -100,7 +100,7 @@ export function AwardsPage() {
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="font-black">
-                    {a.title} {ok && <span className="text-sm text-[#7a4b00]">{t("✓ получена", "✓ olindi")}</span>}
+                    {a.title} {ok && <span className="text-sm text-sun-ink">{t("✓ получена", "✓ olindi")}</span>}
                   </p>
                   <p className="text-sm text-muted">{a.text}</p>
                   {!ok && a.need > 1 && (
@@ -130,7 +130,7 @@ function Certificates() {
   if (!hydrated) return null;
   const earnedLevels = levels.filter((l) => rankEarnedAt(l, state));
   return (
-    <section aria-labelledby="cert-h" className="rounded-3xl bg-white p-4 shadow-card">
+    <section aria-labelledby="cert-h" className="rounded-3xl bg-surface p-4 shadow-card">
       <h2 id="cert-h" className="text-lg font-black">
         📜 {t("Сертификаты о званиях", "Unvon sertifikatlari")}
       </h2>
@@ -188,7 +188,7 @@ function Calendar({ days, today }: { days: Record<string, number>; today: string
         `Soʻnggi ${WEEKS} haftada mashgʻulot boʻlgan kunlar: ${total}`,
       );
   return (
-    <section className="rounded-3xl bg-white p-4 shadow-card" aria-labelledby="cal-h">
+    <section className="rounded-3xl bg-surface p-4 shadow-card" aria-labelledby="cal-h">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h2 id="cal-h" className="text-lg font-black">
           📅 {t("Календарь занятий", "Mashgʻulotlar taqvimi")}

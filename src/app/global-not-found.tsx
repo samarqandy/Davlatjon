@@ -3,6 +3,7 @@ import "@fontsource-variable/nunito";
 import "./globals.css";
 import { LangSync } from "@/components/LangSwitch";
 import { MotionSync } from "@/components/MotionSync";
+import { ThemeSync } from "@/components/ThemeSync";
 import { NotFoundView } from "@/components/NotFoundView";
 import { BRAND } from "@/lib/brand";
 import { HEAD_SCRIPT } from "@/lib/headScript";
@@ -26,6 +27,7 @@ export default function GlobalNotFound() {
         <NotFoundView />
         <LangSync />
         <MotionSync />
+        <ThemeSync />
       </body>
     </html>
   );

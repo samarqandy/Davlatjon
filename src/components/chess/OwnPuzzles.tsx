@@ -88,7 +88,7 @@ export function OwnPuzzlesView() {
         </p>
       </header>
       {!hydrated ? null : list.length === 0 ? (
-        <div className="rounded-3xl bg-white p-6 text-center shadow-card">
+        <div className="rounded-3xl bg-surface p-6 text-center shadow-card">
           <p className="text-lg font-black">{t("Пока задач нет.", "Hozircha masala yoʻq.")}</p>
           <p className="mt-1 text-muted">
             {t(
@@ -121,8 +121,8 @@ export function OwnPuzzlesView() {
                   k === i
                     ? "border-brand bg-brand text-white"
                     : solved[p.key]
-                      ? "border-mint/50 bg-mint-soft text-[#065f46]"
-                      : "border-line bg-white",
+                      ? "border-mint/50 bg-mint-soft text-mint-ink"
+                      : "border-line bg-surface",
                 )}
               >
                 {solved[p.key] && k !== i ? "✓" : k + 1}
@@ -261,7 +261,7 @@ function OwnPuzzleBoard({ puzzle, onNext }: { puzzle: OwnPuzzle; onNext?: () => 
         <Feedback state={feedback} />
       </div>
       <aside className="space-y-3">
-        <div className="rounded-2xl bg-white p-4 shadow-card">
+        <div className="rounded-2xl bg-surface p-4 shadow-card">
           <p className="text-xs font-extrabold tracking-wide text-muted uppercase">{puzzle.title}</p>
           <p className="mt-1 text-lg font-black">
             {t(

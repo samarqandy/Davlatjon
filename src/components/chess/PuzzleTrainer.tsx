@@ -21,7 +21,7 @@ import { usePromotion } from "./useMoveInput";
 const STARS = (n: number) => "⭐".repeat(n);
 
 const stepButton =
-  "flex h-11 w-11 items-center justify-center rounded-2xl border-2 border-line bg-white text-ink transition hover:border-brand/40 disabled:opacity-40";
+  "flex h-11 w-11 items-center justify-center rounded-2xl border-2 border-line bg-surface text-ink transition hover:border-brand/40 disabled:opacity-40";
 
 /** Задача школы (с текстами) или задача из базы Lichess. */
 export type AnyPuzzle = ChessPuzzle | BankPuzzle;
@@ -537,7 +537,7 @@ export function PuzzlePlayer({
         <Feedback state={feedback} silent={quiet} />
       </div>
       <aside className="flex flex-col gap-3">
-        <div className="rounded-2xl bg-white p-4 shadow-card" data-puzzle-info>
+        <div className="rounded-2xl bg-surface p-4 shadow-card" data-puzzle-info>
           <p className="hidden text-xs font-extrabold tracking-wide text-muted uppercase lg:block">
             {STARS(stars)} · {solver === "w" ? t("ходят белые", "oqlar yuradi") : t("ходят чёрные", "qoralar yuradi")}
           </p>

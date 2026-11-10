@@ -13,9 +13,9 @@ function Box({ value, print, wide }: { value: number | string | null; print?: bo
         wide ? "min-w-16 px-2" : "min-w-12 px-1.5",
         empty
           ? print
-            ? "border-ink/60 bg-white"
+            ? "border-ink/60 bg-surface"
             : "border-dashed border-brand/50 bg-brand-soft/60 text-brand"
-          : "border-line bg-white text-ink",
+          : "border-line bg-surface text-ink",
       )}
     >
       {empty ? (print ? "" : "?") : value}
@@ -84,7 +84,7 @@ export function MachineVisual({
 }) {
   const t = useT();
   return (
-    <div className="inline-block overflow-hidden rounded-2xl border-2 border-line bg-white">
+    <div className="inline-block overflow-hidden rounded-2xl border-2 border-line bg-surface">
       <div className="grid grid-cols-[1fr_auto_1fr] items-center bg-brand-soft px-4 py-2 text-center text-sm font-extrabold tracking-wide text-brand-dark uppercase">
         <span>{t("Вход", "Kiradi")}</span>
         <span className="px-3" aria-hidden>
@@ -135,7 +135,7 @@ export function PyramidVisual({ rows, print }: { rows: (number | null)[][]; prin
                 "tabular flex h-11 w-16 items-center justify-center rounded-lg border-2 text-2xl font-extrabold",
                 v === null
                   ? print
-                    ? "border-ink/60 bg-white"
+                    ? "border-ink/60 bg-surface"
                     : "border-dashed border-[#d97706]/60 bg-[#fff7ed] text-[#d97706]"
                   : "border-[#d97706] bg-[#ffedd5] text-ink",
               )}
@@ -191,7 +191,7 @@ export function TableVisual({ head, rows }: { head: string[]; rows: string[][] }
           {rows.map((row, i) => (
             <tr key={i}>
               {row.map((cell, j) => (
-                <td key={j} className="tabular h-10 min-w-24 border border-line bg-white px-3 py-2 font-bold">
+                <td key={j} className="tabular h-10 min-w-24 border border-line bg-surface px-3 py-2 font-bold">
                   {cell}
                 </td>
               ))}

@@ -74,7 +74,7 @@ export function ChessLesson({
           />
         ))}
       </div>
-      <article className="grid gap-5 rounded-3xl bg-white p-5 shadow-card md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:items-start">
+      <article className="grid gap-5 rounded-3xl bg-surface p-5 shadow-card md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:items-start">
         <div className="space-y-3">
           <p className="text-sm font-extrabold text-muted">
             {t(`Шаг ${step + 1} из ${cards.length}`, `${step + 1}-qadam, jami ${cards.length} ta`)}

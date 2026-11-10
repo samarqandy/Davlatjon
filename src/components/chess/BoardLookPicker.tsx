@@ -28,7 +28,7 @@ export function BoardLookPicker({ className }: { className?: string }) {
               onClick={() => updateSettings({ boardTheme: b.id })}
               className={cn(
                 "flex w-[68px] flex-col items-center gap-1 rounded-xl border-2 p-1.5 text-[11px] font-bold transition",
-                theme === b.id ? "border-brand bg-brand-soft" : "border-line bg-white hover:border-brand/40",
+                theme === b.id ? "border-brand bg-brand-soft" : "border-line bg-surface hover:border-brand/40",
               )}
             >
               <span
@@ -65,7 +65,7 @@ export function BoardLookPicker({ className }: { className?: string }) {
               }}
               className={cn(
                 "rounded-xl border-2 px-3 py-2 text-sm font-bold transition",
-                on && set === s.id ? "border-brand bg-brand-soft" : "border-line bg-white hover:border-brand/40",
+                on && set === s.id ? "border-brand bg-brand-soft" : "border-line bg-surface hover:border-brand/40",
               )}
             >
               🔊 {t(s.ru, s.uz)}
@@ -79,7 +79,7 @@ export function BoardLookPicker({ className }: { className?: string }) {
             onClick={() => updateSettings({ boardSounds: false })}
             className={cn(
               "rounded-xl border-2 px-3 py-2 text-sm font-bold transition",
-              !on ? "border-brand bg-brand-soft" : "border-line bg-white hover:border-brand/40",
+              !on ? "border-brand bg-brand-soft" : "border-line bg-surface hover:border-brand/40",
             )}
           >
             🔇 {t("Без звука", "Ovozsiz")}

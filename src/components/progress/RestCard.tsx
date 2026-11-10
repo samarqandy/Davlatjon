@@ -82,7 +82,7 @@ function Card({ t, onExtended }: { t: ReturnType<typeof useT>; onExtended: () =>
       data-rest-card
       className="fixed inset-0 z-[70] flex items-center justify-center overflow-y-auto bg-paper p-4"
     >
-      <div className="w-full max-w-md space-y-5 rounded-3xl border border-line bg-white p-6 text-center shadow-lift sm:p-8">
+      <div className="w-full max-w-md space-y-5 rounded-3xl border border-line bg-surface p-6 text-center shadow-lift sm:p-8">
         <div className="text-6xl" aria-hidden>
           🌙
         </div>
@@ -147,7 +147,7 @@ function Card({ t, onExtended }: { t: ReturnType<typeof useT>; onExtended: () =>
                 </Button>
               </div>
               {error && (
-                <p role="alert" className="text-sm font-bold text-[#7a4b00]">
+                <p role="alert" className="text-sm font-bold text-sun-ink">
                   {error}
                 </p>
               )}

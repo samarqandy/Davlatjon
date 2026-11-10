@@ -50,7 +50,7 @@ export function RiverScene({
               key={id}
               type="button"
               onClick={() => onItem(id)}
-              className="flex h-12 w-full max-w-24 items-center justify-center gap-1 rounded-xl border-2 border-[#16a34a]/40 bg-white text-3xl transition hover:border-[#16a34a]"
+              className="flex h-12 w-full max-w-24 items-center justify-center gap-1 rounded-xl border-2 border-[#16a34a]/40 bg-surface text-3xl transition hover:border-[#16a34a]"
               aria-label={t(`${it.name}: посадить в лодку`, `${it.name}: qayiqqa oʻtqazish`)}
             >
               {it.emoji}
@@ -97,7 +97,7 @@ export function RiverScene({
                   key={id}
                   type="button"
                   onClick={() => onItem(id)}
-                  className="rounded-lg bg-white/70 text-2xl"
+                  className="rounded-lg bg-surface/70 text-2xl"
                   aria-label={t(`${item(id).name}: высадить из лодки`, `${item(id).name}: qayiqdan tushirish`)}
                 >
                   {item(id).emoji}
@@ -268,7 +268,7 @@ export function CrossingPuzzle({
       </div>
       <Feedback state={feedback} />
       {trips.length > 0 && (
-        <div className="rounded-2xl bg-white p-3 shadow-card">
+        <div className="rounded-2xl bg-surface p-3 shadow-card">
           <p className="mb-2 text-sm font-extrabold text-muted">
             {t(`Мои поездки: ${trips.length}`, `Qayiq ${trips.length} marta suzdi:`)}
           </p>

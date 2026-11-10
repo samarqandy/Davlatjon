@@ -47,7 +47,7 @@ export function CertificateView({ levelId }: { levelId: string }) {
     return (
       <div className="space-y-5">
         {back}
-        <section className="rounded-3xl bg-white p-6 shadow-card" data-certificate="locked">
+        <section className="rounded-3xl bg-surface p-6 shadow-card" data-certificate="locked">
           <h1 className="text-2xl font-black">
             🔒 {t(`Сертификат «${level.name}» пока закрыт`, `«${level.name}» sertifikati hali yopiq`)}
           </h1>

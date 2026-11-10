@@ -48,7 +48,7 @@ export function ShiftTable({ alphabet, shift, print = false }: { alphabet: strin
           role="row"
           className={cn(
             "flex flex-col overflow-hidden rounded-md border text-center font-black",
-            print ? "w-[6.5mm] border-ink/40 text-[9pt]" : "w-8 border-line bg-white text-sm",
+            print ? "w-[6.5mm] border-ink/40 text-[9pt]" : "w-8 border-line bg-surface text-sm",
           )}
         >
           <span role="cell" className={cn("py-0.5", !print && "bg-brand-soft text-brand-dark")}>
@@ -119,12 +119,12 @@ export function CipherPuzzle({
 
   return (
     <div className="space-y-4">
-      <div className="space-y-2 rounded-3xl bg-white p-4 shadow-card">
+      <div className="space-y-2 rounded-3xl bg-surface p-4 shadow-card">
         <p className="text-sm font-extrabold text-muted">{t("Шифровка", "Shifrlangan soʻz")}</p>
         <CipherBoxes text={encoded} />
       </div>
 
-      <div className="space-y-3 rounded-3xl bg-white p-4 shadow-card">
+      <div className="space-y-3 rounded-3xl bg-surface p-4 shadow-card">
         <div className="flex flex-wrap items-center gap-3">
           <p className="text-sm font-extrabold text-muted">
             {t("Шифровальная таблица. Сдвиг:", "Shifr jadvali. Siljish:")}
@@ -183,7 +183,7 @@ export function CipherPuzzle({
       </div>
       <Feedback state={feedback} />
 
-      <details className="rounded-2xl bg-white p-3 shadow-card">
+      <details className="rounded-2xl bg-surface p-3 shadow-card">
         <summary className="cursor-pointer text-sm font-extrabold text-brand">
           ✍️ {t("Зашифруй своё слово", "Oʻz soʻzingni shifrla")}
         </summary>

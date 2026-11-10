@@ -39,7 +39,10 @@ export function PlacementCard() {
   };
 
   return (
-    <section className="rounded-[2rem] border-2 border-brand/25 bg-white p-5 shadow-card sm:p-6" data-placement={phase}>
+    <section
+      className="rounded-[2rem] border-2 border-brand/25 bg-surface p-5 shadow-card sm:p-6"
+      data-placement={phase}
+    >
       {phase === "offer" && (
         <div className="space-y-3">
           <MascotSays>

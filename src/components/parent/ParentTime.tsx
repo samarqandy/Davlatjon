@@ -28,7 +28,7 @@ function Pill({ on, children, onClick }: { on: boolean; children: React.ReactNod
       onClick={onClick}
       className={cn(
         "min-h-11 rounded-xl border-2 px-3.5 text-sm font-extrabold transition",
-        on ? "border-brand bg-brand text-white" : "border-line bg-white hover:border-brand/40",
+        on ? "border-brand bg-brand text-white" : "border-line bg-surface hover:border-brand/40",
       )}
     >
       {children}

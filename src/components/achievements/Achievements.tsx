@@ -97,7 +97,7 @@ export function Achievements() {
         <Link
           href="/chess/awards"
           data-achievements-awards={got.length}
-          className="flex items-center gap-4 rounded-3xl bg-white p-4 shadow-card transition hover:-translate-y-0.5"
+          className="flex items-center gap-4 rounded-3xl bg-surface p-4 shadow-card transition hover:-translate-y-0.5"
         >
           <Medal className="h-10 w-10 shrink-0 text-sun" aria-hidden />
           <span className="min-w-0 flex-1">
@@ -116,7 +116,7 @@ export function Achievements() {
         </Link>
         <Link
           href="/chess/collection"
-          className="flex items-center gap-4 rounded-3xl bg-white p-4 shadow-card transition hover:-translate-y-0.5"
+          className="flex items-center gap-4 rounded-3xl bg-surface p-4 shadow-card transition hover:-translate-y-0.5"
         >
           <LayoutGrid className="h-10 w-10 shrink-0 text-brand" aria-hidden />
           <span className="min-w-0 flex-1">
@@ -131,7 +131,7 @@ export function Achievements() {
         {ranked && (
           <Link
             href="/leaderboard"
-            className="flex items-center gap-4 rounded-3xl bg-white p-4 shadow-card transition hover:-translate-y-0.5 sm:col-span-2"
+            className="flex items-center gap-4 rounded-3xl bg-surface p-4 shadow-card transition hover:-translate-y-0.5 sm:col-span-2"
           >
             <Trophy className="h-10 w-10 shrink-0 text-sun" aria-hidden />
             <span className="min-w-0 flex-1 text-lg font-black">{t("Рейтинг", "Reyting")}</span>

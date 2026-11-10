@@ -55,7 +55,7 @@ export function Figure({
   className?: string;
 }) {
   return (
-    <figure className={cn("overflow-hidden rounded-2xl bg-white shadow-card", className)}>
+    <figure className={cn("overflow-hidden rounded-2xl bg-surface shadow-card", className)}>
       {fit === "cover" ? (
         <div className="relative aspect-[4/3] bg-line/40">
           <Image src={image.file} alt={image.alt} fill sizes={sizes} className="object-cover object-top" />

@@ -21,7 +21,7 @@ export function DayIntro({ day, onStart }: { day: Day; onStart: () => void }) {
 
   return (
     <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
-      <section className="animate-fade-up rounded-[2rem] border border-line bg-white p-6 shadow-card sm:p-8">
+      <section className="animate-fade-up rounded-[2rem] border border-line bg-surface p-6 shadow-card sm:p-8">
         <div className="mb-4 flex items-center gap-4">
           <span
             className="flex h-20 w-20 shrink-0 animate-float items-center justify-center rounded-3xl bg-brand-soft text-5xl"
@@ -43,7 +43,7 @@ export function DayIntro({ day, onStart }: { day: Day; onStart: () => void }) {
             </p>
           ))}
         </div>
-        <div className="mt-5 inline-flex items-center gap-2 rounded-2xl bg-sun-soft px-4 py-2 font-extrabold text-[#7a4b00]">
+        <div className="mt-5 inline-flex items-center gap-2 rounded-2xl bg-sun-soft px-4 py-2 font-extrabold text-sun-ink">
           <span aria-hidden>{day.habit.emoji}</span>
           {t(`Привычка дня: «${day.habit.name}»`, `Bugungi odat: «${day.habit.name}»`)}
         </div>
@@ -65,7 +65,7 @@ export function DayIntro({ day, onStart }: { day: Day; onStart: () => void }) {
       </section>
 
       <section
-        className="animate-fade-up rounded-[2rem] border border-line bg-white p-5 shadow-card sm:p-6"
+        className="animate-fade-up rounded-[2rem] border border-line bg-surface p-5 shadow-card sm:p-6"
         aria-label={t("Задачи дня", "Kun masalalari")}
       >
         <h2 className="mb-3 flex items-center justify-between text-lg font-extrabold">

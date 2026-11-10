@@ -111,7 +111,7 @@ export function MiniDrills() {
                 key={d}
                 type="button"
                 onClick={() => setHash(`#${d}`)}
-                className="flex flex-col rounded-3xl bg-white p-5 text-left shadow-card transition hover:-translate-y-0.5 hover:shadow-lift"
+                className="flex flex-col rounded-3xl bg-surface p-5 text-left shadow-card transition hover:-translate-y-0.5 hover:shadow-lift"
               >
                 <span className="text-4xl" aria-hidden>
                   {text(d).emoji}
@@ -144,7 +144,7 @@ function Finish({ id, score, onAgain }: { id: DrillId; score: number; onAgain: (
       <p className="mt-2 text-2xl font-black">
         {t(`Результат: ${score} из ${MAX[id]}`, `Natija: ${MAX[id]} dan ${score}`)}
       </p>
-      <p className="font-bold text-[#7a4b00]">
+      <p className="font-bold text-sun-ink">
         {score >= record
           ? t("Это твой рекорд!", "Bu sening rekording!")
           : t(`Рекорд — ${record}. Попробуй ещё!`, `Rekord — ${record}. Yana urinib koʻr!`)}
@@ -265,7 +265,7 @@ function SafetyDrill() {
       />
       <div className="space-y-3">
         <RoundBar round={round} total={rounds.length} score={score} />
-        <p className="rounded-2xl bg-white px-4 py-3 text-lg font-black shadow-card">
+        <p className="rounded-2xl bg-surface px-4 py-3 text-lg font-black shadow-card">
           {q.color === "w"
             ? t("Ты играешь белыми.", "Sen oqlar bilan oʻynayapsan.")
             : t("Ты играешь чёрными.", "Sen qoralar bilan oʻynayapsan.")}{" "}
@@ -279,7 +279,7 @@ function SafetyDrill() {
             <p
               className={cn(
                 "rounded-2xl px-4 py-3 font-black",
-                right ? "bg-mint-soft text-[#065f46]" : "bg-rose/10 text-rose",
+                right ? "bg-mint-soft text-mint-ink" : "bg-rose/10 text-rose",
               )}
               data-safety={right ? "right" : "wrong"}
             >
@@ -386,7 +386,7 @@ function MemoryDrill() {
       <div className="space-y-3">
         <RoundBar round={round} total={MEMORY_ROUNDS.length} score={score} />
         {phase === "show" ? (
-          <div className="rounded-2xl bg-white px-4 py-3 shadow-card" data-memory="show">
+          <div className="rounded-2xl bg-surface px-4 py-3 shadow-card" data-memory="show">
             <p className="text-lg font-black">
               {t(
                 `Запоминай! Фигур: ${Object.keys(task.pieces).length}`,
@@ -402,7 +402,7 @@ function MemoryDrill() {
             </div>
           </div>
         ) : (
-          <div className="flex items-center gap-3 rounded-2xl bg-white px-4 py-3 shadow-card" data-memory={phase}>
+          <div className="flex items-center gap-3 rounded-2xl bg-surface px-4 py-3 shadow-card" data-memory={phase}>
             <PieceIcon piece={task.ask} className="h-12 w-12 shrink-0 rounded-xl bg-[#f0d9b5] p-0.5" />
             <p className="text-lg font-black">{whereWas(task.ask, lang)}</p>
           </div>
@@ -412,7 +412,7 @@ function MemoryDrill() {
             <p
               className={cn(
                 "rounded-2xl px-4 py-3 font-black",
-                right ? "bg-mint-soft text-[#065f46]" : "bg-rose/10 text-rose",
+                right ? "bg-mint-soft text-mint-ink" : "bg-rose/10 text-rose",
               )}
             >
               {right
@@ -492,7 +492,7 @@ function KnightDrill() {
       <ChessBoard id="knight" position={pieces} marks={marks} onSquare={tap} />
       <div className="space-y-3">
         <RoundBar round={round} total={KNIGHT_ROUNDS.length} score={score} />
-        <p className="rounded-2xl bg-white px-4 py-3 text-lg font-black shadow-card" data-knight-moves={path.length}>
+        <p className="rounded-2xl bg-surface px-4 py-3 text-lg font-black shadow-card" data-knight-moves={path.length}>
           {t(`Ходов: ${path.length}`, `Yurishlar: ${path.length}`)}
           {task.pawns.length > 0 && (
             <span className="block text-sm font-bold text-muted">
@@ -508,7 +508,7 @@ function KnightDrill() {
             <p
               className={cn(
                 "rounded-2xl px-4 py-3 font-black",
-                stars === 3 ? "bg-mint-soft text-[#065f46]" : "bg-sun-soft text-[#7a4b00]",
+                stars === 3 ? "bg-mint-soft text-mint-ink" : "bg-sun-soft text-sun-ink",
               )}
               data-knight-stars={stars}
             >

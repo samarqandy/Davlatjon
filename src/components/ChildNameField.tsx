@@ -41,7 +41,7 @@ export function ChildNameField({
         spellCheck={false}
         enterKeyHint="done"
         placeholder={t("Имя", "Ism")}
-        className="mt-2 w-full rounded-2xl border-2 border-line bg-white px-4 py-3 text-xl font-bold outline-none focus:border-brand"
+        className="mt-2 w-full rounded-2xl border-2 border-line bg-surface px-4 py-3 text-xl font-bold outline-none focus:border-brand"
       />
       <p className="mt-1 min-h-6 text-sm font-bold text-brand-dark" aria-live="polite">
         {/* Не через t(): он сам подставил бы уже сохранённое имя. */}

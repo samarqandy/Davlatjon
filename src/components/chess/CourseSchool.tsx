@@ -88,7 +88,7 @@ function Overview({ step, lessons }: { step: CourseStep; lessons: (ChessTactic &
               </span>
               <span className="block text-lg leading-tight font-black">{next.title}</span>
             </span>
-            <span className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-sun px-4 py-2.5 font-black text-ink shadow-[0_3px_0_0_#b45309]">
+            <span className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-sun px-4 py-2.5 font-black text-on-sun shadow-[0_3px_0_0_#b45309]">
               <Play className="h-4 w-4 fill-current" aria-hidden />
               {started ? t("Дальше", "Davom") : t("Начать", "Boshlash")}
             </span>
@@ -226,7 +226,7 @@ function LessonStop({
           <span className="line-clamp-2 text-lg leading-tight font-black text-pretty">{lesson.title}</span>
           <span className="block text-sm font-extrabold text-muted">
             {done ? (
-              <span className="text-[#047857]">{t("✓ пройден", "✓ oʻtildi")}</span>
+              <span className="text-success-ink">{t("✓ пройден", "✓ oʻtildi")}</span>
             ) : current ? (
               <span className="text-brand-dark">
                 {started ? t("Дальше — сюда", "Davomi — shu yerda") : t("Начни отсюда", "Shu yerdan boshla")}

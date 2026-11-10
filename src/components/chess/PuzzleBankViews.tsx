@@ -85,7 +85,7 @@ export function PuzzleRatingBar({ className }: { className?: string }) {
         {numeric ? t(`Рейтинг ${rating.r}`, `Reyting ${rating.r}`) : "⭐".repeat(stars)}
         {/* Показываем только рост: минус после ошибки ребёнка не подбадривает — полоска и так сдвинется. */}
         {numeric && delta > 0 && (
-          <span className="ml-1.5 text-sm font-extrabold text-[#065f46] tabular-nums" data-puzzle-delta={delta}>
+          <span className="ml-1.5 text-sm font-extrabold text-mint-ink tabular-nums" data-puzzle-delta={delta}>
             +{delta}
           </span>
         )}
@@ -125,7 +125,7 @@ export function LevelChooser() {
           onClick={() => updateSettings({ puzzleLevel: id === "normal" ? undefined : id })}
           className={cn(
             "rounded-xl border-2 px-3 py-1.5 text-sm font-black transition",
-            level === id ? "border-brand bg-brand text-white" : "border-line bg-white text-ink hover:border-brand/40",
+            level === id ? "border-brand bg-brand text-white" : "border-line bg-surface text-ink hover:border-brand/40",
           )}
         >
           {label}
@@ -173,7 +173,7 @@ export function usePuzzleByKey(key: string | undefined): AnyPuzzle | "loading" |
 export function Loading() {
   const t = useT();
   return (
-    <p className="rounded-3xl bg-white p-6 text-center font-bold text-muted shadow-card" aria-live="polite">
+    <p className="rounded-3xl bg-surface p-6 text-center font-bold text-muted shadow-card" aria-live="polite">
       {t("Загружаю задачи…", "Masalalar yuklanyapti…")}
     </p>
   );
@@ -183,7 +183,7 @@ export function LoadError({ onRetry }: { onRetry: () => void }) {
   const t = useT();
   return (
     <div className="rounded-3xl bg-sun-soft p-6 text-center">
-      <p className="font-bold text-[#7a4b00]">
+      <p className="font-bold text-sun-ink">
         {t(
           "Не получилось загрузить задачи. Проверь интернет — и попробуй ещё раз.",
           "Masalalarni yuklab boʻlmadi. Internetni tekshirib, yana urinib koʻr.",
@@ -416,7 +416,7 @@ export function WoodpeckerView() {
             {t(pluralize(r.misses, "ошибка", "ошибки", "ошибок"), `${r.misses} ta xato`)}
           </p>
           {prev && (
-            <p className="mt-1 font-bold text-[#065f46]">
+            <p className="mt-1 font-bold text-mint-ink">
               {faster > 0
                 ? t(`Быстрее прошлого круга на ${faster}%!`, `Oldingi aylanadan ${faster}% tezroq!`)
                 : t(
@@ -462,7 +462,7 @@ export function WoodpeckerView() {
           <Loading />
         ) : (
           <div className="rounded-3xl bg-sun-soft p-6 text-center">
-            <p className="font-bold text-[#7a4b00]">
+            <p className="font-bold text-sun-ink">
               {t(
                 "Этой задачи больше нет в наборе — начнём новый.",
                 "Bu masala endi toʻplamda yoʻq — yangisini boshlaymiz.",
@@ -497,7 +497,7 @@ function Rounds({ rounds }: { rounds: readonly WoodpeckerRound[] }) {
       aria-label={t("Пройденные круги", "Yakunlangan aylanalar")}
     >
       {rounds.map((r, i) => (
-        <li key={i} className="rounded-2xl bg-white px-4 py-2 text-sm font-bold shadow-card">
+        <li key={i} className="rounded-2xl bg-surface px-4 py-2 text-sm font-bold shadow-card">
           {t(`Круг ${i + 1}`, `${i + 1}-aylana`)}: ⏱ {clock(r.ms)} · ❌ {r.misses}
         </li>
       ))}

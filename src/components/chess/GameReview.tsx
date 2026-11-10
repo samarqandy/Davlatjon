@@ -120,7 +120,7 @@ function ReviewList({ notFound }: { notFound: boolean }) {
         </p>
       )}
       {hydrated && list.length === 0 ? (
-        <div className="rounded-3xl bg-white p-6 text-center shadow-card">
+        <div className="rounded-3xl bg-surface p-6 text-center shadow-card">
           <p className="text-5xl" aria-hidden>
             🤖
           </p>
@@ -144,7 +144,7 @@ function ReviewList({ notFound }: { notFound: boolean }) {
                 <button
                   type="button"
                   onClick={() => setHash(`#${g.id}`)}
-                  className="flex w-full items-center gap-3 rounded-3xl bg-white p-4 text-left shadow-card transition hover:-translate-y-0.5"
+                  className="flex w-full items-center gap-3 rounded-3xl bg-surface p-4 text-left shadow-card transition hover:-translate-y-0.5"
                 >
                   <span className="text-3xl" aria-hidden>
                     {g.mode === "two" ? "👨‍👦" : "🤖"}
@@ -260,7 +260,7 @@ function ReviewView({ game }: { game: ChessGameRecord }) {
       <PgnButtons game={game} />
 
       {!review ? (
-        <div className="rounded-3xl bg-white p-6 shadow-card" aria-live="polite">
+        <div className="rounded-3xl bg-surface p-6 shadow-card" aria-live="polite">
           <p className="text-lg font-black">
             🤖 {t("Робот-тренер смотрит партию…", "Robot-murabbiy partiyani koʻrib chiqyapti…")}
           </p>
@@ -319,7 +319,7 @@ function ReviewBody({
         {sides.map((side) => {
           const s = review.sides[side];
           return (
-            <div key={side} className="rounded-3xl bg-white p-5 shadow-card">
+            <div key={side} className="rounded-3xl bg-surface p-5 shadow-card">
               <p className="text-sm font-extrabold text-muted">
                 {hero
                   ? t("Твоя точность", "Sening aniqliging")
@@ -413,7 +413,7 @@ function ReviewBody({
             🧪 {t("Разобрать эту позицию на доске анализа", "Bu pozitsiyani tahlil taxtasida koʻrib chiqish")}
           </Link>
         </div>
-        <aside className="rounded-2xl bg-white p-3 shadow-card">
+        <aside className="rounded-2xl bg-surface p-3 shadow-card">
           <p className="mb-2 text-sm font-extrabold text-muted">{t("Ходы партии", "Partiya yurishlari")}</p>
           <ol
             className="grid max-h-[460px] grid-cols-[auto_1fr_1fr] gap-x-2 gap-y-0.5 overflow-y-auto text-[0.95rem]"
@@ -466,7 +466,7 @@ function ReviewBody({
                   setPly(m.ply);
                   window.scrollTo({ top: 0, behavior: currentScrollBehavior() });
                 }}
-                className="rounded-3xl bg-white p-4 text-left shadow-card transition hover:-translate-y-0.5"
+                className="rounded-3xl bg-surface p-4 text-left shadow-card transition hover:-translate-y-0.5"
               >
                 <p
                   className="text-xs font-extrabold tracking-wide uppercase"
@@ -512,7 +512,7 @@ function MoveComment({ cur, hero }: { cur: PlyReview | undefined; hero: "w" | "b
   const san = useSan();
   if (!cur)
     return (
-      <p className="rounded-2xl border-2 border-line bg-white px-4 py-3 text-lg font-semibold">
+      <p className="rounded-2xl border-2 border-line bg-surface px-4 py-3 text-lg font-semibold">
         {t(
           "Нажимай «Дальше» или на ход в списке — робот-тренер расскажет о каждом ходе.",
           "«Oldinga» tugmasini yoki roʻyxatdagi yurishni bos — robot-murabbiy har bir yurish haqida aytib beradi.",
@@ -553,7 +553,7 @@ function MoveComment({ cur, hero }: { cur: PlyReview | undefined; hero: "w" | "b
       </p>
       <p className="mt-1 text-lg font-semibold">{text}</p>
       {cur.best && cur.best !== cur.uci && cur.kind !== "good" && cur.kind !== "best" && (
-        <p className="mt-1 text-sm font-bold text-[#065f46]">
+        <p className="mt-1 text-sm font-bold text-mint-ink">
           {t("Зелёная стрелка — лучший ход.", "Yashil strelka — eng yaxshi yurish.")}
         </p>
       )}
@@ -590,7 +590,7 @@ function AdvantageChart({
   const tip = hover !== null ? review.plies[hover - 1] : undefined;
 
   return (
-    <section className="rounded-3xl bg-white p-4 shadow-card" aria-labelledby="chart-h">
+    <section className="rounded-3xl bg-surface p-4 shadow-card" aria-labelledby="chart-h">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h2 id="chart-h" className="text-lg font-black">
           📈 {t("Кто был ближе к победе", "Kim gʻalabaga yaqinroq edi")}

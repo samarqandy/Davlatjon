@@ -129,7 +129,7 @@ export function DaySession({
       {step >= 1 && step <= total && !resting && (
         <nav
           data-day-nav
-          className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-white/95 backdrop-blur"
+          className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-surface/95 backdrop-blur"
           aria-label={t("Переход между задачами", "Masalalar orasida oʻtish")}
         >
           <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
@@ -181,15 +181,15 @@ function ProgressDots({ day, step, onGo }: { day: Day; step: number; onGo: (s: n
                   : solved
                     ? "border-mint/50 bg-mint-soft"
                     : p?.status === "started"
-                      ? "border-sun/60 bg-white"
-                      : "border-line bg-white",
+                      ? "border-sun/60 bg-surface"
+                      : "border-line bg-surface",
               )}
               title={`${i + 1}. ${task.title}`}
             >
               <span aria-hidden>{SECTIONS[task.section].emoji}</span>
               {!solved && p?.status === "started" && (
                 <span
-                  className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-sun text-[10px] font-black text-ink"
+                  className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-sun text-[10px] font-black text-on-sun"
                   aria-hidden
                 >
                   …
@@ -210,7 +210,7 @@ function ProgressDots({ day, step, onGo }: { day: Day; step: number; onGo: (s: n
           onClick={() => onGo(day.tasks.length + 1)}
           className={cn(
             "flex h-10 w-full min-w-8 items-center justify-center rounded-xl border-2 text-base sm:min-w-10 sm:text-lg",
-            step > day.tasks.length ? "border-brand bg-brand-soft" : "border-line bg-white",
+            step > day.tasks.length ? "border-brand bg-brand-soft" : "border-line bg-surface",
           )}
           aria-label={t("Итоги дня", "Kun yakuni")}
           title={t("Итоги дня", "Kun yakuni")}

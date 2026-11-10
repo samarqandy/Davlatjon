@@ -16,7 +16,7 @@ export function RestStop({ onRest, onMore }: { onRest: () => void; onMore: () =>
   const lang = useLang();
   return (
     <section
-      className="mx-auto max-w-md space-y-5 rounded-3xl border border-line bg-white p-6 text-center shadow-card"
+      className="mx-auto max-w-md space-y-5 rounded-3xl border border-line bg-surface p-6 text-center shadow-card"
       aria-labelledby="rest-stop-title"
       data-rest-stop
     >

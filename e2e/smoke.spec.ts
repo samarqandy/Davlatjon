@@ -504,7 +504,8 @@ test("тренажёр координат: цвет клетки", async ({ page
   await page.getByRole("button", { name: "▶ Старт" }).click();
   const sq = (await page.locator("p.text-7xl").innerText()).trim();
   const light = ("abcdefgh".indexOf(sq[0]) + Number(sq[1])) % 2 === 0;
-  await page.getByRole("button", { name: light ? "светлая" : "тёмная" }).click();
+  // exact: в шапке есть кнопка «Тёмная тема».
+  await page.getByRole("button", { name: light ? "светлая" : "тёмная", exact: true }).click();
   await expect(page.getByText("Верно: 1")).toBeVisible();
 });
 

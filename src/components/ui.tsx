@@ -14,12 +14,12 @@ type Size = "sm" | "md" | "lg";
 const VARIANTS: Record<Variant, string> = {
   primary:
     "bg-brand text-white shadow-[0_4px_0_0_#3730a3] hover:bg-[#4338ca] active:translate-y-[2px] active:shadow-[0_2px_0_0_#3730a3]",
-  secondary: "bg-white text-ink border-2 border-line hover:border-brand/40 hover:bg-brand-soft/40",
+  secondary: "bg-surface text-ink border-2 border-line hover:border-brand/40 hover:bg-brand-soft/40",
   soft: "bg-brand-soft text-brand-dark hover:bg-[#e0e3ff]",
   ghost: "text-muted hover:bg-black/5 hover:text-ink",
   success:
     "bg-mint text-white shadow-[0_4px_0_0_#047857] hover:bg-[#0ea371] active:translate-y-[2px] active:shadow-[0_2px_0_0_#047857]",
-  sun: "bg-sun text-ink shadow-[0_4px_0_0_#b45309] hover:bg-[#f7a81d] active:translate-y-[2px] active:shadow-[0_2px_0_0_#b45309]",
+  sun: "bg-sun text-on-sun shadow-[0_4px_0_0_#b45309] hover:bg-[#f7a81d] active:translate-y-[2px] active:shadow-[0_2px_0_0_#b45309]",
 };
 
 const SIZES: Record<Size, string> = {
@@ -51,7 +51,7 @@ export function ButtonLink({
 
 export function Card({ className, children, ...props }: ComponentProps<"div">) {
   return (
-    <div className={cn("rounded-3xl border border-line bg-white shadow-card", className)} {...props}>
+    <div className={cn("rounded-3xl border border-line bg-surface shadow-card", className)} {...props}>
       {children}
     </div>
   );

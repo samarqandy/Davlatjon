@@ -236,7 +236,7 @@ function LangRow() {
             aria-pressed={lang === l.id}
             className={cn(
               "min-h-11 rounded-xl border-2 px-3 text-sm font-black transition",
-              lang === l.id ? "border-brand bg-brand text-white" : "border-line bg-white hover:border-brand/40",
+              lang === l.id ? "border-brand bg-brand text-white" : "border-line bg-surface hover:border-brand/40",
             )}
           >
             {l.label}
@@ -263,7 +263,7 @@ function NameRow({ name, nameUz }: { name?: string; nameUz?: string }) {
     setDraftUz(null);
   };
   const input =
-    "min-h-11 w-full rounded-xl border-2 border-line bg-white px-3 font-bold outline-none focus:border-brand";
+    "min-h-11 w-full rounded-xl border-2 border-line bg-surface px-3 font-bold outline-none focus:border-brand";
   return (
     <div className="space-y-2 p-5">
       <label className="block">
@@ -327,7 +327,7 @@ function AgeRow({ value, onChange }: { value?: number; onChange: (age: number | 
         value={value ?? ""}
         onChange={(e) => onChange(e.target.value ? Number(e.target.value) : undefined)}
         aria-label={t("Возраст ребёнка", "Farzandingiz yoshi")}
-        className="mt-1 min-h-11 shrink-0 rounded-xl border-2 border-line bg-white px-3 font-bold"
+        className="mt-1 min-h-11 shrink-0 rounded-xl border-2 border-line bg-surface px-3 font-bold"
       >
         <option value="">{t("не указан", "koʻrsatilmagan")}</option>
         {ages.map((a) => (
@@ -367,7 +367,7 @@ function Toggle({
       >
         <span
           className={cn(
-            "absolute top-1 h-5 w-5 rounded-full bg-white shadow transition-[left]",
+            "absolute top-1 h-5 w-5 rounded-full bg-surface shadow transition-[left]",
             value ? "left-6" : "left-1",
           )}
         />

@@ -38,7 +38,7 @@ export function EndgameSchool() {
           <h1 className="text-3xl font-black">{endgameSchool.title}</h1>
           <p className="mt-1 text-muted">{endgameSchool.about}</p>
         </div>
-        <div className="w-56 rounded-2xl bg-white px-4 py-3 shadow-card">
+        <div className="w-56 rounded-2xl bg-surface px-4 py-3 shadow-card">
           <p className="text-sm font-extrabold text-muted">
             {t(`Решено ${done} из ${all.length}`, `${all.length} tadan ${done} tasi yechildi`)}
           </p>
@@ -51,7 +51,7 @@ export function EndgameSchool() {
           <a
             key={l.id}
             href={`#${l.id}`}
-            className="rounded-2xl bg-white px-3 py-2 text-sm font-extrabold shadow-card hover:bg-brand-soft"
+            className="rounded-2xl bg-surface px-3 py-2 text-sm font-extrabold shadow-card hover:bg-brand-soft"
           >
             <span aria-hidden>{l.emoji}</span> {i + 1}. {l.title}
           </a>
@@ -62,7 +62,7 @@ export function EndgameSchool() {
         <Lesson key={lesson.id} lesson={lesson} n={i + 1} solved={hydrated ? solved : {}} />
       ))}
 
-      <section className="rounded-3xl bg-white p-5 shadow-card" aria-labelledby="mates-h">
+      <section className="rounded-3xl bg-surface p-5 shadow-card" aria-labelledby="mates-h">
         <h2 id="mates-h" className="text-2xl font-black">
           ♛ {t("Пешка стала ферзём — что дальше?", "Piyoda farzin boʻldi — endi-chi?")}
         </h2>
@@ -101,7 +101,7 @@ function Lesson({ lesson, n, solved }: { lesson: EndgameLesson; n: number; solve
   return (
     <section
       id={lesson.id}
-      className="scroll-mt-24 space-y-4 rounded-3xl bg-white p-5 shadow-card"
+      className="scroll-mt-24 space-y-4 rounded-3xl bg-surface p-5 shadow-card"
       aria-labelledby={`${lesson.id}-h`}
     >
       <div className="flex flex-wrap items-start justify-between gap-2">
@@ -199,7 +199,7 @@ function SquareDrill({ drill, solved }: { drill: EndgameDrill; solved: boolean }
         </div>
       ) : (
         <div role="status" className="space-y-2">
-          <p className={cn("font-black", answer === truth ? "text-[#047857]" : "text-[#b45309]")}>
+          <p className={cn("font-black", answer === truth ? "text-success-ink" : "text-warning-ink")}>
             {answer === truth
               ? t("Верно!", "Toʻgʻri!")
               : truth
@@ -277,10 +277,10 @@ function FindDrill({ drill, solved }: { drill: EndgameDrill; solved: boolean }) 
       />
       {result?.ok ? (
         <p role="status" className="text-sm">
-          <b className="text-[#047857]">{t("Верно!", "Toʻgʻri!")}</b> {drill.why}
+          <b className="text-success-ink">{t("Верно!", "Toʻgʻri!")}</b> {drill.why}
         </p>
       ) : result ? (
-        <p role="status" className="text-sm font-bold text-[#b45309]">
+        <p role="status" className="text-sm font-bold text-warning-ink">
           {turn === drillStrongSide(drill.fen)
             ? t(
                 `${san(result.san)} — после этого хода победа ускользает. Попробуй другой.`,
@@ -451,7 +451,7 @@ function PlayDrill({ drill, solved }: { drill: EndgameDrill; solved: boolean }) 
       <p
         role="status"
         aria-live="polite"
-        className={cn("text-sm font-bold", state === "won" && "text-[#047857]", slip && "text-[#b45309]")}
+        className={cn("text-sm font-bold", state === "won" && "text-success-ink", slip && "text-warning-ink")}
       >
         {state === "won" && "🎉 "}
         {status}

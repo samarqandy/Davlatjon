@@ -66,7 +66,7 @@ export function FieldsAnswer({ taskId, fields, hintsLeft }: { taskId: string; fi
           <div
             key={f.id}
             className={cn(
-              "rounded-2xl border-2 bg-white px-3 py-2.5 transition",
+              "rounded-2xl border-2 bg-surface px-3 py-2.5 transition",
               marks[f.id] === true ? "border-mint" : "border-line",
             )}
           >
@@ -205,7 +205,7 @@ function CoordInput({
             aria-pressed={c === col}
             className={cn(
               "h-10 w-10 rounded-xl border-2 text-lg font-extrabold",
-              c === col ? "border-brand bg-brand text-white" : "border-line bg-white hover:border-brand/40",
+              c === col ? "border-brand bg-brand text-white" : "border-line bg-surface hover:border-brand/40",
             )}
           >
             {c}
@@ -221,7 +221,7 @@ function CoordInput({
             aria-pressed={r === row}
             className={cn(
               "h-10 w-10 rounded-xl border-2 text-lg font-extrabold",
-              r === row ? "border-brand bg-brand text-white" : "border-line bg-white hover:border-brand/40",
+              r === row ? "border-brand bg-brand text-white" : "border-line bg-surface hover:border-brand/40",
             )}
           >
             {r}

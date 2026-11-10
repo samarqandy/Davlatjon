@@ -38,7 +38,7 @@ export function Celebration({
       <MascotSays className="mx-auto w-fit" size={80} mood="celebration">
         {title}
       </MascotSays>
-      {children && <div className="mt-3 text-lg text-[#065f46]">{children}</div>}
+      {children && <div className="mt-3 text-lg text-mint-ink">{children}</div>}
       {actions && <div className="mt-4 flex flex-wrap justify-center gap-2">{actions}</div>}
     </section>
   );

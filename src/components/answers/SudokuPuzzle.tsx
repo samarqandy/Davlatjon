@@ -111,7 +111,7 @@ export function SudokuPuzzle({
         {t(`Впиши в пустые клетки числа от 1 до ${n}.`, `Boʻsh kataklarga 1 dan ${n} gacha sonlarni yoz.`)}
       </p>
       <div
-        className="inline-grid rounded-xl bg-white p-1 shadow-card"
+        className="inline-grid rounded-xl bg-surface p-1 shadow-card"
         style={{ gridTemplateColumns: `repeat(${n}, minmax(0, 4rem))` }}
       >
         {grid.map((row, r) =>
@@ -123,7 +123,7 @@ export function SudokuPuzzle({
                 key={key}
                 className={cn(
                   "tabular flex h-16 w-16 items-center justify-center text-3xl font-black",
-                  bad ? "bg-sun-soft" : v !== null ? "bg-[#f1f5f9]" : "bg-white",
+                  bad ? "bg-sun-soft" : v !== null ? "bg-[#f1f5f9]" : "bg-surface",
                 )}
                 style={borders(r, c, n, box)}
               >

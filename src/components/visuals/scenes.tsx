@@ -22,7 +22,7 @@ export function CardsVisual({ items }: { items: { emoji: string; label: string; 
         return (
           <div
             key={`${item.label}-${i}`}
-            className="flex min-w-[5.5rem] flex-col items-center gap-1 rounded-2xl border-2 bg-white px-3 py-2"
+            className="flex min-w-[5.5rem] flex-col items-center gap-1 rounded-2xl border-2 bg-surface px-3 py-2"
             style={{ borderColor: color ? `${color}` : "var(--color-line)" }}
           >
             {item.emoji === "🏠" && color ? (
@@ -83,7 +83,7 @@ export function BalanceVisual({ scales }: { scales: { left: string[]; right: str
   return (
     <div className="flex flex-wrap gap-4">
       {scales.map((s, i) => (
-        <div key={i} className="rounded-2xl border border-line bg-white p-2">
+        <div key={i} className="rounded-2xl border border-line bg-surface p-2">
           <Scale {...s} />
         </div>
       ))}
@@ -126,7 +126,7 @@ export function OutfitsVisual({ shirts, pants }: { shirts: ColorName[]; pants: C
     <div className="flex flex-wrap items-center gap-3">
       <span className="w-20 text-sm font-extrabold text-muted">{title}</span>
       {colors.map((c) => (
-        <div key={c} className="flex flex-col items-center rounded-2xl border border-line bg-white px-2 pt-2 pb-1">
+        <div key={c} className="flex flex-col items-center rounded-2xl border border-line bg-surface px-2 pt-2 pb-1">
           <Icon color={COLOR_HEX[c]} />
           <span className="text-xs font-bold text-muted">{colorName(c, lang)}</span>
         </div>

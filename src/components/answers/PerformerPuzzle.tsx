@@ -206,7 +206,7 @@ export function PerformerPuzzle({
 
   return (
     <div className="space-y-4">
-      <div className="rounded-3xl bg-white p-4 shadow-card">
+      <div className="rounded-3xl bg-surface p-4 shadow-card">
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
           <div className="flex items-center gap-3">
             <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-soft text-4xl" aria-hidden>
@@ -216,14 +216,14 @@ export function PerformerPuzzle({
               <p className="text-sm font-extrabold text-muted">{puzzle.name}</p>
               <p className="text-sm font-bold text-muted">
                 {t("Начало", "Boshlanish")}: <b className="text-ink">{puzzle.start}</b> · {t("Цель", "Maqsad")}:{" "}
-                <b className="text-[#b45309]">{puzzle.target}</b>
+                <b className="text-warning-ink">{puzzle.target}</b>
               </p>
             </div>
           </div>
           <div
             className={cn(
               "tabular ml-auto flex h-16 min-w-24 items-center justify-center rounded-2xl border-2 px-4 text-4xl font-black",
-              reached ? "border-mint bg-mint-soft text-[#047857]" : "border-brand/30 bg-paper text-ink",
+              reached ? "border-mint bg-mint-soft text-success-ink" : "border-brand/30 bg-paper text-ink",
             )}
             aria-live="polite"
             aria-label={t(`Сейчас число ${current}`, `Hozirgi son: ${current}`)}

@@ -56,7 +56,7 @@ function ExerciseShell({
         >
           {ex.title}
           {solved && (
-            <span className="rounded-full bg-mint-soft px-2.5 py-0.5 text-sm font-extrabold text-[#065f46]">
+            <span className="rounded-full bg-mint-soft px-2.5 py-0.5 text-sm font-extrabold text-mint-ink">
               {t("✓ решено", "✓ yechildi")}
             </span>
           )}
@@ -70,15 +70,15 @@ function ExerciseShell({
       <Feedback state={feedback} context="chess" />
       {solved ? (
         <div className="rounded-2xl border-2 border-mint/40 bg-mint-soft/60 px-4 py-3">
-          <p className="text-sm font-extrabold text-[#065f46]">{t("Почему так", "Nega shunday")}</p>
+          <p className="text-sm font-extrabold text-mint-ink">{t("Почему так", "Nega shunday")}</p>
           <p className="mt-1 font-semibold">
             <RichText text={ex.why} />
           </p>
         </div>
       ) : hint ? (
         <div className="rounded-2xl border-2 border-sun/40 bg-sun-soft px-4 py-3">
-          <p className="text-sm font-extrabold text-[#7a4b00]">{t("💡 Подсказка", "💡 Maslahat")}</p>
-          <p className="mt-1 font-semibold text-[#7a4b00]">
+          <p className="text-sm font-extrabold text-sun-ink">{t("💡 Подсказка", "💡 Maslahat")}</p>
+          <p className="mt-1 font-semibold text-sun-ink">
             <RichText text={ex.hint} />
           </p>
         </div>
@@ -361,7 +361,7 @@ function StarsExercise({ ex }: { ex: Of<"stars"> }) {
     <ExerciseShell ex={ex} solved={!!progress.solvedAt} feedback={feedback}>
       <ChessBoard id={`st-${ex.id}`} position={pieces} marks={marks} onSquare={tap} />
       <div className="flex flex-wrap items-center gap-3">
-        <span className="tabular rounded-2xl bg-white px-4 py-2 text-lg font-black shadow-card">
+        <span className="tabular rounded-2xl bg-surface px-4 py-2 text-lg font-black shadow-card">
           {t("Ходов", "Yurishlar")}: {moves}
         </span>
         <span className="text-sm font-bold text-muted">
@@ -725,7 +725,7 @@ function QuizExercise({ ex }: { ex: Of<"quiz"> }) {
   return (
     <ExerciseShell ex={ex} solved={!!progress.solvedAt} feedback={feedback}>
       {!done ? (
-        <div className="space-y-3 rounded-3xl bg-white p-4 shadow-card">
+        <div className="space-y-3 rounded-3xl bg-surface p-4 shadow-card">
           <p className="text-sm font-extrabold text-muted">
             {t(`Вопрос ${index + 1} из ${ex.questions.length}`, `${index + 1}-savol, jami ${ex.questions.length} ta`)}
           </p>
@@ -944,7 +944,7 @@ function QueensExercise({ ex }: { ex: Of<"queens"> }) {
         maxWidth={320}
       />
       <div className="flex flex-wrap items-center gap-3">
-        <span className="tabular rounded-2xl bg-white px-4 py-2 text-lg font-black shadow-card">
+        <span className="tabular rounded-2xl bg-surface px-4 py-2 text-lg font-black shadow-card">
           {t(`Ферзей: ${queens.length} из ${ex.size}`, `Farzinlar: ${queens.length} / ${ex.size}`)}
         </span>
         <span className="text-sm font-bold text-muted">

@@ -22,7 +22,7 @@ export function DidYouKnow({ className }: { className?: string }) {
   const index = (seed + offset) % didYouKnow.length;
   const item = didYouKnow[index];
   return (
-    <div className={cn("rounded-3xl bg-white p-4 shadow-card", className)}>
+    <div className={cn("rounded-3xl bg-surface p-4 shadow-card", className)}>
       <p className="text-xs font-extrabold tracking-wide text-muted uppercase">
         {t("🤔 Знаешь ли ты?", "🤔 Bilasanmi?")}
       </p>

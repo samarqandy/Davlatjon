@@ -62,9 +62,9 @@ export function PrintView({
   const hint = VARIANTS.find((v) => v.id === variant)!.hint;
 
   return (
-    <div className="min-h-dvh bg-[#e9e6de] print:bg-white">
+    <div className="min-h-dvh bg-[#e9e6de] print:bg-surface">
       {bothDays.ru.length === 1 && <DayTabTitle ru={bothDays.ru[0]} uz={bothDays.uz[0]} />}
-      <div className="no-print sticky top-0 z-20 border-b border-line bg-white/95 shadow-sm backdrop-blur">
+      <div className="no-print sticky top-0 z-20 border-b border-line bg-surface/95 shadow-sm backdrop-blur">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-3 px-4 py-3">
           <Link
             href={backHref}
@@ -92,7 +92,7 @@ export function PrintView({
                 onClick={() => setHash(`#${v.id}`, { keepScroll: true })}
                 className={cn(
                   "rounded-xl px-3 py-2 text-sm font-extrabold transition",
-                  variant === v.id ? "bg-white text-brand-dark shadow-sm" : "text-muted hover:text-ink",
+                  variant === v.id ? "bg-surface text-brand-dark shadow-sm" : "text-muted hover:text-ink",
                 )}
               >
                 {t(v.label.ru, v.label.uz)}

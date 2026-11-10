@@ -79,28 +79,31 @@ export function Secrets() {
         <nav className="mt-3 flex flex-wrap gap-1.5" aria-label={t("Разделы тайн", "Sirlar boʻlimlari")}>
           <a
             href="#stories"
-            className="rounded-xl bg-white px-3 py-1.5 text-sm font-extrabold text-brand-dark shadow-sm"
+            className="rounded-xl bg-surface px-3 py-1.5 text-sm font-extrabold text-brand-dark shadow-sm"
           >
             🔮 {t(`${secrets.length} историй`, `${secrets.length} ta hikoya`)}
           </a>
           <a
             href="#thoughts"
-            className="rounded-xl bg-white px-3 py-1.5 text-sm font-extrabold text-brand-dark shadow-sm"
+            className="rounded-xl bg-surface px-3 py-1.5 text-sm font-extrabold text-brand-dark shadow-sm"
           >
             💭 {t(`${thoughts.length} мыслей великих`, `${thoughts.length} ta buyuk fikr`)}
           </a>
           <a
             href="#dialogues"
-            className="rounded-xl bg-white px-3 py-1.5 text-sm font-extrabold text-brand-dark shadow-sm"
+            className="rounded-xl bg-surface px-3 py-1.5 text-sm font-extrabold text-brand-dark shadow-sm"
           >
             🗣 {t(`${dialogues.length} разговоров`, `${dialogues.length} ta suhbat`)}
           </a>
-          <a href="#views" className="rounded-xl bg-white px-3 py-1.5 text-sm font-extrabold text-brand-dark shadow-sm">
+          <a
+            href="#views"
+            className="rounded-xl bg-surface px-3 py-1.5 text-sm font-extrabold text-brand-dark shadow-sm"
+          >
             👀 {t("Новый взгляд", "Yangi nigoh")}
           </a>
           <a
             href="#riddles"
-            className="rounded-xl bg-white px-3 py-1.5 text-sm font-extrabold text-brand-dark shadow-sm"
+            className="rounded-xl bg-surface px-3 py-1.5 text-sm font-extrabold text-brand-dark shadow-sm"
           >
             🧩 {t(`${riddles.length} загадок`, `${riddles.length} ta topishmoq`)}
           </a>
@@ -191,7 +194,7 @@ function SecretCard({
   return (
     <article
       id={s.id}
-      className={cn("scroll-mt-24 rounded-3xl bg-white shadow-card transition", open && "ring-2 ring-brand/30")}
+      className={cn("scroll-mt-24 rounded-3xl bg-surface shadow-card transition", open && "ring-2 ring-brand/30")}
     >
       <button
         type="button"
@@ -321,8 +324,8 @@ function GrainsBoard() {
                 aria-pressed={on}
                 className={cn(
                   "aspect-square text-[10px] font-black transition",
-                  dark ? "bg-[#b58863] text-white/80" : "bg-[#f0d9b5] text-[#7a4b00]/80",
-                  on && "!bg-[#facc15] !text-[#7a4b00]",
+                  dark ? "bg-[#b58863] text-white/80" : "bg-[#f0d9b5] text-sun-ink/80",
+                  on && "!bg-[#facc15] !text-sun-ink",
                 )}
               >
                 {on ? k : ""}
@@ -347,7 +350,7 @@ function GrainsBoard() {
               <p className="break-words">
                 {t("Всего на доске", "Taxtada jami")}: <b>{formatBig(grainsUpTo(n))}</b>
               </p>
-              <p className="font-semibold text-[#7a4b00]">{grainScale(n, t)}</p>
+              <p className="font-semibold text-sun-ink">{grainScale(n, t)}</p>
             </>
           )}
           <div className="flex flex-wrap gap-2 pt-1">
@@ -520,8 +523,8 @@ function KnightTour() {
                 disabled={current !== undefined && !canGo}
                 className={cn(
                   "relative flex aspect-square items-center justify-center text-[11px] font-black transition",
-                  dark ? "bg-[#b58863] text-white" : "bg-[#f0d9b5] text-[#7a4b00]",
-                  order.has(sq) && !isCurrent && "!bg-[#facc15]/80 !text-[#7a4b00]",
+                  dark ? "bg-[#b58863] text-white" : "bg-[#f0d9b5] text-sun-ink",
+                  order.has(sq) && !isCurrent && "!bg-[#facc15]/80 !text-sun-ink",
                   canGo && "ring-4 ring-brand/50 ring-inset",
                   hints.includes(sq) && "ring-4 !ring-mint ring-inset",
                 )}
@@ -592,7 +595,7 @@ function DilaramStory() {
   const [i, setI] = useState(0);
   const f = dilaram[i];
   return (
-    <div className="rounded-2xl bg-white p-4 ring-2 ring-line">
+    <div className="rounded-2xl bg-surface p-4 ring-2 ring-line">
       <div className="grid gap-4 md:grid-cols-[auto_1fr] md:items-start">
         <ChessBoard
           id="dilaram"
@@ -655,7 +658,7 @@ function TurkReveal() {
         ))}
       </div>
       {picked !== null && (
-        <p className="mt-3 rounded-2xl bg-white px-4 py-3 font-semibold" aria-live="polite">
+        <p className="mt-3 rounded-2xl bg-surface px-4 py-3 font-semibold" aria-live="polite">
           {turkOptions[picked].right
             ? t("Точно! ", "Toʻppa-toʻgʻri! ")
             : t("Нет — всё проще и хитрее. ", "Yoʻq — hammasi oddiyroq va ayyorroq. ")}
@@ -705,7 +708,7 @@ function Riddles() {
         {riddles.map((r, i) => {
           const p = picked[i];
           return (
-            <li key={r.text} className="rounded-3xl bg-white p-4 shadow-card">
+            <li key={r.text} className="rounded-3xl bg-surface p-4 shadow-card">
               <p className="text-lg font-black">
                 {i + 1}. {r.text}
               </p>

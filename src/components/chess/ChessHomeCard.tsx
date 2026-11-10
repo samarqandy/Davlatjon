@@ -71,7 +71,7 @@ export function ChessHomeCard({ summary }: { summary: Both<ChessHomeSummary> }) 
       </div>
       <Link
         href={next ? chessLevelHref(next.id) : "/chess"}
-        className="inline-flex min-h-14 items-center justify-center rounded-2xl bg-sun px-6 py-2 text-lg font-bold text-ink shadow-[0_4px_0_0_#b45309] transition hover:bg-[#f7a81d]"
+        className="inline-flex min-h-14 items-center justify-center rounded-2xl bg-sun px-6 py-2 text-lg font-bold text-on-sun shadow-[0_4px_0_0_#b45309] transition hover:bg-[#f7a81d]"
       >
         {solved > 0 ? t("Продолжить ▶", "Davom etish ▶") : t("Начать ▶", "Boshlash ▶")}
       </Link>

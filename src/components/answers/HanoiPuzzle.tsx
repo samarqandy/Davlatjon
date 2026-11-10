@@ -231,7 +231,7 @@ export function HanoiPuzzle({ taskId, disks, optimal }: { taskId: string; disks:
             aria-pressed={size === n}
             className={cn(
               "h-10 min-w-10 rounded-xl border-2 px-2 text-lg font-black transition",
-              size === n ? "border-brand bg-brand text-white" : "border-line bg-white hover:border-brand/40",
+              size === n ? "border-brand bg-brand text-white" : "border-line bg-surface hover:border-brand/40",
             )}
           >
             {n}
@@ -241,18 +241,18 @@ export function HanoiPuzzle({ taskId, disks, optimal }: { taskId: string; disks:
           {t(plural(size, "кольца", "колец", "колец"), "ta halqa")}
         </span>
         {size !== disks && (
-          <span className="rounded-full bg-sun-soft px-2.5 py-0.5 text-xs font-extrabold text-[#7a4b00]">
+          <span className="rounded-full bg-sun-soft px-2.5 py-0.5 text-xs font-extrabold text-sun-ink">
             {t("тренировка", "mashq")}
           </span>
         )}
       </div>
 
-      <div className="rounded-3xl bg-white p-3 shadow-card">
+      <div className="rounded-3xl bg-surface p-3 shadow-card">
         <HanoiBoard state={state} disks={size} selected={selected} onPeg={onPeg} />
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        <span className="tabular rounded-2xl bg-white px-4 py-2 text-lg font-black shadow-card">
+        <span className="tabular rounded-2xl bg-surface px-4 py-2 text-lg font-black shadow-card">
           {t(`Ходов: ${moves}`, `Yurishlar: ${moves}`)}
         </span>
         <Button variant="secondary" onClick={() => restart(size)} disabled={moves === 0}>
@@ -267,7 +267,7 @@ export function HanoiPuzzle({ taskId, disks, optimal }: { taskId: string; disks:
 
       <Feedback state={feedback} />
 
-      <div className="rounded-2xl bg-white p-3 shadow-card">
+      <div className="rounded-2xl bg-surface p-3 shadow-card">
         <p className="mb-2 text-sm font-extrabold text-muted">
           {t("Мои рекорды: сколько ходов понадобилось", "Rekordlarim: necha yurish kerak boʻldi")}
         </p>
@@ -277,7 +277,7 @@ export function HanoiPuzzle({ taskId, disks, optimal }: { taskId: string; disks:
               key={n}
               className={cn(
                 "rounded-xl px-3 py-2 text-center",
-                records.has(n) ? "bg-mint-soft text-[#065f46]" : "border-2 border-dashed border-line text-muted",
+                records.has(n) ? "bg-mint-soft text-mint-ink" : "border-2 border-dashed border-line text-muted",
               )}
             >
               <div className="text-xs font-bold">{disksWord(n, lang)}</div>

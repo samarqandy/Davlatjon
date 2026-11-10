@@ -115,7 +115,7 @@ export function ChessLevelView({ levelId }: { levelId: string }) {
           {status.passed && <RankEarned level={level} next={next} />}
 
           <nav
-            className="grid grid-cols-3 gap-1.5 rounded-2xl bg-white p-1.5 shadow-card"
+            className="grid grid-cols-3 gap-1.5 rounded-2xl bg-surface p-1.5 shadow-card"
             aria-label={t("Разделы уровня", "Daraja boʻlimlari")}
           >
             {(
@@ -172,8 +172,8 @@ export function ChessLevelView({ levelId }: { levelId: string }) {
                       i === exercise
                         ? "border-brand bg-brand text-white"
                         : solvedIds.has(e.id)
-                          ? "border-mint/50 bg-mint-soft text-[#065f46]"
-                          : "border-line bg-white hover:border-brand/40",
+                          ? "border-mint/50 bg-mint-soft text-mint-ink"
+                          : "border-line bg-surface hover:border-brand/40",
                     )}
                   >
                     {solvedIds.has(e.id) && i !== exercise ? "✓" : i + 1}
@@ -217,7 +217,7 @@ function LevelLegend({ level }: { level: ChessLevel }) {
   const lang = useLang();
   const img = useChessImage(level.legend.image);
   return (
-    <section className="rounded-3xl bg-white p-5 shadow-card" aria-labelledby="legend-h">
+    <section className="rounded-3xl bg-surface p-5 shadow-card" aria-labelledby="legend-h">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-xs font-extrabold tracking-wide text-brand uppercase">
           {t("🔮 Легенда уровня", "🔮 Daraja afsonasi")}
@@ -254,7 +254,7 @@ function LevelLegend({ level }: { level: ChessLevel }) {
 function LockedLevel({ prev, level, need }: { prev: ChessLevel | undefined; level: ChessLevel; need: number }) {
   const t = useT();
   return (
-    <section className="rounded-3xl border-2 border-dashed border-line bg-white p-6 text-center shadow-card">
+    <section className="rounded-3xl border-2 border-dashed border-line bg-surface p-6 text-center shadow-card">
       <p className="text-5xl" aria-hidden>
         🔒
       </p>
@@ -290,7 +290,7 @@ function RankEarned({ level, next }: { level: ChessLevel; next: ChessLevel | und
         <p className="text-xl font-black">
           {t(`Звание «${level.name}» получено!`, `«${level.name}» unvonini olding!`)}
         </p>
-        <p className="font-semibold text-[#7a4b00]">
+        <p className="font-semibold text-sun-ink">
           {next
             ? t(`Теперь открыт уровень «${next.name}».`, `Endi «${next.name}» darajasi ochildi.`)
             : t(
@@ -318,7 +318,7 @@ function Dictionary({ level }: { level: ChessLevel }) {
   const lang = useLang();
   return (
     <div className="grid gap-5 lg:grid-cols-2">
-      <section className="rounded-3xl bg-white p-5 shadow-card">
+      <section className="rounded-3xl bg-surface p-5 shadow-card">
         <h3 className="text-xl font-black">{t("📏 Правила", "📏 Qoidalar")}</h3>
         <ul className="mt-3 space-y-2">
           {level.rules.map((r) => (
@@ -333,7 +333,7 @@ function Dictionary({ level }: { level: ChessLevel }) {
           ))}
         </ul>
       </section>
-      <section className="rounded-3xl bg-white p-5 shadow-card">
+      <section className="rounded-3xl bg-surface p-5 shadow-card">
         <h3 className="text-xl font-black">{t("🔤 Словарик", "🔤 Lugʻat")}</h3>
         <dl className="mt-3 space-y-3">
           {level.terms.map((term, i) => (
@@ -355,7 +355,7 @@ function Dictionary({ level }: { level: ChessLevel }) {
           ))}
         </dl>
       </section>
-      <section className="rounded-3xl bg-white p-5 shadow-card lg:col-span-2">
+      <section className="rounded-3xl bg-surface p-5 shadow-card lg:col-span-2">
         <h3 className="text-xl font-black">{t("💡 Интересные факты", "💡 Qiziqarli faktlar")}</h3>
         <ul className="mt-3 grid gap-3 md:grid-cols-3">
           {level.facts.map((f) => (
@@ -379,7 +379,7 @@ function Extras({ levelId }: { levelId: ChessLevel["id"] }) {
   const x = extras[levelId];
   const openings = (x.openings ?? []).map((id) => allOpenings.find((o) => o.id === id)).filter((o) => o !== undefined);
   const games = (x.games ?? []).map((id) => allGames.find((g) => g.id === id)).filter((g) => g !== undefined);
-  const card = "flex flex-col gap-1 rounded-2xl bg-white p-4 shadow-card";
+  const card = "flex flex-col gap-1 rounded-2xl bg-surface p-4 shadow-card";
   const link = "text-sm font-extrabold text-brand hover:underline";
   return (
     <section className="space-y-3" aria-labelledby="extras">

@@ -48,7 +48,7 @@ export function ParentNav({ weeks }: { weeks: NavWeek[] }) {
             href={l.href}
             className={cn(
               "rounded-xl px-3 py-2 text-sm font-extrabold transition",
-              l.active ? "bg-ink text-white" : "bg-white text-muted shadow-sm hover:text-ink",
+              l.active ? "bg-ink text-white" : "bg-surface text-muted shadow-sm hover:text-ink",
             )}
           >
             {l.label}

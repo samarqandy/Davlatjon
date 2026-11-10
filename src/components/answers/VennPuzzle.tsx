@@ -248,7 +248,7 @@ export function VennPuzzle({
         )}
       </p>
       <div
-        className="flex min-h-12 flex-wrap items-center gap-2 rounded-2xl bg-white p-2 shadow-card"
+        className="flex min-h-12 flex-wrap items-center gap-2 rounded-2xl bg-surface p-2 shadow-card"
         aria-label={t("Что разложить", "Nimalarni joylash kerak")}
       >
         {pool.length === 0 ? (
@@ -272,7 +272,7 @@ export function VennPuzzle({
           ))
         )}
       </div>
-      <div className="rounded-3xl bg-white p-2 shadow-card">
+      <div className="rounded-3xl bg-surface p-2 shadow-card">
         <VennDiagram
           sets={sets}
           regions={regions}

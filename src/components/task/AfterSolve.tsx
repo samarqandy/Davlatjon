@@ -38,7 +38,7 @@ export function AfterSolve({ taskId, followUps }: { taskId: string; followUps: s
         </div>
       )}
       <div>
-        <h3 className="mb-2 text-sm font-extrabold text-[#065f46]">
+        <h3 className="mb-2 text-sm font-extrabold text-mint-ink">
           {t("Отметь, что получилось:", "Nimalarni uddalaganingni belgilab qoʻy:")}
         </h3>
         <div className="flex flex-wrap gap-2">
@@ -53,8 +53,8 @@ export function AfterSolve({ taskId, followUps }: { taskId: string; followUps: s
                 className={cn(
                   "flex items-center gap-1.5 rounded-2xl border-2 px-3 py-2 text-sm font-bold transition",
                   on
-                    ? "border-mint bg-white text-[#065f46] shadow-sm"
-                    : "border-transparent bg-white/70 text-muted hover:bg-white",
+                    ? "border-mint bg-surface text-mint-ink shadow-sm"
+                    : "border-transparent bg-surface/70 text-muted hover:bg-surface",
                 )}
               >
                 <span className={cn("text-lg", !on && "grayscale")}>{m.emoji}</span>

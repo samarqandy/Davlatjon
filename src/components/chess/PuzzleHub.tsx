@@ -278,7 +278,7 @@ export function PuzzleHub() {
                 key={theme.id}
                 type="button"
                 onClick={() => setHash(`#theme-${theme.id}`)}
-                className="flex min-w-0 flex-col rounded-2xl bg-white p-3 text-left shadow-card transition hover:-translate-y-0.5 sm:rounded-3xl sm:p-4"
+                className="flex min-w-0 flex-col rounded-2xl bg-surface p-3 text-left shadow-card transition hover:-translate-y-0.5 sm:rounded-3xl sm:p-4"
               >
                 <div className="flex items-center gap-2">
                   <span className="text-2xl sm:text-3xl" aria-hidden>
@@ -347,19 +347,19 @@ function Mode({
         type="button"
         data-puzzle-mode={id}
         onClick={() => setHash(`#${id}`)}
-        className="flex h-full w-full items-center gap-3 rounded-2xl bg-white p-3 text-left shadow-card transition hover:-translate-y-0.5 sm:items-start sm:rounded-3xl sm:p-4"
+        className="flex h-full w-full items-center gap-3 rounded-2xl bg-surface p-3 text-left shadow-card transition hover:-translate-y-0.5 sm:items-start sm:rounded-3xl sm:p-4"
       >
         <span
           className={cn(
             "grid h-11 w-11 shrink-0 place-items-center rounded-xl",
-            highlight ? "bg-sun-soft text-[#7a4b00]" : "bg-brand-soft text-brand-dark",
+            highlight ? "bg-sun-soft text-sun-ink" : "bg-brand-soft text-brand-dark",
           )}
         >
           <Icon className="h-6 w-6" strokeWidth={2.25} aria-hidden />
         </span>
         <span className="min-w-0 flex-1">
           <span className="block text-lg leading-tight font-black">{title}</span>
-          <span className={cn("block truncate text-sm font-bold", highlight ? "text-[#7a4b00]" : "text-muted")}>
+          <span className={cn("block truncate text-sm font-bold", highlight ? "text-sun-ink" : "text-muted")}>
             {status}
           </span>
           <span className="mt-1 hidden text-sm text-muted sm:block">{about}</span>
@@ -380,7 +380,7 @@ function ThemeChips({ title, items }: { title: string; items: { id: PuzzleTheme;
             key={x.id}
             type="button"
             onClick={() => setHash(`#theme-${x.id}`)}
-            className="rounded-xl bg-white px-3 py-1.5 text-sm font-black text-ink transition hover:bg-brand-soft"
+            className="rounded-xl bg-surface px-3 py-1.5 text-sm font-black text-ink transition hover:bg-brand-soft"
           >
             {x.label} · {Math.round(x.pct * 100)}%
           </button>
@@ -392,7 +392,7 @@ function ThemeChips({ title, items }: { title: string; items: { id: PuzzleTheme;
 
 function Stat({ value, label }: { value: number; label: string }) {
   return (
-    <div className="rounded-2xl bg-white px-4 py-2 text-center shadow-card">
+    <div className="rounded-2xl bg-surface px-4 py-2 text-center shadow-card">
       <p className="tabular text-2xl font-black">{value}</p>
       <p className="text-xs font-bold text-muted">{label}</p>
     </div>
@@ -500,8 +500,8 @@ function ThemeView({ theme, part }: { theme: PuzzleTheme; part: number | "bank" 
                     k === i
                       ? "border-brand bg-brand text-white"
                       : progress[p.id]?.solvedAt
-                        ? "border-mint/50 bg-mint-soft text-[#065f46]"
-                        : "border-line bg-white",
+                        ? "border-mint/50 bg-mint-soft text-mint-ink"
+                        : "border-line bg-surface",
                   )}
                 >
                   {progress[p.id]?.solvedAt && k !== i ? "✓" : k + 1}
@@ -516,7 +516,7 @@ function ThemeView({ theme, part }: { theme: PuzzleTheme; part: number | "bank" 
               onClick={() => setHash(`#theme-${theme}-bank`)}
               className={cn(
                 "h-9 rounded-lg border-2 px-3 text-sm font-black",
-                part === "bank" ? "border-brand bg-brand text-white" : "border-line bg-white",
+                part === "bank" ? "border-brand bg-brand text-white" : "border-line bg-surface",
               )}
             >
               {t(`📚 Задачи из базы · ${bankCount(theme)}`, `📚 Bazadan · ${bankCount(theme)}`)}
@@ -597,7 +597,7 @@ function StreakView() {
               `Natija: ketma-ket ${streak} ta masala`,
             )}
           </h1>
-          <p className="mt-1 text-[#7a4b00]">
+          <p className="mt-1 text-sun-ink">
             {finished
               ? t("Лесенка пройдена до самого верха!", "Zinapoyaning eng yuqorisigacha chiqding!")
               : t(

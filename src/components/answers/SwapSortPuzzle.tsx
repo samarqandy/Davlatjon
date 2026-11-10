@@ -21,7 +21,7 @@ export function CardRow({ cards, print = false }: { cards: readonly number[]; pr
             "tabular flex items-center justify-center rounded-xl border-2 font-black",
             print
               ? "h-[11mm] w-[9mm] border-ink/60 text-xl"
-              : "h-16 w-12 border-brand/40 bg-white text-3xl shadow-card",
+              : "h-16 w-12 border-brand/40 bg-surface text-3xl shadow-card",
           )}
         >
           {c}
@@ -105,7 +105,7 @@ export function SwapSortPuzzle({ taskId, cards, optimal }: { taskId: string; car
           "Ikki kartochkaning oʻrnini almashtirish uchun ular orasidagi ⇄ belgisini bos.",
         )}
       </p>
-      <div className="flex justify-center overflow-x-auto rounded-3xl bg-white p-4 shadow-card">
+      <div className="flex justify-center overflow-x-auto rounded-3xl bg-surface p-4 shadow-card">
         <div className="flex items-center">
           {order.map((c, i) => (
             <Fragment key={i}>
@@ -113,7 +113,7 @@ export function SwapSortPuzzle({ taskId, cards, optimal }: { taskId: string; car
                 className={cn(
                   "tabular flex h-16 w-10 items-center justify-center rounded-xl border-2 text-3xl font-black transition sm:h-20 sm:w-14 sm:text-4xl",
                   sorted
-                    ? "border-mint bg-mint-soft text-[#065f46]"
+                    ? "border-mint bg-mint-soft text-mint-ink"
                     : flash !== null && (i === flash || i === flash + 1)
                       ? "border-sun bg-sun-soft"
                       : "border-brand/40 bg-brand-soft",
@@ -140,7 +140,7 @@ export function SwapSortPuzzle({ taskId, cards, optimal }: { taskId: string; car
         </div>
       </div>
       <div className="flex flex-wrap items-center gap-3">
-        <span className="tabular rounded-2xl bg-white px-4 py-2 text-lg font-black shadow-card">
+        <span className="tabular rounded-2xl bg-surface px-4 py-2 text-lg font-black shadow-card">
           {t(`Обменов: ${swaps}`, `Almashtirishlar: ${swaps}`)}
         </span>
         <Button variant="ghost" onClick={restart} disabled={swaps === 0}>

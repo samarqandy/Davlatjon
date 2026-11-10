@@ -226,7 +226,7 @@ export function WeightsLab({ taskId, sets }: { taskId: string; sets: WeightSet[]
             onClick={() => choose(i)}
             className={cn(
               "rounded-2xl border-2 px-3 py-2 text-sm font-extrabold transition",
-              i === active ? "border-brand bg-brand text-white" : "border-line bg-white hover:border-brand/40",
+              i === active ? "border-brand bg-brand text-white" : "border-line bg-surface hover:border-brand/40",
             )}
           >
             {setLabel(s, lang)}
@@ -234,7 +234,7 @@ export function WeightsLab({ taskId, sets }: { taskId: string; sets: WeightSet[]
         ))}
       </div>
 
-      <div className="flex flex-col items-center gap-3 rounded-3xl bg-white p-3 shadow-card">
+      <div className="flex flex-col items-center gap-3 rounded-3xl bg-surface p-3 shadow-card">
         <WeightScale left={leftItems} right={rightItems} tilt={tilt} />
         {lang === "uz" ? (
           <p className="text-sm font-bold text-muted">
@@ -263,7 +263,7 @@ export function WeightsLab({ taskId, sets }: { taskId: string; sets: WeightSet[]
                   ? "border-[#d97706] bg-[#fff7ed]"
                   : places[i] === "left"
                     ? "border-brand bg-brand-soft"
-                    : "border-line bg-white hover:border-brand/40",
+                    : "border-line bg-surface hover:border-brand/40",
               )}
             >
               <span className="text-xl font-black">
@@ -294,7 +294,7 @@ export function WeightsLab({ taskId, sets }: { taskId: string; sets: WeightSet[]
 
       <Feedback state={feedback} />
 
-      <div className="rounded-2xl bg-white p-3 shadow-card">
+      <div className="rounded-2xl bg-surface p-3 shadow-card">
         <p className="mb-2 text-sm font-extrabold text-muted">
           {t(
             "Дневник исследователя: какие грузы уравновешены? Нажми на число, чтобы положить такой груз.",

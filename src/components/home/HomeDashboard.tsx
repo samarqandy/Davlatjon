@@ -146,7 +146,7 @@ export function HomeDashboard({ weeks: both, chess }: { weeks: Both<WeekSummary[
       <details
         open={!junior}
         data-path
-        className="group rounded-[2rem] border border-line bg-white p-3 shadow-card sm:p-5"
+        className="group rounded-[2rem] border border-line bg-surface p-3 shadow-card sm:p-5"
       >
         <summary className="flex min-h-14 cursor-pointer list-none items-center gap-3 rounded-2xl px-3 text-xl font-black select-none [&::-webkit-details-marker]:hidden">
           <span aria-hidden>🗺</span>
@@ -196,7 +196,7 @@ export function HomeDashboard({ weeks: both, chess }: { weeks: Both<WeekSummary[
                       <Link
                         href={`/week/${d.week}/day/${d.day}`}
                         className={cn(
-                          "group flex h-full flex-col rounded-3xl border-2 bg-white p-4 shadow-card transition hover:-translate-y-0.5 hover:shadow-lift",
+                          "group flex h-full flex-col rounded-3xl border-2 bg-surface p-4 shadow-card transition hover:-translate-y-0.5 hover:shadow-lift",
                           status === "next"
                             ? "border-brand"
                             : status === "done"
@@ -235,7 +235,7 @@ export function HomeDashboard({ weeks: both, chess }: { weeks: Both<WeekSummary[
                         </div>
                         <div className="mt-auto pt-3">
                           {status === "done" && (
-                            <p className="mb-1.5 rounded-xl bg-sun-soft px-2 py-1 text-xs font-extrabold text-[#7a4b00]">
+                            <p className="mb-1.5 rounded-xl bg-sun-soft px-2 py-1 text-xs font-extrabold text-sun-ink">
                               <span aria-hidden>{d.habit.emoji}</span> {d.habit.name}
                             </p>
                           )}
@@ -284,9 +284,9 @@ export function HomeDashboard({ weeks: both, chess }: { weeks: Both<WeekSummary[
 
 function StatusBadge({ status, t }: { status: Status; t: T }) {
   const map: Record<Status, { text: string; cls: string }> = {
-    done: { text: t("✓ пройден", "✓ oʻtildi"), cls: "bg-mint-soft text-[#047857]" },
+    done: { text: t("✓ пройден", "✓ oʻtildi"), cls: "bg-mint-soft text-success-ink" },
     next: { text: t("▶ сегодня", "▶ bugun"), cls: "bg-brand text-white" },
-    active: { text: t("в процессе", "jarayonda"), cls: "bg-sun-soft text-[#7a4b00]" },
+    active: { text: t("в процессе", "jarayonda"), cls: "bg-sun-soft text-sun-ink" },
     later: { text: t("впереди", "oldinda"), cls: "bg-paper text-muted" },
   };
   return (
@@ -304,7 +304,7 @@ function StatCard({ emoji, value, label, href }: { emoji: string; value: number;
       <span className="text-sm font-bold text-muted">{label}</span>
     </>
   );
-  const cls = "flex flex-col gap-0.5 rounded-3xl border border-line bg-white p-4 shadow-card";
+  const cls = "flex flex-col gap-0.5 rounded-3xl border border-line bg-surface p-4 shadow-card";
   return href ? (
     <Link href={href} className={cn(cls, "transition hover:shadow-lift")}>
       {inner}

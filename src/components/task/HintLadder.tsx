@@ -43,7 +43,7 @@ export function HintLadder({ taskId, hints }: { taskId: string; hints: readonly 
   return (
     <section
       id="hints"
-      className="scroll-mt-24 rounded-3xl border border-[#fde68a] bg-[#fffbeb] p-4"
+      className="scroll-mt-24 rounded-3xl border border-[#fde68a] bg-[#fffbeb] p-4 dark:border-[#6b5a1e] dark:bg-[#332a12]"
       aria-label={t("Подсказки", "Maslahatlar")}
     >
       <div className="mb-3 flex items-center justify-between gap-2">
@@ -62,7 +62,7 @@ export function HintLadder({ taskId, hints }: { taskId: string; hints: readonly 
       </div>
 
       {opened === 0 && !solved && (
-        <p className="mb-3 text-[0.95em] text-[#7a4b00]">
+        <p className="mb-3 text-[0.95em] text-sun-ink">
           {t(
             "Трудно? Подсказки открываются по одной. Сначала попробуй подумать — это самое интересное!",
             "Qiynaldingmi? Maslahatlar bittadan ochiladi. Avval oʻzing oʻylab koʻr — eng qizigʻi shunda!",
@@ -72,8 +72,8 @@ export function HintLadder({ taskId, hints }: { taskId: string; hints: readonly 
 
       <ol className="space-y-2">
         {hints.slice(0, opened).map((h, i) => (
-          <li key={i} className="animate-fade-up rounded-2xl bg-white px-3.5 py-2.5 shadow-sm">
-            <span className="mb-0.5 block text-xs font-extrabold tracking-wide text-[#b45309] uppercase">
+          <li key={i} className="animate-fade-up rounded-2xl bg-surface px-3.5 py-2.5 shadow-sm">
+            <span className="mb-0.5 block text-xs font-extrabold tracking-wide text-warning-ink uppercase">
               {i + 1}. {steps[i]}
             </span>
             <div className="flex items-start gap-2">
@@ -99,14 +99,14 @@ export function HintLadder({ taskId, hints }: { taskId: string; hints: readonly 
               : t(`Подсказка ${opened + 1}`, `${opened + 1}-maslahat`)}
           </Button>
           {cooldown > 0 && (
-            <span className="flex items-center gap-2 text-sm font-bold text-[#7a4b00]" aria-live="polite">
+            <span className="flex items-center gap-2 text-sm font-bold text-sun-ink" aria-live="polite">
               <CountdownRing value={cooldown} max={PAUSE_SECONDS} />
               {t("Подумай с этой подсказкой…", "Shu maslahat bilan oʻylab koʻr…")}
             </span>
           )}
         </div>
       ) : (
-        <p className="mt-3 text-[0.95em] font-bold text-[#7a4b00]">
+        <p className="mt-3 text-[0.95em] font-bold text-sun-ink">
           {t(
             "Подсказки закончились. Обсуди задачу со взрослым — вместе разберётесь!",
             "Maslahatlar tugadi. Masalani kattalar bilan birga koʻrib chiq — birgalikda albatta uddalaysizlar!",

@@ -76,7 +76,7 @@ export function LeaderboardView() {
   const chip = (active: boolean) =>
     cn(
       "min-h-10 rounded-full border-2 px-4 py-1 text-[0.95rem] font-bold transition",
-      active ? "border-brand bg-brand-soft text-brand-dark" : "border-line bg-white text-muted hover:border-brand/40",
+      active ? "border-brand bg-brand-soft text-brand-dark" : "border-line bg-surface text-muted hover:border-brand/40",
     );
 
   const current = data && data.key === key ? data : null;
@@ -194,7 +194,7 @@ export function LeaderboardView() {
         {!current ? (
           <p className="text-muted">{t("Загружаем…", "Yuklanmoqda…")}</p>
         ) : current.error ? (
-          <p className="rounded-xl bg-rose/10 px-3 py-2 font-bold text-[#b42318]" role="alert">
+          <p className="rounded-xl bg-rose/10 px-3 py-2 font-bold text-danger-ink" role="alert">
             {errorText(current.error, t)}
           </p>
         ) : (

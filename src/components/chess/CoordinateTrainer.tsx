@@ -88,7 +88,7 @@ export function CoordinateTrainer() {
               key={m.id}
               type="button"
               onClick={() => setMode(m.id)}
-              className="flex flex-col rounded-3xl bg-white p-5 text-left shadow-card transition hover:-translate-y-0.5"
+              className="flex flex-col rounded-3xl bg-surface p-5 text-left shadow-card transition hover:-translate-y-0.5"
             >
               <span className="text-3xl" aria-hidden>
                 {m.emoji}
@@ -238,7 +238,7 @@ function Drill({ mode, onExit }: { mode: DrillMode; onExit: () => void }) {
             />
           )}
           {mode === "color" && (
-            <div className="rounded-3xl bg-white p-8 text-center shadow-card">
+            <div className="rounded-3xl bg-surface p-8 text-center shadow-card">
               <p className="text-sm font-extrabold text-muted">{t("Какого цвета клетка?", "Katak qaysi rangda?")}</p>
               <p className="mt-2 text-7xl font-black" aria-live="polite">
                 {running ? round.target : "?"}
@@ -248,7 +248,7 @@ function Drill({ mode, onExit }: { mode: DrillMode; onExit: () => void }) {
                   type="button"
                   disabled={!running}
                   onClick={() => answer(squareColor(round.target) === "light")}
-                  className="h-20 w-32 rounded-2xl border-4 border-[#b58863] bg-[#f0d9b5] text-lg font-black text-[#7a4b00] disabled:opacity-50"
+                  className="h-20 w-32 rounded-2xl border-4 border-[#b58863] bg-[#f0d9b5] text-lg font-black text-sun-ink disabled:opacity-50"
                 >
                   {t("светлая", "oq")}
                 </button>
@@ -265,7 +265,7 @@ function Drill({ mode, onExit }: { mode: DrillMode; onExit: () => void }) {
           )}
         </div>
         <aside className="space-y-3">
-          <div className="rounded-2xl bg-white p-4 text-center shadow-card">
+          <div className="rounded-2xl bg-surface p-4 text-center shadow-card">
             <p className="text-sm font-extrabold text-muted">
               {running
                 ? t("Время", "Vaqt")
