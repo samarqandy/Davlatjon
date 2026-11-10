@@ -96,6 +96,21 @@ test("экран игры: главная кнопка «Играть» сраз
   await expect(page.getByRole("button", { name: /Подсказка/ })).toBeVisible();
 });
 
+test("экран игры: фора от робота — в раскрывающемся блоке, выбор виден в его заголовке и попадает в партию", async ({
+  page,
+}) => {
+  await prepare(page);
+  await page.goto("/chess/play");
+  const settings = page.locator("[data-robot-settings]");
+  await expect(settings).not.toHaveAttribute("open", "");
+  await expect(settings.locator("summary")).toContainText("со всеми фигурами");
+  await settings.locator("summary").click();
+  await settings.getByRole("group", { name: "Фора от робота" }).getByRole("button", { name: "без ферзя" }).click();
+  await expect(settings.locator("summary")).toContainText("без ферзя");
+  await page.getByRole("button", { name: "Белыми" }).first().click();
+  await expect(page).toHaveURL(/#robot-1-w\?o=/);
+});
+
 test("режим «Сам»: подсказки и отмены нет", async ({ page }) => {
   await prepare(page);
   await page.goto("/chess/play#robot-1-w?s=1");
