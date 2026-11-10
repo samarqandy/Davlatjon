@@ -281,7 +281,17 @@ test("ступень 5 «Ферзь»: страница курса, завлеч
   await expect(page.locator('a[href="/chess/course-5"]').first()).toBeVisible();
   await page.goto("/chess/course-5");
   await expect(page.getByRole("heading", { level: 1, name: /Ступень 5/ })).toBeVisible();
-  for (const id of ["q-pin", "q-double", "q-decoy", "q-trap", "q-attack", "q-sacrifice", "q-classics", "finish-5"])
+  for (const id of [
+    "q-pin",
+    "q-double",
+    "q-decoy",
+    "q-trap",
+    "q-attack",
+    "q-sacrifice",
+    "q-defence",
+    "q-classics",
+    "finish-5",
+  ])
     await expect(page.locator(`[data-course-module="${id}"]`)).toBeVisible();
   await openHash(page, "/chess/course-5#c5-decoy-net-exercise-1");
   await page.locator('[data-choice="c8f8"]').click();
@@ -290,6 +300,19 @@ test("ступень 5 «Ферзь»: страница курса, завлеч
   await expect(page.getByText(/Почему так/)).toBeVisible();
   const stored = await page.evaluate((key) => JSON.parse(localStorage.getItem(key) ?? "{}").chess ?? {}, KEY);
   expect(stored["c5-decoy-net-choose"]?.solvedAt).toBeTruthy();
+});
+
+test("ступень 5: единственный ход — закрыться ладьёй нельзя, спасает ферзь", async ({ page }) => {
+  await prepare(page);
+  await page.goto("/chess/course-5");
+  await expect(page.locator('[data-course-module="q-defence"]')).toBeVisible();
+  await openHash(page, "/chess/course-5#c5-only-move-exercise-1");
+  await page.locator('[data-choice="e1e3"]').click();
+  await expect(page.getByText("не лучший выбор")).toBeVisible();
+  await page.locator('[data-choice="d1d4"]').click();
+  await expect(page.getByText(/Почему так/)).toBeVisible();
+  const stored = await page.evaluate((key) => JSON.parse(localStorage.getItem(key) ?? "{}").chess ?? {}, KEY);
+  expect(stored["c5-only-move-queen"]?.solvedAt).toBeTruthy();
 });
 
 test("школа: путь из пяти ступеней, текущая отмечена; на странице ступени — кнопка следующего урока", async ({

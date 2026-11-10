@@ -185,3 +185,41 @@ describe("курс «Ферзь»: классика и итоговый тест
     }
   });
 });
+
+describe("курс «Ферзь»: единственный ход в защите", () => {
+  const sans = (fen: string) => new Chess(fen).moves();
+  const after = (fen: string, san: string) => {
+    const c = new Chess(fen);
+    c.move(san);
+    return c.fen();
+  };
+
+  it("шах ферзём и конём: спасает только Фd4 — остальные три хода ведут к мату", () => {
+    const fen = "6k1/pp3pp1/7p/2q5/6n1/2P5/PP4PP/3QR1K1 w - - 0 1";
+    expect(sans(fen).sort()).toEqual(["Kf1", "Kh1", "Qd4", "Re3"]);
+    // Крf1 — мат в один ход; Крh1 и Лe3 — спёртый мат шахами не более чем за 4 хода.
+    expect(matingMoves(after(fen, "Kf1"))).toEqual(["c5f2"]);
+    expect(mateInChecks(after(fen, "Kh1"), 4)).toBe(true);
+    expect(mateInChecks(after(fen, "Re3"), 4)).toBe(true);
+    // После Фd4 мата шахами нет, а на взятие ферзя есть ответ пешкой: ферзи разменяны.
+    const saved = after(fen, "Qd4");
+    expect(mateInChecks(saved, 4)).toBe(false);
+    const line = new Chess(saved);
+    line.move("Qxd4+");
+    expect(line.moves()).toContain("cxd4");
+    line.move("cxd4");
+    expect(line.fen().split(" ")[0]).not.toMatch(/[qQ]/);
+  });
+
+  it("две ладьи на первой горизонтали: спасает только Лxd1 — закрываться бесполезно", () => {
+    const fen = "3R4/p1p2pkp/4R1pq/8/8/8/1PP2QPP/1r1r3K w - - 0 1";
+    expect(sans(fen).sort()).toEqual(["Qe1", "Qf1", "Qg1", "Re1", "Rxd1"]);
+    for (const wrong of ["Qe1", "Qf1", "Qg1", "Re1"]) expect(mateInChecks(after(fen, wrong), 2), wrong).toBe(true);
+    const saved = after(fen, "Rxd1");
+    expect(mateInChecks(saved, 4)).toBe(false);
+    // После Лxd1+ у белых есть чем закрыться.
+    const line = new Chess(saved);
+    line.move("Rxd1+");
+    expect(line.moves()).toEqual(expect.arrayContaining(["Re1", "Qg1"]));
+  });
+});

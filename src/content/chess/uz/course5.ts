@@ -5,7 +5,7 @@ export const course5Uz: Uz<typeof COURSE_5> = {
   title: "5-bosqich «Farzin»",
   subtitle: "Kombinatsiyalar va shohga hujum",
   about:
-    "Hujumda bogʻlash va qoʻsh bogʻlash, qoʻsh shoh, qoʻsh zarba, mot toʻriga jalb qilish, Edvard Laskerning durdonasi, qisilgan mot, farzinni tutish, donalar hamkorligi, rokirovka qilmagan shohga hujum, f7 dagi qurbon, jim yurish, Steynits va Rubinshteyn durdonalari. Darslar mavzusi va tartibi M.I. Glotovning «Shaxmat mahorati bosqichlari. 5-bosqich „Farzin“» kitobi asosida; pozitsiyalar maktab uchun tuzilgan va shaxmat dvigateli bilan tekshirilgan.",
+    "Hujumda bogʻlash va qoʻsh bogʻlash, qoʻsh shoh, qoʻsh zarba, mot toʻriga jalb qilish, Edvard Laskerning durdonasi, qisilgan mot, farzinni tutish, donalar hamkorligi, rokirovka qilmagan shohga hujum, f7 dagi qurbon, jim yurish, himoyadagi yagona yurish, Steynits va Rubinshteyn durdonalari. Darslar mavzusi va tartibi M.I. Glotovning «Shaxmat mahorati bosqichlari. 5-bosqich „Farzin“» kitobi asosida; pozitsiyalar maktab uchun tuzilgan va shaxmat dvigateli bilan tekshirilgan.",
 };
 
 export const course5ModulesUz: Uz<typeof COURSE_5_MODULES> = {
@@ -15,6 +15,7 @@ export const course5ModulesUz: Uz<typeof COURSE_5_MODULES> = {
   "q-trap": { title: "«Farzinga mot»" },
   "q-attack": { title: "Shohga hujum" },
   "q-sacrifice": { title: "Odatiy qurbonlar" },
+  "q-defence": { title: "Himoya" },
   "q-classics": { title: "Shaxmat klassikasi" },
   "finish-5": { title: "Bosqich marrasi" },
 };
@@ -295,6 +296,67 @@ export const course5LessonsUz: Uz<typeof COURSE_5_LESSONS> = {
         prompt: "Oqlar yuradi va 2 yurishda mot qiladi. Birinchi yurish qaysi?",
         hint: "Farzinni shunday qoʻyki, u ham g7 da, ham oxirgi gorizontalda mot bilan tahdid qilsin.",
         why: "♕f7! — jim yurish. ♕xg7# (a1 dagi fil qoʻllab-quvvatlaydi) va ♕f8# yoki ♕e8# bilan tahdid qiladi. Qoralar bitta yurish bilan hamma tahdiddan himoyalana olmaydi. ♕g8+? dan keyin ♚xg8 — farzin yoʻqoladi.",
+      },
+    },
+  },
+  "c5-only-move": {
+    title: "Yagona yurish",
+    idea: "Mot xavfi tugʻilganda barcha himoyalarni top va har birini oxirigacha tekshir: baʼzan faqat bitta yurish qutqaradi.",
+    lesson: [
+      {
+        title: "Avval — raqibning tahdidi",
+        text: [
+          "Kuchli shaxmatchi faqat hujum qilishni emas, himoyalanishni ham biladi. Oʻz yurishidan oldin u soʻraydi: **agar men yurishni oʻtkazib yuborsam, raqib nima qiladi?** Javob «mot» boʻlsa, qolgan hamma rejalar kutib turadi.",
+          "Motdan toʻrt xil himoya bor: shoh bilan **ketish**, **toʻsish**, hujum qilayotgan donani **urib olish**, mot qilinadigan katakni **himoya qilish**. Hammasini top — keyin tanla.",
+        ],
+      },
+      {
+        title: "Himoyani oxirigacha tekshir",
+        text: [
+          "Birinchi tahdidni qaytargan yurish ikki-uch yurishdan keyin yutqazishi mumkin. Shuning uchun har bir himoyani tekshir: undan keyin raqibda qanday shohlar bor?",
+          "Agar bittasidan boshqa hamma himoyalar motga olib kelsa, oʻsha bittasi **yagona yurish** deyiladi. Uni topish — kombinatsiya topish kabi mahorat.",
+        ],
+      },
+    ],
+    terms: [
+      {
+        term: "Yagona yurish",
+        text: "Usiz partiya darhol yutqaziladigan yurish: qolgan hammasi motga yoki katta yoʻqotishga olib keladi.",
+      },
+    ],
+    exercises: {
+      "c5-only-move-queen": {
+        title: "Shoh! Nima qilish kerak?",
+        prompt: "Oqlarga shoh berilgan. Motdan faqat bitta yurish qutqaradi. Qaysi biri?",
+        hint: "Shoh bilan burchakka ketsangmi? Qisilgan motni esla. Farzinlar almashib ketishi uchun nima bilan toʻsish mumkin?",
+        why: "♕d4! — yagona yurish: ♛xd4+ cxd4 dan keyin farzinlar yoʻq va hujum tugadi. ♔f1? ♛f2#. ♔h1? ♞f2+ ♔g1 ♞h3+ (qoʻsh shoh) ♔h1 ♛g1+! — urib olingach ♞f2#, qisilgan mot. ♖e3? ♛xe3+ ♔h1 ♞f2+ ♔g1 ♞h3+ ♔h1 ♛g1+ ♕xg1 ♞f2#.",
+      },
+      "c5-only-move-rook": {
+        title: "Urib olishmi yoki toʻsish?",
+        prompt:
+          "Oqlarga d1 dagi ruxdan shoh berilgan, uning ortida ikkinchi rux turibdi. Qaysi yurish motdan qutqaradi?",
+        hint: "Toʻssang, donangni shoh berib urib olishadi. Birinchi gorizontalda nechta qora rux bor?",
+        why: "♖xd1! — rux shoh berayotgan donani urib oladi, ♜xd1+ dan keyin esa toʻsish mumkin: ♖e1 yoki ♕g1. ♖e1? ♜xe1+ ♕xe1 ♜xe1#. ♕g1? ♜xg1#. Chiziqda ikkita rux turganda toʻsish foydasiz: avval bittasini urib olish kerak.",
+      },
+      "c5-only-move-quiz": {
+        title: "Himoya qanday qidiriladi",
+        prompt: "Savollarga javob ber.",
+        questions: [
+          {
+            text: "Raqib bir yurishda mot qilmoqchi. Nimadan boshlash kerak?",
+            options: ["barcha himoyalarni topib, har birini tekshirish", "oldindan oʻylab qoʻyilgan yurishni qilish"],
+          },
+          {
+            text: "Shunday yurish topdingki, undan keyin bir yurishda mot yoʻq. Keyin nima qilasan?",
+            options: ["shu yurishdan keyin raqibning shohlarini koʻrib chiqaman", "darhol yuraman"],
+          },
+          {
+            text: "Shohing bilan bir chiziqda raqibning ikkita ruxi turibdi, oldingisi shoh beryapti. Qaysi biri ishonchliroq?",
+            options: ["iloji boʻlsa, ruxni urib olish", "farzin bilan toʻsish"],
+          },
+        ],
+        hint: "Yagona yurish saralash bilan topiladi: barcha himoyalar, har biri — oxirigacha.",
+        why: "Himoya ham hujum kabi diqqat bilan qidiriladi: barcha nomzod yurishlar, har biri oxirigacha tekshiriladi.",
       },
     },
   },
