@@ -41,6 +41,10 @@ test("главная: неделя из 7 дней и сегодняшнее з�
   // Путь по дням: сегодняшний день отмечен как шаг «на очереди», и он один.
   await expect(page.locator('[data-days-path] [data-day="w1d1"]')).toHaveAttribute("aria-current", "step");
   await expect(page.locator('[data-days-path] [data-day-state="next"]')).toHaveCount(1);
+  // С открытым путём страница не шире экрана (длинная строка состояния дня не растягивает колонку).
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(
+    0,
+  );
 });
 
 test("задача с числовым ответом: мягкая обратная связь и подсказки", async ({ page }) => {

@@ -161,7 +161,13 @@ export function HomeDashboard({ weeks: both, chess }: { weeks: Both<WeekSummary[
         {/* Путь по дням: на широком экране недели стоят рядом, на телефоне — одна под другой. */}
         <div className="mt-4 grid gap-x-8 gap-y-8 lg:grid-cols-3" data-days-path>
           {weeks.map((w) => (
-            <section key={w.number} aria-labelledby={`week-${w.number}`} data-week={w.number}>
+            <section
+              key={w.number}
+              aria-labelledby={`week-${w.number}`}
+              data-week={w.number}
+              // min-w-0: иначе строка состояния дня (без переноса) растягивает колонку шире экрана.
+              className="min-w-0"
+            >
               <p className="text-sm font-extrabold tracking-wide text-brand uppercase">
                 {t(`Неделя ${w.number}`, `${w.number}-hafta`)}
               </p>
