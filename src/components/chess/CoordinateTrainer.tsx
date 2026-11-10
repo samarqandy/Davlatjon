@@ -248,7 +248,7 @@ function Drill({ mode, onExit }: { mode: DrillMode; onExit: () => void }) {
                   type="button"
                   disabled={!running}
                   onClick={() => answer(squareColor(round.target) === "light")}
-                  className="h-20 w-32 rounded-2xl border-4 border-[#b58863] bg-[#f0d9b5] text-lg font-black text-sun-ink disabled:opacity-50"
+                  className="h-20 w-32 rounded-2xl border-4 border-[#b58863] bg-[#f0d9b5] text-lg font-black text-[#7a4b00] disabled:opacity-50"
                 >
                   {t("светлая", "oq")}
                 </button>

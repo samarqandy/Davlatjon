@@ -41,7 +41,7 @@ export function WeeklyReview({ week: both }: { week: Both<ReviewWeek> }) {
         </Button>
       </div>
 
-      <Card className="border-sun/50 bg-sun-soft p-4 text-[#6b4e0e]">
+      <Card className="border-sun/50 bg-sun-soft p-4 text-sun-ink">
         <p className="font-extrabold">{t("Без ярлыков 🙏", "Yorliqlarsiz 🙏")}</p>
         <p className="mt-1 text-[0.95rem]">
           {t(

@@ -180,7 +180,7 @@ export function PartitionGridView({
       {grid.map((row, r) =>
         row.map((v, c) => {
           const style = { width: cell, height: cell, ...border(r, c) };
-          const color = v === 0 ? "bg-[#c7d2fe]" : "bg-[#fde68a]";
+          const color = v === 0 ? "light-island bg-[#c7d2fe]" : "light-island bg-[#fde68a]";
           return onToggle ? (
             <button
               key={`${r}-${c}`}
@@ -414,7 +414,7 @@ export function MagicSquarePuzzle({
                 )}
               >
                 {v !== null ? (
-                  <span className="text-[#6d28d9]">{v}</span>
+                  <span className="text-[#6d28d9] dark:text-[#c4b5fd]">{v}</span>
                 ) : (
                   <input
                     inputMode="numeric"

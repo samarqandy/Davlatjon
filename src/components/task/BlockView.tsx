@@ -35,9 +35,7 @@ export function BlockView({ block, print = false }: { block: Block; print?: bool
       return (
         <p
           className={
-            print
-              ? "text-[0.92em] text-muted italic"
-              : "rounded-2xl bg-sun-soft px-4 py-2.5 text-[0.95em] text-[#6b4e0e]"
+            print ? "text-[0.92em] text-muted italic" : "rounded-2xl bg-sun-soft px-4 py-2.5 text-[0.95em] text-sun-ink"
           }
         >
           {!print && <span aria-hidden>📝 </span>}

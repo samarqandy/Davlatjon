@@ -40,7 +40,10 @@ export function RiverScene({
     const driverHere = state.boat === side;
     const name = side === "left" ? t("Левый берег", "Chap qirgʻoq") : t("Правый берег", "Oʻng qirgʻoq");
     return (
-      <div className="flex min-h-40 flex-col items-center gap-1.5 rounded-2xl bg-[#dcfce7] p-2" aria-label={name}>
+      <div
+        className="light-island flex min-h-40 flex-col items-center gap-1.5 rounded-2xl bg-[#dcfce7] p-2"
+        aria-label={name}
+      >
         <span className="text-xs font-extrabold text-[#166534]">{name}</span>
         {ids.map((id) => {
           const it = item(id);
@@ -74,7 +77,7 @@ export function RiverScene({
     <div className="grid grid-cols-[minmax(0,1fr)_minmax(5.5rem,0.9fr)_minmax(0,1fr)] items-stretch gap-1.5">
       {bank("left")}
       <div
-        className="relative flex flex-col justify-center rounded-2xl bg-[#bfdbfe] p-1.5"
+        className="light-island relative flex flex-col justify-center rounded-2xl bg-[#bfdbfe] p-1.5"
         style={{
           backgroundImage: "repeating-linear-gradient(170deg, rgb(255 255 255 / 0.35) 0 4px, transparent 4px 18px)",
         }}

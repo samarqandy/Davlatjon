@@ -199,7 +199,7 @@ export function MagicTrianglePuzzle({ taskId, numbers, sums }: { taskId: string;
                     "h-14 w-14 rounded-2xl border-2 text-2xl font-black transition",
                     used
                       ? "border-[#e9d5ff] bg-[#faf5ff] text-[#a78bfa]"
-                      : "border-[#a21caf] bg-surface text-[#86198f] hover:bg-[#fdf4ff]",
+                      : "border-[#a21caf] bg-surface text-[#86198f] hover:bg-[#fdf4ff] dark:text-[#f0abfc] dark:hover:bg-[#3b1d4a]",
                   )}
                 >
                   {n}

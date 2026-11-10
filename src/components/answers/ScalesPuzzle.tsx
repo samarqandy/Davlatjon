@@ -297,11 +297,11 @@ export function ScalesPuzzle({ taskId, coins, weighings }: { taskId: string; coi
               className={cn(
                 "flex h-16 w-14 flex-col items-center justify-center gap-0.5 rounded-2xl border-2 transition",
                 naming
-                  ? "border-sun bg-sun-soft hover:bg-[#fde68a]"
+                  ? "border-sun bg-sun-soft hover:bg-[#fde68a] dark:hover:bg-[#5a4715]"
                   : places[c] === "left"
                     ? "border-brand bg-brand-soft"
                     : places[c] === "right"
-                      ? "border-[#d97706] bg-[#fff7ed]"
+                      ? "light-island border-[#d97706] bg-[#fff7ed]"
                       : "border-line bg-surface hover:border-brand/40",
               )}
             >

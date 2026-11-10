@@ -123,12 +123,12 @@ export function SudokuPuzzle({
                 key={key}
                 className={cn(
                   "tabular flex h-16 w-16 items-center justify-center text-3xl font-black",
-                  bad ? "bg-sun-soft" : v !== null ? "bg-[#f1f5f9]" : "bg-surface",
+                  bad ? "bg-sun-soft" : v !== null ? "bg-[#f1f5f9] dark:bg-[#2b2f57]" : "bg-surface",
                 )}
                 style={borders(r, c, n, box)}
               >
                 {v !== null ? (
-                  <span className="text-[#475569]">{v}</span>
+                  <span className="text-[#475569] dark:text-[#cbd5e1]">{v}</span>
                 ) : (
                   <input
                     inputMode="numeric"

@@ -365,7 +365,7 @@ function ModeChooser() {
           </div>
           <Link
             href="/chess/review"
-            className="rounded-2xl bg-brand-soft px-4 py-2 font-extrabold text-brand-dark hover:bg-[#e0e3ff]"
+            className="rounded-2xl bg-brand-soft px-4 py-2 font-extrabold text-brand-dark hover:bg-[#e0e3ff] dark:hover:bg-[#363c80]"
           >
             🔎 {t("Разбор моих партий →", "Partiyalarim tahlili →")}
           </Link>

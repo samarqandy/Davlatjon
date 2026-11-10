@@ -48,7 +48,7 @@ export function ListenButton({
           : large
             ? "min-h-14 gap-2 rounded-2xl px-5 text-base"
             : "min-h-11 px-3.5 py-1 text-sm",
-        playing ? "bg-brand text-white" : "bg-brand-soft text-brand-dark hover:bg-[#e0e3ff]",
+        playing ? "bg-brand text-white" : "bg-brand-soft text-brand-dark hover:bg-[#e0e3ff] dark:hover:bg-[#363c80]",
         className,
       )}
     >

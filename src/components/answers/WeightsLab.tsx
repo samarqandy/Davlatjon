@@ -238,12 +238,12 @@ export function WeightsLab({ taskId, sets }: { taskId: string; sets: WeightSet[]
         <WeightScale left={leftItems} right={rightItems} tilt={tilt} />
         {lang === "uz" ? (
           <p className="text-sm font-bold text-muted">
-            Chapda — <b className="text-[#6b21a8]">{load} kg</b> yuk. Toshlarni bos:{" "}
+            Chapda — <b className="text-[#6b21a8] dark:text-[#d8b4fe]">{load} kg</b> yuk. Toshlarni bos:{" "}
             {set.bothPans ? "oʻng pallaga, chap pallaga, olib qoʻyish." : "oʻng pallaga qoʻyish yoki olib qoʻyish."}
           </p>
         ) : (
           <p className="text-sm font-bold text-muted">
-            Слева — груз <b className="text-[#6b21a8]">{load} кг</b>. Нажимай на гири:{" "}
+            Слева — груз <b className="text-[#6b21a8] dark:text-[#d8b4fe]">{load} кг</b>. Нажимай на гири:{" "}
             {set.bothPans ? "на правую чашу, на левую, снять." : "поставить на правую чашу или снять."}
           </p>
         )}
@@ -260,7 +260,7 @@ export function WeightsLab({ taskId, sets }: { taskId: string; sets: WeightSet[]
               className={cn(
                 "flex h-16 min-w-16 flex-col items-center justify-center rounded-2xl border-2 px-2 transition",
                 places[i] === "right"
-                  ? "border-[#d97706] bg-[#fff7ed]"
+                  ? "light-island border-[#d97706] bg-[#fff7ed]"
                   : places[i] === "left"
                     ? "border-brand bg-brand-soft"
                     : "border-line bg-surface hover:border-brand/40",

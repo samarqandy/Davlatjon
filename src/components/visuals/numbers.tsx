@@ -137,7 +137,7 @@ export function PyramidVisual({ rows, print }: { rows: (number | null)[][]; prin
                   ? print
                     ? "border-ink/60 bg-surface"
                     : "border-dashed border-[#d97706]/60 bg-[#fff7ed] text-[#d97706]"
-                  : "border-[#d97706] bg-[#ffedd5] text-ink",
+                  : "light-island border-[#d97706] bg-[#ffedd5] text-ink",
               )}
             >
               {v ?? (print ? "" : "?")}
@@ -152,7 +152,7 @@ export function PyramidVisual({ rows, print }: { rows: (number | null)[][]; prin
 export function ReceiptVisual({ lines, total }: { lines: { label: string; price: string }[]; total: string }) {
   const t = useT();
   return (
-    <div className="w-full max-w-xs rounded-md border border-dashed border-ink/30 bg-[#fffdf7] px-5 py-4 font-mono text-[15px] shadow-sm">
+    <div className="light-island w-full max-w-xs rounded-md border border-dashed border-ink/30 bg-[#fffdf7] px-5 py-4 font-mono text-[15px] shadow-sm">
       <div className="mb-2 text-center text-xs font-bold tracking-[0.2em] text-muted">
         {t("МАГАЗИН «ПРОДУКТЫ»", "«OZIQ-OVQAT» DOʻKONI")}
       </div>
