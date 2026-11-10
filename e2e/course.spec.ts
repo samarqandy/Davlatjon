@@ -39,6 +39,9 @@ test("курс: из школы — модули по порядку, урок �
   await expect(page.getByRole("heading", { level: 1, name: /Ступень 1/ })).toBeVisible();
   for (const id of ["board", "pieces", "value", "check"])
     await expect(page.locator(`[data-course-module="${id}"]`)).toBeVisible();
+  // Путь по урокам: первый непройденный урок отмечен как «на очереди».
+  await expect(page.locator('[data-course-lesson="c1-game"]')).toHaveAttribute("aria-current", "step");
+  await expect(page.locator('[data-lesson-state="current"]')).toHaveCount(1);
   await page.locator('[data-course-lesson="c1-check"]').click();
   await expect(page.getByText("Урок 13")).toBeVisible();
   await expect(page.getByRole("heading", { level: 1, name: "Шах" })).toBeVisible();

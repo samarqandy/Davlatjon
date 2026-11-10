@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo } from "react";
-import { cn, ProgressBar } from "@/components/ui";
+import { cn } from "@/components/ui";
 import { courseLessons } from "@/content/chess/courseLessons";
 import { LEVELS } from "@/content/chess/parts/levels";
 import { TACTIC_PART } from "@/content/chess/parts/tactics";
@@ -16,7 +16,7 @@ import { setHash, useHash } from "@/lib/useHash";
 import { DiplomaCard } from "./CourseDiploma";
 import { PieceIcon } from "./ChessBoard";
 import { parseHash, TopicView, useSolved } from "./TacticsSchool";
-import { ChevronDown, Play } from "lucide-react";
+import { Check, ChevronDown, Play } from "lucide-react";
 
 /**
  * Курс по ступеням: уроки ступени по порядку, сгруппированные в модули.
@@ -102,60 +102,138 @@ function Overview({ step, lessons }: { step: CourseStep; lessons: (ChessTactic &
           <p className="mt-1 text-white/90">{course1.about}</p>
         </details>
       </header>
-      {course1Modules.map((m, mi) => (
-        <section key={m.id} className="space-y-3" aria-labelledby={`module-${m.id}`} data-course-module={m.id}>
-          <h2 id={`module-${m.id}`} className="text-2xl font-black">
-            <span className="text-muted">{mi + 1}.</span> {m.title}
-          </h2>
-          <ol className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-            {m.lessons.flatMap((id) => {
-              const item = byId.get(id);
-              return item ? [<LessonRow key={id} lesson={item.lesson} n={item.n} />] : [];
-            })}
-          </ol>
-        </section>
-      ))}
+      {/* Путь по урокам: на широком экране модули идут в две колонки подряд, чтобы страница не стала вдвое длиннее. */}
+      <div className="gap-x-10 lg:columns-2" data-course-path>
+        {course1Modules.map((m, mi) => {
+          const stops = m.lessons.flatMap((id) => byId.get(id) ?? []);
+          return (
+            <section
+              key={m.id}
+              className="mb-8 break-inside-avoid space-y-2"
+              aria-labelledby={`module-${m.id}`}
+              data-course-module={m.id}
+            >
+              <h2 id={`module-${m.id}`} className="text-2xl font-black">
+                <span className="text-muted">{mi + 1}.</span> {m.title}
+              </h2>
+              <ol>
+                {stops.map((item, i) => (
+                  <LessonStop
+                    key={item.lesson.id}
+                    lesson={item.lesson}
+                    n={item.n}
+                    last={i === stops.length - 1}
+                    current={hydrated && item.lesson.id === next?.id}
+                    started={started}
+                  />
+                ))}
+              </ol>
+            </section>
+          );
+        })}
+      </div>
       <DiplomaCard step={step} />
     </>
   );
 }
 
-function LessonRow({ lesson, n }: { lesson: ChessTactic & { piece?: string }; n: number }) {
+/** Размеры пути: высота шага, сторона клетки и сдвиг клетки вбок на каждом шаге. */
+const ROW = 92;
+const TILE = 64;
+const SHIFT = 34;
+/** Клетки идут змейкой: вправо, ещё вправо, назад, назад. */
+const ZIGZAG = [0, 1, 2, 1];
+const tileX = (n: number) => ZIGZAG[(n - 1) % ZIGZAG.length] * SHIFT;
+
+/**
+ * Урок на пути. Клетка — как поле доски: светлые и тёмные чередуются, урок «на очереди» подсвечен жёлтым,
+ * как последний ход на доске, пройденный — с зелёной отметкой. Линия ведёт к следующему уроку модуля.
+ */
+function LessonStop({
+  lesson,
+  n,
+  last,
+  current,
+  started,
+}: {
+  lesson: ChessTactic & { piece?: string };
+  n: number;
+  last: boolean;
+  current: boolean;
+  started: boolean;
+}) {
   const t = useT();
   const hydrated = useHydrated();
   const { count } = useSolved(lesson);
   const total = lesson.exercises.length;
-  const done = hydrated && total > 0 && count === total;
+  const solved = hydrated ? count : 0;
+  const done = total > 0 && solved === total;
+  const x = tileX(n);
+  const from = x + TILE / 2;
+  const to = tileX(n + 1) + TILE / 2;
   return (
-    <li className="min-w-0">
+    <li className="relative" style={{ height: ROW }}>
+      {!last && (
+        <svg
+          aria-hidden
+          className="pointer-events-none absolute top-1/2 left-0"
+          width={ZIGZAG.length * SHIFT + TILE}
+          height={ROW}
+        >
+          <path
+            d={`M ${from} 0 C ${from} ${ROW / 2}, ${to} ${ROW / 2}, ${to} ${ROW}`}
+            fill="none"
+            strokeWidth={6}
+            strokeLinecap="round"
+            // Пройденный отрезок — сплошной зелёный, остальной путь — точками.
+            className={done ? "stroke-success" : "stroke-[#cfc4ae]"}
+            strokeDasharray={done ? undefined : "1 13"}
+          />
+        </svg>
+      )}
       <button
         type="button"
         data-course-lesson={lesson.id}
+        data-lesson-state={done ? "done" : current ? "current" : "open"}
+        aria-current={current ? "step" : undefined}
         onClick={() => setHash(`#${lesson.id}`)}
-        className={cn(
-          "flex w-full items-center gap-3 rounded-2xl border-2 bg-white p-3 text-left shadow-card transition hover:-translate-y-0.5",
-          done ? "border-mint/50" : "border-transparent",
-        )}
+        className="group relative flex h-full w-full items-center gap-3 rounded-2xl text-left"
+        style={{ paddingLeft: x }}
       >
         <span
           className={cn(
-            "grid h-11 w-11 shrink-0 place-items-center rounded-xl text-2xl",
-            lesson.piece ? "bg-[#f0d9b5]" : "bg-brand-soft",
+            "relative grid shrink-0 place-items-center rounded-2xl text-3xl transition group-hover:-translate-y-0.5",
+            current
+              ? "bg-sun shadow-[0_4px_0_0_#b45309] ring-4 ring-sun/30"
+              : n % 2
+                ? "bg-[#f0d9b5] shadow-[0_3px_0_0_#d9bd8e]"
+                : "bg-[#b58863] shadow-[0_3px_0_0_#8f6a4a]",
           )}
+          style={{ width: TILE, height: TILE }}
           aria-hidden
         >
-          {lesson.piece ? <PieceIcon piece={lesson.piece} className="h-9 w-9" /> : lesson.emoji}
+          {lesson.piece ? <PieceIcon piece={lesson.piece} className="h-12 w-12" /> : lesson.emoji}
+          {done && (
+            <span className="absolute -top-1.5 -right-1.5 grid h-6 w-6 place-items-center rounded-full bg-[#047857] text-white ring-2 ring-paper">
+              <Check className="h-4 w-4" strokeWidth={3} />
+            </span>
+          )}
         </span>
         <span className="min-w-0 flex-1">
           <span className="block text-xs font-extrabold tracking-wide text-muted uppercase">
             {t(`Урок ${n}`, `${n}-dars`)}
           </span>
           <span className="line-clamp-2 text-lg leading-tight font-black text-pretty">{lesson.title}</span>
-          <span className="mt-1 flex items-center gap-2">
-            <ProgressBar value={hydrated ? count : 0} max={total} className="flex-1" />
-            <span className="text-xs font-extrabold whitespace-nowrap text-muted">
-              {done ? t("✓ пройден", "✓ oʻtildi") : `${hydrated ? count : 0} / ${total}`}
-            </span>
+          <span className="block text-sm font-extrabold text-muted">
+            {done ? (
+              <span className="text-[#047857]">{t("✓ пройден", "✓ oʻtildi")}</span>
+            ) : current ? (
+              <span className="text-brand-dark">
+                {started ? t("Дальше — сюда", "Davomi — shu yerda") : t("Начни отсюда", "Shu yerdan boshla")}
+              </span>
+            ) : solved > 0 ? (
+              `${solved} / ${total}`
+            ) : null}
           </span>
         </span>
       </button>
