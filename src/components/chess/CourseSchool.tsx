@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { PathStop } from "@/components/PathStop";
+import { cn, Icon } from "@/components/ui";
 import { courseLessons } from "@/content/chess/courseLessons";
 import { LEVELS } from "@/content/chess/parts/levels";
 import { TACTIC_PART } from "@/content/chess/parts/tactics";
@@ -16,7 +17,7 @@ import { setHash, useHash } from "@/lib/useHash";
 import { DiplomaCard } from "./CourseDiploma";
 import { PieceIcon } from "./ChessBoard";
 import { parseHash, TopicView, useSolved } from "./TacticsSchool";
-import { ChevronDown, Play } from "lucide-react";
+import { Check, ChevronDown, Play } from "lucide-react";
 
 /**
  * Курс по ступеням: уроки ступени по порядку, сгруппированные в модули.
@@ -64,6 +65,9 @@ function Overview({ step, lessons }: { step: CourseStep; lessons: (ChessTactic &
   const nextIndex = hydrated ? lessons.findIndex((l) => l.exercises.some((e) => !chess[e.id]?.solvedAt)) : 0;
   const next = nextIndex >= 0 ? lessons[nextIndex] : null;
   const started = hydrated && lessons.some((l) => l.exercises.some((e) => chess[e.id]?.solvedAt));
+  // Какой модуль раскрыт: по умолчанию — с уроком «на очереди»; что ребёнок открыл или закрыл сам, помним.
+  const currentModule = next ? course1Modules.find((m) => m.lessons.includes(next.id))?.id : undefined;
+  const [toggled, setToggled] = useState<Record<string, boolean>>({});
   return (
     <>
       <Link
@@ -107,21 +111,58 @@ function Overview({ step, lessons }: { step: CourseStep; lessons: (ChessTactic &
           <p className="mt-1 text-white/90">{course1.about}</p>
         </details>
       </header>
-      {/* Путь по урокам: на широком экране модули идут в две колонки подряд, чтобы страница не стала вдвое длиннее. */}
+      {/*
+       * Путь по урокам. Раскрыт модуль с уроком «на очереди», остальные свёрнуты до одной строки: раньше все уроки
+       * шли подряд, и страница была длиной в девять экранов телефона. Любой модуль открывается нажатием.
+       * На широком экране модули идут в две колонки.
+       */}
       <div className="gap-x-10 lg:columns-2" data-course-path>
         {course1Modules.map((m, mi) => {
           const stops = m.lessons.flatMap((id) => byId.get(id) ?? []);
+          const doneCount = hydrated
+            ? stops.filter(
+                (x) => x.lesson.exercises.length > 0 && x.lesson.exercises.every((e) => chess[e.id]?.solvedAt),
+              ).length
+            : 0;
+          const allDone = stops.length > 0 && doneCount === stops.length;
+          const open = toggled[m.id] ?? m.id === currentModule;
           return (
-            <section
+            <details
               key={m.id}
-              className="mb-8 break-inside-avoid space-y-2"
-              aria-labelledby={`module-${m.id}`}
+              open={open}
+              onToggle={(e) => {
+                const now = e.currentTarget.open;
+                if (now !== open) setToggled((prev) => ({ ...prev, [m.id]: now }));
+              }}
+              className="group/module mb-3 break-inside-avoid rounded-3xl bg-surface shadow-card open:mb-6 open:bg-transparent open:shadow-none"
               data-course-module={m.id}
+              data-module-state={allDone ? "done" : m.id === currentModule ? "current" : "open"}
             >
-              <h2 id={`module-${m.id}`} className="text-2xl font-black">
-                <span className="text-muted">{mi + 1}.</span> {m.title}
-              </h2>
-              <ol>
+              <summary className="flex min-h-14 cursor-pointer list-none items-center gap-3 rounded-3xl px-4 py-2 select-none group-open/module:px-0 [&::-webkit-details-marker]:hidden">
+                <h2 id={`module-${m.id}`} className="min-w-0 flex-1 text-xl leading-tight font-black sm:text-2xl">
+                  <span className="text-muted">{mi + 1}.</span> {m.title}
+                </h2>
+                <span
+                  className={cn(
+                    "shrink-0 text-sm font-extrabold whitespace-nowrap",
+                    allDone ? "text-success-ink" : "text-muted",
+                  )}
+                >
+                  {allDone ? (
+                    <Icon icon={Check} className="h-5 w-5" />
+                  ) : hydrated ? (
+                    `${doneCount} / ${stops.length}`
+                  ) : (
+                    t(`${stops.length} уроков`, `${stops.length} ta dars`)
+                  )}
+                  {allDone && <span className="sr-only">{t("пройден", "oʻtildi")}</span>}
+                </span>
+                <ChevronDown
+                  className="h-5 w-5 shrink-0 text-muted transition group-open/module:rotate-180"
+                  aria-hidden
+                />
+              </summary>
+              <ol className="pt-1">
                 {stops.map((item, i) => (
                   <LessonStop
                     key={item.lesson.id}
@@ -133,7 +174,7 @@ function Overview({ step, lessons }: { step: CourseStep; lessons: (ChessTactic &
                   />
                 ))}
               </ol>
-            </section>
+            </details>
           );
         })}
       </div>

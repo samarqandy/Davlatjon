@@ -32,6 +32,14 @@ async function openHash(page: Page, url: string) {
   await page.goto(url);
 }
 
+/** Урок может стоять в свёрнутом модуле (раскрыт только модуль с уроком «на очереди»): открываем модуль и урок. */
+async function openLesson(page: Page, id: string) {
+  const lesson = page.locator(`[data-course-lesson="${id}"]`);
+  const section = page.locator("details[data-course-module]", { has: lesson });
+  if (!(await section.evaluate((el) => (el as HTMLDetailsElement).open))) await section.locator("summary").click();
+  await lesson.click();
+}
+
 test("курс: из школы — модули по порядку, урок открывается, номер урока в заголовке", async ({ page }) => {
   await prepare(page);
   await page.goto("/chess");
@@ -42,7 +50,11 @@ test("курс: из школы — модули по порядку, урок �
   // Путь по урокам: первый непройденный урок отмечен как «на очереди».
   await expect(page.locator('[data-course-lesson="c1-game"]')).toHaveAttribute("aria-current", "step");
   await expect(page.locator('[data-lesson-state="current"]')).toHaveCount(1);
-  await page.locator('[data-course-lesson="c1-check"]').click();
+  // Раскрыт только модуль с этим уроком: остальные — одна строка с числом уроков.
+  await expect(page.locator("details[data-course-module][open]")).toHaveCount(1);
+  await expect(page.locator('details[data-course-module="board"]')).toHaveAttribute("open", "");
+  await expect(page.locator('[data-course-lesson="c1-check"]')).toBeHidden();
+  await openLesson(page, "c1-check");
   await expect(page.getByText("Урок 13")).toBeVisible();
   await expect(page.getByRole("heading", { level: 1, name: "Шах" })).toBeVisible();
 });
@@ -76,7 +88,7 @@ test("курс по-узбекски: заголовки и уроки на уз
   await prepare(page, "uz");
   await page.goto("/chess/course");
   await expect(page.getByRole("heading", { level: 1, name: /1-bosqich/ })).toBeVisible();
-  await page.locator('[data-course-lesson="c1-take"]').click();
+  await openLesson(page, "c1-take");
   await expect(page.getByText("14-dars")).toBeVisible();
   expect(await page.locator("main").innerText()).not.toMatch(/[А-Яа-яЁё]/);
 });

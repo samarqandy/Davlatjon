@@ -264,8 +264,11 @@ const square = (page: Page, board: string, sq: string) =>
 test("шахматная школа: шесть уровней, открыт только первый", async ({ page }) => {
   await page.goto("/chess");
   await expect(page.getByRole("heading", { name: "Шахматная школа" })).toBeVisible();
+  // Уровни и звания — под «Ещё разделы»: на виду одна лестница, ступени курса.
+  await page.locator("[data-more-sections] summary").click();
+  const more = page.locator("[data-more-sections]");
   for (const name of ["Пешка", "Конь", "Слон", "Ладья", "Ферзь", "Король"])
-    await expect(page.getByText(name, { exact: true }).first()).toBeVisible();
+    await expect(more.getByText(name, { exact: true }).first()).toBeVisible();
   await expect(page.locator('a[href="/chess/pawn"]').first()).toBeVisible();
   await expect(page.locator('a[href="/chess/knight"]')).toHaveCount(0);
 });
@@ -295,6 +298,7 @@ test("шахматы: звание «Пешка» открывает урове�
   ];
   await chessState(page, pawnIds);
   await page.goto("/chess");
+  await page.locator("[data-more-sections] summary").click();
   await expect(page.locator('a[href="/chess/knight"]').first()).toBeVisible();
   await expect(page.getByText(/Твоё звание/)).toBeVisible();
   await page.goto("/chess/knight#exercise-5");
@@ -398,6 +402,7 @@ test("первый запуск: ребёнок называет имя и вы�
   // Совет про робота — в блоке «О школе»; уровни по возрасту: «Слон» открыт, «Ладья» ещё закрыта.
   await page.getByText("О школе и как заниматься").click();
   await expect(page.getByText(/Сыграй с роботом «Конь»/)).toBeVisible();
+  await page.locator("[data-more-sections] summary").click();
   await expect(page.locator('a[href="/chess/bishop"]').first()).toBeVisible();
   await expect(page.locator('a[href="/chess/rook"]')).toHaveCount(0);
 });

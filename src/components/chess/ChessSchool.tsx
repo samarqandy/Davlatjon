@@ -448,37 +448,48 @@ export function ChessSchool({ counts }: { counts: ChessSchoolCounts }) {
         </Link>
       )}
 
-      <TodayCard />
+      <TodayCard compact />
 
       <section aria-labelledby="learn-path">
         <h2 id="learn-path" className="mb-3 flex items-center gap-2 text-2xl font-black">
           <Route className="h-6 w-6 text-brand" aria-hidden />
           {t("Учиться: ступени курса", "Oʻrganish: kurs bosqichlari")}
         </h2>
-        <ol className="grid gap-2" data-learn-path>
+        {/*
+         * Телефон: пять кружков в ряд и строка с прогрессом текущей ступени — вся лестница видна сразу.
+         * С планшета — список с названием и прогрессом каждой ступени.
+         */}
+        <ol className="flex gap-1 sm:grid sm:gap-2" data-learn-path>
           {steps.map((st, i) => {
             const done = hydrated && firstOpen(st.list) < 0;
             const isCurrent = st.href === courseHref;
             return (
-              <li key={st.href}>
+              <li key={st.href} className="min-w-0 flex-1">
                 <Link
                   href={st.href}
                   aria-current={isCurrent ? "step" : undefined}
                   className={cn(
-                    "flex items-center gap-3 rounded-2xl bg-surface p-3 shadow-card transition hover:-translate-y-0.5",
-                    isCurrent && "ring-2 ring-brand",
+                    "flex flex-col items-center gap-1 rounded-2xl p-1.5 text-center transition hover:-translate-y-0.5 sm:flex-row sm:gap-3 sm:bg-surface sm:p-3 sm:text-left sm:shadow-card",
+                    isCurrent && "bg-brand-soft sm:bg-surface sm:ring-2 sm:ring-brand",
                   )}
                 >
                   <span
                     className={cn(
-                      "grid h-10 w-10 shrink-0 place-items-center rounded-full text-lg font-black",
+                      "grid h-12 w-12 shrink-0 place-items-center rounded-full text-lg font-black sm:h-10 sm:w-10",
                       done ? "bg-mint text-white" : isCurrent ? "bg-brand text-white" : "bg-line/60 text-muted",
                     )}
                     aria-hidden
                   >
                     {done ? <Check className="h-5 w-5" /> : st.n}
                   </span>
-                  <span className="min-w-0 flex-1">
+                  {/* Телефон: под кружком — короткое имя ступени («Пешка»); полное название читает экранный диктор. */}
+                  <span className="sm:hidden">
+                    <span className="sr-only">{stepTitles[i]}</span>
+                    <span aria-hidden className="block text-xs leading-tight font-extrabold wrap-anywhere">
+                      {stepTitles[i].match(/«(.+?)»/)?.[1] ?? st.n}
+                    </span>
+                  </span>
+                  <span className="min-w-0 flex-1 max-sm:hidden">
                     <span className="block leading-tight font-black">{stepTitles[i]}</span>
                     <span className="mt-1 flex items-center gap-2">
                       <ProgressBar value={solvedIn(st.list)} max={totalIn(st.list)} className="flex-1" />
@@ -494,6 +505,13 @@ export function ChessSchool({ counts }: { counts: ChessSchoolCounts }) {
             );
           })}
         </ol>
+        <div className="mt-2 flex items-center gap-2 sm:hidden" data-learn-current>
+          <span className="min-w-0 truncate text-sm font-extrabold">{stepTitles[current.n - 1]}</span>
+          <ProgressBar value={solvedIn(current.list)} max={totalIn(current.list)} className="flex-1" />
+          <span className="text-xs font-extrabold whitespace-nowrap text-muted">
+            {hydrated ? `${solvedIn(current.list)}/${totalIn(current.list)}` : ""}
+          </span>
+        </div>
       </section>
 
       <section aria-labelledby="chess-sections">
@@ -501,57 +519,11 @@ export function ChessSchool({ counts }: { counts: ChessSchoolCounts }) {
           <Dumbbell className="h-6 w-6 text-brand" aria-hidden />
           {t("Тренироваться", "Mashq qilish")}
         </h2>
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid grid-cols-3 gap-2 sm:gap-3" data-main-sections>
           {orderedPractice.slice(0, MAIN_SECTIONS).map((s) => (
-            <SectionCard key={s.href} s={s} />
+            <SectionCard key={s.href} s={s} tile />
           ))}
         </div>
-
-        <h3 id="daily-home" className="mt-6 mb-2 text-lg font-black">
-          {t("Уровни и звания", "Darajalar va unvonlar")}
-        </h3>
-        <ol className="grid grid-cols-3 gap-2 sm:grid-cols-6">
-          {levels.map((level, i) => {
-            const st = statuses[i];
-            const open = !hydrated || st.unlocked;
-            const tile = (
-              <>
-                <PieceIcon
-                  piece={level.piece}
-                  className={cn("mx-auto h-12 w-12 rounded-xl bg-[#f0d9b5] p-0.5", !open && "opacity-40 grayscale")}
-                />
-                <p className="mt-1 text-sm leading-tight font-black">{level.name}</p>
-                {open ? (
-                  <ProgressBar value={hydrated ? st.solved : 0} max={st.total} className="mt-1" />
-                ) : (
-                  <Lock className="mx-auto mt-1 h-4 w-4 text-muted" aria-label={t("закрыт", "yopiq")} />
-                )}
-                {hydrated && st.passed && (
-                  <p className="mt-1 text-xs font-extrabold text-sun-ink">{t("🏅 звание", "🏅 unvon")}</p>
-                )}
-              </>
-            );
-            return (
-              <li key={level.id}>
-                {open ? (
-                  <Link
-                    href={chessLevelHref(level.id)}
-                    className="block h-full rounded-2xl bg-surface p-2 text-center shadow-card transition hover:-translate-y-0.5"
-                  >
-                    {tile}
-                  </Link>
-                ) : (
-                  <div
-                    className="h-full rounded-2xl border-2 border-dashed border-line bg-surface/70 p-2 text-center"
-                    aria-disabled
-                  >
-                    {tile}
-                  </div>
-                )}
-              </li>
-            );
-          })}
-        </ol>
 
         <details className="group mt-4 rounded-3xl border border-line bg-surface p-3 shadow-card" data-more-sections>
           <summary className="flex min-h-12 cursor-pointer list-none items-center gap-2 rounded-2xl px-3 text-lg font-black select-none [&::-webkit-details-marker]:hidden">
@@ -563,6 +535,50 @@ export function ChessSchool({ counts }: { counts: ChessSchoolCounts }) {
               <SectionCard key={s.href} s={s} />
             ))}
           </div>
+          {/* Уровни и звания — вторая лестница к тем же упражнениям, что и ступени курса: держим её здесь, а не на виду. */}
+          <h3 className="mt-5 mb-2 px-1 text-lg font-black">{t("Уровни и звания", "Darajalar va unvonlar")}</h3>
+          <ol className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+            {levels.map((level, i) => {
+              const st = statuses[i];
+              const open = !hydrated || st.unlocked;
+              const tile = (
+                <>
+                  <PieceIcon
+                    piece={level.piece}
+                    className={cn("mx-auto h-12 w-12 rounded-xl bg-[#f0d9b5] p-0.5", !open && "opacity-40 grayscale")}
+                  />
+                  <p className="mt-1 text-sm leading-tight font-black">{level.name}</p>
+                  {open ? (
+                    <ProgressBar value={hydrated ? st.solved : 0} max={st.total} className="mt-1" />
+                  ) : (
+                    <Lock className="mx-auto mt-1 h-4 w-4 text-muted" aria-label={t("закрыт", "yopiq")} />
+                  )}
+                  {hydrated && st.passed && (
+                    <p className="mt-1 text-xs font-extrabold text-sun-ink">{t("🏅 звание", "🏅 unvon")}</p>
+                  )}
+                </>
+              );
+              return (
+                <li key={level.id}>
+                  {open ? (
+                    <Link
+                      href={chessLevelHref(level.id)}
+                      className="block h-full rounded-2xl bg-surface p-2 text-center shadow-card transition hover:-translate-y-0.5"
+                    >
+                      {tile}
+                    </Link>
+                  ) : (
+                    <div
+                      className="h-full rounded-2xl border-2 border-dashed border-line bg-surface/70 p-2 text-center"
+                      aria-disabled
+                    >
+                      {tile}
+                    </div>
+                  )}
+                </li>
+              );
+            })}
+          </ol>
         </details>
       </section>
 
@@ -573,21 +589,24 @@ export function ChessSchool({ counts }: { counts: ChessSchoolCounts }) {
           className="block rounded-3xl bg-surface p-4 shadow-card transition hover:-translate-y-0.5"
         >
           <p className="text-xs font-extrabold tracking-wide text-muted uppercase">
-            {t("📅 Задача дня", "📅 Kun masalasi")}
+            {t("📅 Шахматная задача дня", "📅 Kunning shaxmat masalasi")}
           </p>
           <p className="text-lg font-black">{daily.title}</p>
-          <p className="mb-2 text-xs font-bold text-muted">
+          <p className="text-xs font-bold text-muted sm:mb-2">
             {"⭐".repeat(daily.stars)} ·{" "}
             {daily.fen.split(" ")[1] === "w" ? t("ходят белые", "oqlar yuradi") : t("ходят чёрные", "qoralar yuradi")}
             {hydrated && state.chessPuzzles[daily.id]?.solvedAt ? " · ✅" : ""}
           </p>
-          <ChessBoard
-            id="hub-daily"
-            position={daily.fen}
-            orientation={daily.fen.split(" ")[1] === "w" ? "white" : "black"}
-            maxWidth={240}
-            className="!mx-0"
-          />
+          {/* Доска-превью — с планшета: на телефоне она занимала больше половины экрана ради одной ссылки. */}
+          <div className="max-sm:hidden">
+            <ChessBoard
+              id="hub-daily"
+              position={daily.fen}
+              orientation={daily.fen.split(" ")[1] === "w" ? "white" : "black"}
+              maxWidth={240}
+              className="!mx-0"
+            />
+          </div>
         </Link>
         <details className="rounded-3xl bg-surface p-4 shadow-card md:col-span-2">
           <summary className="cursor-pointer text-lg font-black">
@@ -651,18 +670,28 @@ export function ChessSchool({ counts }: { counts: ChessSchoolCounts }) {
 /** Сколько разделов видно сразу; остальные — под «Ещё разделы». */
 const MAIN_SECTIONS = 3;
 
-function SectionCard({ s }: { s: { href: string; emoji: string; title: string; text: string; stat: string } }) {
+function SectionCard({
+  s,
+  tile = false,
+}: {
+  s: { href: string; emoji: string; title: string; text: string; stat: string };
+  /** Главные разделы: на телефоне — плитка со значком и названием, описание и счётчик видны с планшета. */
+  tile?: boolean;
+}) {
   return (
     <Link
       href={s.href}
-      className="flex flex-col rounded-3xl border-2 border-transparent bg-surface p-4 shadow-card transition hover:-translate-y-0.5 hover:border-brand/30"
+      className={cn(
+        "flex flex-col rounded-3xl border-2 border-transparent bg-surface p-4 shadow-card transition hover:-translate-y-0.5 hover:border-brand/30",
+        tile && "max-sm:items-center max-sm:rounded-2xl max-sm:p-2.5 max-sm:text-center",
+      )}
     >
       <p className="text-3xl" aria-hidden>
         {s.emoji}
       </p>
-      <p className="mt-1 text-xl font-black">{s.title}</p>
-      <p className="mt-1 flex-1 text-sm text-muted">{s.text}</p>
-      <p className="mt-3 text-xs font-extrabold text-brand-dark">{s.stat}</p>
+      <p className={cn("mt-1 text-xl font-black", tile && "max-sm:text-base max-sm:leading-tight")}>{s.title}</p>
+      <p className={cn("mt-1 flex-1 text-sm text-muted", tile && "max-sm:hidden")}>{s.text}</p>
+      <p className={cn("mt-3 text-xs font-extrabold text-brand-dark", tile && "max-sm:hidden")}>{s.stat}</p>
     </Link>
   );
 }

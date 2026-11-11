@@ -220,3 +220,30 @@ test("неверный ответ — мягкий сигнал «попробу
   await check.click();
   await expect.poll(heard).toEqual(["retry", "reward:win"]);
 });
+
+// Бюджет длины: главные страницы шахмат на телефоне — не длиннее трёх-четырёх экранов (было 5,6 и 9,4).
+test("шахматная школа и страница курса на телефоне — короткие: до трёх и до четырёх экранов", async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(!isMobile, "длину страниц считаем для телефона");
+  // С именем: без него наверху страницы есть разовая карточка «как тебя зовут», она в бюджет не входит.
+  await prepare(page, { age: 7, childName: "Анна" });
+  await page.setViewportSize({ width: 390, height: 664 });
+  const screens = async (url: string) => {
+    await page.goto(url);
+    await page.waitForLoadState("networkidle");
+    return page.evaluate(() => document.documentElement.scrollHeight / window.innerHeight);
+  };
+  expect(await screens("/chess")).toBeLessThanOrEqual(3);
+  // Задание дня свёрнуто в строку с итогом, главные разделы — три плитки, уровни и звания — под «Ещё разделы».
+  await expect(page.locator("details[data-today]")).not.toHaveAttribute("open", "");
+  await expect(page.locator("[data-quest-count]")).toHaveText("0/3");
+  await expect(page.locator("[data-main-sections] a")).toHaveCount(3);
+  await expect(page.locator('a[href="/chess/pawn"]')).toBeHidden();
+  await page.locator("[data-today] summary").click();
+  await expect(page.locator("[data-today]").getByText("Начни серию сегодня!")).toBeVisible();
+
+  expect(await screens("/chess/course")).toBeLessThanOrEqual(4);
+  expect(await screens("/chess/course-5")).toBeLessThanOrEqual(4);
+});
