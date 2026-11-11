@@ -325,3 +325,43 @@ test("планшет: шапка в одну строку и не обрезан
   const board = (await page.locator("[data-board]").first().boundingBox())!;
   expect(board.y + board.height).toBeLessThanOrEqual(880);
 });
+
+// Главное действие — под большим пальцем: на высоком телефоне кнопка в карточке стояла в верхней трети экрана.
+test("шахматная школа и курс: «Начать» внизу экрана на телефоне, в карточке — на широком экране", async ({
+  page,
+  isMobile,
+}) => {
+  await prepare(page, { age: 7, childName: "Анна" });
+  const fab = page.locator("[data-continue-fab]");
+  const pill = page.locator("[data-course-continue]").getByText("Начать", { exact: true });
+  await page.goto("/chess");
+  if (!isMobile) {
+    await expect(pill).toBeVisible();
+    await expect(fab).toBeHidden();
+    return;
+  }
+  await page.setViewportSize({ width: 480, height: 1040 });
+  await expect(fab).toBeVisible();
+  await expect(pill).toBeHidden();
+  await expect(fab).toHaveAccessibleName("Начать: Шахматная партия");
+  const centre = async () => {
+    const box = (await fab.boundingBox())!;
+    return (box.y + box.height / 2) / 1040;
+  };
+  // Нижняя треть экрана и не поверх нижнего меню.
+  expect(await centre()).toBeGreaterThan(0.66);
+  const nav = (await page.locator("[data-bottom-nav]").boundingBox())!;
+  const box = (await fab.boundingBox())!;
+  expect(box.y + box.height).toBeLessThanOrEqual(nav.y);
+  await fab.click();
+  await expect(page).toHaveURL(/\/chess\/course#c1-game$/);
+  await expect(page.getByRole("heading", { level: 1, name: /Шахматная партия/ })).toBeVisible();
+
+  // На странице ступени кнопка та же; в открытом уроке её нет — там своя строка упражнения.
+  await expect(fab).toHaveCount(0);
+  await page.goto("/chess/course-2");
+  await expect(fab).toBeVisible();
+  expect(await centre()).toBeGreaterThan(0.66);
+  await fab.click();
+  await expect(page).toHaveURL(/\/chess\/course-2#/);
+});

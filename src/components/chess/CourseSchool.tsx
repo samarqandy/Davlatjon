@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { ContinueFab } from "@/components/ContinueFab";
 import { PathStop } from "@/components/PathStop";
 import { cn, Icon } from "@/components/ui";
 import { courseLessons } from "@/content/chess/courseLessons";
@@ -97,7 +98,7 @@ function Overview({ step, lessons }: { step: CourseStep; lessons: (ChessTactic &
               </span>
               <span className="block text-lg leading-tight font-black">{next.title}</span>
             </span>
-            <span className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-sun px-4 py-2.5 font-black text-on-sun shadow-[0_3px_0_0_#b45309]">
+            <span className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-sun px-4 py-2.5 font-black text-on-sun shadow-[0_3px_0_0_#b45309] max-lg:hidden">
               <Play className="h-4 w-4 fill-current" aria-hidden />
               {started ? t("Дальше", "Davom") : t("Начать", "Boshlash")}
             </span>
@@ -179,6 +180,17 @@ function Overview({ step, lessons }: { step: CourseStep; lessons: (ChessTactic &
         })}
       </div>
       <DiplomaCard step={step} />
+      {/* До 1024 px «Начать» или «Дальше» — внизу экрана; место под кнопку, чтобы она не закрывала конец страницы. */}
+      {next && (
+        <>
+          <div className="h-12 lg:hidden" aria-hidden />
+          <ContinueFab
+            onClick={() => setHash(`#${next.id}`)}
+            label={started ? t("Дальше", "Davom") : t("Начать", "Boshlash")}
+            name={`${started ? t("Дальше", "Davom") : t("Начать", "Boshlash")}: ${next.title}`}
+          />
+        </>
+      )}
     </>
   );
 }
