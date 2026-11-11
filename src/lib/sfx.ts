@@ -144,6 +144,7 @@ let lastPriority = 0;
 /** Сыграть звук доски (если звуки ходов включены). Два звука почти одновременно — остаётся более важный. */
 export function playSfx(kind: Sfx) {
   if (!boardSoundsOn()) return;
+  if (kind === "illegal" && typeof performance !== "undefined") illegalAtMs = performance.now();
   // Для проверок: какой звук доска хотела сыграть.
   if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent("board-sfx", { detail: kind }));
   const c = context();
@@ -182,6 +183,25 @@ export function playSfx(kind: Sfx) {
       tone(c, at, "triangle", 150, 110, 0.14, 0.4);
       break;
   }
+}
+
+/** Когда доска в последний раз сказала «так нельзя» (мс): второй сигнал об ошибке сразу за ним лишний. */
+let illegalAtMs = -1e9;
+
+/**
+ * Мягкий сигнал «попробуй ещё» после неверного ответа: две тихие ноты вниз, без резкого «гудка».
+ * Включается тем же переключателем, что и звуки доски. Если доска только что сыграла «так нельзя», молчит.
+ */
+export function playRetry() {
+  if (!boardSoundsOn() || typeof window === "undefined") return;
+  if (performance.now() - illegalAtMs < 400) return;
+  // Для проверок: какой сигнал ответа хотели сыграть.
+  window.dispatchEvent(new CustomEvent("answer-sfx", { detail: "retry" }));
+  const c = context();
+  if (!c || c.state !== "running" || !master) return;
+  const at = c.currentTime + 0.02;
+  tone(c, at, "triangle", 392, 392, 0.11, 0.2);
+  tone(c, at + 0.12, "triangle", 330, 311, 0.2, 0.2);
 }
 
 export type Reward = "win" | "level";

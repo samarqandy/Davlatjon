@@ -196,3 +196,27 @@ test("задача на телефоне: условие, ответ и «Про
   await expect(page.getByRole("button", { name: "Дальше →" })).toBeInViewport();
   await expect(page.locator("[data-task-counter]")).toBeVisible();
 });
+
+test("неверный ответ — мягкий сигнал «попробуй ещё»; пустое поле и верный ответ его не дают", async ({ page }) => {
+  await prepare(page);
+  await page.addInitScript(() => {
+    const w = window as unknown as { __answer: string[] };
+    w.__answer = [];
+    window.addEventListener("answer-sfx", (e) => w.__answer.push((e as CustomEvent<string>).detail));
+    window.addEventListener("reward-sfx", (e) => w.__answer.push(`reward:${(e as CustomEvent<string>).detail}`));
+  });
+  await page.goto("/week/1/day/1#task-1");
+  const heard = () => page.evaluate(() => (window as unknown as { __answer: string[] }).__answer);
+  const check = page.getByRole("button", { name: "Проверить" }).first();
+  await check.click({ force: true });
+  await expect(page.getByText("✏️ Сначала впиши ответ").first()).toBeVisible();
+  expect(await heard()).toEqual([]);
+
+  await page.locator("input").first().fill("50");
+  await check.click();
+  await expect.poll(heard).toEqual(["retry"]);
+
+  await page.locator("input").first().fill("57");
+  await check.click();
+  await expect.poll(heard).toEqual(["retry", "reward:win"]);
+});

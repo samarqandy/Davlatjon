@@ -290,6 +290,9 @@
     :root:has([data-bottom-nav]) {
       --bottom-bar: 6rem;
     }
+    :root:has([data-exercise-next]) {
+      --bottom-bar: 5rem;
+    }
   }
 
   /* Сюда ведёт ссылка «Перейти к содержимому»; рамка вокруг всей страницы не нужна. */
