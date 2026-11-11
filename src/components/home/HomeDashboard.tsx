@@ -61,9 +61,11 @@ export function HomeDashboard({ weeks: both, chess }: { weeks: Both<WeekSummary[
 
   return (
     <div className="space-y-8">
-      {hydrated && !state.welcomed && <Welcome />}
-      <ChildNameBanner />
-
+      {/*
+       * Окно знакомства есть уже в HTML с сервера: новичку оно открывается до первой отрисовки (см. Welcome.tsx),
+       * а не после загрузки скриптов. Тем, кто уже знаком, оно не показывается и после загрузки убирается.
+       */}
+      {(!hydrated || !state.welcomed) && <Welcome />}
       <section className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
         {/* Повторение — сразу под занятием дня: на телефоне оно видно без прокрутки, пока есть что повторять. */}
         <div className="flex min-w-0 flex-col gap-5">
@@ -146,11 +148,15 @@ export function HomeDashboard({ weeks: both, chess }: { weeks: Both<WeekSummary[
         <TodayCard />
       </section>
 
+      {/* Просьба назваться — под занятием дня: карточка появляется после загрузки и не должна сдвигать первый экран. */}
+      <ChildNameBanner />
+
       {!little && <QuickCard />}
 
-      <PlacementCard />
-
       <ChessHomeCard summary={chess} />
+
+      {/* «С какой недели начнём?» — над путём по неделям: карточка появляется после загрузки и ничего выше не сдвигает. */}
+      <PlacementCard />
 
       <details
         open={!junior}

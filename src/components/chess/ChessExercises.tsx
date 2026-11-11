@@ -19,7 +19,7 @@ import {
 } from "@/lib/chess";
 import { askExplain, praise } from "@/lib/feedback";
 import { useLang, useSan, useT, type T } from "@/lib/i18n";
-import { VOICE_CLIPS } from "@/lib/voice";
+import { RECORDED_CLIPS } from "@/lib/voiceRecorded";
 import { pluralize } from "@/lib/plural";
 import { chessFound, chessMiss, chessSolved, useChessExercise } from "@/lib/store";
 import { ChessBoard, type SquareMark } from "./ChessBoard";
@@ -67,7 +67,7 @@ function ExerciseShell({
           <RichText text={ex.prompt} />
         </p>
         <ListenButton
-          src={VOICE_CLIPS.exercise(ex.id, lang)}
+          src={RECORDED_CLIPS.exercise(ex.id, lang)}
           className="max-lg:col-start-2 max-lg:row-start-1 max-lg:self-start"
         />
       </div>

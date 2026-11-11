@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { AccountPanel } from "@/components/AccountPanel";
 import { Button, cn } from "@/components/ui";
 import { loginAvailable, useAccount } from "@/lib/account";
-import { activityDays } from "@/lib/awards";
+import { activityDays } from "@/lib/calendar";
 import { useT } from "@/lib/i18n";
 import { TIME_CONTROLS, timeControlLabel, type GameView } from "@/lib/online";
 import { api, errorText, usePoll } from "@/lib/onlineClient";

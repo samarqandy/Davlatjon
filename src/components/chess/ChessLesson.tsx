@@ -7,7 +7,7 @@ import { Button, cn } from "@/components/ui";
 import type { ChessDemo, ChessLessonCard } from "@/content/chess/types";
 import { legalTargets, pieceAt } from "@/lib/chess";
 import { useLang, useT } from "@/lib/i18n";
-import { VOICE_CLIPS } from "@/lib/voice";
+import { RECORDED_CLIPS } from "@/lib/voiceRecorded";
 import { ChessBoard, type SquareMark } from "./ChessBoard";
 
 /** Доска урока: подсветка, стрелки, а в интерактивной — ходы фигуры по нажатию. */
@@ -87,7 +87,7 @@ export function ChessLesson({
           </p>
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h3 className="text-2xl font-black">{card.title}</h3>
-            <ListenButton key={step} src={VOICE_CLIPS.lesson(levelId, step, lang)} />
+            <ListenButton key={step} src={RECORDED_CLIPS.lesson(levelId, step, lang)} />
           </div>
           {card.text.map((text, i) => (
             <p key={i} className="text-lg leading-relaxed">

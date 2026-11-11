@@ -2,7 +2,7 @@
  * Опыт (XP) и уровень ребёнка. Ничего нового не хранится: опыт считается из уже записанного прогресса,
  * поэтому он одинаков на всех устройствах и сам восстанавливается после синхронизации.
  */
-import { CHESS_LEVELS } from "@/content/chess";
+import { LEVEL_EXERCISE_IDS } from "@/content/chess/levelIds";
 import type { AppState } from "./state";
 import { QUICK_PASS } from "./quick";
 
@@ -53,7 +53,7 @@ export function xpBreakdown(s: AppState): XpBreakdown {
   chess += Object.keys(s.chessEndgames).length * XP.endgame;
   chess += DRILLS.filter((d) => s.chessDrills[d]).length * XP.drill;
   // Звание: все упражнения уровня решены.
-  for (const level of CHESS_LEVELS) if (level.exercises.every((e) => s.chess[e.id]?.solvedAt)) chess += XP.rank;
+  for (const ids of Object.values(LEVEL_EXERCISE_IDS)) if (ids.every((id) => s.chess[id]?.solvedAt)) chess += XP.rank;
   let puzzles = 0;
   for (const p of Object.values(s.chessPuzzles)) if (p.solvedAt) puzzles += XP.puzzle;
   puzzles += Object.keys(s.chessOwnPuzzles).length * XP.ownPuzzle;

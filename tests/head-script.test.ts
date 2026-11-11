@@ -5,7 +5,12 @@
 import { describe, expect, it } from "vitest";
 import { HEAD_SCRIPT as code } from "@/lib/headScript";
 
-function run(settings: Record<string, unknown>, pathname: string, served: "ru" | "uz" = "ru") {
+function run(
+  settings: Record<string, unknown>,
+  pathname: string,
+  served: "ru" | "uz" = "ru",
+  state: Record<string, unknown> = {},
+) {
   const classes = new Set<string>();
   const attrs: Record<string, string> = {};
   const html = {
@@ -13,7 +18,7 @@ function run(settings: Record<string, unknown>, pathname: string, served: "ru" |
     classList: { add: (c: string) => classes.add(c), remove: (c: string) => classes.delete(c) },
     setAttribute: (k: string, v: string) => void (attrs[k] = v),
   };
-  const storage = { getItem: () => JSON.stringify({ settings }) };
+  const storage = { getItem: () => JSON.stringify({ settings, ...state }) };
   new Function("localStorage", "location", "document", "setTimeout", code)(
     storage,
     { pathname },
@@ -26,6 +31,7 @@ function run(settings: Record<string, unknown>, pathname: string, served: "ru" |
     motion: attrs["data-motion"],
     age: attrs["data-age"],
     theme: attrs["data-theme"],
+    first: "data-first" in attrs,
   };
 }
 
@@ -65,6 +71,13 @@ describe("скрипт в <head>", () => {
     expect(run({ theme: "dark" }, "/").theme).toBe("dark");
     expect(run({ theme: "light" }, "/").theme).toBeUndefined();
     expect(run({}, "/chess").theme).toBeUndefined();
+  });
+
+  it("первое знакомство: метка для окна приветствия — только пока ребёнок не познакомился", () => {
+    expect(run({}, "/").first).toBe(true);
+    expect(run({ lang: "uz" }, "/", "uz").first).toBe(true);
+    expect(run({}, "/", "ru", { welcomed: true }).first).toBe(false);
+    expect(run({ age: 7 }, "/chess", "ru", { welcomed: true }).first).toBe(false);
   });
 
   it("возрастной режим ставится до отрисовки и совпадает с ageMode()", async () => {

@@ -21,7 +21,7 @@ import {
   chessPuzzleSolved,
 } from "@/lib/store";
 import { mergeStates } from "@/lib/sync";
-import { VOICE_CLIPS } from "@/lib/voice";
+import { RECORDED_CLIPS } from "@/lib/voiceRecorded";
 
 const DAY = 86_400_000;
 const ID = "w1d1t1";
@@ -189,8 +189,8 @@ describe("новая попытка не трогает первую", () => {
 
   it("озвучка повторения — та же запись, что у задачи", () => {
     expect(sourceTaskId(reviewId(ID))).toBe(ID);
-    expect(VOICE_CLIPS.task(reviewId(ID), "ru")).toBe(VOICE_CLIPS.task(ID, "ru"));
-    expect(VOICE_CLIPS.hint(reviewId(ID), 0, "ru")).toBe(VOICE_CLIPS.hint(ID, 0, "ru"));
+    expect(RECORDED_CLIPS.task(reviewId(ID), "ru")).toBe(RECORDED_CLIPS.task(ID, "ru"));
+    expect(RECORDED_CLIPS.hint(reviewId(ID), 0, "ru")).toBe(RECORDED_CLIPS.hint(ID, 0, "ru"));
   });
 });
 

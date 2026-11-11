@@ -4,7 +4,7 @@ import { ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { useMemo } from "react";
 import { cn, ProgressBar } from "@/components/ui";
-import { activityDays } from "@/lib/awards";
+import { activityDays } from "@/lib/calendar";
 import { useLang, useT } from "@/lib/i18n";
 import { pluralize } from "@/lib/plural";
 import { gentleStreak, questDone, questFor, questStars, weekActiveDays, type QuestGoal } from "@/lib/quest";
@@ -55,6 +55,9 @@ function goalText(g: QuestGoal, t: ReturnType<typeof useT>): string {
   }
 }
 
+/** День для разметки до загрузки: какой именно — не важно, строки дел одной высоты. */
+const PLACEHOLDER_DAY = "2026-01-01";
+
 /**
  * «Сегодня»: уровень, задание дня из трёх дел, мягкая серия и цель недели.
  * Всё считается из прогресса — отдельно ничего не хранится.
@@ -73,16 +76,17 @@ export function TodayCard({
   const state = useStore((s) => s);
   const goal = state.settings.goalDays ?? GOAL_DAYS_DEFAULT;
   const days = useMemo(() => activityDays(state), [state]);
-  if (!hydrated || !today)
-    return (
-      <section className={cn(compact ? "min-h-14" : "min-h-40", "rounded-3xl bg-surface shadow-card", className)} />
-    );
+  // До загрузки прогресса и даты содержимое уже стоит на месте, но невидимо: карточка сразу своей высоты,
+  // и после загрузки ничего ниже неё не прыгает. Чужих нулей («0 из 3», «начни серию») ребёнок при этом не видит.
+  const ready = hydrated && !!today;
+  if (compact && !ready) return <section className={cn("min-h-14 rounded-3xl bg-surface shadow-card", className)} />;
+  const day = today || PLACEHOLDER_DAY;
 
-  const goals = questFor(state, today);
+  const goals = questFor(state, day);
   const done = questDone(goals);
   const stars = questStars(state, Object.keys(days));
-  const streak = gentleStreak(days, today);
-  const week = weekActiveDays(days, today);
+  const streak = gentleStreak(days, day);
+  const week = weekActiveDays(days, day);
   const flame = Math.min(1 + streak.days / 10, 2);
 
   const title = (
@@ -101,7 +105,7 @@ export function TodayCard({
             {title}
           </h2>
         )}
-        <ul className="mt-2 space-y-1.5" data-quest={done ? "done" : "open"}>
+        <ul className="mt-2 space-y-1.5" data-quest={!ready ? undefined : done ? "done" : "open"}>
           {goals.map((g) => {
             const ok = g.have >= g.need;
             return (
@@ -109,7 +113,9 @@ export function TodayCard({
                 <Link
                   href={g.href}
                   className={cn(
-                    "flex items-center gap-3 rounded-2xl border-2 px-3 py-2 transition",
+                    // В узкой карточке текст дела занимает одну или две строки — высота строки одна на всех:
+                    // три дела стоят ровно, и карточка не меняет высоту от того, какое дело выпало сегодня.
+                    "flex items-center gap-3 rounded-2xl border-2 px-3 py-2 transition @max-md:min-h-[4.25rem]",
                     ok ? "border-mint/40 bg-mint-soft/60" : "border-line hover:border-brand/40",
                   )}
                 >
@@ -150,7 +156,7 @@ export function TodayCard({
             🔥
           </span>
           <div>
-            <p className="font-black" data-streak={streak.days}>
+            <p className="font-black" data-streak={ready ? streak.days : undefined}>
               {streak.days
                 ? t(`${pluralize(streak.days, "день", "дня", "дней")} подряд`, `Ketma-ket ${streak.days} kun`)
                 : t("Начни серию сегодня!", "Seriyani bugun boshla!")}
@@ -203,9 +209,9 @@ export function TodayCard({
     <section
       className={cn("@container rounded-3xl bg-surface p-5 shadow-card", className)}
       aria-labelledby="today"
-      data-today
+      data-today={ready ? "" : undefined}
     >
-      {body}
+      <div className={ready ? undefined : "invisible"}>{body}</div>
     </section>
   );
 }

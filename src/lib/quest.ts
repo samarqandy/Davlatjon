@@ -2,7 +2,7 @@
  * Задание дня и мягкая серия. Как и опыт, всё считается из уже записанного прогресса:
  * задания дня выбираются по дате, выполнено ли — видно по времени решённых задач и партий.
  */
-import { CHESS_LEVELS } from "@/content/chess";
+import { LEVEL_EXERCISE_IDS } from "@/content/chess/levelIds";
 import { TASK_COUNT } from "@/content/counts";
 import { isoDay, type AppState } from "./state";
 
@@ -16,7 +16,7 @@ export interface QuestGoal {
   href: string;
 }
 
-const EXERCISE_COUNT = CHESS_LEVELS.reduce((n, l) => n + l.exercises.length, 0);
+const EXERCISE_COUNT = Object.values(LEVEL_EXERCISE_IDS).reduce((n, ids) => n + ids.length, 0);
 
 const on = (ms: number | undefined, day: string) => !!ms && isoDay(ms) === day;
 
