@@ -10,6 +10,7 @@ import { LEVELS } from "@/content/chess/parts/levels";
 import { PUZZLE_PART } from "@/content/chess/parts/puzzles";
 import { TACTIC_PART } from "@/content/chess/parts/tactics";
 import Link from "next/link";
+import { ContinueFab } from "@/components/ContinueFab";
 import { ChildNameBanner } from "@/components/home/ChildNameBanner";
 import { TodayCard } from "@/components/progress/TodayCard";
 import { cn, ProgressBar } from "@/components/ui";
@@ -399,7 +400,15 @@ export function ChessSchool({ counts }: { counts: ChessSchoolCounts }) {
   ];
 
   return (
-    <div className="space-y-6 sm:space-y-8">
+    <div className={cn("space-y-6 sm:space-y-8", courseLesson && "max-lg:pb-16")}>
+      {courseLesson && (
+        <ContinueFab
+          aboveNav
+          href={`${courseHref}#${courseLesson.id}`}
+          label={courseSolved > 0 ? t("Дальше", "Davom") : t("Начать", "Boshlash")}
+          name={`${courseSolved > 0 ? t("Дальше", "Davom") : t("Начать", "Boshlash")}: ${courseLesson.title}`}
+        />
+      )}
       <ChildNameBanner />
       <header className="flex flex-wrap items-center gap-3">
         <div className="min-w-0 flex-1">
@@ -440,7 +449,8 @@ export function ChessSchool({ counts }: { counts: ChessSchoolCounts }) {
           <span className="mt-1 block text-2xl leading-tight font-black sm:text-3xl">{courseLesson.title}</span>
           <span className="mt-4 flex items-center gap-4">
             <ProgressBar value={courseSolved} max={courseTotal} className="flex-1 bg-white/20" />
-            <span className="inline-flex shrink-0 items-center gap-2 rounded-2xl bg-sun px-5 py-3 text-lg font-black text-on-sun shadow-[0_4px_0_0_#b45309]">
+            {/* До 1024 px главная кнопка — внизу экрана (ContinueFab); здесь остаётся только на широком экране. */}
+            <span className="inline-flex shrink-0 items-center gap-2 rounded-2xl bg-sun px-5 py-3 text-lg font-black text-on-sun shadow-[0_4px_0_0_#b45309] max-lg:hidden">
               <Play className="h-5 w-5 fill-current" aria-hidden />
               {courseSolved > 0 ? t("Дальше", "Davom") : t("Начать", "Boshlash")}
             </span>
