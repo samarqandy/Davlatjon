@@ -204,6 +204,8 @@ test("неверный ответ — мягкий сигнал «попробу
     w.__answer = [];
     window.addEventListener("answer-sfx", (e) => w.__answer.push((e as CustomEvent<string>).detail));
     window.addEventListener("reward-sfx", (e) => w.__answer.push(`reward:${(e as CustomEvent<string>).detail}`));
+    // Вместе со звуком — короткая вибрация (на телефонах, где браузер её умеет).
+    window.addEventListener("haptic", (e) => w.__answer.push(`haptic:${(e as CustomEvent<string>).detail}`));
   });
   await page.goto("/week/1/day/1#task-1");
   const heard = () => page.evaluate(() => (window as unknown as { __answer: string[] }).__answer);
@@ -214,11 +216,11 @@ test("неверный ответ — мягкий сигнал «попробу
 
   await page.locator("input").first().fill("50");
   await check.click();
-  await expect.poll(heard).toEqual(["retry"]);
+  await expect.poll(heard).toEqual(["retry", "haptic:retry"]);
 
   await page.locator("input").first().fill("57");
   await check.click();
-  await expect.poll(heard).toEqual(["retry", "reward:win"]);
+  await expect.poll(heard).toEqual(["retry", "haptic:retry", "reward:win", "haptic:success"]);
 });
 
 // Бюджет длины: главные страницы шахмат на телефоне — не длиннее трёх-четырёх экранов (было 5,6 и 9,4).
@@ -246,4 +248,36 @@ test("шахматная школа и страница курса на теле
 
   expect(await screens("/chess/course")).toBeLessThanOrEqual(4);
   expect(await screens("/chess/course-5")).toBeLessThanOrEqual(4);
+});
+
+test("телефон и система: жест «потянуть, чтобы обновить» выключен на экранах с доской, страница только светлая или своя тёмная, у приложения есть ярлыки", async ({
+  page,
+  request,
+}) => {
+  await prepare(page);
+  const html = (prop: "overscrollBehaviorY" | "colorScheme") =>
+    page.evaluate((p) => getComputedStyle(document.documentElement)[p], prop);
+
+  // На главной жест работает, как обычно; цветовая схема — «только светлая», чтобы браузер не перекрашивал сам.
+  await page.goto("/");
+  expect(await html("overscrollBehaviorY")).toBe("auto");
+  expect((await html("colorScheme")).split(" ").sort()).toEqual(["light", "only"]);
+  await page.getByRole("button", { name: "Тёмная тема" }).click();
+  await expect.poll(() => html("colorScheme")).toBe("dark");
+  await page.getByRole("button", { name: "Тёмная тема" }).click();
+
+  // Задача и доска: движение пальца вниз не должно перезагружать страницу.
+  await page.goto("/week/1/day/1#task-1");
+  await expect(page.locator("[data-day-nav]")).toBeVisible();
+  expect(await html("overscrollBehaviorY")).toBe("contain");
+  await page.goto("/chess/play#robot-1-w");
+  await expect(page.locator('[data-board="play"]')).toBeVisible();
+  expect(await html("overscrollBehaviorY")).toBe("contain");
+
+  // Ярлыки на значке приложения ведут на существующие страницы.
+  const manifest = await (await request.get("/manifest.webmanifest")).json();
+  expect(manifest.id).toBe("/");
+  const urls: string[] = manifest.shortcuts.map((x: { url: string }) => x.url);
+  expect(urls).toEqual(["/chess", "/chess/puzzles#practice", "/quick"]);
+  for (const url of urls) expect((await request.get(url.split("#")[0])).status()).toBe(200);
 });

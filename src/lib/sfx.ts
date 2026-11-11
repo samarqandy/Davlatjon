@@ -6,6 +6,7 @@
  * вариант, пока записи не загрузились, — синтез Web Audio. Всё работает офлайн и не мешает диктору.
  * Браузеры (особенно iOS) дают звук только после первого касания: до него звуки просто пропускаются.
  */
+import { haptic } from "./haptics";
 import { getState } from "./store";
 
 export type Sfx = "move" | "capture" | "castle" | "promote" | "collect" | "check" | "illegal";
@@ -144,7 +145,10 @@ let lastPriority = 0;
 /** Сыграть звук доски (если звуки ходов включены). Два звука почти одновременно — остаётся более важный. */
 export function playSfx(kind: Sfx) {
   if (!boardSoundsOn()) return;
-  if (kind === "illegal" && typeof performance !== "undefined") illegalAtMs = performance.now();
+  if (kind === "illegal") {
+    if (typeof performance !== "undefined") illegalAtMs = performance.now();
+    haptic("illegal");
+  }
   // Для проверок: какой звук доска хотела сыграть.
   if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent("board-sfx", { detail: kind }));
   const c = context();
@@ -197,6 +201,7 @@ export function playRetry() {
   if (performance.now() - illegalAtMs < 400) return;
   // Для проверок: какой сигнал ответа хотели сыграть.
   window.dispatchEvent(new CustomEvent("answer-sfx", { detail: "retry" }));
+  haptic("retry");
   const c = context();
   if (!c || c.state !== "running" || !master) return;
   const at = c.currentTime + 0.02;
@@ -219,6 +224,7 @@ function bell(c: AudioContext, at: number, freq: number, dur: number, vol: numbe
 export function playReward(kind: Reward) {
   if (!boardSoundsOn()) return;
   if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent("reward-sfx", { detail: kind }));
+  haptic(kind === "win" ? "success" : "finish");
   const c = context();
   if (!c || c.state !== "running" || !master) return;
   const at = c.currentTime + 0.05;
