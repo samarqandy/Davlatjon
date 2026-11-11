@@ -32,7 +32,7 @@ export function SiteHeader({
     </Link>
   );
   return (
-    <header className="no-print sticky top-0 z-30 border-b border-line/70 bg-paper/85 backdrop-blur">
+    <header data-site-header className="no-print sticky top-0 z-30 border-b border-line/70 bg-paper/85 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center gap-2 px-4 py-2.5">
         <Link href="/" className="mr-auto flex items-center gap-2.5 rounded-xl pr-2">
           <LogoMark size={46} />

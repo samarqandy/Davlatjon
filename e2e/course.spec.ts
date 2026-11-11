@@ -330,3 +330,47 @@ test("школа: путь из пяти ступеней, текущая отм
   await next.click();
   await expect(page).toHaveURL(/\/chess\/course#c1-game$/);
 });
+
+// Бюджет экрана: в упражнении на телефоне задание и доска видны сразу — младшие дети прокрутки избегают.
+test("курс на телефоне: в упражнении задание и доска целиком на одном экране, шапка сайта скрыта", async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(!isMobile, "бюджет экрана считаем для телефона");
+  await prepare(page);
+  await page.setViewportSize({ width: 390, height: 664 });
+  await page.goto("/chess/course");
+  await openHash(page, "/chess/course#c1-rook-exercise-1");
+
+  const fits = async () => {
+    const board = (await page.locator("[data-board]").first().boundingBox())!;
+    const heading = (await page.locator("[data-exercise-heading]").boundingBox())!;
+    expect(heading.y).toBeGreaterThanOrEqual(0);
+    expect(board.y + board.height).toBeLessThanOrEqual(664);
+  };
+  await expect(page.locator("[data-exercise-heading]")).toBeVisible();
+  await fits();
+  expect(await page.evaluate(() => window.scrollY)).toBe(0);
+  await expect(page.locator("[data-site-header]")).toBeHidden();
+  await expect(page.getByRole("navigation", { name: "Разделы темы" })).toBeHidden();
+
+  // Кнопок вне доски и полоски упражнений — не больше восьми.
+  const controls = await page.evaluate(
+    () =>
+      [...document.querySelectorAll("a[href],button,input,select,summary")].filter((el) => {
+        const r = el.getBoundingClientRect();
+        const seen = r.width > 0 && r.height > 0 && r.top < innerHeight && r.bottom > 0;
+        return seen && !el.closest("[data-board]") && !el.closest("[data-step-strip]");
+      }).length,
+  );
+  expect(controls).toBeLessThanOrEqual(8);
+
+  // Полоска ведёт к другому упражнению, и доска снова на экране; книжка возвращает к уроку с вкладками.
+  await page.getByRole("list", { name: "Упражнения урока" }).getByRole("button").nth(1).click();
+  await expect(page).toHaveURL(/#c1-rook-exercise-2$/);
+  await expect(page.locator("[data-exercise-heading]")).toBeInViewport();
+  await fits();
+  await page.getByRole("button", { name: "К уроку" }).click();
+  await expect(page.getByRole("navigation", { name: "Разделы темы" })).toBeVisible();
+  await expect(page.locator("[data-site-header]")).toBeVisible();
+});

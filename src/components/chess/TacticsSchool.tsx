@@ -15,7 +15,7 @@ import { TACTIC_PART } from "@/content/chess/parts/tactics";
 import { setHash, useHash } from "@/lib/useHash";
 import { ChessExerciseView } from "./ChessExercises";
 import { ChessLesson } from "./ChessLesson";
-import { ArrowLeft, BookOpen, Library, Target } from "lucide-react";
+import { ArrowLeft, BookOpen, Library, Target, X } from "lucide-react";
 
 export type Tab = "lesson" | "exercises" | "dictionary";
 
@@ -174,10 +174,18 @@ export function TopicView({
     setHash(`#${topic.id}-exercise-${i + 1}`, { keepScroll: true });
   };
 
+  // В упражнениях на телефоне — «один экран — одно дело»: вместо шапки урока и вкладок одна строка над заданием.
+  const focus = tab === "exercises";
+
   return (
     <>
       {/* Компактная шапка урока: задача, а не заголовок, — главное на экране (на телефоне доска сразу видна). */}
-      <header className="flex items-center gap-3 rounded-3xl bg-linear-to-br from-[#3b2f23] to-[#6b4f33] p-3 text-white shadow-card sm:p-4">
+      <header
+        className={cn(
+          "flex items-center gap-3 rounded-3xl bg-linear-to-br from-[#3b2f23] to-[#6b4f33] p-3 text-white shadow-card sm:p-4",
+          focus && "max-sm:hidden",
+        )}
+      >
         <button
           type="button"
           onClick={() => setHash("#")}
@@ -200,7 +208,7 @@ export function TopicView({
       </header>
 
       <nav
-        className="grid grid-cols-3 gap-1.5 rounded-2xl bg-surface p-1.5 shadow-card"
+        className={cn("grid grid-cols-3 gap-1.5 rounded-2xl bg-surface p-1.5 shadow-card", focus && "max-sm:hidden")}
         aria-label={t("Разделы темы", "Mavzu boʻlimlari")}
       >
         {(
@@ -241,31 +249,81 @@ export function TopicView({
       )}
 
       {tab === "exercises" && (
-        <section className="space-y-4" aria-label={t("Упражнения", "Mashqlar")}>
-          {/* Номера упражнений нужны, только если их несколько: одна кнопка «1» лишь отодвигала доску вниз. */}
-          <div id="exercises-top" className="flex scroll-mt-20 flex-wrap gap-1.5">
-            {(total > 1 ? topic.exercises : []).map((e, i) => (
+        <section className="space-y-2 sm:space-y-4" aria-label={t("Упражнения", "Mashqlar")}>
+          <div id="exercises-top" className="scroll-mt-20 max-sm:scroll-mt-2">
+            {/* Телефон: «закрыть», полоска упражнений и возврат к уроку — одна строка, доска помещается на экран. */}
+            <div data-focus-screen className="flex items-center gap-1 sm:hidden">
               <button
-                key={e.id}
                 type="button"
-                onClick={() => goExercise(i)}
-                aria-label={t(
-                  `Упражнение ${i + 1}: ${e.title}${ids.has(e.id) ? " (решено)" : ""}`,
-                  `${i + 1}-mashq: ${e.title}${ids.has(e.id) ? " (yechilgan)" : ""}`,
-                )}
-                aria-current={i === exercise ? "step" : undefined}
-                className={cn(
-                  "flex h-11 min-w-11 items-center justify-center rounded-xl border-2 px-2 text-base font-black transition",
-                  i === exercise
-                    ? "border-brand bg-brand text-white"
-                    : ids.has(e.id)
-                      ? "border-mint/50 bg-mint-soft text-mint-ink"
-                      : "border-line bg-surface hover:border-brand/40",
-                )}
+                onClick={() => setHash("#")}
+                aria-label={backLabel.replace(/^←\s*/, "")}
+                className="grid h-11 w-11 shrink-0 place-items-center rounded-xl hover:bg-black/5"
               >
-                {ids.has(e.id) && i !== exercise ? "✓" : i + 1}
+                <X className="h-6 w-6" strokeWidth={2.5} aria-hidden />
               </button>
-            ))}
+              <ol
+                data-step-strip
+                className="flex min-w-0 flex-1 items-center gap-1"
+                aria-label={t("Упражнения урока", "Dars mashqlari")}
+              >
+                {topic.exercises.map((e, i) => (
+                  <li key={e.id} className="min-w-0 flex-1">
+                    <button
+                      type="button"
+                      onClick={() => goExercise(i)}
+                      aria-label={t(
+                        `Упражнение ${i + 1}: ${e.title}${ids.has(e.id) ? " (решено)" : ""}`,
+                        `${i + 1}-mashq: ${e.title}${ids.has(e.id) ? " (yechilgan)" : ""}`,
+                      )}
+                      aria-current={i === exercise ? "step" : undefined}
+                      className="flex h-11 w-full items-center"
+                    >
+                      <span
+                        aria-hidden
+                        className={cn(
+                          "block w-full rounded-full",
+                          i === exercise ? "h-3.5" : "h-2.5",
+                          ids.has(e.id) ? "bg-mint" : i === exercise ? "bg-brand" : "bg-line",
+                        )}
+                      />
+                    </button>
+                  </li>
+                ))}
+              </ol>
+              <button
+                type="button"
+                onClick={() => setHash(`#${topic.id}`, { keepScroll: true })}
+                aria-label={t("К уроку", "Darsga qaytish")}
+                className="grid h-11 w-11 shrink-0 place-items-center rounded-xl text-brand-dark hover:bg-brand-soft"
+              >
+                <BookOpen className="h-5 w-5" strokeWidth={2.25} aria-hidden />
+              </button>
+            </div>
+            {/* С планшета: номера упражнений — только если их несколько: одна кнопка «1» лишь отодвигала доску вниз. */}
+            <div className="hidden flex-wrap gap-1.5 sm:flex">
+              {(total > 1 ? topic.exercises : []).map((e, i) => (
+                <button
+                  key={e.id}
+                  type="button"
+                  onClick={() => goExercise(i)}
+                  aria-label={t(
+                    `Упражнение ${i + 1}: ${e.title}${ids.has(e.id) ? " (решено)" : ""}`,
+                    `${i + 1}-mashq: ${e.title}${ids.has(e.id) ? " (yechilgan)" : ""}`,
+                  )}
+                  aria-current={i === exercise ? "step" : undefined}
+                  className={cn(
+                    "flex h-11 min-w-11 items-center justify-center rounded-xl border-2 px-2 text-base font-black transition",
+                    i === exercise
+                      ? "border-brand bg-brand text-white"
+                      : ids.has(e.id)
+                        ? "border-mint/50 bg-mint-soft text-mint-ink"
+                        : "border-line bg-surface hover:border-brand/40",
+                  )}
+                >
+                  {ids.has(e.id) && i !== exercise ? "✓" : i + 1}
+                </button>
+              ))}
+            </div>
           </div>
           <div className="rounded-3xl bg-paper p-1 sm:p-2">
             <ChessExerciseView key={topic.exercises[exercise].id} exercise={topic.exercises[exercise]} />
