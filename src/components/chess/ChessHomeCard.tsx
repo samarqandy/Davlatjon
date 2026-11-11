@@ -1,15 +1,19 @@
 "use client";
 
 import { Play } from "lucide-react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { ProgressBar, Icon } from "@/components/ui";
-import { chessLevelHref } from "@/content/chess";
+import { chessLevelHref } from "@/content/chess/levelIds";
 import { currentRank, levelStatuses } from "@/lib/chessProgress";
 import type { ChessLevelId } from "@/content/chess/types";
 import { useBoth, useT } from "@/lib/i18n";
 import type { Both } from "@/lib/lang";
 import { useHydrated, useStore } from "@/lib/store";
-import { PieceIcon } from "./PieceIcon";
+
+// Фигуры — из набора доски (react-chessboard, 21 КБ): в HTML они есть с сервера, а код подгружается
+// отдельным куском и не задерживает запуск главной.
+const PieceIcon = dynamic(() => import("./PieceIcon").then((m) => m.PieceIcon));
 
 /**
  * Сводка школы для главной: только названия, фигуры и id упражнений. Её собирает сервер (app/page.tsx),

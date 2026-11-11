@@ -20,9 +20,7 @@ export function getChessLevel(id: string): ChessLevel | undefined {
   return CHESS_LEVELS.find((l) => l.id === id);
 }
 
-export function chessLevelHref(id: ChessLevelId): string {
-  return `/chess/${id}`;
-}
+export { chessLevelHref } from "./levelIds";
 
 export function allChessExercises(): { level: ChessLevel; exercise: ChessExercise }[] {
   return CHESS_LEVELS.flatMap((level) => level.exercises.map((exercise) => ({ level, exercise })));

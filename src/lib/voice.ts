@@ -5,11 +5,9 @@
  * (public/audio; рассказы «Тайн и легенд», добавленные позже, — «Anna Zub»), по-узбекски — голос «Uzbekcha» (public/audio/uz). Голос браузера не используется:
  * где записи нет, там нет и кнопки «Послушать». Звук выключается в настройках родителя.
  */
-import recorded from "@/content/voice-clips.json";
 import type { IllegalReason } from "./chess";
 import type { Lang } from "./lang";
 import { random } from "./random";
-import { sourceTaskId } from "./state";
 import { getState } from "./store";
 
 export const LEGEND_LEVELS = ["pawn", "knight", "bishop", "rook", "queen", "king"] as const;
@@ -115,33 +113,10 @@ function clips(lang: Lang, names: string[]): string[] {
 }
 
 /**
- * Записанные условия задач, карточки уроков и вопросы «Знаешь ли ты?»: «вид:id» → отпечаток текста
- * (см. voiceText.ts). Записи нет — нет и кнопки.
+ * Короткие записи — по названию файла. Записанные условия задач, уроки и подсказки — в voiceRecorded.ts:
+ * их список (15 КБ) нужен только экранам с задачами и уроками, а не главной странице.
  */
-const RECORDED = recorded as Record<Lang, Record<string, string>>;
-
-function recordedClip(
-  lang: Lang,
-  kind: "tasks" | "lessons" | "dyk" | "exercises" | "hints",
-  key: string,
-  id: string,
-): string | undefined {
-  return RECORDED[lang][key] ? `/audio/${lang === "uz" ? "uz/" : ""}${kind}/${id}.mp3` : undefined;
-}
-
 export const VOICE_CLIPS = {
-  // Повторная попытка задачи («~id») читается той же записью, что и сама задача.
-  task: (id: string, lang: Lang) => recordedClip(lang, "tasks", `task:${sourceTaskId(id)}`, sourceTaskId(id)),
-  lesson: (levelId: string, index: number, lang: Lang) =>
-    recordedClip(lang, "lessons", `lesson:${levelId}-${index}`, `${levelId}-${index}`),
-  /** «Знаешь ли ты?»: part — вопрос (q) или ответ (a). */
-  dyk: (index: number, part: "q" | "a", lang: Lang) =>
-    recordedClip(lang, "dyk", `dyk:${index}-${part}`, `${index}-${part}`),
-  /** Подсказка задачи (n — номер ступени с нуля). */
-  hint: (taskId: string, n: number, lang: Lang) =>
-    recordedClip(lang, "hints", `hint:${sourceTaskId(taskId)}-${n}`, `${sourceTaskId(taskId)}-${n}`),
-  /** Условие шахматного упражнения: название и задание. */
-  exercise: (id: string, lang: Lang) => recordedClip(lang, "exercises", `exercise:${id}`, id),
   welcome: (lang: Lang) => clip(lang, "welcome"),
   /** Все записи одной реплики на языке интерфейса. */
   cue: (kind: Cue, lang: Lang) => clips(lang, [...CUES[kind]]),

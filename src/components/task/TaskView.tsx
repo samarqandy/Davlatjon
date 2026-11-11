@@ -7,7 +7,7 @@ import { LevelBadge, SectionTag } from "@/components/ui";
 import type { Task } from "@/content/types";
 import { useLang, useT } from "@/lib/i18n";
 import { addTime, useStore, useTask } from "@/lib/store";
-import { VOICE_CLIPS } from "@/lib/voice";
+import { RECORDED_CLIPS } from "@/lib/voiceRecorded";
 import { AfterSolve } from "./AfterSolve";
 import { BlockView } from "./BlockView";
 import { HintLadder } from "./HintLadder";
@@ -76,7 +76,7 @@ export function TaskView({
                     : t(`Задача ${number} из ${total}`, `${number}-masala (jami ${total} ta)`)}
                 </span>
                 <ListenButton
-                  src={VOICE_CLIPS.task(task.id, lang)}
+                  src={RECORDED_CLIPS.task(task.id, lang)}
                   label={t("Прочитать", "Oʻqib berish")}
                   large={young}
                   className="max-sm:col-start-2 max-sm:row-start-1"

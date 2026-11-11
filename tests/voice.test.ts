@@ -6,6 +6,7 @@ import { CHESS_LEVELS } from "@/content/chess";
 import { SECRETS } from "@/content/chess/secrets";
 import { sanitize } from "@/lib/store";
 import { CUES, LEGEND_LEVELS, SECRET_IDS, SHORT_CLIPS, UZ_CLIPS, VOICE_CLIPS, type Cue } from "@/lib/voice";
+import { RECORDED_CLIPS } from "@/lib/voiceRecorded";
 import recorded from "@/content/voice-clips.json";
 import { chessContent } from "@/content/chess/content";
 import { allDays } from "@/content/program";
@@ -140,8 +141,8 @@ describe("записи условий задач, уроков и «Знаешь
   it("кнопка ведёт к записи, только если она есть", () => {
     const ru = recorded as Record<Lang, Record<string, string>>;
     const someTask = Object.keys(ru.ru).find((k) => k.startsWith("task:"));
-    if (someTask) expect(VOICE_CLIPS.task(someTask.slice(5), "ru")).toBe(`/audio/tasks/${someTask.slice(5)}.mp3`);
-    expect(VOICE_CLIPS.task("нет-такой", "ru")).toBeUndefined();
-    expect(VOICE_CLIPS.dyk(9999, "q", "uz")).toBeUndefined();
+    if (someTask) expect(RECORDED_CLIPS.task(someTask.slice(5), "ru")).toBe(`/audio/tasks/${someTask.slice(5)}.mp3`);
+    expect(RECORDED_CLIPS.task("нет-такой", "ru")).toBeUndefined();
+    expect(RECORDED_CLIPS.dyk(9999, "q", "uz")).toBeUndefined();
   });
 });

@@ -7,7 +7,7 @@ import { Button, cn } from "@/components/ui";
 import { hintSteps } from "@/content/meta";
 import { useLang, useT } from "@/lib/i18n";
 import { openHint, useStore, useTask } from "@/lib/store";
-import { VOICE_CLIPS } from "@/lib/voice";
+import { RECORDED_CLIPS } from "@/lib/voiceRecorded";
 
 const PAUSE_SECONDS = 15;
 
@@ -89,7 +89,7 @@ export function HintLadder({ taskId, hints }: { taskId: string; hints: readonly 
               </span>
               <ListenButton
                 iconOnly
-                src={VOICE_CLIPS.hint(taskId, i, lang)}
+                src={RECORDED_CLIPS.hint(taskId, i, lang)}
                 label={t("Послушать подсказку", "Maslahatni tinglash")}
                 className="shrink-0"
               />

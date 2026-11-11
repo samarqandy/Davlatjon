@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Button, cn } from "@/components/ui";
 import { ListenButton } from "@/components/ListenButton";
 import { useLang, useT } from "@/lib/i18n";
-import { VOICE_CLIPS } from "@/lib/voice";
+import { RECORDED_CLIPS } from "@/lib/voiceRecorded";
 import { useChessPart } from "@/lib/useChess";
 import { DID_YOU_KNOW_PART } from "@/content/chess/parts/didYouKnow";
 import { useToday } from "@/lib/useToday";
@@ -28,7 +28,7 @@ export function DidYouKnow({ className }: { className?: string }) {
       </p>
       <p className="mt-1 text-lg leading-snug font-black">{item.q}</p>
       {/* Закрыт — вопрос, открыт — ответ. */}
-      <ListenButton key={`${index}-${open}`} src={VOICE_CLIPS.dyk(index, open ? "a" : "q", lang)} className="mt-1" />
+      <ListenButton key={`${index}-${open}`} src={RECORDED_CLIPS.dyk(index, open ? "a" : "q", lang)} className="mt-1" />
       {open ? (
         <p className="mt-2 rounded-2xl bg-mint-soft/70 px-3 py-2 font-semibold" aria-live="polite">
           {item.a}

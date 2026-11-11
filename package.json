@@ -12,6 +12,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
+    "vitals": "node scripts/web-vitals.mjs",
     "check": "npm run lint && npm run typecheck && npm run test && npm run format:check",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

@@ -3,7 +3,7 @@
  * Совет на неделю — простые правила по этим числам, без оценок ребёнка.
  */
 import { minutesByDay } from "./activity";
-import { activityDays } from "./awards";
+import { activityDays } from "./calendar";
 import { isoDay, type AppState } from "./state";
 
 export interface WeekSummary {

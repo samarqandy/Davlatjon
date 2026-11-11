@@ -5,7 +5,7 @@ import Link from "next/link";
 import { PieceIcon } from "@/components/chess/ChessBoard";
 import { RichText } from "@/components/RichText";
 import { Card, cn, ProgressBar } from "@/components/ui";
-import { chessLevelHref } from "@/content/chess";
+import { chessLevelHref } from "@/content/chess/levelIds";
 import type { ChessExercise } from "@/content/chess/types";
 import { matingMovesIn, robotLevels } from "@/lib/engine/search";
 import { ENDGAMES, endgameText } from "@/lib/play";
