@@ -56,9 +56,18 @@ function mergeTask(a: TaskProgress, b: TaskProgress): TaskProgress {
     const key = k as keyof TaskProgress["marks"];
     marks[key] = marks[key] || v;
   }
+  // Интервальное повторение продолжаем с того устройства, где задачу повторяли позже (в том числе «выучена» —
+  // срока уже нет); если повторений не было или они одинаковы — где срок дальше.
+  const ra = a.reviewedAt ?? 0;
+  const rb = b.reviewedAt ?? 0;
+  const later = ra !== rb ? (ra > rb ? a : b) : (a.due ?? "") >= (b.due ?? "") ? a : b;
+  const reviewedAt = Math.max(ra, rb);
   return {
     ...a,
     ...b,
+    box: later.box,
+    due: later.due,
+    reviewedAt: reviewedAt || undefined,
     status: solved ? "solved" : a.status || b.status,
     hints: Math.max(a.hints ?? 0, b.hints ?? 0),
     checks: Math.max(a.checks ?? 0, b.checks ?? 0),
@@ -105,6 +114,7 @@ function mergePuzzle(a: ChessPuzzleProgress, b: ChessPuzzleProgress): ChessPuzzl
     misses: Math.max(a.misses ?? 0, b.misses ?? 0),
     ...(later.box !== undefined ? { box: later.box } : {}),
     ...(later.due !== undefined ? { due: later.due } : {}),
+    ...(a.reviewedAt || b.reviewedAt ? { reviewedAt: Math.max(a.reviewedAt ?? 0, b.reviewedAt ?? 0) } : {}),
   };
 }
 
@@ -126,6 +136,8 @@ export function mergeStates(localRaw: unknown, remoteRaw: unknown): AppState {
   return {
     version: 1,
     tasks: mergeRecords(a.tasks, b.tasks, mergeTask),
+    // Незаконченная повторная попытка — только с этого устройства: в аккаунт её не складываем.
+    taskReviews: a.taskReviews,
     days: mergeRecords(a.days, b.days, mergeDay),
     myProblems: mergeById(a.myProblems, b.myProblems).sort((x, y) => x.createdAt - y.createdAt),
     reviews: mergeRecords(a.reviews, b.reviews, (x, y) => mergeRecords(x, y, (p, q) => firstText(p, q) ?? "")),

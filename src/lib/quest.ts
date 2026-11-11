@@ -24,9 +24,10 @@ const on = (ms: number | undefined, day: string) => !!ms && isoDay(ms) === day;
 export function doneOn(s: AppState, kind: QuestKind, day: string): number {
   switch (kind) {
     case "puzzles":
-      return Object.values(s.chessPuzzles).filter((p) => on(p.solvedAt, day)).length;
+      // Повторение задачи с ошибкой — такое же дело дня, как новая задача.
+      return Object.values(s.chessPuzzles).filter((p) => on(p.solvedAt, day) || on(p.reviewedAt, day)).length;
     case "task":
-      return Object.values(s.tasks).filter((t) => on(t.solvedAt, day)).length;
+      return Object.values(s.tasks).filter((t) => on(t.solvedAt, day) || on(t.reviewedAt, day)).length;
     case "exercise":
       return Object.values(s.chess).filter((e) => on(e.solvedAt, day)).length;
     case "game":

@@ -7,7 +7,7 @@ import { useTaskId } from "@/components/task/TaskContext";
 import { feedbackMood } from "@/lib/anim/mood";
 import { praiseCue, retryCue } from "@/lib/feedback";
 import { useLang } from "@/lib/i18n";
-import { useStore } from "@/lib/store";
+import { taskProgress, useStore } from "@/lib/store";
 import { scrollBehavior } from "@/lib/motion";
 import { useMotionAllowed } from "@/lib/useMotion";
 import { playRetry } from "@/lib/sfx";
@@ -51,7 +51,7 @@ export function Feedback({
   const voice = state?.voice;
   const lang = useLang();
   const taskId = useTaskId();
-  const hints = useStore((s) => (taskId ? (s.tasks[taskId]?.hints ?? 0) : 0));
+  const hints = useStore((s) => (taskId ? (taskProgress(s, taskId)?.hints ?? 0) : 0));
   const motion = useMotionAllowed();
   const box = useRef<HTMLDivElement>(null);
   // Сколько неверных проверок подряд было до этого ответа: от этого зависит, за что хвалим и что советуем.

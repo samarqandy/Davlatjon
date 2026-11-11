@@ -8,6 +8,7 @@ import { ButtonLink, cn, Icon } from "@/components/ui";
 import { sectionsFor } from "@/content/meta";
 import type { DaySummary, WeekSummary } from "@/content/summary";
 import { QuickCard } from "@/components/home/QuickCard";
+import { ReviewCard } from "@/components/home/ReviewCard";
 import { ChildNameBanner } from "@/components/home/ChildNameBanner";
 import { PlacementCard } from "@/components/home/PlacementCard";
 import { Welcome } from "@/components/home/Welcome";
@@ -64,78 +65,82 @@ export function HomeDashboard({ weeks: both, chess }: { weeks: Both<WeekSummary[
       <ChildNameBanner />
 
       <section className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
-        <div className="relative overflow-hidden rounded-[2rem] bg-linear-to-br from-[#4f46e5] via-[#5b4ff0] to-[#7c3aed] p-6 text-white shadow-lift sm:p-8">
-          <div className="absolute -top-10 -right-8 text-[9rem] leading-none opacity-15 select-none" aria-hidden>
-            ∑
-          </div>
-          <p className="text-lg font-bold text-white/80">
-            {hydrated && state.settings.childName
-              ? t("Привет, {name}! 👋", "Salom, {name}! 👋")
-              : t("Привет! 👋", "Salom! 👋")}
-          </p>
-          <h1 className="mt-1 text-2xl leading-tight font-black sm:text-3xl">
-            {t("Математика — это место, где происходят интересные вещи", "Matematika — qiziqarli kashfiyotlar olami")}
-          </h1>
-          {little ? (
-            <div className="mt-5 rounded-3xl bg-white/12 p-4 ring-1 ring-white/25 backdrop-blur-sm" data-little-step>
-              <p className="text-sm font-extrabold tracking-wide text-white/85 uppercase">
-                {t("Играем!", "Oʻynaymiz!")}
-              </p>
-              <p className="mt-1 text-2xl font-black">
-                <span aria-hidden>🍎 ⭐ 🐟</span> {t("Считаем и угадываем", "Sanaymiz va topamiz")}
-              </p>
-              <ButtonLink href="/quick" variant="sun" size="lg" className="mt-4 w-full sm:w-auto">
-                {t("Играть", "Oʻynash")} <Icon icon={Play} className="fill-current" />
-              </ButtonLink>
+        {/* Повторение — сразу под занятием дня: на телефоне оно видно без прокрутки, пока есть что повторять. */}
+        <div className="flex min-w-0 flex-col gap-5">
+          <div className="relative flex-1 overflow-hidden rounded-[2rem] bg-linear-to-br from-[#4f46e5] via-[#5b4ff0] to-[#7c3aed] p-6 text-white shadow-lift sm:p-8">
+            <div className="absolute -top-10 -right-8 text-[9rem] leading-none opacity-15 select-none" aria-hidden>
+              ∑
             </div>
-          ) : next ? (
-            <div className="mt-5 rounded-3xl bg-white/12 p-4 ring-1 ring-white/25 backdrop-blur-sm" data-next-step>
-              <p className="text-sm font-extrabold tracking-wide text-white/85 uppercase">
-                {step?.started ? t("Продолжим", "Davom etamiz") : t("Сегодняшнее занятие", "Bugungi mashgʻulot")}
-              </p>
-              <p className="mt-1 text-2xl font-black">
-                <span aria-hidden>{next.emoji}</span>{" "}
-                {weeks.length > 1 && t(`Неделя ${next.week} · `, `${next.week}-hafta · `)}
-                {t(`День ${next.day}.`, `${next.day}-kun.`)} {next.title}
-              </p>
-              {/* Все задачи дня в одну строку: на узком экране значки чуть сжимаются, а не переносятся по одному. */}
-              <div className="mt-3 grid auto-cols-[minmax(0,2.25rem)] grid-flow-col gap-1.5" aria-hidden>
-                {next.tasks.map((task) => {
-                  const solved = hydrated && state.tasks[task.id]?.status === "solved";
-                  return (
-                    <span
-                      key={task.id}
-                      className={cn(
-                        "flex aspect-square items-center justify-center rounded-xl text-lg",
-                        solved ? "bg-mint text-white" : "bg-white/20",
-                      )}
-                    >
-                      {solved ? "✓" : SECTIONS[task.section].emoji}
-                    </span>
-                  );
-                })}
+            <p className="text-lg font-bold text-white/80">
+              {hydrated && state.settings.childName
+                ? t("Привет, {name}! 👋", "Salom, {name}! 👋")
+                : t("Привет! 👋", "Salom! 👋")}
+            </p>
+            <h1 className="mt-1 text-2xl leading-tight font-black sm:text-3xl">
+              {t("Математика — это место, где происходят интересные вещи", "Matematika — qiziqarli kashfiyotlar olami")}
+            </h1>
+            {little ? (
+              <div className="mt-5 rounded-3xl bg-white/12 p-4 ring-1 ring-white/25 backdrop-blur-sm" data-little-step>
+                <p className="text-sm font-extrabold tracking-wide text-white/85 uppercase">
+                  {t("Играем!", "Oʻynaymiz!")}
+                </p>
+                <p className="mt-1 text-2xl font-black">
+                  <span aria-hidden>🍎 ⭐ 🐟</span> {t("Считаем и угадываем", "Sanaymiz va topamiz")}
+                </p>
+                <ButtonLink href="/quick" variant="sun" size="lg" className="mt-4 w-full sm:w-auto">
+                  {t("Играть", "Oʻynash")} <Icon icon={Play} className="fill-current" />
+                </ButtonLink>
               </div>
-              <ButtonLink
-                href={step?.href ?? `/week/${next.week}/day/${next.day}`}
-                variant="sun"
-                size="lg"
-                className="mt-4 w-full sm:w-auto"
-              >
-                {step?.started ? t("Продолжить", "Davom etish") : t("Начать", "Boshlash")}{" "}
-                <Icon icon={Play} className="fill-current" />
-              </ButtonLink>
-            </div>
-          ) : (
-            <div className="mt-5 rounded-3xl bg-white/12 p-4 ring-1 ring-white/25">
-              <p className="text-2xl font-black">🎉 {t("Все дни пройдены!", "Barcha kunlarni tamomlading!")}</p>
-              <p className="mt-1 text-white/85">
-                {t(
-                  "Можно вернуться к любимым задачам, придумать свои или попросить родителей открыть недельный обзор.",
-                  "Sevimli masalalaringga qaytishing, oʻzing yangi masala oʻylab topishing yoki ota-onangdan haftalik sharhni ochib berishni soʻrashing mumkin.",
-                )}
-              </p>
-            </div>
-          )}
+            ) : next ? (
+              <div className="mt-5 rounded-3xl bg-white/12 p-4 ring-1 ring-white/25 backdrop-blur-sm" data-next-step>
+                <p className="text-sm font-extrabold tracking-wide text-white/85 uppercase">
+                  {step?.started ? t("Продолжим", "Davom etamiz") : t("Сегодняшнее занятие", "Bugungi mashgʻulot")}
+                </p>
+                <p className="mt-1 text-2xl font-black">
+                  <span aria-hidden>{next.emoji}</span>{" "}
+                  {weeks.length > 1 && t(`Неделя ${next.week} · `, `${next.week}-hafta · `)}
+                  {t(`День ${next.day}.`, `${next.day}-kun.`)} {next.title}
+                </p>
+                {/* Все задачи дня в одну строку: на узком экране значки чуть сжимаются, а не переносятся по одному. */}
+                <div className="mt-3 grid auto-cols-[minmax(0,2.25rem)] grid-flow-col gap-1.5" aria-hidden>
+                  {next.tasks.map((task) => {
+                    const solved = hydrated && state.tasks[task.id]?.status === "solved";
+                    return (
+                      <span
+                        key={task.id}
+                        className={cn(
+                          "flex aspect-square items-center justify-center rounded-xl text-lg",
+                          solved ? "bg-mint text-white" : "bg-white/20",
+                        )}
+                      >
+                        {solved ? "✓" : SECTIONS[task.section].emoji}
+                      </span>
+                    );
+                  })}
+                </div>
+                <ButtonLink
+                  href={step?.href ?? `/week/${next.week}/day/${next.day}`}
+                  variant="sun"
+                  size="lg"
+                  className="mt-4 w-full sm:w-auto"
+                >
+                  {step?.started ? t("Продолжить", "Davom etish") : t("Начать", "Boshlash")}{" "}
+                  <Icon icon={Play} className="fill-current" />
+                </ButtonLink>
+              </div>
+            ) : (
+              <div className="mt-5 rounded-3xl bg-white/12 p-4 ring-1 ring-white/25">
+                <p className="text-2xl font-black">🎉 {t("Все дни пройдены!", "Barcha kunlarni tamomlading!")}</p>
+                <p className="mt-1 text-white/85">
+                  {t(
+                    "Можно вернуться к любимым задачам, придумать свои или попросить родителей открыть недельный обзор.",
+                    "Sevimli masalalaringga qaytishing, oʻzing yangi masala oʻylab topishing yoki ota-onangdan haftalik sharhni ochib berishni soʻrashing mumkin.",
+                  )}
+                </p>
+              </div>
+            )}
+          </div>
+          {!little && <ReviewCard />}
         </div>
 
         <TodayCard />

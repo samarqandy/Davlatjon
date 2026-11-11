@@ -17,6 +17,7 @@ import { setHash, useHash } from "@/lib/useHash";
 import { DayFinish } from "./DayFinish";
 import { DayIntro } from "./DayIntro";
 import { RestStop } from "./RestStop";
+import { ReviewStep } from "./ReviewStep";
 
 /** После каких задач малышам предлагаем передохнуть. */
 export const REST_AFTER = [3, 6];
@@ -25,6 +26,11 @@ export const REST_AFTER = [3, 6];
 function restFromHash(hash: string): number {
   const m = hash.match(/^#rest-(\d+)$/);
   return m && REST_AFTER.includes(Number(m[1])) ? Number(m[1]) : 0;
+}
+
+/** Id задачи на повторении («#review-w1d2t3»), иначе пустая строка. */
+function reviewFromHash(hash: string): string {
+  return hash.match(/^#review-([a-z0-9]+)$/)?.[1] ?? "";
 }
 
 function stepFromHash(hash: string, total: number): number {
@@ -60,6 +66,8 @@ export function DaySession({
   const hash = useHash();
   const step = stepFromHash(hash, total);
   const resting = restFromHash(hash) > 0 && step < total;
+  const reviewTaskId = reviewFromHash(hash);
+  const reviewing = reviewTaskId ? day.tasks.find((task) => task.id === reviewTaskId) : undefined;
   const young = useStore((s) => (s.settings.age ?? 0) < 9);
   const router = useRouter();
   const bigText = useStore((s) => s.settings.bigText);
@@ -106,6 +114,9 @@ export function DaySession({
       window.scrollTo({ top: 0, behavior: currentScrollBehavior() });
     } else go(step + 1);
   };
+
+  // Повторение — отдельный экран той же страницы: без полоски дня, вступления и итогов.
+  if (reviewing) return <ReviewStep key={reviewing.id} day={day} task={reviewing} bigText={bigText} />;
 
   return (
     <div className={cn("pb-28", bigText && "big-text")}>

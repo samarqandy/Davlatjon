@@ -17,8 +17,11 @@ import {
   EMPTY_CHESS,
   EMPTY_TASK,
   REVIEW_DAYS,
+  isReviewId,
   isoDay,
+  reviewId,
   sanitize,
+  struggled,
   type AppState,
   type ChessDiaryEntry,
   type ChessExerciseProgress,
@@ -129,8 +132,11 @@ export function useHydrated(): boolean {
   );
 }
 
+/** Где лежит прогресс: у повторной попытки («~id») — отдельно от первой, уже засчитанной. */
+const taskBucket = (taskId: string) => (isReviewId(taskId) ? "taskReviews" : "tasks");
+
 export function useTask(taskId: string): TaskProgress {
-  return useStore((s) => s.tasks[taskId] ?? EMPTY_TASK);
+  return useStore((s) => s[taskBucket(taskId)][taskId] ?? EMPTY_TASK);
 }
 
 export function useChessExercise(id: string): ChessExerciseProgress {
@@ -142,10 +148,11 @@ export function useChessExercise(id: string): ChessExerciseProgress {
 // ---------------------------------------------------------------------------
 
 export function updateTask(taskId: string, update: (t: TaskProgress) => Partial<TaskProgress>) {
+  const bucket = taskBucket(taskId);
   setState((s) => {
-    const prev = s.tasks[taskId] ?? EMPTY_TASK;
+    const prev = s[bucket][taskId] ?? EMPTY_TASK;
     const next = { ...prev, ...update(prev) };
-    return { ...s, tasks: { ...s.tasks, [taskId]: next } };
+    return { ...s, [bucket]: { ...s[bucket], [taskId]: next } };
   });
 }
 
@@ -157,11 +164,76 @@ export function saveTaskInput(taskId: string, input: Record<string, unknown>) {
   updateTask(taskId, (t) => ({ input: { ...t.input, ...input }, status: t.status ?? "started" }));
 }
 
-export function markSolved(taskId: string) {
-  if (getState().tasks[taskId]?.status !== "solved") trackLearning("task_solved");
+export function markSolved(taskId: string, now = Date.now()) {
+  const review = isReviewId(taskId);
+  if (!review && getState().tasks[taskId]?.status !== "solved") trackLearning("task_solved");
   updateTask(taskId, (t) =>
-    t.status === "solved" ? {} : { status: "solved", solvedAt: Date.now(), firstTry: t.missed === 0 && t.checks <= 1 },
+    t.status === "solved"
+      ? {}
+      : {
+          status: "solved",
+          solvedAt: now,
+          firstTry: t.missed === 0 && t.checks <= 1,
+          // Задача далась с трудом — вернётся на повторение завтра (первая коробка).
+          ...(!review && struggled(t) ? { box: 1, due: isoDay(now + 86_400_000) } : {}),
+        },
   );
+}
+
+/** Где лежит прогресс задачи — для чтения из состояния (повторная попытка «~id» хранится отдельно). */
+export const taskProgress = (s: AppState, taskId: string): TaskProgress | undefined => s[taskBucket(taskId)][taskId];
+
+/**
+ * Задачу снова пора повторить: прошлая решённая попытка стирается, и ребёнок решает с чистого листа.
+ * Начатая, но не решённая попытка остаётся — после перезагрузки страницы ответ и счёт ошибок на месте.
+ */
+export function startTaskReview(taskId: string, now = Date.now()) {
+  const key = reviewId(taskId);
+  setState((s) => {
+    const due = s.tasks[taskId]?.due;
+    if (s.taskReviews[key]?.status !== "solved" || !due || due > isoDay(now)) return s;
+    const rest = { ...s.taskReviews };
+    delete rest[key];
+    return { ...s, taskReviews: rest };
+  });
+}
+
+/**
+ * Повторная попытка решена: без ошибок и подсказок — задача переходит в следующую коробку (через 3, 7,
+ * 21 день), после четвёртой считается выученной; иначе возвращается в первую — повторить завтра.
+ * Срок считается от дня решения. Засчитывается только попытка, решённая в день повторения или позже
+ * (тренировка раньше срока расписание не двигает), и только один раз.
+ */
+export function finishTaskReview(taskId: string) {
+  setState((s) => {
+    const attempt = s.taskReviews[reviewId(taskId)];
+    const task = s.tasks[taskId];
+    if (!task?.due || attempt?.status !== "solved" || !attempt.solvedAt) return s;
+    if (task.reviewedAt === attempt.solvedAt || isoDay(attempt.solvedAt) < task.due) return s;
+    const clean = attempt.missed === 0 && attempt.hints === 0;
+    const box = clean ? (task.box ?? 1) + 1 : 1;
+    const learned = box > REVIEW_DAYS.length;
+    return {
+      ...s,
+      tasks: {
+        ...s.tasks,
+        [taskId]: {
+          ...task,
+          reviewedAt: attempt.solvedAt,
+          box: learned ? undefined : box,
+          due: learned ? undefined : isoDay(attempt.solvedAt + REVIEW_DAYS[box - 1] * 86_400_000),
+        },
+      },
+    };
+  });
+}
+
+/** Задачи по математике, которые пора повторить сегодня: сначала те, что ждут дольше. */
+export function dueTasks(tasks: Record<string, TaskProgress>, today: string): string[] {
+  return Object.entries(tasks)
+    .filter(([, t]) => t.status === "solved" && t.due && t.due <= today)
+    .sort((a, b) => (a[1].due! < b[1].due! ? -1 : a[1].due! > b[1].due! ? 1 : a[0] < b[0] ? -1 : 1))
+    .map(([id]) => id);
 }
 
 let persistAsked = false;
@@ -315,6 +387,8 @@ export function chessPuzzleSolved(id: string, clean = true, now = Date.now()) {
     const p = s.chessPuzzles[id];
     let box = p?.box;
     let due = p?.due;
+    // Задача из очереди повторения, и её срок подошёл: это повторение — оно считается делом дня.
+    const reviewed = !!box && !!due && due <= isoDay(now);
     if (box && clean && due && due <= isoDay(now)) {
       box += 1;
       due = box > REVIEW_DAYS.length ? undefined : isoDay(now + REVIEW_DAYS[box - 1] * 86_400_000);
@@ -324,7 +398,13 @@ export function chessPuzzleSolved(id: string, clean = true, now = Date.now()) {
       ...s,
       chessPuzzles: {
         ...s.chessPuzzles,
-        [id]: { misses: p?.misses ?? 0, solvedAt: p?.solvedAt ?? now, box, due },
+        [id]: {
+          misses: p?.misses ?? 0,
+          solvedAt: p?.solvedAt ?? now,
+          box,
+          due,
+          ...(reviewed ? { reviewedAt: now } : p?.reviewedAt ? { reviewedAt: p.reviewedAt } : {}),
+        },
       },
     };
   });
@@ -341,6 +421,8 @@ export function chessPuzzleMiss(id: string, now = Date.now()) {
         misses: (s.chessPuzzles[id]?.misses ?? 0) + 1,
         box: 1,
         due: isoDay(now + 86_400_000),
+        // Ошибка в задаче, которую сегодня пора было повторить, — тоже повторение.
+        ...((s.chessPuzzles[id]?.due ?? "9") <= isoDay(now) ? { reviewedAt: now } : {}),
       },
     },
   }));

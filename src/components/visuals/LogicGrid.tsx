@@ -2,7 +2,7 @@
 
 import { useTaskId } from "@/components/task/TaskContext";
 import { useT } from "@/lib/i18n";
-import { saveTaskInput, useStore } from "@/lib/store";
+import { saveTaskInput, taskProgress, useStore } from "@/lib/store";
 
 const NEXT: Record<string, string> = { "": "✗", "✗": "✓", "✓": "" };
 const EMPTY: Record<string, string> = {};
@@ -22,7 +22,7 @@ export function LogicGrid({
   const taskId = useTaskId();
   const t = useT();
   const saved = useStore((s) =>
-    taskId ? (s.tasks[taskId]?.input?.logicGrid as Record<string, string> | undefined) : undefined,
+    taskId ? (taskProgress(s, taskId)?.input?.logicGrid as Record<string, string> | undefined) : undefined,
   );
   const marks = print ? EMPTY : (saved ?? EMPTY);
 
