@@ -43,7 +43,9 @@ export function BottomNav() {
                   href={tab.href}
                   aria-current={active ? "page" : undefined}
                   className={cn(
-                    "flex min-h-16 flex-col items-center justify-center gap-0.5 text-sm font-extrabold transition",
+                    // Подпись — самым мелким размером (14–15 px), в одну строку. На телефонах у́же 390 px она ещё мельче:
+                    // иначе четыре узбекских названия («Bosh sahifa», «Masalalarim») в ряд не помещаются.
+                    "flex min-h-16 flex-col items-center justify-center gap-0.5 text-xs font-extrabold whitespace-nowrap transition max-[389px]:text-[0.75rem]",
                     active ? "text-brand-dark" : "text-muted",
                   )}
                 >
