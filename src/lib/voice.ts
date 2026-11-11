@@ -9,6 +9,7 @@ import recorded from "@/content/voice-clips.json";
 import type { IllegalReason } from "./chess";
 import type { Lang } from "./lang";
 import { random } from "./random";
+import { sourceTaskId } from "./state";
 import { getState } from "./store";
 
 export const LEGEND_LEVELS = ["pawn", "knight", "bishop", "rook", "queen", "king"] as const;
@@ -129,14 +130,16 @@ function recordedClip(
 }
 
 export const VOICE_CLIPS = {
-  task: (id: string, lang: Lang) => recordedClip(lang, "tasks", `task:${id}`, id),
+  // Повторная попытка задачи («~id») читается той же записью, что и сама задача.
+  task: (id: string, lang: Lang) => recordedClip(lang, "tasks", `task:${sourceTaskId(id)}`, sourceTaskId(id)),
   lesson: (levelId: string, index: number, lang: Lang) =>
     recordedClip(lang, "lessons", `lesson:${levelId}-${index}`, `${levelId}-${index}`),
   /** «Знаешь ли ты?»: part — вопрос (q) или ответ (a). */
   dyk: (index: number, part: "q" | "a", lang: Lang) =>
     recordedClip(lang, "dyk", `dyk:${index}-${part}`, `${index}-${part}`),
   /** Подсказка задачи (n — номер ступени с нуля). */
-  hint: (taskId: string, n: number, lang: Lang) => recordedClip(lang, "hints", `hint:${taskId}-${n}`, `${taskId}-${n}`),
+  hint: (taskId: string, n: number, lang: Lang) =>
+    recordedClip(lang, "hints", `hint:${sourceTaskId(taskId)}-${n}`, `${sourceTaskId(taskId)}-${n}`),
   /** Условие шахматного упражнения: название и задание. */
   exercise: (id: string, lang: Lang) => recordedClip(lang, "exercises", `exercise:${id}`, id),
   welcome: (lang: Lang) => clip(lang, "welcome"),

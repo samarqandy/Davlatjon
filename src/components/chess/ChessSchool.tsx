@@ -23,7 +23,8 @@ import { COLLECTION_TOTAL, cardsOpen } from "@/lib/collection";
 import { useLang, useT } from "@/lib/i18n";
 import { plural, thousands } from "@/lib/plural";
 import { PUZZLE_TOTAL, solvedCount } from "@/lib/puzzleStats";
-import { useHydrated, useStore } from "@/lib/store";
+import { duePuzzles, useHydrated, useStore } from "@/lib/store";
+import { useToday } from "@/lib/useToday";
 import { useChessPart } from "@/lib/useChess";
 import { xpTotal } from "@/lib/xp";
 import { ChessBoard, PieceIcon } from "./ChessBoard";
@@ -66,6 +67,9 @@ export function ChessSchool({ counts }: { counts: ChessSchoolCounts }) {
   const dailyRu = dailyPuzzleFor(profile.minStars);
   const daily = puzzles.find((p) => p.id === dailyRu.id) ?? dailyRu;
   const puzzlesSolved = hydrated ? solvedCount(state.chessPuzzles) : 0;
+  const today = useToday();
+  // Шахматные задачи, которые сегодня пора повторить: число на плитке «Задачи» — без новой карточки на экране.
+  const puzzlesDue = hydrated && today ? duePuzzles(state.chessPuzzles, today).length : 0;
   const openingsLearned = hydrated ? new Set(Object.keys(state.chessOpenings).map((k) => k.split(":")[0])).size : 0;
   const tacticsTotal = tactics.reduce((n, x) => n + x.exercises.length, 0);
   const tacticsSolved = hydrated
@@ -201,6 +205,7 @@ export function ChessSchool({ counts }: { counts: ChessSchoolCounts }) {
       href: "/chess/puzzles",
       emoji: "🎯",
       title: t("Задачи", "Masalalar"),
+      due: puzzlesDue,
       text: t(
         `${thousands(PUZZLE_TOTAL)} ${plural(PUZZLE_TOTAL, "задача", "задачи", "задач")}: маты, вилки, связки, комбинации. Подбираются по силам; задача дня, серия и «Дятел».`,
         `${thousands(PUZZLE_TOTAL)} ta masala: motlar, vilkalar, bogʻlashlar, kombinatsiyalar. Kuchingga qarab tanlanadi; kun masalasi, «Ketma-ket» va «Qizilishton».`,
@@ -684,11 +689,25 @@ export function ChessSchool({ counts }: { counts: ChessSchoolCounts }) {
 /** Сколько разделов видно сразу; остальные — под «Ещё разделы». */
 const MAIN_SECTIONS = 3;
 
+/** Сколько задач сегодня пора повторить: кружок в углу плитки раздела. */
+function DueBadge({ count }: { count: number }) {
+  const t = useT();
+  return (
+    <span
+      data-due-badge={count}
+      className="absolute top-2 right-2 flex h-6 min-w-6 items-center justify-center rounded-full bg-sun px-1.5 text-sm font-black text-on-sun"
+    >
+      <span aria-hidden>{count > 99 ? "99+" : count}</span>
+      <span className="sr-only">{t(` — ${count} на повторение`, ` — ${count} ta takrorlash uchun`)}</span>
+    </span>
+  );
+}
+
 function SectionCard({
   s,
   tile = false,
 }: {
-  s: { href: string; emoji: string; title: string; text: string; stat: string };
+  s: { href: string; emoji: string; title: string; text: string; stat: string; due?: number };
   /** Главные разделы: на телефоне — плитка со значком и названием, описание и счётчик видны с планшета. */
   tile?: boolean;
 }) {
@@ -696,13 +715,14 @@ function SectionCard({
     <Link
       href={s.href}
       className={cn(
-        "flex flex-col rounded-3xl border-2 border-transparent bg-surface p-4 shadow-card transition hover:-translate-y-0.5 hover:border-brand/30",
+        "relative flex flex-col rounded-3xl border-2 border-transparent bg-surface p-4 shadow-card transition hover:-translate-y-0.5 hover:border-brand/30",
         tile && "max-sm:items-center max-sm:rounded-2xl max-sm:p-2.5 max-sm:text-center",
       )}
     >
       <p className="text-3xl" aria-hidden>
         {s.emoji}
       </p>
+      {!!s.due && <DueBadge count={s.due} />}
       <p className={cn("mt-1 text-xl font-black", tile && "max-sm:text-base max-sm:leading-tight")}>{s.title}</p>
       <p className={cn("mt-1 flex-1 text-sm text-muted", tile && "max-sm:hidden")}>{s.text}</p>
       <p className={cn("mt-3 text-xs font-extrabold text-brand-dark", tile && "max-sm:hidden")}>{s.stat}</p>

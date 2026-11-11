@@ -36,7 +36,18 @@ function useTaskTimer(taskId: string) {
   }, [taskId]);
 }
 
-export function TaskView({ task, number, total }: { task: Task; number: number; total: number }) {
+export function TaskView({
+  task,
+  number,
+  total,
+  review = false,
+}: {
+  task: Task;
+  number: number;
+  total: number;
+  /** Повторение уже решённой задачи: вместо номера — пометка, а вопросы «А ещё подумай» и отметки не нужны. */
+  review?: boolean;
+}) {
   const progress = useTask(task.id);
   const t = useT();
   const lang = useLang();
@@ -60,7 +71,9 @@ export function TaskView({ task, number, total }: { task: Task; number: number; 
                   <LevelBadge level={task.level} lang={lang} />
                 </span>
                 <span className="ml-auto hidden text-sm font-bold text-muted sm:inline">
-                  {t(`Задача ${number} из ${total}`, `${number}-masala (jami ${total} ta)`)}
+                  {review
+                    ? t("Повторение", "Takrorlash")
+                    : t(`Задача ${number} из ${total}`, `${number}-masala (jami ${total} ta)`)}
                 </span>
                 <ListenButton
                   src={VOICE_CLIPS.task(task.id, lang)}
@@ -108,7 +121,7 @@ export function TaskView({ task, number, total }: { task: Task; number: number; 
         </div>
 
         <aside className="space-y-4 lg:sticky lg:top-24">
-          <AfterSolve taskId={task.id} followUps={task.followUps} />
+          {!review && <AfterSolve taskId={task.id} followUps={task.followUps} />}
           <HintLadder taskId={task.id} hints={task.hints} />
         </aside>
       </article>

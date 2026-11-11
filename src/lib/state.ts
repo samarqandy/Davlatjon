@@ -24,6 +24,11 @@ export interface TaskProgress {
   /** Сколько проверок не сошлось. */
   missed: number;
   solvedAt?: number;
+  /** Интервальное повторение, как у шахматных задач: коробка 1–4 и день следующего повторения «ГГГГ-ММ-ДД». */
+  box?: number;
+  due?: string;
+  /** Когда задачу повторяли в последний раз (повторение считается делом дня). */
+  reviewedAt?: number;
   /** Решена с первой проверки. */
   firstTry?: boolean;
   /** Время на задаче, мс. */
@@ -173,6 +178,8 @@ export interface ChessPuzzleProgress {
   /** Интервальное повторение: коробка 1–4 и день следующего повторения «ГГГГ-ММ-ДД». */
   box?: number;
   due?: string;
+  /** Когда задачу повторяли в последний раз (повторение считается делом дня). */
+  reviewedAt?: number;
 }
 
 /** «Дятел»: один набор задач решается три круга подряд — с каждым кругом быстрее. */
@@ -198,6 +205,21 @@ export const WOODPECKER_ROUNDS = 3;
 
 /** Через сколько дней повторить задачу из коробки 1, 2, 3, 4. */
 export const REVIEW_DAYS = [1, 3, 7, 21];
+
+/** Повторная попытка задачи хранится под ключом «~id»: так у неё свой ввод, проверки и подсказки. */
+export const REVIEW_PREFIX = "~";
+export const reviewId = (taskId: string) => `${REVIEW_PREFIX}${taskId}`;
+export const isReviewId = (id: string) => id.startsWith(REVIEW_PREFIX);
+/** Настоящий id задачи: у повторной попытки — без «~» (озвучка и расписание привязаны к нему). */
+export const sourceTaskId = (id: string) => (isReviewId(id) ? id.slice(REVIEW_PREFIX.length) : id);
+
+/**
+ * Задача далась с трудом: была хотя бы одна неверная проверка или открыто две подсказки и больше.
+ * Такие задачи возвращаются на повторение; решённые сразу — нет. Задачи без проверки ответа (открытые вопросы,
+ * исследования — их отмечает сам ребёнок) не возвращаются: повторять там нечего.
+ */
+export const struggled = (t: Pick<TaskProgress, "missed" | "hints" | "checks">) =>
+  t.missed >= 1 || (t.hints >= 2 && t.checks >= 1);
 
 export function isoDay(ms: number): string {
   const d = new Date(ms);
@@ -227,6 +249,11 @@ export interface ChessExerciseProgress {
 export interface AppState {
   version: 1;
   tasks: Record<string, TaskProgress>;
+  /**
+   * Повторение задачи — новая попытка «с чистого листа»: её ввод, проверки и подсказки лежат отдельно
+   * (ключ — «~» и id задачи), чтобы не трогать первую, уже засчитанную попытку.
+   */
+  taskReviews: Record<string, TaskProgress>;
   days: Record<string, DayProgress>;
   myProblems: MyProblem[];
   /** Недельный обзор: неделя → вопрос → заметка. */
@@ -272,6 +299,7 @@ export const AVATARS = ["🐣", "🦊", "🐼", "🦁", "🐸", "🦄", "🐙", 
 export const DEFAULT_STATE: AppState = Object.freeze({
   version: 1,
   tasks: {},
+  taskReviews: {},
   days: {},
   myProblems: [],
   reviews: {},
@@ -363,6 +391,10 @@ export function sanitize(raw: unknown): AppState {
   return {
     version: 1,
     tasks: entriesOf<TaskProgress>(raw.tasks, (e) => ({
+      ...(e as unknown as TaskProgress),
+      marks: isObject(e.marks) ? (e.marks as TaskMarks) : {},
+    })),
+    taskReviews: entriesOf<TaskProgress>(raw.taskReviews, (e) => ({
       ...(e as unknown as TaskProgress),
       marks: isObject(e.marks) ? (e.marks as TaskMarks) : {},
     })),
