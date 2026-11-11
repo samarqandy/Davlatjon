@@ -46,18 +46,21 @@ export function DidYouKnow({ className }: { className?: string }) {
           {t("Показать ответ", "Javobni koʻrsatish")}
         </Button>
       )}
-      <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm font-extrabold">
+      <div className="mt-1 flex flex-wrap items-center gap-x-3 text-sm font-extrabold">
         <button
           type="button"
           onClick={() => {
             setOffset((o) => o + 1);
             setOpen(false);
           }}
-          className="text-brand hover:underline"
+          className="inline-flex min-h-11 items-center text-brand hover:underline"
         >
           {t("Ещё вопрос ↻", "Boshqa savol ↻")}
         </button>
-        <Link href="/chess/secrets" className="text-muted hover:text-ink hover:underline">
+        <Link
+          href="/chess/secrets"
+          className="inline-flex min-h-11 items-center text-muted hover:text-ink hover:underline"
+        >
           {t("🔮 Все тайны шахмат", "🔮 Barcha shaxmat sirlari")}
         </Link>
       </div>

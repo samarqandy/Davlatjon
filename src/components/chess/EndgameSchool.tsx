@@ -52,7 +52,7 @@ export function EndgameSchool() {
           <a
             key={l.id}
             href={`#${l.id}`}
-            className="rounded-2xl bg-surface px-3 py-2 text-sm font-extrabold shadow-card hover:bg-brand-soft"
+            className="inline-flex min-h-11 items-center rounded-2xl bg-surface px-3 py-2 text-sm font-extrabold shadow-card hover:bg-brand-soft"
           >
             <span aria-hidden>{l.emoji}</span> {i + 1}. {l.title}
           </a>

@@ -216,7 +216,7 @@ function TaskPicker({ day, value, onPick }: { day: Day; value?: string; onPick: 
           onClick={() => onPick(task.id)}
           aria-pressed={value === task.id}
           className={cn(
-            "flex items-center gap-1.5 rounded-2xl border-2 px-3 py-2 text-sm font-bold transition",
+            "flex min-h-11 items-center gap-1.5 rounded-2xl border-2 px-3 py-2 text-sm font-bold transition",
             value === task.id
               ? "border-brand bg-brand-soft text-brand-dark"
               : "border-line bg-surface hover:border-brand/40",

@@ -142,7 +142,7 @@ export function NewViews({ views }: { views: NewView[] }) {
           </ul>
           {v.note && (
             <details className="mt-3 rounded-2xl bg-brand-soft/50 px-3 py-2">
-              <summary className="cursor-pointer text-sm font-extrabold text-brand-dark">
+              <summary className="cursor-pointer py-3 text-sm font-extrabold text-brand-dark">
                 <span className="deco" aria-hidden>
                   🔎{" "}
                 </span>

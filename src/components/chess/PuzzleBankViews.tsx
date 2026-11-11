@@ -125,7 +125,7 @@ export function LevelChooser() {
           aria-pressed={level === id}
           onClick={() => updateSettings({ puzzleLevel: id === "normal" ? undefined : id })}
           className={cn(
-            "rounded-xl border-2 px-3 py-1.5 text-sm font-black transition",
+            "min-h-11 rounded-xl border-2 px-3 py-1.5 text-sm font-black transition",
             level === id ? "border-brand bg-brand text-white" : "border-line bg-surface text-ink hover:border-brand/40",
           )}
         >

@@ -24,7 +24,8 @@ const VARIANTS: Record<Variant, string> = {
 };
 
 const SIZES: Record<Size, string> = {
-  sm: "min-h-9 px-3 py-1 text-sm gap-1.5 rounded-xl",
+  // Маленькая — по тексту и отступам, но не по высоте: область нажатия у любой кнопки не меньше 44 px.
+  sm: "min-h-11 min-w-11 px-3 py-1 text-sm gap-1.5 rounded-xl",
   md: "min-h-11 px-4 py-1.5 text-base gap-2 rounded-2xl",
   lg: "min-h-14 px-6 py-2 text-lg gap-2.5 rounded-2xl",
 };
