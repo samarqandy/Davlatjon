@@ -28,7 +28,8 @@ export function SiteHeader({
       }`}
     >
       <Icon aria-hidden className="h-5 w-5 shrink-0" strokeWidth={2.25} />
-      <span className="hidden sm:inline">{label}</span>
+      {/* Подписи — с широкого экрана: на планшете и складном телефоне пять пунктов с подписями в строку не помещаются. */}
+      <span className="hidden lg:inline">{label}</span>
     </Link>
   );
   return (
@@ -43,7 +44,7 @@ export function SiteHeader({
               {BRAND}
               <span className="sr-only">{t(" — на главную", " — bosh sahifaga")}</span>
             </span>
-            <span className="hidden text-xs font-bold text-muted sm:block">
+            <span className="hidden text-xs font-bold text-muted lg:block">
               {t(BRAND_TAGLINE.ru, BRAND_TAGLINE.uz)}
             </span>
           </span>

@@ -219,7 +219,10 @@ export function ChessBoard({
       frame.querySelectorAll('[aria-roledescription="draggable"]').forEach((el) => {
         if (el.hasAttribute("tabindex")) el.removeAttribute("tabindex");
         const square = el.closest('[id*="-square-"]')?.id.match(/-square-([a-z]\d+)$/)?.[1];
-        const words = square ? PIECE_WORDS[onBoard[square]] : undefined;
+        // Какая это фигура, берём у самого узла (data-piece), а не из расстановки: пока идёт анимация хода
+        // или сменилась задача, узел уже на доске, а расстановка в состоянии ещё прежняя — и фигура оставалась без имени.
+        const code = el.querySelector("[data-piece]")?.getAttribute("data-piece") ?? (square ? onBoard[square] : "");
+        const words = code ? PIECE_WORDS[code] : undefined;
         const name = words && square ? `${words[lang === "uz" ? 1 : 0]}, ${square}` : null;
         if (name && el.getAttribute("aria-label") !== name) el.setAttribute("aria-label", name);
       });
