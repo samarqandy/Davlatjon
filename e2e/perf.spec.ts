@@ -90,20 +90,47 @@ for (const [name, state] of [
     for (const [i, top] of before.entries()) expect(Math.abs(after[i] - top), `блок ${i}`).toBeLessThanOrEqual(4);
   });
 
-test("главная: скриптов при загрузке — не больше 245 КиБ, шахматная доска её не задерживает", async ({ page }) => {
-  await seed(page, { version: 1, welcomed: true, settings: { age: 9, lang: "ru", childName: "Али" } });
+/** Сколько килобайт скриптов пришло при загрузке страницы (в сжатом виде, как по сети). */
+async function scriptWeight(page: Page, path: string): Promise<number> {
   const cdp = await page.context().newCDPSession(page);
   await cdp.send("Network.enable");
-  const scripts = new Map<string, string>();
+  const scripts = new Set<string>();
   let bytes = 0;
   cdp.on("Network.responseReceived", (e) => {
-    if (e.type === "Script") scripts.set(e.requestId, e.response.url);
+    if (e.type === "Script") scripts.add(e.requestId);
   });
   cdp.on("Network.loadingFinished", (e) => {
     if (scripts.has(e.requestId)) bytes += e.encodedDataLength;
   });
-  await page.goto("/");
+  await page.goto(path);
   await page.waitForLoadState("networkidle");
+  return Math.round(bytes / 1024);
+}
+
+const KNOWN = { version: 1, welcomed: true, settings: { age: 9, lang: "ru", childName: "Али" } };
+
+test("главная: скриптов при загрузке — не больше 245 КиБ, шахматная доска её не задерживает", async ({ page }) => {
+  await seed(page, KNOWN);
   // Было 275 КиБ: главная тянула доску, шесть уровней шахматной школы и список записей диктора.
-  expect(Math.round(bytes / 1024)).toBeLessThanOrEqual(245);
+  expect(await scriptWeight(page, "/")).toBeLessThanOrEqual(245);
 });
+
+test("главная шахмат: скриптов при загрузке — вдвое меньше прежнего", async ({ page, isMobile }) => {
+  await seed(page, KNOWN);
+  // Было 503 КиБ: все уроки пяти ступеней, тактика, истории и тайны на двух языках. Теперь страница получает
+  // с сервера сводку (названия и счётчики). На широком экране добавляется доска-превью задачи дня.
+  expect(await scriptWeight(page, "/chess")).toBeLessThanOrEqual(isMobile ? 250 : 290);
+});
+
+for (const path of ["/", "/chess", "/chess/puzzles", "/chess/course", "/achievements", "/week/1/day/1"])
+  test(`страница не перерисовывается заново в другой день: ${path}`, async ({ page }) => {
+    // Страницы собраны заранее. Если на первой отрисовке стоит что-то зависящее от даты («задача дня»),
+    // в любой день, кроме дня сборки, браузер выбрасывает готовый HTML и рисует страницу заново (ошибка 418).
+    await page.clock.setFixedTime(new Date(Date.now() + 9 * 86_400_000));
+    await seed(page, KNOWN);
+    const errors: string[] = [];
+    page.on("pageerror", (e) => errors.push(e.message));
+    await page.goto(path);
+    await page.waitForLoadState("networkidle");
+    expect(errors.filter((m) => /#41[89]|#42[135]|hydrat/i.test(m))).toEqual([]);
+  });
