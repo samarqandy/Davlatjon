@@ -12,6 +12,10 @@ export default defineConfig({
   testDir: "e2e",
   timeout: 30_000,
   fullyParallel: true,
+  // В CI упавший тест повторяется один раз: машины там общие и медленные. Тест, прошедший со второй попытки,
+  // помечается как нестабильный — сборку не роняет, но в отчёте виден. Забытый test.only в CI — ошибка.
+  retries: process.env.CI ? 1 : 0,
+  forbidOnly: !!process.env.CI,
   reporter: process.env.CI ? "github" : "list",
   use: {
     baseURL,
