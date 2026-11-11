@@ -492,10 +492,14 @@ export function ChessSchool({ counts }: { counts: ChessSchoolCounts }) {
                   >
                     {done ? <Check className="h-5 w-5" /> : st.n}
                   </span>
-                  {/* Телефон: под кружком — короткое имя ступени («Пешка»); полное название читает экранный диктор. */}
+                  {/* Телефон: под кружком — короткое имя ступени («Пешка»); полное название читает экранный диктор.
+                      На самых узких телефонах имя не помещается под кружком — остаются номера и строка текущей ступени ниже. */}
                   <span className="sm:hidden">
                     <span className="sr-only">{stepTitles[i]}</span>
-                    <span aria-hidden className="block text-xs leading-tight font-extrabold wrap-anywhere">
+                    <span
+                      aria-hidden
+                      className="block text-xs leading-tight font-extrabold whitespace-nowrap max-[359px]:hidden"
+                    >
                       {stepTitles[i].match(/«(.+?)»/)?.[1] ?? st.n}
                     </span>
                   </span>

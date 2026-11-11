@@ -61,6 +61,15 @@ async function tooWide(page: Page, urls: string[]): Promise<string[]> {
       }),
     );
     if (clipped) wide.push(`${url} (кнопки шапки обрезаны)`);
+    // Подписи нижнего меню — в одну строку: перенос («Мои / задачи») сдвигает значок и выглядит поломкой.
+    const navWrapped = await page.evaluate(() => {
+      const links = [...document.querySelectorAll("[data-bottom-nav] a")].filter(
+        (el) => el.getBoundingClientRect().width > 0,
+      );
+      const heights = links.map((el) => Math.round(el.getBoundingClientRect().height));
+      return heights.some((h) => h > Math.min(...heights) + 2);
+    });
+    if (navWrapped) wide.push(`${url} (подпись нижнего меню в две строки)`);
   }
   return wide;
 }
