@@ -10,6 +10,7 @@ import { useLang } from "@/lib/i18n";
 import { useStore } from "@/lib/store";
 import { scrollBehavior } from "@/lib/motion";
 import { useMotionAllowed } from "@/lib/useMotion";
+import { playRetry } from "@/lib/sfx";
 import { cue, type Cue } from "@/lib/voice";
 
 export type FeedbackTone = "success" | "retry" | "info";
@@ -78,6 +79,8 @@ export function Feedback({
       retries.current = 0;
     } else if (tone === "retry") {
       retries.current += 1;
+      // Короткий сигнал слышен сразу, даже если голос диктора выключен или ещё загружается.
+      playRetry();
       cue(voice ?? (context === "chess" ? "retry-chess" : retryCue(text, sub, lang, retries.current)));
     }
     // hints читаем в момент ответа; смена числа подсказок сама по себе реплику не вызывает.

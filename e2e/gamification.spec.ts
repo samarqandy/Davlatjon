@@ -321,3 +321,39 @@ test("«Мои успехи»: уровень опыта, дипломы все�
   await expect(page.locator('a[href="/chess/awards"]')).toBeVisible();
   await expect(page.getByText("Открыто 2 из 23")).toBeVisible();
 });
+
+test("конец дня: фанфара звучит, когда последняя задача решена в этом занятии, и не повторяется", async ({ page }) => {
+  const rest = Object.fromEntries([2, 3, 4, 5, 6, 7, 8].map((n) => [`w1d1t${n}`, solvedTask]));
+  await prepare(page, { tasks: rest }, "ru");
+  await page.addInitScript(() => {
+    (window as unknown as { __rewards: string[] }).__rewards = [];
+    window.addEventListener("reward-sfx", (e) =>
+      (window as unknown as { __rewards: string[] }).__rewards.push((e as CustomEvent<string>).detail),
+    );
+  });
+  const rewards = () => page.evaluate(() => (window as unknown as { __rewards: string[] }).__rewards);
+  const finish = page.getByRole("button", { name: "Итоги дня", exact: true });
+
+  // День ещё не пройден: на странице итогов тихо.
+  await page.goto("/week/1/day/1#task-1");
+  await finish.click();
+  await expect(page).toHaveURL(/#finish$/);
+  expect(await rewards()).toEqual([]);
+
+  // Решаем последнюю задачу: звон за задачу, а на итогах — фанфара.
+  await page.getByRole("button", { name: /^Задача 1:/ }).click();
+  await page.locator('input[inputmode], input[type="number"], input[type="text"]').first().fill("57");
+  await page.getByRole("button", { name: "Проверить" }).first().click();
+  await expect.poll(async () => (await rewards()).length).toBe(1);
+  await finish.click();
+  await expect(page).toHaveURL(/#finish$/);
+  await expect.poll(async () => (await rewards()).length).toBe(2);
+  expect((await rewards())[1]).toBe("level");
+
+  // Ушли к задаче и вернулись к итогам — второй фанфары нет.
+  await page.getByRole("button", { name: /^Задача 1:/ }).click();
+  await finish.click();
+  await expect(page).toHaveURL(/#finish$/);
+  await page.waitForTimeout(400);
+  expect((await rewards()).length).toBe(2);
+});

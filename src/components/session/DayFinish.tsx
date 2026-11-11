@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ListenButton } from "@/components/ListenButton";
 import { MascotSays } from "@/components/Mascot";
@@ -10,6 +11,7 @@ import { Button, ButtonLink, cn } from "@/components/ui";
 import { SECTIONS } from "@/content/meta";
 import type { Day } from "@/content/types";
 import { weekCertificateHref } from "@/lib/certificate";
+import { playReward } from "@/lib/sfx";
 import { VOICE_CLIPS } from "@/lib/voice";
 import { countText, useLang, useT } from "@/lib/i18n";
 import { updateDay, useHydrated, useStore } from "@/lib/store";
@@ -25,15 +27,29 @@ export function DayFinish({
   day,
   nextDayHref,
   weekDayIds,
+  fanfare = false,
+  onFanfare,
 }: {
   day: Day;
   nextDayHref: string | null;
   weekDayIds: string[];
+  /** Последняя задача дня решена только что, в этом занятии: тогда итоги встречает фанфара, как в шахматной теме. */
+  fanfare?: boolean;
+  /** Фанфара сыграна: при следующем открытии итогов в этом же занятии она не повторяется. */
+  onFanfare?: () => void;
 }) {
   const router = useRouter();
   const t = useT();
   const lang = useLang();
   const hydrated = useHydrated();
+  // Один раз при открытии итогов; при повторном заходе в уже пройденный день фанфары нет.
+  useEffect(() => {
+    if (!fanfare) return;
+    playReward("level");
+    onFanfare?.();
+    // Срабатывает на появление признака; сама функция от отрисовки к отрисовке новая.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fanfare]);
   const tasks = useStore((s) => s.tasks);
   const progress = useStore((s) => s.days[day.id]);
 

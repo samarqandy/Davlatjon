@@ -4,7 +4,7 @@ import { ArrowLeft, Lightbulb, Printer, X } from "lucide-react";
 import { currentScrollBehavior } from "@/lib/useMotion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { TaskView } from "@/components/task/TaskView";
 import { Button, ButtonLink, cn, Icon } from "@/components/ui";
 import { sectionsFor } from "@/content/meta";
@@ -65,6 +65,16 @@ export function DaySession({
   const bigText = useStore((s) => s.settings.bigText);
   const progress = useStore((s) => s.tasks);
   const solved = (i: number) => progress[day.tasks[i]?.id]?.status === "solved";
+  // Все задачи дня решены именно в этом занятии (а не раньше) — итоги встретит фанфара. Считаем от первого
+  // состояния после загрузки сохранённого прогресса, чтобы повторный заход в пройденный день её не включал.
+  const hydrated = useHydrated();
+  const allSolved = day.tasks.every((task) => progress[task.id]?.status === "solved");
+  const [seen, setSeen] = useState<{ id: string; all: boolean } | null>(null);
+  const [finishedNow, setFinishedNow] = useState<string | null>(null);
+  if (hydrated && (seen?.id !== day.id || seen.all !== allSolved)) {
+    if (seen?.id === day.id && !seen.all && allSolved) setFinishedNow(day.id);
+    setSeen({ id: day.id, all: allSolved });
+  }
   // Остались ли подсказки у задачи на экране: тогда в нижней панели есть вход к ним.
   const current = day.tasks[step - 1];
   const hintsLeft = !!current && !solved(step - 1) && (progress[current.id]?.hints ?? 0) < current.hints.length;
@@ -134,7 +144,15 @@ export function DaySession({
         {step >= 1 && step <= total && !resting && (
           <TaskView key={day.tasks[step - 1].id} task={day.tasks[step - 1]} number={step} total={total} />
         )}
-        {step > total && <DayFinish day={day} nextDayHref={nextDayHref} weekDayIds={weekDayIds} />}
+        {step > total && (
+          <DayFinish
+            day={day}
+            nextDayHref={nextDayHref}
+            weekDayIds={weekDayIds}
+            fanfare={finishedNow === day.id}
+            onFanfare={() => setFinishedNow(null)}
+          />
+        )}
       </main>
 
       {step >= 1 && step <= total && !resting && (

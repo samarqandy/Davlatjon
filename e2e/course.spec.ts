@@ -374,3 +374,42 @@ test("курс на телефоне: в упражнении задание и 
   await expect(page.getByRole("navigation", { name: "Разделы темы" })).toBeVisible();
   await expect(page.locator("[data-site-header]")).toBeVisible();
 });
+
+test("курс на телефоне: упражнение решено — «дальше» само появляется внизу экрана; ошибка даёт мягкий сигнал", async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(!isMobile, "панель «дальше» внизу экрана — только на телефоне");
+  await prepare(page);
+  await page.addInitScript(() => {
+    const w = window as unknown as { __answer: string[] };
+    w.__answer = [];
+    window.addEventListener("answer-sfx", (e) => w.__answer.push((e as CustomEvent<string>).detail));
+  });
+  await page.setViewportSize({ width: 390, height: 664 });
+  await page.goto("/chess/course");
+  await openHash(page, "/chess/course#c1-rook-exercise-1");
+  const mark = (sq: string) => page.locator(`[data-board] [data-square="${sq}"]`).first().click();
+  const nextBar = page.locator("[data-exercise-next]");
+  await expect(page.locator("[data-exercise-heading]")).toBeVisible();
+  await expect(nextBar).toHaveCount(0);
+
+  // Отмечена одна лишняя клетка — ответ неверный: сигнал есть, панели «дальше» нет.
+  await mark("a1");
+  await page.getByRole("button", { name: "Проверить" }).click();
+  await expect
+    .poll(() => page.evaluate(() => (window as unknown as { __answer: string[] }).__answer))
+    .toEqual(["retry"]);
+  await expect(nextBar).toHaveCount(0);
+
+  await mark("a1");
+  for (const sq of ["d1", "d2", "d3", "d5", "d6", "d7", "d8", "a4", "b4", "c4", "e4", "f4", "g4", "h4"]) await mark(sq);
+  await page.getByRole("button", { name: "Проверить" }).click();
+  const next = nextBar.getByRole("button", { name: "Следующее упражнение →" });
+  await expect(next).toBeInViewport();
+  // Кнопка «дальше» на экране одна: та, что под упражнением, на телефоне скрыта.
+  await expect(page.getByRole("button", { name: "Следующее упражнение →" })).toHaveCount(1);
+  await next.click();
+  await expect(page).toHaveURL(/#c1-rook-exercise-2$/);
+  await expect(nextBar).toHaveCount(0);
+});

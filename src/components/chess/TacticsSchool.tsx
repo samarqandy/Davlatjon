@@ -174,6 +174,21 @@ export function TopicView({
     setHash(`#${topic.id}-exercise-${i + 1}`, { keepScroll: true });
   };
 
+  // Куда идти после упражнения: к следующему, а после последнего — к следующей теме.
+  const solvedNow = hydrated && ids.has(topic.exercises[exercise]?.id);
+  const onwardLabel =
+    exercise < total - 1
+      ? t("Следующее упражнение →", "Keyingi mashq →")
+      : next
+        ? t(`Следующая тема: ${next.title} →`, `Keyingi mavzu: ${next.title} →`)
+        : null;
+  const goOnward = () => {
+    if (exercise < total - 1) goExercise(exercise + 1);
+    else if (next) setHash(`#${next.id}`);
+  };
+  // Панель «дальше» внизу экрана: только в решённом упражнении и не поверх праздника «Тема пройдена».
+  const nextBar = tab === "exercises" && solvedNow && !celebrate;
+
   // В упражнениях на телефоне — «один экран — одно дело»: вместо шапки урока и вкладок одна строка над заданием.
   const focus = tab === "exercises";
 
@@ -249,7 +264,10 @@ export function TopicView({
       )}
 
       {tab === "exercises" && (
-        <section className="space-y-2 sm:space-y-4" aria-label={t("Упражнения", "Mashqlar")}>
+        <section
+          className={cn("space-y-2 sm:space-y-4", nextBar && "max-sm:pb-20")}
+          aria-label={t("Упражнения", "Mashqlar")}
+        >
           <div id="exercises-top" className="scroll-mt-20 max-sm:scroll-mt-2">
             {/* Телефон: «закрыть», полоска упражнений и возврат к уроку — одна строка, доска помещается на экран. */}
             <div data-focus-screen className="flex items-center gap-1 sm:hidden">
@@ -350,14 +368,28 @@ export function TopicView({
             <Button variant="secondary" onClick={() => goExercise(exercise - 1)} disabled={exercise === 0}>
               {t("← Назад", "← Orqaga")}
             </Button>
-            {exercise < total - 1 ? (
-              <Button onClick={() => goExercise(exercise + 1)}>{t("Следующее упражнение →", "Keyingi mashq →")}</Button>
-            ) : next ? (
-              <Button onClick={() => setHash(`#${next.id}`)}>
-                {t(`Следующая тема: ${next.title} →`, `Keyingi mavzu: ${next.title} →`)}
+            {/* Пока упражнение не решено, «дальше» тише «Проверить»; на телефоне после решения его заменяет панель внизу. */}
+            {onwardLabel && (
+              <Button
+                variant={solvedNow ? "primary" : "secondary"}
+                onClick={goOnward}
+                className={cn(nextBar && "max-sm:hidden")}
+              >
+                {onwardLabel}
               </Button>
-            ) : null}
+            )}
           </div>
+          {/* Телефон: упражнение решено — «дальше» само появляется внизу экрана, искать его прокруткой не нужно. */}
+          {nextBar && onwardLabel && (
+            <div
+              data-exercise-next
+              className="fixed inset-x-0 bottom-0 z-20 animate-fade-up border-t border-line bg-surface/95 px-4 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] backdrop-blur sm:hidden"
+            >
+              <Button onClick={goOnward} className="w-full">
+                {onwardLabel}
+              </Button>
+            </div>
+          )}
         </section>
       )}
 
