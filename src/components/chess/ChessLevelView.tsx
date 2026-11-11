@@ -394,7 +394,7 @@ function Extras({ levelId }: { levelId: ChessLevel["id"] }) {
   const openings = (x.openings ?? []).map((id) => allOpenings.find((o) => o.id === id)).filter((o) => o !== undefined);
   const games = (x.games ?? []).map((id) => allGames.find((g) => g.id === id)).filter((g) => g !== undefined);
   const card = "flex flex-col gap-1 rounded-2xl bg-surface p-4 shadow-card";
-  const link = "text-sm font-extrabold text-brand hover:underline";
+  const link = "flex min-h-11 items-center text-sm font-extrabold text-brand hover:underline";
   return (
     <section className="space-y-3" aria-labelledby="extras">
       <h2 id="extras" className="text-xl font-black">

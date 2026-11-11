@@ -609,7 +609,7 @@ export function ChessSchool({ counts }: { counts: ChessSchoolCounts }) {
           </div>
         </Link>
         <details className="rounded-3xl bg-surface p-4 shadow-card md:col-span-2">
-          <summary className="cursor-pointer text-lg font-black">
+          <summary className="cursor-pointer py-2 text-lg font-black">
             {t("О школе и как заниматься", "Maktab haqida va qanday shugʻullanish")}
           </summary>
           <p className="mt-2 text-muted">{school.about}</p>
@@ -637,7 +637,7 @@ export function ChessSchool({ counts }: { counts: ChessSchoolCounts }) {
           </ul>
         </details>
         <details className="rounded-3xl bg-surface p-4 shadow-card md:col-span-2">
-          <summary className="cursor-pointer text-lg font-black">
+          <summary className="cursor-pointer py-2 text-lg font-black">
             <span className="deco" aria-hidden>
               📚{" "}
             </span>

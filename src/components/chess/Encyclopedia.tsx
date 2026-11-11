@@ -124,7 +124,7 @@ export function Encyclopedia() {
             <a
               key={id}
               href={`#${id}`}
-              className="rounded-xl bg-surface px-3 py-1.5 text-sm font-extrabold text-brand-dark shadow-sm hover:bg-brand-soft"
+              className="inline-flex min-h-11 items-center rounded-xl bg-surface px-3 py-1.5 text-sm font-extrabold text-brand-dark shadow-sm hover:bg-brand-soft"
             >
               {label}
             </a>
@@ -368,7 +368,7 @@ export function Encyclopedia() {
                 <button
                   type="button"
                   onClick={() => setOpen(String(i))}
-                  className="mt-2 text-sm font-extrabold text-brand hover:underline"
+                  className="mt-1 inline-flex min-h-11 items-center text-sm font-extrabold text-brand hover:underline"
                 >
                   {t("Показать ответ", "Javobni koʻrsatish")}
                 </button>

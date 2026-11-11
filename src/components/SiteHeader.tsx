@@ -36,7 +36,8 @@ export function SiteHeader({
       <div className="mx-auto flex max-w-6xl items-center gap-2 px-4 py-2.5">
         <Link href="/" className="mr-auto flex items-center gap-2.5 rounded-xl pr-2">
           <LogoMark size={46} />
-          <span className="leading-tight">
+          {/* На самых узких телефонах (320 px) название прячем: логотип остаётся, а кнопкам языка нужно место. */}
+          <span className="leading-tight max-[359px]:sr-only">
             {/* Имя ссылки собирается из видимого текста: так голосовое управление находит её по надписи на экране. */}
             <span className="block text-[15px] font-black sm:text-lg">
               {BRAND}

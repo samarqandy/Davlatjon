@@ -80,7 +80,7 @@ function ModeChooser() {
   const twoParams = [clock && `c=${clock}`, oddsPiece && `o=${oddsSide}${oddsPiece}`].filter(Boolean).join("&");
   const chip = (on: boolean) =>
     cn(
-      "rounded-xl border-2 px-2.5 py-1 text-sm font-extrabold transition",
+      "min-h-11 rounded-xl border-2 px-2.5 py-1 text-sm font-extrabold transition",
       on ? "border-brand bg-brand text-white" : "border-line bg-surface hover:border-brand/40",
     );
 
@@ -415,7 +415,7 @@ function ModeChooser() {
       </div>
 
       <details className="rounded-3xl bg-surface p-5 shadow-card" data-board-look-details>
-        <summary className="cursor-pointer text-lg font-black">
+        <summary className="cursor-pointer py-2 text-lg font-black">
           <span className="deco" aria-hidden>
             🎨{" "}
           </span>

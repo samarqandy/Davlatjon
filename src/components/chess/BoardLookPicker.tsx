@@ -64,7 +64,7 @@ export function BoardLookPicker({ className }: { className?: string }) {
                 setTimeout(() => playSfx("capture"), 30);
               }}
               className={cn(
-                "rounded-xl border-2 px-3 py-2 text-sm font-bold transition",
+                "min-h-11 rounded-xl border-2 px-3 py-2 text-sm font-bold transition",
                 on && set === s.id ? "border-brand bg-brand-soft" : "border-line bg-surface hover:border-brand/40",
               )}
             >
@@ -78,7 +78,7 @@ export function BoardLookPicker({ className }: { className?: string }) {
             data-sound-set-pick="off"
             onClick={() => updateSettings({ boardSounds: false })}
             className={cn(
-              "rounded-xl border-2 px-3 py-2 text-sm font-bold transition",
+              "min-h-11 rounded-xl border-2 px-3 py-2 text-sm font-bold transition",
               !on ? "border-brand bg-brand-soft" : "border-line bg-surface hover:border-brand/40",
             )}
           >

@@ -70,8 +70,14 @@ export function ChessLesson({
             onClick={() => setStep(i)}
             aria-label={t(`Шаг ${i + 1}: ${c.title}`, `${i + 1}-qadam: ${c.title}`)}
             aria-current={i === step ? "step" : undefined}
-            className={cn("h-2.5 flex-1 rounded-full transition", i <= step ? "bg-brand" : "bg-line")}
-          />
+            // Кнопка высотой 44 px, полоска внутри тонкая: попасть пальцем в 10 px ребёнку трудно.
+            className="flex h-11 flex-1 items-center"
+          >
+            <span
+              aria-hidden
+              className={cn("block h-2.5 w-full rounded-full transition", i <= step ? "bg-brand" : "bg-line")}
+            />
+          </button>
         ))}
       </div>
       <article className="grid gap-5 rounded-3xl bg-surface p-5 shadow-card md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:items-start">

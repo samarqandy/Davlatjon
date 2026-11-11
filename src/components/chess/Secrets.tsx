@@ -80,31 +80,31 @@ export function Secrets() {
         <nav className="mt-3 flex flex-wrap gap-1.5" aria-label={t("Разделы тайн", "Sirlar boʻlimlari")}>
           <a
             href="#stories"
-            className="rounded-xl bg-surface px-3 py-1.5 text-sm font-extrabold text-brand-dark shadow-sm"
+            className="inline-flex min-h-11 items-center rounded-xl bg-surface px-3 py-1.5 text-sm font-extrabold text-brand-dark shadow-sm"
           >
             🔮 {t(`${secrets.length} историй`, `${secrets.length} ta hikoya`)}
           </a>
           <a
             href="#thoughts"
-            className="rounded-xl bg-surface px-3 py-1.5 text-sm font-extrabold text-brand-dark shadow-sm"
+            className="inline-flex min-h-11 items-center rounded-xl bg-surface px-3 py-1.5 text-sm font-extrabold text-brand-dark shadow-sm"
           >
             💭 {t(`${thoughts.length} мыслей великих`, `${thoughts.length} ta buyuk fikr`)}
           </a>
           <a
             href="#dialogues"
-            className="rounded-xl bg-surface px-3 py-1.5 text-sm font-extrabold text-brand-dark shadow-sm"
+            className="inline-flex min-h-11 items-center rounded-xl bg-surface px-3 py-1.5 text-sm font-extrabold text-brand-dark shadow-sm"
           >
             🗣 {t(`${dialogues.length} разговоров`, `${dialogues.length} ta suhbat`)}
           </a>
           <a
             href="#views"
-            className="rounded-xl bg-surface px-3 py-1.5 text-sm font-extrabold text-brand-dark shadow-sm"
+            className="inline-flex min-h-11 items-center rounded-xl bg-surface px-3 py-1.5 text-sm font-extrabold text-brand-dark shadow-sm"
           >
             👀 {t("Новый взгляд", "Yangi nigoh")}
           </a>
           <a
             href="#riddles"
-            className="rounded-xl bg-surface px-3 py-1.5 text-sm font-extrabold text-brand-dark shadow-sm"
+            className="inline-flex min-h-11 items-center rounded-xl bg-surface px-3 py-1.5 text-sm font-extrabold text-brand-dark shadow-sm"
           >
             🧩 {t(`${riddles.length} загадок`, `${riddles.length} ta topishmoq`)}
           </a>

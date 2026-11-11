@@ -53,6 +53,14 @@ async function tooWide(page: Page, urls: string[]): Promise<string[]> {
     await page.evaluate(() => document.querySelectorAll("details").forEach((d) => (d.open = true)));
     const over = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     if (over > 1) wide.push(`${url} (+${over}px)`);
+    // Шапка прилипает к верху и страницу не раздвигает: если её кнопки не помещаются, они просто обрезаются.
+    const clipped = await page.evaluate(() =>
+      [...document.querySelectorAll("[data-site-header] a, [data-site-header] button")].some((el) => {
+        const r = el.getBoundingClientRect();
+        return r.width > 0 && r.right > window.innerWidth + 1;
+      }),
+    );
+    if (clipped) wide.push(`${url} (кнопки шапки обрезаны)`);
   }
   return wide;
 }

@@ -24,7 +24,7 @@ export function LangSwitch({ className }: { className?: string }) {
           aria-pressed={hydrated && lang === l.id}
           title={l.label}
           className={cn(
-            "min-h-8 rounded-[10px] px-2 transition",
+            "min-h-11 min-w-11 rounded-[10px] px-2 transition",
             hydrated && lang === l.id ? "bg-surface text-brand-dark shadow-sm" : "text-muted hover:text-ink",
           )}
         >
