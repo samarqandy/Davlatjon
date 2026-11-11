@@ -189,7 +189,7 @@ export function TopicView({
   // Панель «дальше» внизу экрана: только в решённом упражнении и не поверх праздника «Тема пройдена».
   const nextBar = tab === "exercises" && solvedNow && !celebrate;
 
-  // В упражнениях на телефоне — «один экран — одно дело»: вместо шапки урока и вкладок одна строка над заданием.
+  // В упражнениях на телефоне и планшете (до 1024 px) — «один экран — одно дело»: вместо шапки урока и вкладок одна строка над заданием.
   const focus = tab === "exercises";
 
   return (
@@ -198,7 +198,7 @@ export function TopicView({
       <header
         className={cn(
           "flex items-center gap-3 rounded-3xl bg-linear-to-br from-[#3b2f23] to-[#6b4f33] p-3 text-white shadow-card sm:p-4",
-          focus && "max-sm:hidden",
+          focus && "max-lg:hidden",
         )}
       >
         <button
@@ -223,7 +223,7 @@ export function TopicView({
       </header>
 
       <nav
-        className={cn("grid grid-cols-3 gap-1.5 rounded-2xl bg-surface p-1.5 shadow-card", focus && "max-sm:hidden")}
+        className={cn("grid grid-cols-3 gap-1.5 rounded-2xl bg-surface p-1.5 shadow-card", focus && "max-lg:hidden")}
         aria-label={t("Разделы темы", "Mavzu boʻlimlari")}
       >
         {(
@@ -265,12 +265,12 @@ export function TopicView({
 
       {tab === "exercises" && (
         <section
-          className={cn("space-y-2 sm:space-y-4", nextBar && "max-sm:pb-20")}
+          className={cn("space-y-2 lg:space-y-4", nextBar && "max-lg:pb-20")}
           aria-label={t("Упражнения", "Mashqlar")}
         >
-          <div id="exercises-top" className="scroll-mt-20 max-sm:scroll-mt-2">
+          <div id="exercises-top" className="scroll-mt-20 max-lg:scroll-mt-2">
             {/* Телефон: «закрыть», полоска упражнений и возврат к уроку — одна строка, доска помещается на экран. */}
-            <div data-focus-screen className="flex items-center gap-1 sm:hidden">
+            <div data-focus-screen className="flex items-center gap-1 lg:hidden">
               <button
                 type="button"
                 onClick={() => setHash("#")}
@@ -318,7 +318,7 @@ export function TopicView({
               </button>
             </div>
             {/* С планшета: номера упражнений — только если их несколько: одна кнопка «1» лишь отодвигала доску вниз. */}
-            <div className="hidden flex-wrap gap-1.5 sm:flex">
+            <div className="hidden flex-wrap gap-1.5 lg:flex">
               {(total > 1 ? topic.exercises : []).map((e, i) => (
                 <button
                   key={e.id}
@@ -373,7 +373,7 @@ export function TopicView({
               <Button
                 variant={solvedNow ? "primary" : "secondary"}
                 onClick={goOnward}
-                className={cn(nextBar && "max-sm:hidden")}
+                className={cn(nextBar && "max-lg:hidden")}
               >
                 {onwardLabel}
               </Button>
@@ -383,7 +383,7 @@ export function TopicView({
           {nextBar && onwardLabel && (
             <div
               data-exercise-next
-              className="fixed inset-x-0 bottom-0 z-20 animate-fade-up border-t border-line bg-surface/95 px-4 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] backdrop-blur sm:hidden"
+              className="fixed inset-x-0 bottom-0 z-20 animate-fade-up border-t border-line bg-surface/95 px-4 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] backdrop-blur lg:hidden"
             >
               <Button onClick={goOnward} className="w-full">
                 {onwardLabel}

@@ -281,3 +281,47 @@ test("телефон и система: жест «потянуть, чтобы 
   expect(urls).toEqual(["/chess", "/chess/puzzles#practice", "/quick"]);
   for (const url of urls) expect((await request.get(url.split("#")[0])).status()).toBe(200);
 });
+
+// Планшет и складной телефон (640–1023 px): дети часто занимаются с планшета.
+test("планшет: шапка в одну строку и не обрезана, упражнение курса — в режиме «один экран»", async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(isMobile, "ширину планшета задаём сами — одного прогона достаточно");
+  for (const lang of ["ru", "uz"] as const) {
+    await page.addInitScript(
+      ([l, key]) =>
+        localStorage.setItem(
+          key,
+          JSON.stringify({ version: 1, welcomed: true, settings: { age: 7, lang: l, childName: "Анна" } }),
+        ),
+      [lang, KEY] as const,
+    );
+    for (const width of [640, 720, 820, 1023]) {
+      await page.setViewportSize({ width, height: 880 });
+      await page.goto("/chess");
+      const header = await page.evaluate(() => {
+        const h = document.querySelector("[data-site-header]")!;
+        const items = [...h.querySelectorAll("a,button")].filter((el) => el.getBoundingClientRect().width > 0);
+        return {
+          height: h.getBoundingClientRect().height,
+          clipped: items.filter((el) => el.getBoundingClientRect().right > window.innerWidth + 1).length,
+          // Пункт меню в две строки выше 60 px.
+          wrapped: items.filter((el) => el.getBoundingClientRect().height > 60).length,
+        };
+      });
+      expect(header, `${lang}, ${width} px`).toEqual({ height: expect.any(Number), clipped: 0, wrapped: 0 });
+      expect(header.height, `${lang}, ${width} px`).toBeLessThan(90);
+    }
+  }
+
+  // Упражнение на планшете: шапка сайта и вкладки урока скрыты, доска целиком на экране.
+  await page.setViewportSize({ width: 720, height: 880 });
+  await page.goto("/chess/course");
+  await page.waitForLoadState("networkidle");
+  await page.goto("/chess/course#c1-rook-exercise-1");
+  await expect(page.locator("[data-exercise-heading]")).toBeVisible();
+  await expect(page.locator("[data-site-header]")).toBeHidden();
+  const board = (await page.locator("[data-board]").first().boundingBox())!;
+  expect(board.y + board.height).toBeLessThanOrEqual(880);
+});
