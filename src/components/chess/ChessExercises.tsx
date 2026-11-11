@@ -48,8 +48,9 @@ function ExerciseShell({
   const [hint, setHint] = useState(false);
   const test = useContext(TestModeContext);
   return (
-    <div className="space-y-4">
-      <div className="space-y-1.5">
+    <div className="space-y-3 sm:space-y-4">
+      {/* На телефоне «Послушать» стоит в строке с названием, а не отдельной строкой над доской. */}
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-2 gap-y-1 sm:block sm:space-y-1.5">
         <h3
           data-exercise-heading
           tabIndex={-1}
@@ -62,10 +63,13 @@ function ExerciseShell({
             </span>
           )}
         </h3>
-        <p className="text-lg leading-relaxed">
+        <p className="text-lg leading-snug max-sm:col-span-2 sm:leading-relaxed">
           <RichText text={ex.prompt} />
         </p>
-        <ListenButton src={VOICE_CLIPS.exercise(ex.id, lang)} />
+        <ListenButton
+          src={VOICE_CLIPS.exercise(ex.id, lang)}
+          className="max-sm:col-start-2 max-sm:row-start-1 max-sm:self-start"
+        />
       </div>
       {children}
       <Feedback state={feedback} context="chess" />
