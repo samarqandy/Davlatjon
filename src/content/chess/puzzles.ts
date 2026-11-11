@@ -2,6 +2,8 @@
  * Задачи для тренажёра. Каждая проверяется тестами через шахматный движок:
  * мат в N ходов — перебором, выигрыш материала — поиском лучшего хода.
  */
+import { pickDaily } from "@/lib/dailyPuzzle";
+
 export type PuzzleTheme =
   | "mate1"
   | "backrank"
@@ -556,8 +558,5 @@ export function dailyPuzzleFor(minStars: number): ChessPuzzle {
 }
 
 export function dailyPuzzle(date = new Date(), minStars = 1): ChessPuzzle {
-  const pool = PUZZLES.filter((p) => p.stars >= minStars);
-  const list = pool.length ? pool : PUZZLES;
-  const day = Math.floor(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / 86_400_000);
-  return list[((day % list.length) + list.length) % list.length];
+  return pickDaily(PUZZLES, date, minStars);
 }

@@ -1,14 +1,15 @@
 /** Награды и календарь занятий — всё вычисляется из прогресса, отдельно ничего не хранится. */
-import { CHESS_LEVELS } from "@/content/chess";
-import { FAMOUS_GAMES } from "@/content/chess/games";
-import { PUZZLES } from "@/content/chess/puzzles";
+import { CLASSIC_PUZZLE_IDS, FAMOUS_GAME_IDS } from "@/content/chess/catalogIds";
+import { LEVEL_EXERCISE_IDS } from "@/content/chess/levelIds";
 import { pluralize } from "./plural";
-import { solvedCount } from "./puzzleStats";
 import { currentRank } from "./chessProgress";
 import { crownsFor } from "./crowns";
 import { tFor, type Lang } from "./lang";
 import { activityDays, dayStreak } from "./calendar";
 import type { AppState } from "./store";
+
+/** Шесть званий по порядку — только id упражнений: наградам не нужны уроки и позиции уровней. */
+const LEVELS = Object.values(LEVEL_EXERCISE_IDS).map((ids) => ({ exercises: ids.map((id) => ({ id })) }));
 
 export interface Award {
   id: string;
@@ -29,18 +30,18 @@ export function awards(s: AppState, lang: Lang = "ru"): Award[] {
   const robotWins = (level: number) =>
     s.chessGames.filter((g) => g.mode === "robot" && (g.level ?? 0) >= level && g.result === "win").length;
   // Решённые задачи: школы и из базы Lichess; «все задачи школы» — отдельно.
-  const solved = solvedCount(s.chessPuzzles);
-  const classicSolved = PUZZLES.filter((p) => s.chessPuzzles[p.id]?.solvedAt).length;
+  const solved = Object.values(s.chessPuzzles).filter((p) => p.solvedAt).length;
+  const classicSolved = CLASSIC_PUZZLE_IDS.filter((id) => s.chessPuzzles[id]?.solvedAt).length;
   const openings = new Set(Object.keys(s.chessOpenings).map((k) => k.split(":")[0])).size;
-  const viewed = FAMOUS_GAMES.filter((g) => s.chessGamesViewed[g.id]).length;
+  const viewed = FAMOUS_GAME_IDS.filter((id) => s.chessGamesViewed[id]).length;
   const analysed = s.chessGames.filter((g) => g.analysis).length;
   const bestAccuracy = Math.max(
     0,
     ...s.chessGames.filter((g) => g.mode === "robot" && g.analysis?.acc).map((g) => g.analysis!.acc![g.color]),
   );
   const bestGuess = Math.max(0, ...Object.values(s.chessGuess).map((g) => (g.max ? g.score / g.max : 0)));
-  const rank = currentRank(CHESS_LEVELS, s);
-  const rankIndex = rank ? CHESS_LEVELS.indexOf(rank) + 1 : 0;
+  const rank = currentRank(LEVELS, s);
+  const rankIndex = rank ? LEVELS.indexOf(rank) + 1 : 0;
   const days = Object.keys(activityDays(s)).length;
   const daysDone = Object.values(s.days).filter((d) => d.completedAt).length;
   const tasksSolved = Object.values(s.tasks).filter((x) => x.status === "solved").length;
@@ -167,11 +168,11 @@ export function awards(s: AppState, lang: Lang = "ru"): Award[] {
       "🧩",
       t("Все задачи школы", "Maktabning barcha masalalari"),
       t(
-        `Реши все ${pluralize(PUZZLES.length, "задачу", "задачи", "задач")} школы — с объяснениями.`,
-        `Maktabning izohli ${PUZZLES.length} ta masalasini yech.`,
+        `Реши все ${pluralize(CLASSIC_PUZZLE_IDS.length, "задачу", "задачи", "задач")} школы — с объяснениями.`,
+        `Maktabning izohli ${CLASSIC_PUZZLE_IDS.length} ta masalasini yech.`,
       ),
       classicSolved,
-      PUZZLES.length,
+      CLASSIC_PUZZLE_IDS.length,
     ),
     a(
       "streak-10",
@@ -211,7 +212,7 @@ export function awards(s: AppState, lang: Lang = "ru"): Award[] {
       t("Историк", "Tarixchi"),
       t("Разбери все знаменитые партии.", "Barcha mashhur partiyalarni tahlil qil."),
       viewed,
-      FAMOUS_GAMES.length,
+      FAMOUS_GAME_IDS.length,
     ),
     a(
       "guess-70",

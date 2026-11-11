@@ -1,35 +1,31 @@
 "use client";
 
-import { courseLessons } from "@/content/chess/courseLessons";
-import { COURSE_PART } from "@/content/chess/parts/course";
-import { COURSE2_PART } from "@/content/chess/parts/course2";
-import { COURSE3_PART } from "@/content/chess/parts/course3";
-import { COURSE4_PART } from "@/content/chess/parts/course4";
-import { COURSE5_PART } from "@/content/chess/parts/course5";
-import { LEVELS } from "@/content/chess/parts/levels";
-import { PUZZLE_PART } from "@/content/chess/parts/puzzles";
-import { TACTIC_PART } from "@/content/chess/parts/tactics";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { ContinueFab } from "@/components/ContinueFab";
 import { ChildNameBanner } from "@/components/home/ChildNameBanner";
 import { TodayCard } from "@/components/progress/TodayCard";
 import { cn, ProgressBar } from "@/components/ui";
-import { chessLevelHref } from "@/content/chess";
-import { dailyPuzzleFor } from "@/content/chess/puzzles";
+import type { ChessHubSummary } from "@/content/chess/hubSummary";
+import { chessLevelHref } from "@/content/chess/levelIds";
 import { profileText, useAgeProfile } from "@/lib/age";
 import { awards, earned } from "@/lib/awards";
 import { currentRank, levelStatuses } from "@/lib/chessProgress";
 import { COLLECTION_TOTAL, cardsOpen } from "@/lib/collection";
-import { useLang, useT } from "@/lib/i18n";
+import { pickDaily } from "@/lib/dailyPuzzle";
+import { useBoth, useLang, useT, type Both } from "@/lib/i18n";
 import { plural, thousands } from "@/lib/plural";
-import { PUZZLE_TOTAL, solvedCount } from "@/lib/puzzleStats";
 import { duePuzzles, useHydrated, useStore } from "@/lib/store";
+import { useMedia } from "@/lib/useMedia";
 import { useToday } from "@/lib/useToday";
-import { useChessPart } from "@/lib/useChess";
 import { xpTotal } from "@/lib/xp";
-import { ChessBoard, PieceIcon } from "./ChessBoard";
 import { DidYouKnow } from "./DidYouKnow";
 import { Check, ChevronDown, Dumbbell, Lock, Play, Route } from "lucide-react";
+
+// Фигуры и доска — из набора react-chessboard: отдельными кусками, чтобы не задерживать запуск страницы.
+// Значки фигур есть в HTML с сервера; доска-превью задачи дня нужна только широкому экрану и грузится там.
+const PieceIcon = dynamic(() => import("./PieceIcon").then((m) => m.PieceIcon));
+const ChessBoard = dynamic(() => import("./ChessBoard").then((m) => m.ChessBoard), { ssr: false });
 
 /**
  * Сколько всего в разделах, куда ведут карточки школы. Считает сервер (app/[lang]/chess/page.tsx):
@@ -43,66 +39,53 @@ export interface ChessSchoolCounts {
   riddles: number;
   /** id упражнений всех тестов — чтобы посчитать, сколько решено. */
   testExercises: string[];
+  /** Сколько задач в тренажёре: задачи школы и задачи из базы. */
+  puzzles: number;
 }
 
-export function ChessSchool({ counts }: { counts: ChessSchoolCounts }) {
+type StepLessons = ChessHubSummary["steps"][number]["lessons"];
+
+export function ChessSchool({ counts, summary }: { counts: ChessSchoolCounts; summary: Both<ChessHubSummary> }) {
   const hydrated = useHydrated();
   const t = useT();
   const lang = useLang();
-  const { levels, school } = useChessPart(LEVELS);
-  const { puzzles } = useChessPart(PUZZLE_PART);
-  const { tactics } = useChessPart(TACTIC_PART);
-  const { course1, course1Lessons } = useChessPart(COURSE_PART);
-  const { course2, course2Lessons } = useChessPart(COURSE2_PART);
-  const { course3, course3Lessons } = useChessPart(COURSE3_PART);
-  const { course4, course4Lessons } = useChessPart(COURSE4_PART);
-  const { course5, course5Lessons } = useChessPart(COURSE5_PART);
+  const { levels, school, glossary, steps: stepData, tacticExercises, puzzles, didYouKnow } = useBoth(summary);
   const state = useStore((s) => s);
   const statuses = levelStatuses(levels, state);
   const rank = hydrated ? currentRank(levels, state) : null;
-  // Словарик шахматиста: все термины всех уровней — на языке интерфейса.
-  const glossary = levels.flatMap((level) => level.terms.map((term) => ({ ...term, level })));
   const profile = useAgeProfile();
   const robotName = profileText(profile, lang).robotName;
-  const dailyRu = dailyPuzzleFor(profile.minStars);
-  const daily = puzzles.find((p) => p.id === dailyRu.id) ?? dailyRu;
-  const puzzlesSolved = hydrated ? solvedCount(state.chessPuzzles) : 0;
   const today = useToday();
+  // Задача дня зависит от даты: до загрузки её не знаем (страница собрана заранее, в другой день), поэтому
+  // карточка стоит на месте с невидимым содержимым — иначе сервер и браузер показали бы разные задачи.
+  const dailyKnown = hydrated && !!today;
+  const daily = dailyKnown ? pickDaily(puzzles, new Date(`${today}T12:00:00`), profile.minStars) : puzzles[0];
+  const wide = useMedia("(min-width: 40rem)");
+  const puzzlesSolved = hydrated ? Object.values(state.chessPuzzles).filter((p) => p.solvedAt).length : 0;
   // Шахматные задачи, которые сегодня пора повторить: число на плитке «Задачи» — без новой карточки на экране.
   const puzzlesDue = hydrated && today ? duePuzzles(state.chessPuzzles, today).length : 0;
   const openingsLearned = hydrated ? new Set(Object.keys(state.chessOpenings).map((k) => k.split(":")[0])).size : 0;
-  const tacticsTotal = tactics.reduce((n, x) => n + x.exercises.length, 0);
-  const tacticsSolved = hydrated
-    ? tactics.reduce((n, x) => n + x.exercises.filter((e) => state.chess[e.id]?.solvedAt).length, 0)
-    : 0;
-  const course1List = courseLessons({ levels, tactics }, course1Lessons);
-  const course2List = courseLessons({ levels, tactics }, course2Lessons);
-  const course3List = courseLessons({ levels, tactics }, course3Lessons);
-  const course4List = courseLessons({ levels, tactics }, course4Lessons);
-  const course5List = courseLessons({ levels, tactics }, course5Lessons);
-  const solvedIn = (list: typeof course1List) =>
-    hydrated ? list.reduce((n, x) => n + x.exercises.filter((e) => state.chess[e.id]?.solvedAt).length, 0) : 0;
-  const totalIn = (list: typeof course1List) => list.reduce((n, x) => n + x.exercises.length, 0);
-  const firstOpen = (list: typeof course1List) =>
-    list.findIndex((l) => l.exercises.some((e) => !state.chess[e.id]?.solvedAt));
+  const tacticsTotal = tacticExercises.length;
+  const tacticsSolved = hydrated ? tacticExercises.filter((id) => state.chess[id]?.solvedAt).length : 0;
+  const solvedIn = (list: StepLessons) =>
+    hydrated ? list.reduce((n, x) => n + x.exercises.filter((id) => state.chess[id]?.solvedAt).length, 0) : 0;
+  const totalIn = (list: StepLessons) => list.reduce((n, x) => n + x.exercises.length, 0);
+  const firstOpen = (list: StepLessons) => list.findIndex((l) => l.exercises.some((id) => !state.chess[id]?.solvedAt));
   // Продолжаем первую непройденную ступень по порядку.
-  const steps = [
-    { n: 1, list: course1List, href: "/chess/course" },
-    { n: 2, list: course2List, href: "/chess/course-2" },
-    { n: 3, list: course3List, href: "/chess/course-3" },
-    { n: 4, list: course4List, href: "/chess/course-4" },
-    { n: 5, list: course5List, href: "/chess/course-5" },
-  ];
+  const steps = stepData.map((st, i) => ({
+    n: i + 1,
+    title: st.title,
+    list: st.lessons,
+    href: i === 0 ? "/chess/course" : `/chess/course-${i + 1}`,
+  }));
   const current = (hydrated && steps.find((st) => firstOpen(st.list) >= 0)) || steps[0];
   const onStep2 = current.n > 1;
   const course = current.list;
   const courseHref = current.href;
-  const courseTotal = course.reduce((n, x) => n + x.exercises.length, 0);
-  const courseSolved = hydrated
-    ? course.reduce((n, x) => n + x.exercises.filter((e) => state.chess[e.id]?.solvedAt).length, 0)
-    : 0;
+  const courseTotal = totalIn(course);
+  const courseSolved = solvedIn(course);
   // Курс — главный путь новичка: показываем следующий незаконченный урок прямо под приветствием.
-  const courseNext = hydrated ? course.findIndex((l) => l.exercises.some((e) => !state.chess[e.id]?.solvedAt)) : 0;
+  const courseNext = hydrated ? firstOpen(course) : 0;
   const courseLesson = courseNext >= 0 ? course[courseNext] : null;
   const testsTotal = counts.testExercises.length;
   const testsDone = hydrated ? counts.testExercises.filter((id) => state.chess[id]?.solvedAt).length : 0;
@@ -117,77 +100,77 @@ export function ChessSchool({ counts }: { counts: ChessSchoolCounts }) {
     {
       href: "/chess/course",
       emoji: "🪜",
-      title: course1.title,
+      title: steps[0].title,
       text: t(
         "Урок за уроком: каждая фигура, шах и мат, рокировка, дебют, вилка и связка, пат, лабиринты и итоговый тест.",
         "Darsma-dars: har bir dona, shoh va mot, rokirovka, debyut, vilka va bogʻlash, pat, labirintlar va yakuniy test.",
       ),
       stat: hydrated
         ? t(
-            `${solvedIn(course1List)} из ${totalIn(course1List)} упражнений`,
-            `${totalIn(course1List)} ta mashqdan ${solvedIn(course1List)} tasi`,
+            `${solvedIn(steps[0].list)} из ${totalIn(steps[0].list)} упражнений`,
+            `${totalIn(steps[0].list)} ta mashqdan ${solvedIn(steps[0].list)} tasi`,
           )
-        : t(`${course1List.length} уроков`, `${course1List.length} ta dars`),
+        : t(`${steps[0].list.length} уроков`, `${steps[0].list.length} ta dars`),
     },
     {
       href: "/chess/course-2",
       emoji: "🐴",
-      title: course2.title,
+      title: steps[1].title,
       text: t(
         "Мат с помощью связки, открытого нападения и двойного шаха, атака на короля, ловля фигур, эндшпиль, лабиринты и итоговый тест.",
         "Bogʻlash, ochiq hujum va qoʻsh shoh yordamida mot, shohga hujum, donalarni tutish, endshpil, labirintlar va yakuniy test.",
       ),
       stat: hydrated
         ? t(
-            `${solvedIn(course2List)} из ${totalIn(course2List)} упражнений`,
-            `${totalIn(course2List)} ta mashqdan ${solvedIn(course2List)} tasi`,
+            `${solvedIn(steps[1].list)} из ${totalIn(steps[1].list)} упражнений`,
+            `${totalIn(steps[1].list)} ta mashqdan ${solvedIn(steps[1].list)} tasi`,
           )
-        : t(`${course2List.length} уроков`, `${course2List.length} ta dars`),
+        : t(`${steps[1].list.length} уроков`, `${steps[1].list.length} ta dars`),
     },
     {
       href: "/chess/course-3",
       emoji: "🎯",
-      title: course3.title,
+      title: steps[2].title,
       text: t(
         "Связка и рентген, открытый и двойной шах, открытое нападение — тактика атаки на короля.",
         "Bogʻlash va rentgen, ochiq va qoʻsh shoh, ochiq hujum — shohga hujum taktikasi.",
       ),
       stat: hydrated
         ? t(
-            `${solvedIn(course3List)} из ${totalIn(course3List)} упражнений`,
-            `${totalIn(course3List)} ta mashqdan ${solvedIn(course3List)} tasi`,
+            `${solvedIn(steps[2].list)} из ${totalIn(steps[2].list)} упражнений`,
+            `${totalIn(steps[2].list)} ta mashqdan ${solvedIn(steps[2].list)} tasi`,
           )
-        : t(`${course3List.length} уроков`, `${course3List.length} ta dars`),
+        : t(`${steps[2].list.length} уроков`, `${steps[2].list.length} ta dars`),
     },
     {
       href: "/chess/course-4",
       emoji: "🏰",
-      title: course4.title,
+      title: steps[3].title,
       text: t(
         "Слоны Горвица, обжорный ряд, проходная пешка, слабые поля, пешечный эндшпиль, пат, вечный шах и мат двумя слонами.",
         "Gorvits fillari, ochkoʻz qator, oʻtuvchi piyoda, kuchsiz kataklar, piyodali endshpil, pat, abadiy shoh va ikki fil bilan mot.",
       ),
       stat: hydrated
         ? t(
-            `${solvedIn(course4List)} из ${totalIn(course4List)} упражнений`,
-            `${totalIn(course4List)} ta mashqdan ${solvedIn(course4List)} tasi`,
+            `${solvedIn(steps[3].list)} из ${totalIn(steps[3].list)} упражнений`,
+            `${totalIn(steps[3].list)} ta mashqdan ${solvedIn(steps[3].list)} tasi`,
           )
-        : t(`${course4List.length} уроков`, `${course4List.length} ta dars`),
+        : t(`${steps[3].list.length} уроков`, `${steps[3].list.length} ta dars`),
     },
     {
       href: "/chess/course-5",
       emoji: "👑",
-      title: course5.title,
+      title: steps[4].title,
       text: t(
         "Связка и двойная связка, развязывание, двойной шах и «мельница», отвлечение, завлечение и шедевр Эдварда Ласкера.",
         "Bogʻlash va qoʻsh bogʻlash, bogʻlashdan chiqish, qoʻsh shoh va «tegirmon», chalgʻitish, jalb qilish va Edvard Laskerning durdonasi.",
       ),
       stat: hydrated
         ? t(
-            `${solvedIn(course5List)} из ${totalIn(course5List)} упражнений`,
-            `${totalIn(course5List)} ta mashqdan ${solvedIn(course5List)} tasi`,
+            `${solvedIn(steps[4].list)} из ${totalIn(steps[4].list)} упражнений`,
+            `${totalIn(steps[4].list)} ta mashqdan ${solvedIn(steps[4].list)} tasi`,
           )
-        : t(`${course5List.length} уроков`, `${course5List.length} ta dars`),
+        : t(`${steps[4].list.length} уроков`, `${steps[4].list.length} ta dars`),
     },
     {
       href: "/chess/play",
@@ -207,8 +190,8 @@ export function ChessSchool({ counts }: { counts: ChessSchoolCounts }) {
       title: t("Задачи", "Masalalar"),
       due: puzzlesDue,
       text: t(
-        `${thousands(PUZZLE_TOTAL)} ${plural(PUZZLE_TOTAL, "задача", "задачи", "задач")}: маты, вилки, связки, комбинации. Подбираются по силам; задача дня, серия и «Дятел».`,
-        `${thousands(PUZZLE_TOTAL)} ta masala: motlar, vilkalar, bogʻlashlar, kombinatsiyalar. Kuchingga qarab tanlanadi; kun masalasi, «Ketma-ket» va «Qizilishton».`,
+        `${thousands(counts.puzzles)} ${plural(counts.puzzles, "задача", "задачи", "задач")}: маты, вилки, связки, комбинации. Подбираются по силам; задача дня, серия и «Дятел».`,
+        `${thousands(counts.puzzles)} ta masala: motlar, vilkalar, bogʻlashlar, kombinatsiyalar. Kuchingga qarab tanlanadi; kun masalasi, «Ketma-ket» va «Qizilishton».`,
       ),
       stat: puzzlesSolved
         ? t(`решено ${puzzlesSolved}`, `${puzzlesSolved} ta yechildi`)
@@ -396,7 +379,7 @@ export function ChessSchool({ counts }: { counts: ChessSchoolCounts }) {
   ];
 
   // Учиться — одна дорога: ступени курса. Тренироваться — всё остальное; первые три раздела видны сразу.
-  const stepTitles = [course1.title, course2.title, course3.title, course4.title, course5.title];
+  const stepTitles = steps.map((st) => st.title);
   const practiceFirst = ["/chess/play", "/chess/puzzles", "/chess/tactics"];
   const practice = sections.filter((x) => !steps.some((st) => st.href === x.href));
   const orderedPractice = [
@@ -602,29 +585,35 @@ export function ChessSchool({ counts }: { counts: ChessSchoolCounts }) {
       </section>
 
       <section className="grid gap-4 md:grid-cols-2" aria-label={t("Полезное", "Foydali")}>
-        <DidYouKnow />
+        <DidYouKnow items={didYouKnow} />
         <Link
           href="/chess/puzzles#daily"
           className="block rounded-3xl bg-surface p-4 shadow-card transition hover:-translate-y-0.5"
+          data-daily-puzzle={dailyKnown ? daily.id : undefined}
         >
           <p className="text-xs font-extrabold tracking-wide text-muted uppercase">
             {t("📅 Шахматная задача дня", "📅 Kunning shaxmat masalasi")}
           </p>
-          <p className="text-lg font-black">{daily.title}</p>
-          <p className="text-xs font-bold text-muted sm:mb-2">
-            {"⭐".repeat(daily.stars)} ·{" "}
-            {daily.fen.split(" ")[1] === "w" ? t("ходят белые", "oqlar yuradi") : t("ходят чёрные", "qoralar yuradi")}
-            {hydrated && state.chessPuzzles[daily.id]?.solvedAt ? " · ✅" : ""}
-          </p>
-          {/* Доска-превью — с планшета: на телефоне она занимала больше половины экрана ради одной ссылки. */}
-          <div className="max-sm:hidden">
-            <ChessBoard
-              id="hub-daily"
-              position={daily.fen}
-              orientation={daily.fen.split(" ")[1] === "w" ? "white" : "black"}
-              maxWidth={240}
-              className="!mx-0"
-            />
+          <div className={dailyKnown ? undefined : "invisible"}>
+            <p className="text-lg font-black">{daily.title}</p>
+            <p className="text-xs font-bold text-muted sm:mb-2">
+              {"⭐".repeat(daily.stars)} ·{" "}
+              {daily.fen.split(" ")[1] === "w" ? t("ходят белые", "oqlar yuradi") : t("ходят чёрные", "qoralar yuradi")}
+              {hydrated && state.chessPuzzles[daily.id]?.solvedAt ? " · ✅" : ""}
+            </p>
+          </div>
+          {/* Доска-превью — с планшета: на телефоне она занимала больше половины экрана ради одной ссылки,
+              поэтому там её код даже не загружается. Место под доску занято сразу — страница не прыгает. */}
+          <div className="size-60 max-sm:hidden">
+            {wide && dailyKnown && (
+              <ChessBoard
+                id="hub-daily"
+                position={daily.fen}
+                orientation={daily.fen.split(" ")[1] === "w" ? "white" : "black"}
+                maxWidth={240}
+                className="!mx-0"
+              />
+            )}
           </div>
         </Link>
         <details className="rounded-3xl bg-surface p-4 shadow-card md:col-span-2">

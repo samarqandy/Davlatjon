@@ -97,8 +97,10 @@ export function PuzzleHub() {
     if (puzzle) return <SingleView puzzle={puzzle} />;
   }
 
-  const dailyRu = dailyPuzzleFor(profile.minStars);
-  const daily = puzzles.find((p) => p.id === dailyRu.id) ?? dailyRu;
+  // Задача дня зависит от даты, а страница собрана заранее: до загрузки её не называем — иначе сервер и
+  // браузер показали бы разные задачи (ошибка гидратации в любой день, кроме дня сборки).
+  const dailyRu = hydrated && today ? dailyPuzzleFor(profile.minStars) : null;
+  const daily = dailyRu ? (puzzles.find((p) => p.id === dailyRu.id) ?? dailyRu) : null;
   const woodpeckerRound = woodpecker ? Math.min(woodpecker.rounds.length + 1, 3) : 0;
 
   return (
@@ -201,9 +203,14 @@ export function PuzzleHub() {
             id="daily"
             Icon={CalendarDays}
             title={t("Задача дня", "Kun masalasi")}
-            status={`${STARS(daily.stars)} · ${daily.title}${
-              hydrated && progress[daily.id]?.solvedAt ? t(" · ✅ решена", " · ✅ yechilgan") : ""
-            }`}
+            status={
+              daily
+                ? `${STARS(daily.stars)} · ${daily.title}${
+                    progress[daily.id]?.solvedAt ? t(" · ✅ решена", " · ✅ yechilgan") : ""
+                  }`
+                : // Неразрывный пробел держит высоту строки, пока задача дня не известна.
+                  "\u00a0"
+            }
             about={t("Одна новая задача каждый день.", "Har kuni bitta yangi masala.")}
           />
           <Mode
