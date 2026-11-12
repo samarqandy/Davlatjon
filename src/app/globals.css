@@ -764,8 +764,9 @@ html.i18n-wait::after {
 }
 @supports (width: 1cqi) {
   .board-grid {
-    --g: clamp(14px, 5cqi, 22px);
-    --f: clamp(10px, 3.4cqi, 15px);
+    /* До 440 px рамка и подписи растут с доской и останавливаются; на большой доске (от ~700 px) растут дальше, медленнее. */
+    --g: clamp(14px, 5cqi, max(22px, 3.2cqi));
+    --f: clamp(10px, 3.4cqi, max(15px, 2.1cqi));
   }
 }
 .board-grid[data-frame="print"] {

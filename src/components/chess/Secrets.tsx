@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronRight, RotateCcw } from "lucide-react";
+import { ChevronRight, RotateCcw, Undo2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { Button, cn, Icon } from "@/components/ui";
@@ -593,7 +593,7 @@ function KnightTour() {
               onClick={() => setPath((p) => p.slice(0, -1))}
               disabled={!path.length}
             >
-              {t("↶ Отменить", "↶ Bekor qilish")}
+              <Icon icon={Undo2} /> {t("Отменить", "Bekor qilish")}
             </Button>
             <Button size="sm" variant="ghost" onClick={() => setPath([])} disabled={!path.length}>
               {t("Сначала", "Boshidan")}

@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronRight } from "lucide-react";
+import { Check, ChevronRight, Copy, Puzzle } from "lucide-react";
 import { currentScrollBehavior } from "@/lib/useMotion";
 import { stampText } from "@/lib/dates";
 import Link from "next/link";
@@ -488,7 +488,7 @@ function ReviewBody({
         )}
         {moments.some((m) => m.kind !== "inaccuracy") && (
           <ButtonLink href="/chess/puzzles#mine" variant="sun" className="mt-3">
-            🧩 {t("Реши эти моменты как задачи", "Bu lahzalarni masala sifatida yech")}
+            <Icon icon={Puzzle} /> {t("Реши эти моменты как задачи", "Bu lahzalarni masala sifatida yech")}
           </ButtonLink>
         )}
       </section>
@@ -710,7 +710,8 @@ function PgnButtons({ game }: { game: ChessGameRecord }) {
           void navigator.clipboard?.writeText(pgn()).then(() => setCopied(true));
         }}
       >
-        {copied ? t("✓ Скопировано", "✓ Nusxa olindi") : t("📋 Скопировать запись", "📋 Yozuvdan nusxa olish")}
+        <Icon icon={copied ? Check : Copy} />{" "}
+        {copied ? t("Скопировано", "Nusxa olindi") : t("Скопировать запись", "Yozuvdan nusxa olish")}
       </Button>
       <span className="text-xs text-muted">
         {t(

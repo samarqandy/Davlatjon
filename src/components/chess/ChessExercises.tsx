@@ -1,6 +1,6 @@
 "use client";
 
-import { RotateCcw } from "lucide-react";
+import { Lightbulb, RotateCcw } from "lucide-react";
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { Feedback, type FeedbackState } from "@/components/answers/Feedback";
 import { ListenButton } from "@/components/ListenButton";
@@ -87,14 +87,16 @@ function ExerciseShell({
         </div>
       ) : hint ? (
         <div className="rounded-2xl border-2 border-sun/40 bg-sun-soft px-4 py-3">
-          <p className="text-sm font-extrabold text-sun-ink">{t("💡 Подсказка", "💡 Maslahat")}</p>
+          <p className="text-sm font-extrabold text-sun-ink">
+            <Icon icon={Lightbulb} /> {t("Подсказка", "Maslahat")}
+          </p>
           <p className="mt-1 font-semibold text-sun-ink">
             <RichText text={ex.hint} />
           </p>
         </div>
       ) : test ? null : (
         <Button variant="ghost" size="sm" onClick={() => setHint(true)} className="justify-self-start">
-          {t("💡 Подсказка", "💡 Maslahat")}
+          <Icon icon={Lightbulb} /> {t("Подсказка", "Maslahat")}
         </Button>
       )}
       {footer}

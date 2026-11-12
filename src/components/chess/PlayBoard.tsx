@@ -1,6 +1,6 @@
 "use client";
 
-import { RotateCcw } from "lucide-react";
+import { ArrowLeft, ArrowUpDown, Flag, Lightbulb, RotateCcw, Search, Undo2 } from "lucide-react";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { Confetti } from "@/components/rewards/Confetti";
 import { Button, ButtonLink, cn, Icon } from "@/components/ui";
@@ -389,7 +389,7 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-2xl font-black">{title}</h2>
         <Button variant="ghost" size="sm" onClick={onExit}>
-          ← {t("Выбрать другой режим", "Boshqa rejimni tanlash")}
+          <Icon icon={ArrowLeft} /> {t("Выбрать другой режим", "Boshqa rejimni tanlash")}
         </Button>
       </div>
       {(config.odds || config.clock) && (
@@ -492,7 +492,7 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
       )}
       {status.over && (config.mode === "robot" || config.mode === "two") && plies.length > 1 && (
         <ButtonLink href={`/chess/review#${gameId}`} variant="sun">
-          🔎{" "}
+          <Icon icon={Search} />{" "}
           {t(
             "Разбор партии: где были ошибки и лучшие ходы",
             "Partiya tahlili: qayerda xato, qayerda eng yaxshi yurish boʻlgan",
@@ -505,19 +505,19 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
           {!config.solo && (
             <>
               <Button variant="secondary" size="sm" onClick={showHint} disabled={!myTurn || status.over || thinking}>
-                💡 {t("Подсказка", "Maslahat")}
+                <Icon icon={Lightbulb} /> {t("Подсказка", "Maslahat")}
               </Button>
               <Button variant="secondary" size="sm" onClick={undo} disabled={plies.length === 0 || thinking}>
-                ↶ {t("Отменить", "Ortga qaytarish")}
+                <Icon icon={Undo2} /> {t("Отменить", "Ortga qaytarish")}
               </Button>
             </>
           )}
           <Button variant="secondary" size="sm" onClick={() => setFlipped((f) => !f)}>
-            🔄 {t("Перевернуть", "Taxtani aylantirish")}
+            <Icon icon={ArrowUpDown} /> {t("Перевернуть", "Taxtani aylantirish")}
           </Button>
           {withRobot && !status.over && (
             <Button variant="ghost" size="sm" onClick={() => setConfirmEnd(true)} disabled={plies.length === 0}>
-              🏁 {t("Закончить партию", "Partiyani tugatish")}
+              <Icon icon={Flag} /> {t("Закончить партию", "Partiyani tugatish")}
             </Button>
           )}
           <Button size="sm" variant={status.over ? "primary" : "secondary"} onClick={restart}>
@@ -532,7 +532,7 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
           >
             {t("Началась новая партия.", "Yangi partiya boshlandi.")}
             <Button size="sm" variant="soft" onClick={restorePrevious}>
-              ↩ {t("Вернуть прежнюю", "Avvalgisini qaytarish")}
+              <Icon icon={Undo2} /> {t("Вернуть прежнюю", "Avvalgisini qaytarish")}
             </Button>
           </p>
         )}
