@@ -454,7 +454,7 @@ export function PuzzlePlayer({
     // stage-part: если экран режима сам раскладка (.board-stage), этот блок в ней растворяется —
     // заголовок режима встаёт в ту же правую колонку, а не над доской.
     <div
-      className="board-stage stage-part grid gap-3 lg:space-y-3"
+      className="board-stage stage-part grid gap-2 sm:gap-3 lg:space-y-3"
       data-puzzle-state={done ? (revealed ? "revealed" : "solved") : "open"}
     >
       {/* На телефоне задание и чей ход — над доской: раньше они были под ней, и до них приходилось листать. */}

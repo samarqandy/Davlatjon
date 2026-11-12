@@ -405,3 +405,48 @@ for (const [name, url, share] of [
       expect(await page.evaluate(() => document.documentElement.scrollWidth), size).toBeLessThanOrEqual(width);
     }
   });
+
+// Телефон: главная доска экрана — во всю ширину, без полей и рамки; буквы и цифры — внутри клеток.
+// Было 86–92 % ширины: на экране 412 px клетка 44 px, стало 51 px.
+test("телефон: доска упражнения, задачи и игры — во всю ширину экрана, подписи внутри клеток", async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(!isMobile, "раскладка для телефона");
+  await prepare(page);
+  const width = page.viewportSize()!.width;
+  for (const url of ["/chess/course#c1-rook-exercise-1", "/chess/puzzles#theme-backrank", "/chess/play#robot-1-w"]) {
+    await page.goto(url);
+    await page.waitForLoadState("networkidle");
+    const board = page.locator("[data-board]").first();
+    await expect(board).toBeVisible();
+    // Все размеры — одним снимком: после первого хода соперника страница может сдвинуться на несколько пикселей.
+    const m = await board.evaluate((el) => {
+      const rect = (x: Element) => {
+        const r = x.getBoundingClientRect();
+        return { x: r.x, y: r.y, w: r.width, h: r.height };
+      };
+      return {
+        board: rect(el),
+        square: rect(el.querySelector("[data-square]")!),
+        ranks: [...el.querySelectorAll('[data-coords="ranks"] span')].map(rect),
+        files: [...el.querySelectorAll('[data-coords="files"] span')].map(rect),
+      };
+    });
+    expect(Math.round(m.board.x), url).toBe(0);
+    expect(Math.round(m.board.w), url).toBe(width);
+    // Клетка — восьмая часть экрана: рамка места не отнимает.
+    expect(m.square.w, url).toBeGreaterThanOrEqual(width / 8 - 0.5);
+    // Подписи на месте и не выходят за доску; страница не шире экрана.
+    for (const labels of [m.ranks, m.files]) {
+      expect(labels, url).toHaveLength(8);
+      for (const label of labels) {
+        expect(label.x, url).toBeGreaterThanOrEqual(0);
+        expect(label.x + label.w, url).toBeLessThanOrEqual(width + 0.5);
+        expect(label.y, url).toBeGreaterThanOrEqual(m.board.y - 0.5);
+        expect(label.y + label.h, url).toBeLessThanOrEqual(m.board.y + m.board.h + 0.5);
+      }
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth), url).toBeLessThanOrEqual(width);
+  }
+});
