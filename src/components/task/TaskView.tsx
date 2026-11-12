@@ -90,7 +90,7 @@ export function TaskView({
                 {task.title}
                 {solved && (
                   <span
-                    className="rounded-full bg-mint px-2.5 py-0.5 text-sm font-extrabold text-white"
+                    className="rounded-full bg-success-fill px-2.5 py-0.5 text-sm font-extrabold text-white"
                     title={t("Решено", "Yechildi")}
                   >
                     ✓

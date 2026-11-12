@@ -56,7 +56,7 @@ function ExerciseShell({
     <div className="board-stage space-y-3 lg:space-y-4">
       {/* На телефоне и планшете «Послушать» стоит в строке с названием, а не отдельной строкой над доской. */}
       <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-2 gap-y-1 lg:block lg:space-y-1.5">
-        <h3
+        <h2
           data-exercise-heading
           tabIndex={-1}
           className="flex flex-wrap items-center gap-2 text-2xl font-black outline-none"
@@ -67,7 +67,7 @@ function ExerciseShell({
               {t("✓ решено", "✓ yechildi")}
             </span>
           )}
-        </h3>
+        </h2>
         <p className="text-lg leading-snug max-lg:col-span-2 lg:leading-relaxed">
           <RichText text={ex.prompt} />
         </p>

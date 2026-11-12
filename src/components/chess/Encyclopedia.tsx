@@ -209,7 +209,7 @@ export function Encyclopedia() {
         <div
           tabIndex={0}
           role="region"
-          aria-labelledby="champ-h"
+          aria-label={t("Таблица чемпионов мира", "Jahon chempionlari jadvali")}
           className="overflow-x-auto rounded-3xl bg-surface p-2 shadow-card"
         >
           <table className="w-full text-left text-sm">

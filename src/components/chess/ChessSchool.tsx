@@ -484,7 +484,7 @@ export function ChessSchool({ counts, summary }: { counts: ChessSchoolCounts; su
                   <span
                     className={cn(
                       "grid h-12 w-12 shrink-0 place-items-center rounded-full text-lg font-black sm:h-10 sm:w-10",
-                      done ? "bg-mint text-white" : isCurrent ? "bg-brand text-white" : "bg-line/60 text-muted",
+                      done ? "bg-success-fill text-white" : isCurrent ? "bg-brand text-white" : "bg-line/60 text-muted",
                     )}
                     aria-hidden
                   >
