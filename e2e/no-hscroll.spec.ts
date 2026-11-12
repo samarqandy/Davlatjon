@@ -37,6 +37,8 @@ const PAGES = [
   "/chess/tactics#pin-exercise-3",
   "/certificate/week/1",
   "/privacy",
+  "/chess/tournaments",
+  "/chess/tournaments#new",
 ];
 
 /** Адреса, которых нет в общем списке: курс по ступеням, центр задач в режиме решения, экран игры, «Успехи». */

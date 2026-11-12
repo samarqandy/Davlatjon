@@ -311,6 +311,16 @@ export function ChessSchool({ counts, summary }: { counts: ChessSchoolCounts; su
           : t("Три новые тренировки", "Uchta yangi mashgʻulot"),
     },
     {
+      href: "/chess/tournaments",
+      emoji: "🏆",
+      title: t("Турниры", "Turnirlar"),
+      text: t(
+        "Жеребьёвка и таблица для турнира в классе, кружке или дома: круговая, швейцарская и олимпийская системы.",
+        "Sinfda, toʻgarakda yoki uyda oʻtkaziladigan turnir uchun qurʼa va jadval: davra, Shveysariya va olimpiya tizimlari.",
+      ),
+      stat: t("Для учителя и родителей", "Oʻqituvchi va ota-onalar uchun"),
+    },
+    {
       href: "/chess/collection",
       emoji: "🃏",
       title: t("Коллекция героев", "Qahramonlar kolleksiyasi"),

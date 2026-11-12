@@ -44,6 +44,8 @@ const PAGES = [
   "/achievements",
   "/my-problems",
   "/about",
+  "/chess/tournaments",
+  "/chess/tournaments#new",
 ];
 
 async function violations(page: Page, url: string) {
@@ -96,6 +98,8 @@ const TOUCH_PAGES = [
   "/achievements",
   "/my-problems",
   "/quick",
+  "/chess/tournaments",
+  "/chess/tournaments#new",
 ];
 
 test("область нажатия на телефоне: кнопки, поля и ссылки-блоки не меньше 44 px", async ({ page, isMobile }) => {
