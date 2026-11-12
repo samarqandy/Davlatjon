@@ -8,7 +8,7 @@ import {
   type CSSProperties,
   type KeyboardEvent as ReactKeyboardEvent,
 } from "react";
-import { Chessboard, type PositionDataType } from "react-chessboard";
+import { Chessboard, type PieceRenderObject, type PositionDataType } from "react-chessboard";
 import { cn } from "@/components/ui";
 import {
   COORDS_MIN_WIDTH,
@@ -26,7 +26,7 @@ import { useLang, useT } from "@/lib/i18n";
 import { playSfx, sfxUnlock } from "@/lib/sfx";
 import { useStore } from "@/lib/store";
 import { useMotionAllowed } from "@/lib/useMotion";
-import { PIECES, PieceIcon } from "./PieceIcon";
+import { PieceIcon, piecesOf } from "./PieceIcon";
 
 export { PieceIcon };
 
@@ -186,6 +186,9 @@ export function ChessBoard({
   // Звук хода: сравниваем новую расстановку с прошлой.
   const themeId = useStore((s) => s.settings.boardTheme);
   const theme = boardThemeOf(themeId);
+  // Набор фигур — тоже настройка устройства; на печати фигуры всегда классические (чёрно-белые диаграммы).
+  const pieceSetId = useStore((s) => s.settings.pieceSet);
+  const pieces = piecesOf(frame === "print" ? undefined : pieceSetId);
   const key = positionKey(position);
   // eslint-disable-next-line react-hooks/exhaustive-deps -- key и есть расстановка
   const onBoard = useMemo(() => snapshotOf(position, cols), [key, cols]);
@@ -374,7 +377,7 @@ export function ChessBoard({
               chessboardColumns: cols,
               chessboardRows: rows,
               boardOrientation: orientation,
-              pieces: PIECES,
+              pieces,
               squareStyles,
               allowDragging: draggable && !promotion,
               // Маленькое дрожание пальца — ещё нажатие, а не перетаскивание.
@@ -419,7 +422,9 @@ export function ChessBoard({
               },
             }}
           />
-          {promotion && <PromotionPicker request={promotion} cols={cols} rows={rows} orientation={orientation} />}
+          {promotion && (
+            <PromotionPicker request={promotion} cols={cols} rows={rows} orientation={orientation} pieces={pieces} />
+          )}
         </div>
         {coords && turnSide && <span className="board-turn" data-turn={turnSide} title={turnText} aria-hidden />}
         {coords && (
@@ -447,11 +452,13 @@ function PromotionPicker({
   cols,
   rows,
   orientation,
+  pieces,
 }: {
   request: PromotionRequest;
   cols: number;
   rows: number;
   orientation: "white" | "black";
+  pieces: PieceRenderObject;
 }) {
   const t = useT();
   const first = useRef<HTMLButtonElement>(null);
@@ -481,7 +488,7 @@ function PromotionPicker({
         onClick={request.onCancel}
       />
       {PROMOTION_PIECES.map((p, i) => {
-        const Svg = PIECES[`${request.color}${p.toUpperCase()}`];
+        const Svg = pieces[`${request.color}${p.toUpperCase()}`];
         const r = down ? row + i : row - i;
         return (
           <button
