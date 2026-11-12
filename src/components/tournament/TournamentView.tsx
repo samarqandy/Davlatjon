@@ -8,12 +8,13 @@ import {
   Download,
   PencilLine,
   Printer,
+  Share2,
   Trash2,
   Undo2,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button, cn, Icon } from "@/components/ui";
-import { useT } from "@/lib/i18n";
+import { useLang, useT } from "@/lib/i18n";
 import { pluralize } from "@/lib/plural";
 import {
   canEditPairs,
@@ -27,6 +28,7 @@ import {
   swapPlayers,
   undoRound,
 } from "@/lib/tournament/engine";
+import { roundText, standingsText } from "@/lib/tournament/share";
 import { exportTournament, removeTournament, saveTournament } from "@/lib/tournament/store";
 import { roundIssues } from "@/lib/tournament/swiss";
 import type { GameResult, TGame, Tournament } from "@/lib/tournament/types";
@@ -45,10 +47,40 @@ export function TournamentView({ tournament: t }: { tournament: Tournament }) {
   // Открытый тур: null — последний сведённый (после жеребьёвки сразу виден новый).
   const [picked, setPicked] = useState<number | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
+  const lang = useLang();
+  const [shared, setShared] = useState<"copied" | "failed" | null>(null);
   const roundIndex = Math.min(picked ?? firstOpenRound(t), t.rounds.length - 1);
   const finished = isFinished(t);
   const knockout = t.format === "knockout";
   const robin = t.format === "roundRobin" || t.format === "doubleRoundRobin";
+
+  // «Скопировано» гаснет само: строка не должна висеть над следующим туром.
+  useEffect(() => {
+    if (!shared) return;
+    const id = setTimeout(() => setShared(null), 4000);
+    return () => clearTimeout(id);
+  }, [shared]);
+
+  /**
+   * Пары открытого тура или таблица — текстом в чат родителей. На телефоне открывается системное окно
+   * «Поделиться» (Telegram, WhatsApp); где его нет — текст копируется. Отправляет организатор, не сайт.
+   */
+  const sharesRound = tab === "rounds";
+  const share = async () => {
+    const text = sharesRound ? roundText(t, roundIndex, lang) : standingsText(t, lang);
+    try {
+      if (typeof navigator.share === "function") {
+        await navigator.share({ text });
+        return;
+      }
+      await navigator.clipboard.writeText(text);
+      setShared("copied");
+    } catch (e) {
+      // Окно «Поделиться» закрыли — это не ошибка.
+      if (e instanceof DOMException && e.name === "AbortError") return;
+      setShared("failed");
+    }
+  };
 
   const next = () => {
     const result = pairNextRound(t);
@@ -138,6 +170,21 @@ export function TournamentView({ tournament: t }: { tournament: Tournament }) {
           ))}
         </div>
         <div className="ml-auto flex gap-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => void share()}
+            aria-label={
+              sharesRound
+                ? tr("Поделиться парами тура", "Tur juftliklarini ulashish")
+                : knockout
+                  ? tr("Поделиться сеткой", "Setkani ulashish")
+                  : tr("Поделиться таблицей", "Jadvalni ulashish")
+            }
+            data-tournament-share={sharesRound ? "round" : "table"}
+          >
+            <Icon icon={Share2} /> <span className="max-sm:sr-only">{tr("Поделиться", "Ulashish")}</span>
+          </Button>
           <Button variant="ghost" size="sm" onClick={() => window.print()} aria-label={tr("Распечатать", "Chop etish")}>
             <Icon icon={Printer} /> <span className="max-sm:sr-only">{tr("Печать", "Chop etish")}</span>
           </Button>
@@ -160,6 +207,17 @@ export function TournamentView({ tournament: t }: { tournament: Tournament }) {
           </Button>
         </div>
       </div>
+
+      {shared && (
+        <p className="text-sm font-bold text-muted print:hidden" role="status" data-tournament-shared={shared}>
+          {shared === "copied"
+            ? tr("Скопировано — текст можно вставить в чат.", "Nusxalandi — matnni chatga joylash mumkin.")
+            : tr(
+                "Скопировать не получилось: браузер не дал доступ к буферу обмена.",
+                "Nusxalab boʻlmadi: brauzer almashish buferiga ruxsat bermadi.",
+              )}
+        </p>
+      )}
 
       {tab === "rounds" && (
         <section className="space-y-4" aria-label={tr("Туры", "Turlar")}>
@@ -535,7 +593,14 @@ function GameRow({
             <Icon icon={ArrowUpDown} />
           </button>
         )}
-        {game.result && <span className="hidden text-lg font-black print:block">{RESULT_TEXT[game.result]}</span>}
+        {/* На бумаге: результат, а у несыгранной партии — черта, куда его впишут за доской. */}
+        {game.result ? (
+          <span className="hidden text-lg font-black print:block">{RESULT_TEXT[game.result]}</span>
+        ) : (
+          black !== null && (
+            <span className="hidden w-20 self-end border-b-2 border-ink print:block" data-result-blank aria-hidden />
+          )
+        )}
       </div>
       {black !== null && !pairs && (
         <div className="mt-2 space-y-1 print:hidden">

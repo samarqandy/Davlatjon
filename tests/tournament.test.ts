@@ -22,6 +22,7 @@ import {
 import { bracketOrder, knockoutPlaces } from "@/lib/tournament/knockout";
 import { matchingSize } from "@/lib/tournament/matching";
 import { bergerRounds, roundRobinRounds } from "@/lib/tournament/roundRobin";
+import { roundText, standingsText } from "@/lib/tournament/share";
 import { standings } from "@/lib/tournament/standings";
 import {
   activePlayers,
@@ -858,5 +859,94 @@ describe("правки судьи", () => {
     expect(isFinished(more)).toBe(false);
     expect(canPairNext(more)).toBe(true);
     expect(setTotalRounds(make("roundRobin", 4), 9).totalRounds).toBe(3);
+  });
+});
+
+describe("турнир словами — для «Поделиться»", () => {
+  it("пары тура швейцарской: белые слева, номера досок, свободный от игры — отдельной строкой", () => {
+    const t = make("swiss", 5, { name: "Весенний", rounds: 3 });
+    const lines = roundText(t, 0, "ru").split("\n");
+    expect(lines[0]).toBe("Весенний");
+    expect(lines[1]).toBe("Тур 1 из 3. Белые — слева.");
+    // Пять участников: две партии и один свободный.
+    expect(lines.slice(2, 4).every((l, i) => l.startsWith(`${i + 1}. `) && l.includes(" — "))).toBe(true);
+    expect(lines[4]).toMatch(/^Свободен от игры \(1 очко\): /);
+    expect(lines).toHaveLength(5);
+    // Каждый участник назван ровно один раз.
+    const body = lines.slice(2).join("\n");
+    for (const p of t.players) expect(body.split(p.name).length - 1, p.name).toBe(1);
+    // Порядок в строке — как в партии: белые слева.
+    const g = t.rounds[0].games[0];
+    const name = (id: string) => t.players.find((p) => p.id === id)!.name;
+    expect(lines[2]).toBe(`1. ${name(g.white)} — ${name(g.black!)}`);
+  });
+
+  it("сыгранная партия — с результатом; тура с таким номером нет — пустая строка", () => {
+    const t = play(make("swiss", 4, { rounds: 3 }), () => "1/2");
+    const games = roundText(t, 0, "ru").split("\n").slice(2);
+    expect(games).toHaveLength(2);
+    for (const line of games) {
+      expect(line).toContain(" ½–½ ");
+      expect(line).not.toContain(" — ");
+    }
+    expect(roundText(t, 5, "ru")).toBe("");
+  });
+
+  it("таблица: место, имя, очки; делящие место стоят под одним номером", () => {
+    const first = make("roundRobin", 4, { name: "Класс" });
+    expect(standingsText(first, "ru").split("\n").slice(0, 2)).toEqual(["Класс", "Таблица"]);
+    const t = setResult(setResult(first, 0, 0, "1-0"), 0, 1, "1/2");
+    const lines = standingsText(t, "ru").split("\n");
+    expect(lines[1]).toBe("Таблица после 1 тура (всего 3)");
+    expect(lines).toHaveLength(6);
+    expect(lines[2]).toMatch(/^1\. .+ — 1$/);
+    expect(lines[3]).toMatch(/^2\. .+ — ½$/);
+    expect(lines[4]).toMatch(/^2\. .+ — ½$/);
+    expect(lines[5]).toMatch(/^4\. .+ — 0$/);
+  });
+
+  it("законченный турнир — «Итоговая таблица»", () => {
+    let t = make("roundRobin", 3);
+    t.rounds.forEach((r, ri) =>
+      r.games.forEach((g, board) => {
+        if (g.black !== null) t = setResult(t, ri, board, "1-0");
+      }),
+    );
+    expect(standingsText(t, "ru").split("\n").slice(0, 2)).toEqual(["Тест", "Итоговая таблица"]);
+  });
+
+  it("олимпийская: названия туров, матч за третье место и призёры", () => {
+    let t = make("knockout", 4, { name: "Кубок", thirdPlace: true });
+    expect(roundText(t, 0, "ru").split("\n")[1]).toBe("Полуфинал. Белые — слева.");
+    t = pairNextRound(play(t, () => "1-0")) as Tournament;
+    const final = roundText(t, 1, "ru").split("\n");
+    expect(final[1]).toBe("Финал. Белые — слева.");
+    expect(final[2]).toMatch(/^1\. /);
+    expect(final[3]).toMatch(/^За 3-е место: /);
+    t = play(t, () => "0-1");
+    const all = standingsText(t, "ru");
+    expect(all).toContain("Полуфинал:");
+    expect(all).toContain("Финал:");
+    expect(all).toMatch(/1 место: .+\n2 место: .+\n3 место: .+$/);
+    // Название турнира в сетке — один раз, в первой строке.
+    expect(all.split("Кубок").length - 1).toBe(1);
+  });
+
+  it("олимпийская не на степень двойки: свободные проходят дальше без игры", () => {
+    const t = make("knockout", 3);
+    expect(roundText(t, 0, "ru")).toMatch(/Проходят дальше без игры: /);
+  });
+
+  it("по-узбекски — латиница, без русских букв (кроме имён)", () => {
+    const t = play(
+      make("swiss", 5, { name: "Bahor", players: ["Ali", "Vali", "Gani", "Sardor", "Aziz"].map((name) => ({ name })) }),
+      () => "1-0",
+    );
+    for (const text of [roundText(t, 0, "uz"), standingsText(t, "uz")]) {
+      expect(text).not.toMatch(/[а-яё]/i);
+      expect(text).not.toMatch(/[`'‘’]/);
+    }
+    expect(roundText(t, 0, "uz")).toContain("Oqlar — chapda.");
+    expect(roundText(t, 0, "uz")).toMatch(/Oʻyindan ozod \(1 ochko\): /);
   });
 });
