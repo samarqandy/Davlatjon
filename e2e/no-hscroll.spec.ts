@@ -24,6 +24,8 @@ const PAGES = [
   "/chess/review",
   "/chess/history",
   "/chess/endgames",
+  "/chess/endgames#square",
+  "/chess/endgames#play-1",
   "/chess/coordinates",
   "/chess/analysis",
   "/chess/diary",

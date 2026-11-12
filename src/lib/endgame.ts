@@ -42,6 +42,15 @@ export function moveOutcome(fen: string, m: Move): Outcome {
   return pos.strong === mover ? "win" : "loss";
 }
 
+/**
+ * Построить таблицу заранее. Она считается при первом обращении и на медленном телефоне занимает около
+ * полусекунды: экран упражнения вызывает это в свободную минуту после отрисовки, чтобы ни появление экрана,
+ * ни первый ответ ребёнка её не ждали.
+ */
+export function warmEndgameTable(): void {
+  kpkProbe("8/8/8/4k3/8/4K3/4P3/8 w - - 0 1");
+}
+
 /** Лучший возможный результат для стороны, которая ходит. */
 export function positionOutcome(fen: string): Outcome {
   const pos = parseKpk(fen);

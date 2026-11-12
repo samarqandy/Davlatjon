@@ -144,14 +144,20 @@ test("endshpil: kvadrat qoidasi va yagona toʻgʻri yurish", async ({ page }) =>
   await uzbek(page);
   await page.goto("/chess/endgames");
   await expect(page.getByRole("heading", { name: "Endshpil maktabi" })).toBeVisible();
-  const first = page.locator("#square li").first();
-  await first.getByRole("button", { name: /Yetib oladi/ }).click();
-  await expect(first.getByText("Toʻgʻri!")).toBeVisible();
+  // Урок открывается отдельным экраном, упражнения — по одному.
+  await page.getByRole("button", { name: /1-dars/ }).click();
+  await expect(page.getByRole("heading", { level: 1, name: "Kvadrat qoidasi" })).toBeVisible();
+  await page.getByRole("button", { name: "Mashqlarga →" }).click();
+  await expect(page).toHaveURL(/#square-1$/);
+  await page.getByRole("button", { name: "Yetib oladi", exact: true }).click();
+  await expect(page.getByText("Toʻgʻri!")).toBeVisible();
+  await expect(page.getByText("Nega shunday")).toBeVisible();
   // Оппозиция: белый король d4 → e4.
-  const opp = page.locator("#opposition li").first();
+  await page.goto("/chess/endgames#opp-1");
+  const opp = page.locator('[data-board="opp-1"]');
   await opp.locator('[data-square="d4"]').click();
   await opp.locator('[data-square="e4"]').click();
-  await expect(opp.getByText("Toʻgʻri!")).toBeVisible();
+  await expect(page.getByText("Toʻgʻri!")).toBeVisible();
 });
 
 test("tahlil taxtasi: yurish, orqaga, FEN", async ({ page }) => {
