@@ -372,6 +372,7 @@ for (const [name, url, share] of [
   ["упражнение курса", "/chess/course#c1-rook-exercise-1", 0.7],
   ["задача", "/chess/puzzles#theme-backrank", 0.7],
   ["игра с роботом", "/chess/play#robot-1-w", 0.6],
+  ["доска анализа", "/chess/analysis", 0.7],
 ] as const)
   test(`широкий экран, ${name}: доска целиком в окне и занимает его высоту, остальное — справа`, async ({
     page,

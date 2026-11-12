@@ -243,7 +243,9 @@ export function AnalysisBoard() {
         : null;
 
   return (
-    <div className="space-y-5">
+    // board-stage: с 1024 px доска с полоской оценки — слева во всю высоту окна; заголовок, оценка,
+    // кнопки и запись ходов — справа.
+    <div className="board-stage board-wide board-top space-y-5">
       <Link
         href="/chess"
         className="inline-flex min-h-11 items-center gap-1 text-sm font-extrabold text-brand hover:underline"
@@ -261,181 +263,175 @@ export function AnalysisBoard() {
         </p>
       </header>
 
-      <div className="gap-5 lg:flex lg:items-start">
-        <div className="flex gap-2 lg:w-[520px]">
-          {engineOn && (
+      <div className="board-col flex gap-2">
+        {engineOn && (
+          <div
+            className="relative w-4 shrink-0 overflow-hidden rounded-full bg-[#1f2937] ring-1 ring-line"
+            role="img"
+            aria-label={t(
+              `Шансы белых: ${Math.round(whiteChance)}%`,
+              `Oqlarning imkoniyati: ${Math.round(whiteChance)}%`,
+            )}
+          >
             <div
-              className="relative w-4 shrink-0 overflow-hidden rounded-full bg-[#1f2937] ring-1 ring-line"
-              role="img"
-              aria-label={t(
-                `Шансы белых: ${Math.round(whiteChance)}%`,
-                `Oqlarning imkoniyati: ${Math.round(whiteChance)}%`,
-              )}
-            >
-              <div
-                className="absolute inset-x-0 bg-surface transition-all duration-500"
-                style={flipped ? { top: 0, height: `${whiteChance}%` } : { bottom: 0, height: `${whiteChance}%` }}
-              />
-            </div>
-          )}
-          <div className="min-w-0 flex-1">
-            <ChessBoard
-              id="analysis"
-              position={fen}
-              marks={marks}
-              arrows={arrows}
-              onSquare={tap}
-              onDrop={tryMove}
-              draggable
-              promotion={promo.request}
-              orientation={flipped ? "black" : "white"}
-              maxWidth={500}
-              label={t("Доска анализа", "Tahlil taxtasi")}
+              className="absolute inset-x-0 bg-surface transition-all duration-500"
+              style={flipped ? { top: 0, height: `${whiteChance}%` } : { bottom: 0, height: `${whiteChance}%` }}
             />
-            {illegal && (
-              <p
-                role="status"
-                data-illegal
-                className="mt-2 rounded-2xl bg-rose/10 px-4 py-2 text-sm font-bold text-rose"
-              >
-                {illegal}
-              </p>
-            )}
           </div>
-        </div>
-
-        <div className="mt-4 min-w-0 flex-1 space-y-4 lg:mt-0">
-          <div className="rounded-3xl bg-surface p-4 shadow-card">
-            <p className="text-sm font-extrabold text-muted">
-              {over ?? (turn === "w" ? t("Ход белых", "Oqlar yuradi") : t("Ход чёрных", "Qoralar yuradi"))}
+        )}
+        <div className="min-w-0 flex-1">
+          <ChessBoard
+            id="analysis"
+            position={fen}
+            marks={marks}
+            arrows={arrows}
+            onSquare={tap}
+            onDrop={tryMove}
+            draggable
+            promotion={promo.request}
+            orientation={flipped ? "black" : "white"}
+            maxWidth={500}
+            label={t("Доска анализа", "Tahlil taxtasi")}
+          />
+          {illegal && (
+            <p role="status" data-illegal className="mt-2 rounded-2xl bg-rose/10 px-4 py-2 text-sm font-bold text-rose">
+              {illegal}
             </p>
-            {engineOn && !over && (
-              <p className="mt-1 text-lg font-black" aria-live="polite">
-                {current ? evalText(current, t) : t("Робот думает…", "Robot oʻylayapti…")}
-              </p>
-            )}
-            {engineOn && !over && bestSan && (
-              <p className="text-sm text-muted">
-                {t("Лучший ход по мнению робота:", "Robot fikricha eng yaxshi yurish:")}{" "}
-                <b className="text-ink">{san(bestSan)}</b>
-              </p>
-            )}
-            <label className="mt-3 flex items-center gap-2 text-sm font-bold">
-              <input type="checkbox" checked={engineOn} onChange={(e) => setEngineOn(e.target.checked)} />
-              {t("Робот-подсказчик", "Yordamchi robot")}
-            </label>
-          </div>
-
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => setCursor(0)}
-              disabled={cursor === 0}
-              aria-label={t("В начало", "Boshiga")}
-            >
-              <Icon icon={ChevronsLeft} />
-            </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => setCursor(Math.max(0, cursor - 1))}
-              disabled={cursor === 0}
-              aria-label={t("Назад", "Orqaga")}
-            >
-              <Icon icon={ChevronLeft} />
-            </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => setCursor(Math.min(plies.length, cursor + 1))}
-              disabled={cursor >= plies.length}
-              aria-label={t("Вперёд", "Oldinga")}
-            >
-              <Icon icon={ChevronRight} />
-            </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => setCursor(plies.length)}
-              disabled={cursor >= plies.length}
-              aria-label={t("В конец", "Oxiriga")}
-            >
-              <Icon icon={ChevronsRight} />
-            </Button>
-            <Button variant="secondary" size="sm" onClick={() => setFlipped((f) => !f)}>
-              <Icon icon={ArrowUpDown} /> {t("Перевернуть", "Aylantirish")}
-            </Button>
-          </div>
-
-          <div className="rounded-3xl bg-surface p-4 shadow-card">
-            <p className="mb-2 text-sm font-extrabold text-muted">{t("Ходы", "Yurishlar")}</p>
-            {plies.length === 0 ? (
-              <p className="text-sm text-muted">{t("Сделай первый ход на доске.", "Taxtada birinchi yurishni qil.")}</p>
-            ) : (
-              <ol className="flex flex-wrap gap-1 text-sm">
-                {plies.map((p, i) => {
-                  const white = new Chess(i === 0 ? start : plies[i - 1].fen).turn() === "w";
-                  const n = Math.floor(i / 2) + 1;
-                  return (
-                    <li key={`${i}-${p.uci}`}>
-                      <button
-                        type="button"
-                        onClick={() => setCursor(i + 1)}
-                        className={cn(
-                          "rounded-lg px-1.5 py-0.5 font-bold tabular-nums hover:bg-brand-soft",
-                          cursor === i + 1 && "bg-brand text-white hover:bg-brand",
-                        )}
-                      >
-                        {white || i === 0 ? `${n}.${white ? "" : ".."} ` : ""}
-                        {san(p.san)}
-                      </button>
-                    </li>
-                  );
-                })}
-              </ol>
-            )}
-          </div>
-
-          <div className="flex flex-wrap gap-2">
-            <Button variant="ghost" size="sm" onClick={() => load({ start: START, plies: [] })}>
-              <Icon icon={RotateCcw} /> {t("Начальная позиция", "Boshlangʻich holat")}
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => setPasteOpen((o) => !o)} aria-expanded={pasteOpen}>
-              <Icon icon={ClipboardPaste} /> {t("Вставить FEN или PGN", "FEN yoki PGN qoʻyish")}
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => void copyFen()}>
-              <Icon icon={copied ? Check : Copy} />{" "}
-              {copied ? t("Скопировано", "Nusxalandi") : t("Скопировать FEN", "FEN nusxasini olish")}
-            </Button>
-          </div>
-          {pasteOpen && (
-            <div className="space-y-2 rounded-3xl bg-surface p-4 shadow-card">
-              <label htmlFor="analysis-paste" className="text-sm font-bold">
-                {t("Позиция (FEN) или партия (PGN):", "Holat (FEN) yoki partiya (PGN):")}
-              </label>
-              <textarea
-                id="analysis-paste"
-                value={paste}
-                onChange={(e) => {
-                  setPaste(e.target.value);
-                  setPasteError(false);
-                }}
-                rows={4}
-                className="w-full rounded-xl border-2 border-line p-2 font-mono text-sm"
-                placeholder="rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1"
-              />
-              {pasteError && (
-                <p role="alert" className="text-sm font-bold text-danger-ink">
-                  {t("Не получилось прочитать — проверь запись.", "Oʻqib boʻlmadi — yozuvni tekshirib koʻr.")}
-                </p>
-              )}
-              <Button size="sm" onClick={applyPaste}>
-                {t("Открыть на доске", "Taxtada ochish")}
-              </Button>
-            </div>
           )}
         </div>
+      </div>
+
+      <div className="min-w-0 space-y-4">
+        <div className="rounded-3xl bg-surface p-4 shadow-card">
+          <p className="text-sm font-extrabold text-muted">
+            {over ?? (turn === "w" ? t("Ход белых", "Oqlar yuradi") : t("Ход чёрных", "Qoralar yuradi"))}
+          </p>
+          {engineOn && !over && (
+            <p className="mt-1 text-lg font-black" aria-live="polite">
+              {current ? evalText(current, t) : t("Робот думает…", "Robot oʻylayapti…")}
+            </p>
+          )}
+          {engineOn && !over && bestSan && (
+            <p className="text-sm text-muted">
+              {t("Лучший ход по мнению робота:", "Robot fikricha eng yaxshi yurish:")}{" "}
+              <b className="text-ink">{san(bestSan)}</b>
+            </p>
+          )}
+          <label className="mt-3 flex items-center gap-2 text-sm font-bold">
+            <input type="checkbox" checked={engineOn} onChange={(e) => setEngineOn(e.target.checked)} />
+            {t("Робот-подсказчик", "Yordamchi robot")}
+          </label>
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setCursor(0)}
+            disabled={cursor === 0}
+            aria-label={t("В начало", "Boshiga")}
+          >
+            <Icon icon={ChevronsLeft} />
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setCursor(Math.max(0, cursor - 1))}
+            disabled={cursor === 0}
+            aria-label={t("Назад", "Orqaga")}
+          >
+            <Icon icon={ChevronLeft} />
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setCursor(Math.min(plies.length, cursor + 1))}
+            disabled={cursor >= plies.length}
+            aria-label={t("Вперёд", "Oldinga")}
+          >
+            <Icon icon={ChevronRight} />
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setCursor(plies.length)}
+            disabled={cursor >= plies.length}
+            aria-label={t("В конец", "Oxiriga")}
+          >
+            <Icon icon={ChevronsRight} />
+          </Button>
+          <Button variant="secondary" size="sm" onClick={() => setFlipped((f) => !f)}>
+            <Icon icon={ArrowUpDown} /> {t("Перевернуть", "Aylantirish")}
+          </Button>
+        </div>
+
+        <div className="rounded-3xl bg-surface p-4 shadow-card">
+          <p className="mb-2 text-sm font-extrabold text-muted">{t("Ходы", "Yurishlar")}</p>
+          {plies.length === 0 ? (
+            <p className="text-sm text-muted">{t("Сделай первый ход на доске.", "Taxtada birinchi yurishni qil.")}</p>
+          ) : (
+            <ol className="flex flex-wrap gap-1 text-sm">
+              {plies.map((p, i) => {
+                const white = new Chess(i === 0 ? start : plies[i - 1].fen).turn() === "w";
+                const n = Math.floor(i / 2) + 1;
+                return (
+                  <li key={`${i}-${p.uci}`}>
+                    <button
+                      type="button"
+                      onClick={() => setCursor(i + 1)}
+                      className={cn(
+                        "rounded-lg px-1.5 py-0.5 font-bold tabular-nums hover:bg-brand-soft",
+                        cursor === i + 1 && "bg-brand text-white hover:bg-brand",
+                      )}
+                    >
+                      {white || i === 0 ? `${n}.${white ? "" : ".."} ` : ""}
+                      {san(p.san)}
+                    </button>
+                  </li>
+                );
+              })}
+            </ol>
+          )}
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          <Button variant="ghost" size="sm" onClick={() => load({ start: START, plies: [] })}>
+            <Icon icon={RotateCcw} /> {t("Начальная позиция", "Boshlangʻich holat")}
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => setPasteOpen((o) => !o)} aria-expanded={pasteOpen}>
+            <Icon icon={ClipboardPaste} /> {t("Вставить FEN или PGN", "FEN yoki PGN qoʻyish")}
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => void copyFen()}>
+            <Icon icon={copied ? Check : Copy} />{" "}
+            {copied ? t("Скопировано", "Nusxalandi") : t("Скопировать FEN", "FEN nusxasini olish")}
+          </Button>
+        </div>
+        {pasteOpen && (
+          <div className="space-y-2 rounded-3xl bg-surface p-4 shadow-card">
+            <label htmlFor="analysis-paste" className="text-sm font-bold">
+              {t("Позиция (FEN) или партия (PGN):", "Holat (FEN) yoki partiya (PGN):")}
+            </label>
+            <textarea
+              id="analysis-paste"
+              value={paste}
+              onChange={(e) => {
+                setPaste(e.target.value);
+                setPasteError(false);
+              }}
+              rows={4}
+              className="w-full rounded-xl border-2 border-line p-2 font-mono text-sm"
+              placeholder="rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1"
+            />
+            {pasteError && (
+              <p role="alert" className="text-sm font-bold text-danger-ink">
+                {t("Не получилось прочитать — проверь запись.", "Oʻqib boʻlmadi — yozuvni tekshirib koʻr.")}
+              </p>
+            )}
+            <Button size="sm" onClick={applyPaste}>
+              {t("Открыть на доске", "Taxtada ochish")}
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );
