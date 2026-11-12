@@ -218,6 +218,56 @@ test("цвета доски и набор звуков выбираются в �
   expect(stored.boardSoundSet).toBe("soft");
 });
 
+// Карточки в списках показывают позицию картинкой, а не настоящей доской: список из 18 дебютов с настоящими
+// досками оживал на медленном телефоне 2,1 с. Картинка — один рисунок; фигуры обычного набора лежат на странице
+// один раз, картинки на них ссылаются.
+test("в списке дебютов позиции нарисованы картинками: фигуры на месте, настоящих досок нет, набор фигур — выбранный", async ({
+  page,
+}) => {
+  await page.goto("/chess/openings");
+  const thumbs = page.locator("[data-board-thumb]");
+  await expect(thumbs).toHaveCount(18);
+  await expect(page.locator("[data-board]")).toHaveCount(0);
+  // Итальянская партия после 6…0-0: все 32 фигуры на доске, белый слон стоит на c4.
+  const italian = page.getByRole("button", { name: /Итальянская партия/ }).locator("[data-board-thumb]");
+  await expect(italian.locator("[data-piece]")).toHaveCount(32);
+  const bishop = italian.locator('use[data-piece="wB"][x="2"][y="4"]');
+  await expect(bishop).toHaveCount(1);
+  // Ссылка ведёт на рисунок фигуры, и он на странице один; фигура действительно нарисована (у неё есть размер).
+  await expect(page.locator("svg[data-piece-sprite] symbol#piece-wB")).toHaveCount(1);
+  expect((await bishop.boundingBox())!.width).toBeGreaterThan(8);
+  // Картинка — не кнопка в кнопке: для экранного диктора у карточки одно название.
+  await expect(italian).toHaveAttribute("aria-hidden", "true");
+
+  // Набор-картинки («Объёмные»): те же позиции, фигуры — файлами набора, общий рисунок не нужен.
+  await page.evaluate((key) => {
+    const state = JSON.parse(localStorage.getItem(key) ?? "{}");
+    state.settings = { ...state.settings, pieceSet: "celtic" };
+    localStorage.setItem(key, JSON.stringify(state));
+  }, "davlatjon-lab:v1");
+  await page.reload();
+  await expect(thumbs).toHaveCount(18);
+  await expect(italian.locator('image[data-piece="wB"][x="2"][y="4"]')).toHaveAttribute(
+    "href",
+    "/pieces/celtic/wB.svg",
+  );
+  await expect(page.locator("svg[data-piece-sprite]")).toHaveCount(0);
+
+  // В списке партий карточка выше картинки: рамка доски не должна тянуться на всю высоту карточки.
+  await page.goto("/chess/games");
+  await expect(thumbs).toHaveCount(8);
+  const sizes = await thumbs.evaluateAll((els) =>
+    els.map((el) => el.getBoundingClientRect()).map((r) => [r.width, r.height]),
+  );
+  for (const [width, height] of sizes) expect(Math.abs(width - height)).toBeLessThanOrEqual(1);
+
+  // Карточка по-прежнему открывает дебют.
+  await page.goto("/chess/openings");
+  await page.getByRole("button", { name: /Итальянская партия/ }).click();
+  await expect(page.getByRole("heading", { level: 1, name: "Итальянская партия" })).toBeVisible();
+  await expect(page.locator('[data-board="opening-italian"]')).toBeVisible();
+});
+
 // Библиотека доски даёт каждой фигуре роль кнопки без названия; названия ставим мы. Раньше — после отрисовки:
 // 15–30 мс (на слабом телефоне до 150 мс) на доске стояли 16–32 безымянные кнопки, и проверка доступности
 // изредка попадала в это окно.
