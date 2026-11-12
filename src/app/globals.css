@@ -700,6 +700,81 @@ html.i18n-wait::after {
 }
 
 /*
+ * Главная доска экрана на телефоне (до 640 px) — во всю ширину, без полей страницы и без рамки, как принято
+ * в шахматных приложениях: клетка на экране 412 px вырастает с 44 до 51 px. Буквы и цифры — внутри крайних
+ * клеток, цветом соседней клетки (цвета задаёт ChessBoard: --coord-rank-*, --coord-file-*).
+ * «Главная доска» — та, что стоит в раскладке .board-stage; маленькие доски в карточках остаются с рамкой.
+ */
+@media (max-width: 639.98px) {
+  .board-stage > .board-frame,
+  .board-stage > .stage-part > .board-frame,
+  .board-stage > .board-col > .board-frame {
+    --board-size: min(100vw, calc(100svh - 7rem));
+    width: var(--board-size);
+    margin-inline: calc(50% - var(--board-size) / 2);
+    border-radius: 0;
+  }
+  :is(.board-stage, .stage-part, .board-col) > .board-frame > .board-grid[data-frame="wood"] {
+    --g: 0px;
+    --edge: 0px;
+    --f: 12px;
+    position: relative;
+  }
+  :is(.board-stage, .stage-part, .board-col)
+    > .board-frame
+    > .board-grid[data-frame="wood"]
+    > :is(.board-ranks, .board-files) {
+    position: absolute;
+    /* Без своей строки и столбца сетки: иначе блок растягивается не на всю доску, а на пустую полосу рамки. */
+    grid-area: auto;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+  }
+  :is(.board-stage, .stage-part, .board-col) > .board-frame > .board-grid[data-frame="wood"] > .board-ranks > span {
+    place-self: start;
+    padding: 2px 3px;
+  }
+  :is(.board-stage, .stage-part, .board-col) > .board-frame > .board-grid[data-frame="wood"] > .board-files > span {
+    place-self: end;
+    padding: 2px 3px;
+  }
+  /* Цвета клеток чередуются; какой цвет у чётных и нечётных подписей, считает ChessBoard (от левой нижней клетки). */
+  :is(.board-stage, .stage-part, .board-col)
+    > .board-frame
+    > .board-grid[data-frame="wood"]
+    > .board-ranks
+    > span:nth-child(odd) {
+    color: var(--coord-rank-odd);
+  }
+  :is(.board-stage, .stage-part, .board-col)
+    > .board-frame
+    > .board-grid[data-frame="wood"]
+    > .board-ranks
+    > span:nth-child(even) {
+    color: var(--coord-rank-even);
+  }
+  :is(.board-stage, .stage-part, .board-col)
+    > .board-frame
+    > .board-grid[data-frame="wood"]
+    > .board-files
+    > span:nth-child(odd) {
+    color: var(--coord-file-odd);
+  }
+  :is(.board-stage, .stage-part, .board-col)
+    > .board-frame
+    > .board-grid[data-frame="wood"]
+    > .board-files
+    > span:nth-child(even) {
+    color: var(--coord-file-even);
+  }
+  /* Чей ход на таких экранах написано словами рядом с доской; значку в углу рамки без рамки места нет. */
+  :is(.board-stage, .stage-part, .board-col) > .board-frame > .board-grid[data-frame="wood"] > .board-turn {
+    display: none;
+  }
+}
+
+/*
  * Экран с доской на широком окне (от 1024 px): доска слева и занимает всю высоту окна, условие, ответ и кнопки —
  * справа. Раньше доска была не шире 440–560 px и стояла под заголовком, вкладками и условием: на большом
  * мониторе — маленькая, на ноутбуке — не помещалась без прокрутки.

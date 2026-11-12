@@ -405,3 +405,36 @@ for (const [name, url, share] of [
       expect(await page.evaluate(() => document.documentElement.scrollWidth), size).toBeLessThanOrEqual(width);
     }
   });
+
+// Телефон: главная доска экрана — во всю ширину, без полей и рамки; буквы и цифры — внутри клеток.
+// Было 86–92 % ширины: на экране 412 px клетка 44 px, стало 51 px.
+test("телефон: доска упражнения, задачи и игры — во всю ширину экрана, подписи внутри клеток", async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(!isMobile, "раскладка для телефона");
+  await prepare(page);
+  const width = page.viewportSize()!.width;
+  for (const url of ["/chess/course#c1-rook-exercise-1", "/chess/puzzles#theme-backrank", "/chess/play#robot-1-w"]) {
+    await page.goto(url);
+    await page.waitForLoadState("networkidle");
+    const board = page.locator("[data-board]").first();
+    await expect(board).toBeVisible();
+    const box = (await board.boundingBox())!;
+    expect(Math.round(box.x), url).toBe(0);
+    expect(Math.round(box.width), url).toBe(width);
+    // Клетка — восьмая часть экрана: рамка места не отнимает.
+    const square = (await board.locator("[data-square]").first().boundingBox())!;
+    expect(square.width, url).toBeGreaterThanOrEqual(width / 8 - 0.5);
+    // Подписи на месте и не выходят за доску; страница не шире экрана.
+    for (const strip of ["ranks", "files"]) {
+      const labels = board.locator(`[data-coords="${strip}"] span`);
+      await expect(labels, url).toHaveCount(8);
+      const first = (await labels.first().boundingBox())!;
+      expect(first.x, url).toBeGreaterThanOrEqual(0);
+      expect(first.y, url).toBeGreaterThanOrEqual(box.y);
+      expect(first.y + first.height, url).toBeLessThanOrEqual(box.y + box.height + 0.5);
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth), url).toBeLessThanOrEqual(width);
+  }
+});

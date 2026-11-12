@@ -251,6 +251,12 @@ export function ChessBoard({
   }
   const coords = notation === "auto" ? maxWidth >= COORDS_MIN_WIDTH : notation;
   const { files, ranks } = coordLabels(cols, rows, orientation);
+  // Левая нижняя клетка — в ней первая буква и последняя цифра; от неё цвета клеток чередуются. У обычной доски
+  // она тёмная (a1 или h8); у доски с нечётной стороной, повёрнутой за чёрных, может оказаться светлой.
+  const cornerDark = orientation === "white" || (cols + rows) % 2 === 0;
+  // Подпись на клетке — цветом соседней: на угловой и «таких же» клетках и на остальных.
+  const onCorner = cornerDark ? theme.light : theme.dark;
+  const offCorner = cornerDark ? theme.dark : theme.light;
   const turn = typeof position === "string" ? position.split(" ")[1] : undefined;
   // Без обоих королей это учебная расстановка, а не позиция партии: «чей ход» там не важен.
   const placement = typeof position === "string" ? position.split(" ")[0] : "";
@@ -359,7 +365,20 @@ export function ChessBoard({
           </span>
         </>
       )}
-      <div className="board-grid" data-frame={frame} data-coords-off={coords ? undefined : ""}>
+      <div
+        className="board-grid"
+        data-frame={frame}
+        data-coords-off={coords ? undefined : ""}
+        // Цвета подписей внутри клеток (телефон, главная доска экрана): подпись на клетке — цветом соседней.
+        style={
+          {
+            "--coord-file-odd": onCorner,
+            "--coord-file-even": offCorner,
+            "--coord-rank-odd": rows % 2 ? onCorner : offCorner,
+            "--coord-rank-even": rows % 2 ? offCorner : onCorner,
+          } as CSSProperties
+        }
+      >
         {coords && (
           <div
             className="board-ranks"
