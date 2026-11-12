@@ -9,6 +9,7 @@ import { CHESS_TESTS } from "@/content/chess/tests";
 import type { ChessExercise } from "@/content/chess/types";
 import {
   PIECE_VALUE,
+  checkedKing,
   isLightSquare,
   legalTargets,
   matingMoves,
@@ -431,5 +432,21 @@ describe("шахматная школа: текст", () => {
       expect(/ {2,}/.test(text), `${id}: ${text}`).toBe(false);
       expect(/ [,.!?:;]/.test(text.replace(/`[^`]*`/g, "X")), `${id}: ${text}`).toBe(false);
     }
+  });
+});
+
+describe("король под шахом: клетка для отметки на доске", () => {
+  it("шаха нет — отметки нет; шах — клетка короля той стороны, чей ход", () => {
+    expect(checkedKing(new Chess().fen())).toBeNull();
+    // 1. e4 f6 2. Фh5+ — шах чёрному королю.
+    const game = new Chess();
+    for (const san of ["e4", "f6", "Qh5+"]) game.move(san);
+    expect(checkedKing(game.fen())).toBe("e8");
+    // Шах белым: король с e1 ушёл на e2.
+    expect(checkedKing("4k3/8/8/8/8/8/4K3/4r3 w - - 0 1")).toBe("e2");
+  });
+
+  it("учебная позиция без королей не ломает проверку", () => {
+    expect(checkedKing("8/8/8/3q4/8/8/8/8 w - - 0 1")).toBeNull();
   });
 });

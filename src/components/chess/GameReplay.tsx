@@ -9,6 +9,7 @@ import { Button, cn, Icon } from "@/components/ui";
 import { chessImagesIn } from "@/content/chess/imageLookup";
 import type { FamousGame } from "@/content/chess/games";
 import type { ChessImage } from "@/content/chess/images";
+import { checkedKing } from "@/lib/chess";
 import { useTitleTranslation } from "@/lib/docTitle";
 import { useLang, useSan, useT } from "@/lib/i18n";
 import { chessGameViewed, useHydrated, useStore } from "@/lib/store";
@@ -162,6 +163,8 @@ export function GameReplay({ game: ruGame }: { game: FamousGame }) {
     marks[cur.from] = "last";
     marks[cur.to] = "last";
   }
+  const checked = checkedKing(cur.fen);
+  if (checked) marks[checked] = "check";
   const comment = game.comments[ply];
   const moveLabel =
     ply === 0

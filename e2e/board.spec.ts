@@ -81,6 +81,98 @@ test("на телефоне касание с дрожанием пальца �
   await expect(sq(page, "e4").locator("div").first()).toHaveAttribute("style", /radial-gradient/);
 });
 
+test("нажатие: фигура выбрана — видны точки; другая своя фигура — выбор переходит; та же — выбор снят", async ({
+  page,
+}) => {
+  await page.goto("/chess/analysis");
+  const dot = (square: string) => sq(page, square).locator("div").first();
+  await sq(page, "e2").click();
+  await expect(dot("e4")).toHaveAttribute("style", /radial-gradient/);
+  await sq(page, "g1").click();
+  await expect(dot("f3")).toHaveAttribute("style", /radial-gradient/);
+  await expect(dot("e4")).not.toHaveAttribute("style", /radial-gradient/);
+  await sq(page, "g1").click();
+  await expect(dot("f3")).not.toHaveAttribute("style", /radial-gradient/);
+  // Ничего не сходили: конь на месте.
+  await expect(sq(page, "g1").locator('[data-piece="wN"]')).toBeVisible();
+});
+
+test("король под шахом отмечен и в игре, и при просмотре: доска анализа и дебют", async ({ page }) => {
+  await page.goto("/chess/analysis");
+  for (const [from, to] of [
+    ["e2", "e4"],
+    ["f7", "f6"],
+    ["d1", "h5"],
+  ]) {
+    await sq(page, from).click();
+    await sq(page, to).click();
+  }
+  const red = /radial-gradient\(circle,\s*rgba\(239, 68, 68/;
+  await expect(sq(page, "e8").locator("div").first()).toHaveAttribute("style", red);
+  // Просмотр дебюта открывается на последнем ходе: ловушка Легаля кончается матом королю на e7.
+  await page.goto("/chess/openings#open-legal-trap");
+  const viewer = page.locator('[data-board="opening-legal-trap"]');
+  await expect(viewer.locator('[data-square="e7"] div').first()).toHaveAttribute("style", red);
+});
+
+/** Рисунок фигуры, которую сейчас ведут: её копия лежит не в клетке. */
+const inHand = (page: Page) =>
+  board(page).evaluate((root) => {
+    const copy = [...root.querySelectorAll("[data-piece]")].find((el) => !el.closest("[data-square]"));
+    const r = copy?.firstElementChild?.getBoundingClientRect();
+    return r ? { top: r.top, bottom: r.bottom, width: r.width, middle: r.top + r.height / 2 } : null;
+  });
+
+test("фигуру ведут пальцем: она крупнее и над пальцем, клетка под пальцем обведена; ход ставится", async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== "phone", "только сенсорный экран");
+  await page.goto("/chess/analysis");
+  const from = (await sq(page, "e2").boundingBox())!;
+  const to = (await sq(page, "e4").boundingBox())!;
+  const x = from.x + from.width / 2;
+  const finger = to.y + to.height / 2;
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x, y: from.y + from.height / 2 }] });
+  for (let i = 1; i <= 8; i++) {
+    const y = from.y + from.height / 2 + ((finger - from.y - from.height / 2) * i) / 8;
+    await cdp.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: [{ x, y }] });
+  }
+  await expect.poll(() => inHand(page)).not.toBeNull();
+  const piece = (await inHand(page))!;
+  // Почти вдвое крупнее клетки; середина — выше пальца, а не под ним; низ фигуры палец почти не закрывает.
+  expect(piece.width).toBeGreaterThan(to.width * 1.6);
+  expect(finger - piece.middle).toBeGreaterThan(to.height * 0.4);
+  expect(piece.bottom - finger).toBeLessThan(to.height * 0.5);
+  // Клетка под пальцем: рамка и широкое кольцо, которое видно вокруг пальца.
+  await expect(sq(page, "e4")).toHaveAttribute("style", /box-shadow:[^;]*18px[^;]*inset/);
+  await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+  await expect(sq(page, "e4").locator('[data-piece="wP"]')).toBeVisible();
+  expect(await inHand(page)).toBeNull();
+});
+
+test("фигуру ведут мышью: она под указателем и лишь чуть приподнята, клетка обведена рамкой; ход ставится", async ({
+  page,
+}, info) => {
+  test.skip(info.project.name === "phone", "мышь — на компьютере");
+  await page.goto("/chess/analysis");
+  const from = (await sq(page, "g1").boundingBox())!;
+  const to = (await sq(page, "f3").boundingBox())!;
+  const pointer = { x: to.x + to.width / 2, y: to.y + to.height / 2 };
+  await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(pointer.x, pointer.y, { steps: 8 });
+  await expect.poll(() => inHand(page)).not.toBeNull();
+  const piece = (await inHand(page))!;
+  expect(piece.width).toBeGreaterThan(to.width * 1.05);
+  expect(piece.width).toBeLessThan(to.width * 1.3);
+  expect(Math.abs(piece.middle - pointer.y)).toBeLessThan(to.height * 0.15);
+  await expect(sq(page, "f3")).toHaveAttribute("style", /box-shadow:[^;]*4px inset/);
+  await expect(sq(page, "f3")).not.toHaveAttribute("style", /18px/);
+  await page.mouse.up();
+  await expect(sq(page, "f3").locator('[data-piece="wN"]')).toBeVisible();
+});
+
 test("цвета доски и набор звуков выбираются в «Моя доска и звук» и запоминаются", async ({ page }) => {
   await page.goto("/chess/play");
   await page.locator("[data-board-look-details] summary").click();

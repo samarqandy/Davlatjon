@@ -18,6 +18,7 @@ import {
   type PlyReview,
   type PositionEval,
 } from "@/lib/engine/analysis";
+import { checkedKing } from "@/lib/chess";
 import { robotLevels } from "@/lib/engine/search";
 import { tFor, useChildName, useLang, useSan, useT, type Lang, type T } from "@/lib/i18n";
 import { ODDS_PIECES, CLOCKS, clockLabel, oddsPieceLabel } from "@/lib/play";
@@ -311,6 +312,8 @@ function ReviewBody({
     marks[cur.uci.slice(0, 2)] = "last";
     marks[cur.uci.slice(2, 4)] = "last";
   }
+  const checked = checkedKing(fen);
+  if (checked) marks[checked] = "check";
   const showBest = cur && cur.best && cur.best !== cur.uci && cur.kind !== "good" && cur.kind !== "best";
   const orientation = game.mode === "robot" && game.color === "b" ? "black" : "white";
 

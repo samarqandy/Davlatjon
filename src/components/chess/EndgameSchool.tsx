@@ -7,7 +7,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { RichText } from "@/components/RichText";
 import { Button, ProgressBar, cn, Icon } from "@/components/ui";
 import type { EndgameDrill, EndgameLesson } from "@/content/chess/endgames";
-import { legalTargets, pieceAt, playMove } from "@/lib/chess";
+import { checkedKing, legalTargets, pieceAt, playMove } from "@/lib/chess";
 import { bestMoves, kingCatches, moveOutcome, pawnSquare, robotMove } from "@/lib/endgame";
 import { useLang, useSan, useT } from "@/lib/i18n";
 import { chessEndgameSolved, useHydrated, useStore } from "@/lib/store";
@@ -404,6 +404,8 @@ function PlayDrill({ drill, solved }: { drill: EndgameDrill; solved: boolean }) 
     marks[last.uci.slice(0, 2)] = "last";
     marks[last.uci.slice(2, 4)] = "last";
   }
+  const checked = checkedKing(fen);
+  if (checked) marks[checked] = "check";
   if (selected) {
     marks[selected] = "selected";
     for (const sq of legalTargets(fen, selected)) marks[sq] = "target";

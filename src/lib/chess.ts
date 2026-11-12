@@ -175,6 +175,15 @@ export function attackersOf(fen: string, square: string, by: Color): string[] {
     .sort();
 }
 
+/**
+ * Клетка короля, которому сейчас объявлен шах (шах всегда тому, чей ход), или null. Экраны отмечают её на
+ * доске одинаково — и в игре, и при просмотре партии.
+ */
+export function checkedKing(fen: string): string | null {
+  const pos = loadPosition(fen);
+  return pos.inCheck() ? kingSquare(fen, pos.turn()) : null;
+}
+
 /** Клетка короля цвета color. */
 export function kingSquare(fen: string, color: Color): string | null {
   const board = loadPosition(fen).board();
