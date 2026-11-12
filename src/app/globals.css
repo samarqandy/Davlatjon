@@ -34,6 +34,8 @@
 
   /* Смысловые цвета (DESIGN.md): в новом коде — они, а не «mint/sun/rose» напрямую. */
   --color-success: #10b981;
+  /* Зелёная заливка под белый текст (кнопка «готово», значок «решено»): на --color-success белый текст — 2,5:1. */
+  --color-success-fill: #047857;
   --color-success-soft: #e3f8ef;
   --color-warning: #f59e0b;
   --color-warning-soft: #fff4d6;

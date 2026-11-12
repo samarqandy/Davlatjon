@@ -19,7 +19,7 @@ const VARIANTS: Record<Variant, string> = {
   soft: "bg-brand-soft text-brand-dark hover:bg-[#e0e3ff] dark:hover:bg-[#363c80]",
   ghost: "text-muted hover:bg-black/5 hover:text-ink",
   success:
-    "bg-mint text-white shadow-[0_4px_0_0_#047857] hover:bg-[#0ea371] active:translate-y-[2px] active:shadow-[0_2px_0_0_#047857]",
+    "bg-success-fill text-white shadow-[0_4px_0_0_#064e3b] hover:bg-[#065f46] active:translate-y-[2px] active:shadow-[0_2px_0_0_#064e3b]",
   sun: "bg-sun text-on-sun shadow-[0_4px_0_0_#b45309] hover:bg-[#f7a81d] active:translate-y-[2px] active:shadow-[0_2px_0_0_#b45309]",
 };
 

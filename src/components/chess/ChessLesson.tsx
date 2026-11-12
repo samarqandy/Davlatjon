@@ -86,7 +86,7 @@ export function ChessLesson({
             {t(`Шаг ${step + 1} из ${cards.length}`, `${step + 1}-qadam, jami ${cards.length} ta`)}
           </p>
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <h3 className="text-2xl font-black">{card.title}</h3>
+            <h2 className="text-2xl font-black">{card.title}</h2>
             <ListenButton key={step} src={RECORDED_CLIPS.lesson(levelId, step, lang)} />
           </div>
           {card.text.map((text, i) => (

@@ -387,7 +387,7 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
     // чей ход, кнопки и запись ходов — справа. На телефоне порядок тот же, в одну колонку.
     <div className="board-stage board-wide space-y-3" style={{ "--stage-chrome": "12.5rem" } as CSSProperties}>
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-2xl font-black">{title}</h2>
+        <h1 className="text-2xl font-black">{title}</h1>
         <Button variant="ghost" size="sm" onClick={onExit}>
           <Icon icon={ArrowLeft} /> {t("Выбрать другой режим", "Boshqa rejimni tanlash")}
         </Button>
@@ -624,6 +624,8 @@ function CapturedRow({ pieces, label, lead }: { pieces: string[]; label: string;
   return (
     <div
       className="flex h-7 min-w-0 flex-1 items-center gap-1.5 overflow-hidden"
+      // Картинка с подписью: у блока без роли подпись экранному диктору не положена, и он её пропускал.
+      role="img"
       aria-label={`${label}: ${pieces.length}`}
     >
       {groups.map(([p, n]) => (

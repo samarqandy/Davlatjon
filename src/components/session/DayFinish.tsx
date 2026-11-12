@@ -154,7 +154,7 @@ export function DayFinish({
           )}
         </p>
         <p className="mt-3 text-[0.95rem] text-muted">
-          {t("Придумал свою задачу?", "Oʻzing masala oʻylab topdingmi?")}{" "}
+          {t("Есть своя задача?", "Oʻzing masala oʻylab topdingmi?")}{" "}
           <Link href="/my-problems" className="font-extrabold text-brand hover:underline">
             ✍️ {t("Запиши её в «Мои задачи»", "Uni «Masalalarim» boʻlimiga yozib qoʻy")}
           </Link>

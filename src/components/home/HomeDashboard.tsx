@@ -112,7 +112,7 @@ export function HomeDashboard({ weeks: both, chess }: { weeks: Both<WeekSummary[
                         key={task.id}
                         className={cn(
                           "flex aspect-square items-center justify-center rounded-xl text-lg",
-                          solved ? "bg-mint text-white" : "bg-white/20",
+                          solved ? "bg-success-fill text-white" : "bg-white/20",
                         )}
                       >
                         {solved ? "✓" : SECTIONS[task.section].emoji}

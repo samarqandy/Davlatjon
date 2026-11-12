@@ -270,6 +270,13 @@ export function TopicView({
           style={{ "--stage-chrome": "10.5rem" } as CSSProperties}
           aria-label={t("Упражнения", "Mashqlar")}
         >
+          {/* Шапка урока в упражнении скрыта — главный заголовок страницы остаётся для экранного диктора. */}
+          <h1 className="sr-only">
+            {t(
+              `${topic.title}: упражнение ${exercise + 1} из ${total}`,
+              `${topic.title}: ${total} tadan ${exercise + 1}-mashq`,
+            )}
+          </h1>
           <div id="exercises-top" className="scroll-mt-20 max-lg:scroll-mt-2">
             {/* «Закрыть», полоска упражнений и возврат к уроку — одна строка: доска помещается на экран. */}
             <div data-focus-screen className="flex items-center gap-1">
@@ -377,12 +384,12 @@ export function TopicView({
 
       {tab === "dictionary" && (
         <section className="rounded-3xl bg-surface p-5 shadow-card">
-          <h3 className="text-xl font-black">
+          <h2 className="text-xl font-black">
             <span className="deco" aria-hidden>
               🔤{" "}
             </span>
             {t("Словарик", "Lugʻat")}
-          </h3>
+          </h2>
           <dl className="mt-3 space-y-3">
             {topic.terms.map((term, i) => (
               <div key={i}>

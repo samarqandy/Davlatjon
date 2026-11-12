@@ -151,6 +151,12 @@ export function DaySession({
 
       <main id="main" tabIndex={-1} className="mx-auto max-w-6xl px-4 pt-3 sm:pt-5">
         {step === 0 && <DayIntro day={day} onStart={() => go(1)} />}
+        {/* На экране задачи видимого заголовка дня нет (он есть в начале и в конце) — оставляем его для экранного диктора. */}
+        {step >= 1 && step <= total && (
+          <h1 className="sr-only">
+            {t(`Неделя ${day.week}, день ${day.day}: ${day.title}`, `${day.week}-hafta, ${day.day}-kun: ${day.title}`)}
+          </h1>
+        )}
         {resting && <RestStop onRest={() => router.push("/")} onMore={() => go(step + 1)} />}
         {step >= 1 && step <= total && !resting && (
           <TaskView key={day.tasks[step - 1].id} task={day.tasks[step - 1]} number={step} total={total} />
@@ -272,7 +278,7 @@ function ProgressDots({ day, step, onGo }: { day: Day; step: number; onGo: (s: n
               )}
               {solved && (
                 <span
-                  className="absolute -top-1.5 -right-1.5 hidden h-4 w-4 items-center justify-center rounded-full bg-mint text-[10px] font-black text-white sm:flex"
+                  className="absolute -top-1.5 -right-1.5 hidden h-4 w-4 items-center justify-center rounded-full bg-success-fill text-[10px] font-black text-white sm:flex"
                   aria-hidden
                 >
                   ✓
