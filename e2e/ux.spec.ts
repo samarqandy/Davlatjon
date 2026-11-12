@@ -482,9 +482,11 @@ test("страница, открытая сразу на экране, не по
     };
     requestAnimationFrame(tick);
   });
-  // Медленный телефон: между первой отрисовкой и оживлением страницы проходит заметное время.
+  // Медленный телефон: между первой отрисовкой и оживлением страницы проходит заметное время. Замедление
+  // вдвое, а не сильнее: проверяем, что список не виден до оживления, а не сколько оно длится на машине CI
+  // (при замедлении вчетверо там оно занимало больше трёх секунд — на этом и нашлась короткая запасная пауза).
   const cdp = await page.context().newCDPSession(page);
-  await cdp.send("Emulation.setCPUThrottlingRate", { rate: 4 });
+  await cdp.send("Emulation.setCPUThrottlingRate", { rate: 2 });
   const seen = () => page.evaluate(() => (window as unknown as { __seen: string[] }).__seen);
 
   await page.goto("/chess/openings#open-italian");

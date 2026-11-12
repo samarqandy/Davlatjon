@@ -66,7 +66,8 @@ describe("скрипт в <head>", () => {
 
   it("страница, открытая сразу на «экране» (адрес с якорем), ждёт загрузки — в шахматах и в занятиях", () => {
     const at = (pathname: string, hash: string) => run({}, pathname, "ru", {}, hash);
-    expect(at("/chess/openings", "#open-italian")).toMatchObject({ hidden: true, wait: 3000 });
+    // Запасной выход — восемь секунд: на очень медленном телефоне страница оживает за 5–7 с.
+    expect(at("/chess/openings", "#open-italian")).toMatchObject({ hidden: true, wait: 8000 });
     expect(at("/chess/puzzles", "#practice").hidden).toBe(true);
     expect(at("/chess/analysis", "#fen=8%2F8").hidden).toBe(true);
     expect(at("/week/2/day/4", "#task-8").hidden).toBe(true);
