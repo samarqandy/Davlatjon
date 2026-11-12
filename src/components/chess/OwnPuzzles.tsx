@@ -1,9 +1,10 @@
 "use client";
 
+import { Search } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { Feedback, type FeedbackState } from "@/components/answers/Feedback";
-import { Button, ButtonLink, cn } from "@/components/ui";
+import { Button, ButtonLink, cn, Icon } from "@/components/ui";
 import { isInCheck, isPromotionMove, legalTargets, pieceAt, playMove, type Color } from "@/lib/chess";
 import { isAlmostBest } from "@/lib/engine/analysis";
 import { sanFor, tFor, useLang, useSan, useT, type Lang } from "@/lib/i18n";
@@ -70,11 +71,12 @@ export function OwnPuzzlesView() {
   const done = list.filter((p) => solved[p.key]).length;
 
   return (
-    <div className="space-y-4">
+    // С задачей на экране — раскладка «доска слева во всю высоту»: заголовок и номера задач встают справа.
+    <div className={hydrated && puzzle ? "board-stage board-wide board-top space-y-3" : "space-y-4"}>
       <button
         type="button"
         onClick={() => setHash("#all")}
-        className="text-sm font-extrabold text-brand hover:underline"
+        className="justify-self-start text-sm font-extrabold text-brand hover:underline"
       >
         ← {t("Все задачи", "Barcha masalalar")}
       </button>
@@ -245,26 +247,22 @@ function OwnPuzzleBoard({ puzzle, onNext }: { puzzle: OwnPuzzle; onNext?: () => 
   }
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
-      <div className="space-y-3">
-        <ChessBoard
-          id="own-puzzle"
-          position={shown}
-          marks={marks}
-          orientation={puzzle.side === "w" ? "white" : "black"}
-          onSquare={tap}
-          draggable={!done}
-          onDrop={(from, to) => attempt(from, to)}
-          promotion={promo.request}
-          arrows={
-            misses >= 3 && !done
-              ? [{ from: puzzle.best.slice(0, 2), to: puzzle.best.slice(2, 4), color: "#10b981" }]
-              : []
-          }
-          maxWidth={480}
-        />
-        <Feedback state={feedback} />
-      </div>
+    <div className="stage-part space-y-3">
+      <ChessBoard
+        id="own-puzzle"
+        position={shown}
+        marks={marks}
+        orientation={puzzle.side === "w" ? "white" : "black"}
+        onSquare={tap}
+        draggable={!done}
+        onDrop={(from, to) => attempt(from, to)}
+        promotion={promo.request}
+        arrows={
+          misses >= 3 && !done ? [{ from: puzzle.best.slice(0, 2), to: puzzle.best.slice(2, 4), color: "#10b981" }] : []
+        }
+        maxWidth={480}
+      />
+      <Feedback state={feedback} />
       <aside className="space-y-3">
         <div className="rounded-2xl bg-surface p-4 shadow-card">
           <p className="text-xs font-extrabold tracking-wide text-muted uppercase">{puzzle.title}</p>
@@ -284,9 +282,9 @@ function OwnPuzzleBoard({ puzzle, onNext }: { puzzle: OwnPuzzle; onNext?: () => 
         <div className="flex flex-wrap gap-2">
           <Link
             href={`/chess/review#${puzzle.gameId}`}
-            className="rounded-xl px-3 py-2 text-sm font-extrabold text-brand hover:bg-brand-soft"
+            className="inline-flex items-center gap-1 rounded-xl px-3 py-2 text-sm font-extrabold text-brand hover:bg-brand-soft"
           >
-            🔎 {t("Разбор этой партии", "Shu partiya tahlili")}
+            <Icon icon={Search} /> {t("Разбор этой партии", "Shu partiya tahlili")}
           </Link>
           {onNext && (
             <Button size="sm" onClick={onNext}>

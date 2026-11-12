@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, ChevronRight, Copy, Puzzle } from "lucide-react";
+import { Check, Copy, FlaskConical, Puzzle } from "lucide-react";
 import { currentScrollBehavior } from "@/lib/useMotion";
 import { stampText } from "@/lib/dates";
 import Link from "next/link";
@@ -27,6 +27,7 @@ import { pluralize } from "@/lib/plural";
 import { saveChessAnalysis, useHydrated, useStore, type ChessGameRecord } from "@/lib/store";
 import { setHash, useHash } from "@/lib/useHash";
 import { ChessBoard, type SquareMark } from "./ChessBoard";
+import { MoveNav } from "./MoveNav";
 
 const RESULT = { win: "победа", loss: "поражение", draw: "ничья" } as const;
 const RESULT_UZ = { win: "gʻalaba", loss: "magʻlubiyat", draw: "durang" } as const;
@@ -352,71 +353,31 @@ function ReviewBody({
 
       <AdvantageChart review={review} sides={sides} ply={ply} onPick={setPly} />
 
-      <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <div className="space-y-3">
-          <ChessBoard
-            id="review"
-            position={fen}
-            marks={marks}
-            orientation={orientation}
-            arrows={
-              showBest && cur?.best ? [{ from: cur.best.slice(0, 2), to: cur.best.slice(2, 4), color: "#10b981" }] : []
-            }
-            maxWidth={520}
-            label={
-              cur
-                ? t(`Позиция после хода ${san(cur.san)}`, `${san(cur.san)} yurishidan keyingi pozitsiya`)
-                : t("Начальная позиция", "Boshlangʻich pozitsiya")
-            }
-          />
-          <div className="flex flex-wrap items-center gap-1.5">
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => setPly(0)}
-              disabled={ply === 0}
-              aria-label={t("В начало", "Boshiga")}
-            >
-              ⏮
-            </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => setPly(ply - 1)}
-              disabled={ply === 0}
-              aria-label={t("Ход назад", "Bir yurish orqaga")}
-            >
-              ◀
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => setPly(ply + 1)}
-              disabled={ply === total}
-              aria-label={t("Ход вперёд", "Bir yurish oldinga")}
-            >
-              {t("Дальше", "Oldinga")} <Icon icon={ChevronRight} />
-            </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => setPly(total)}
-              disabled={ply === total}
-              aria-label={t("В конец", "Oxiriga")}
-            >
-              ⏭
-            </Button>
-            <span className="ml-auto text-sm font-extrabold text-muted">
-              {ply} / {total}
-            </span>
-          </div>
-          <MoveComment cur={cur} hero={hero} />
-          <Link
-            href={`/chess/analysis#fen=${encodeURIComponent(fen)}`}
-            className="inline-flex min-h-11 items-center gap-1 text-sm font-extrabold text-brand hover:underline"
-          >
-            🧪 {t("Разобрать эту позицию на доске анализа", "Bu pozitsiyani tahlil taxtasida koʻrib chiqish")}
-          </Link>
-        </div>
+      <section className="board-stage board-wide board-top space-y-3">
+        <ChessBoard
+          id="review"
+          position={fen}
+          marks={marks}
+          orientation={orientation}
+          arrows={
+            showBest && cur?.best ? [{ from: cur.best.slice(0, 2), to: cur.best.slice(2, 4), color: "#10b981" }] : []
+          }
+          maxWidth={520}
+          label={
+            cur
+              ? t(`Позиция после хода ${san(cur.san)}`, `${san(cur.san)} yurishidan keyingi pozitsiya`)
+              : t("Начальная позиция", "Boshlangʻich pozitsiya")
+          }
+        />
+        <MoveNav ply={ply} total={total} onGo={setPly} />
+        <MoveComment cur={cur} hero={hero} />
+        <Link
+          href={`/chess/analysis#fen=${encodeURIComponent(fen)}`}
+          className="inline-flex min-h-11 items-center gap-1 text-sm font-extrabold text-brand hover:underline"
+        >
+          <Icon icon={FlaskConical} />
+          {t("Разобрать эту позицию на доске анализа", "Bu pozitsiyani tahlil taxtasida koʻrib chiqish")}
+        </Link>
         <aside className="rounded-2xl bg-surface p-3 shadow-card">
           <p className="mb-2 text-sm font-extrabold text-muted">{t("Ходы партии", "Partiya yurishlari")}</p>
           <ol

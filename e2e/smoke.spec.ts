@@ -346,8 +346,17 @@ test("шахматы: разбор знаменитой партии и глав
   await expect(page.getByRole("heading", { name: "Кто играл и где" })).toBeVisible();
   await expect(page.getByRole("img", { name: "Молодой Пол Морфи сидит у шахматного столика" }).first()).toBeVisible();
   await expect(page.getByText("Wikimedia Commons").first()).toBeVisible();
-  const next = page.getByRole("button", { name: "Ход вперёд" });
-  for (let i = 0; i < 13; i++) await next.click();
+  const nav = page.getByRole("group", { name: "Просмотр ходов" });
+  const next = nav.getByRole("button", { name: "Дальше" });
+  // Стрелки клавиатуры листают ходы так же, как кнопки.
+  await next.click();
+  await expect(nav).toContainText("1 / 33");
+  await page.keyboard.press("ArrowRight");
+  await expect(nav).toContainText("2 / 33");
+  await page.keyboard.press("ArrowLeft");
+  await expect(nav).toContainText("1 / 33");
+  await expect(nav.getByRole("button", { name: "В начало" })).toBeEnabled();
+  for (let i = 0; i < 12; i++) await next.click();
   await expect(page.getByText(/Ферзь нападает сразу на две пешки/)).toBeVisible();
   await page.getByRole("button", { name: /Мат ладьёй на d8/ }).click();
   await expect(page.getByText("33 / 33")).toBeVisible();
