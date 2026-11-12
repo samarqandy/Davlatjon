@@ -327,6 +327,19 @@ test("ступень 5: единственный ход — закрыться �
   expect(stored["c5-only-move-queen"]?.solvedAt).toBeTruthy();
 });
 
+// Третья позиция урока — без шаха: взятие слона и форточка пропускают мат, спасает тихий ход ладьёй.
+test("ступень 5: единственный ход без шаха — форточка не спасает, спасает возвращение ладьи", async ({ page }) => {
+  await prepare(page);
+  await openHash(page, "/chess/course-5#c5-only-move-exercise-3");
+  await expect(page.getByRole("heading", { name: "Тихая защита" })).toBeVisible();
+  await page.locator('[data-choice="h2h3"]').click();
+  await expect(page.getByText("не лучший выбор")).toBeVisible();
+  await page.locator('[data-choice="a7a1"]').click();
+  await expect(page.getByText(/Почему так/)).toBeVisible();
+  const stored = await page.evaluate((key) => JSON.parse(localStorage.getItem(key) ?? "{}").chess ?? {}, KEY);
+  expect(stored["c5-only-move-quiet"]?.solvedAt).toBeTruthy();
+});
+
 test("школа: путь из пяти ступеней, текущая отмечена; на странице ступени — кнопка следующего урока", async ({
   page,
 }) => {

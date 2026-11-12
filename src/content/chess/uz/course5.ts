@@ -338,6 +338,13 @@ export const course5LessonsUz: Uz<typeof COURSE_5_LESSONS> = {
         hint: "Toʻssang, donangni shoh berib urib olishadi. Birinchi gorizontalda nechta qora rux bor?",
         why: "♖xd1! — rux shoh berayotgan donani urib oladi, ♜xd1+ dan keyin esa toʻsish mumkin: ♖e1 yoki ♕g1. ♖e1? ♜xe1+ ♕xe1 ♜xe1#. ♕g1? ♜xg1#. Chiziqda ikkita rux turganda toʻsish foydasiz: avval bittasini urib olish kerak.",
       },
+      "c5-only-move-quiet": {
+        title: "Jim himoya",
+        prompt:
+          "Oqlarga shoh berilmagan va ular b7 dagi filni urib olishi mumkin. Lekin qoralar mot bilan tahdid qilyapti: ♜e1. Qaysi yurish qutqaradi?",
+        hint: "h3 darchasi yordam bermaydi: h2 katagini d6 dagi fil nazorat qiladi. Qaysi dona qaytib, e1 katagini himoya qila oladi?",
+        why: "♖a1! — rux qaytib, e1 katagini himoya qiladi: mot yoʻq, donalar esa teng. ♖xb7? ♜e1# — ochkoʻzlik jazolandi. h3? ♜e1#: shoh h2 ga keta olmaydi, bu katakni d6 dagi fil urib turadi. g2 piyodasi esa yura olmaydi: uni b7 dagi fil bogʻlab turibdi.",
+      },
       "c5-only-move-quiz": {
         title: "Himoya qanday qidiriladi",
         prompt: "Savollarga javob ber.",

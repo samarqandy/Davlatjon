@@ -1,7 +1,9 @@
 /** Курс «Ферзь»: комбинации проверены перебором chess.js, партии — по записи ходов. */
 import { Chess } from "chess.js";
 import { describe, expect, it, vi } from "vitest";
+import { COURSE_5_LESSONS } from "@/content/chess/course5";
 import { matingMoves } from "@/lib/chess";
+import { searchBest } from "@/lib/engine/search";
 
 /** Мат не более чем в n ходов белых, где каждый ход белых — шах. */
 function mateInChecks(fen: string, n: number): boolean {
@@ -222,4 +224,39 @@ describe("курс «Ферзь»: единственный ход в защит
     line.move("Rxd1+");
     expect(line.moves()).toEqual(expect.arrayContaining(["Re1", "Qg1"]));
   });
+
+  it("тихая защита: шаха нет, грозит Лe1#, спасает только Лa1 — и после неё у чёрных нет перевеса", () => {
+    const lesson = COURSE_5_LESSONS.find((l) => l.id === "c5-only-move")!;
+    const ex = lesson.exercises.find((e) => e.id === "c5-only-move-quiet")!;
+    if (ex.kind !== "choose") throw new Error("упражнение должно быть выбором хода");
+    const fen = ex.fen;
+    expect(ex.moves[ex.correct]).toBe("a7a1");
+    expect(new Chess(fen).inCheck()).toBe(false);
+    // Фигур поровну: ладья и две лёгкие фигуры, по пять пешек.
+    const count = (pieces: string) => [...fen.split(" ")[0]].filter((ch) => pieces.includes(ch)).length;
+    expect([count("R"), count("N"), count("P")]).toEqual([1, 2, 5]);
+    expect([count("r"), count("b"), count("p")]).toEqual([1, 2, 5]);
+    // Угроза: пропусти белые ход — мат один, Лe1#.
+    expect(matingMoves(fen.replace(" w ", " b "))).toEqual(["e8e1"]);
+    // Пешка g2 связана слоном b7: форточки на g2 нет.
+    expect(sans(fen).filter((san) => san.startsWith("g"))).toEqual([]);
+    // Все ходы, кроме четырёх, пропускают мат в один ход — в том числе взятие слона и форточка h3.
+    const notMated = sans(fen).filter((san) => matingMoves(after(fen, san)).length === 0);
+    expect(notMated.sort()).toEqual(["Ne2", "Ne4", "Ra1", "Ra8"]);
+    for (const wrong of ["Rxb7", "Nxd6", "h3", "h4"]) expect(matingMoves(after(fen, wrong)), wrong).toEqual(["e8e1"]);
+    // Конь, закрывший линию «e», теряется даром; после Лa8 Сxa8 угроза мата осталась, а защищать поле e1 уже нечем.
+    for (const wrong of ["Ne2", "Ne4"])
+      expect(searchBest(after(fen, wrong), { depth: 4, timeMs: 60_000 }).score, wrong).toBeGreaterThanOrEqual(300);
+    const cornered = after(after(fen, "Ra8"), "Bxa8");
+    for (const san of sans(cornered)) {
+      const next = after(cornered, san);
+      const lost = matingMoves(next).length > 0 || searchBest(next, { depth: 3, timeMs: 60_000 }).score >= 300;
+      expect(lost, `Ra8 Bxa8 ${san}`).toBe(true);
+    }
+    // После Лa1 у чёрных нет ни мата, ни перевеса: поиск движка на глубину 6 (оценка в сотых долях пешки).
+    const saved = searchBest(after(fen, "Ra1"), { depth: 6, timeMs: 90_000 });
+    expect(saved.depth).toBe(6);
+    expect(Math.abs(saved.score)).toBeLessThanOrEqual(100);
+    // Поиск на глубину 6 на нагруженной машине идёт дольше обычного — времени с запасом.
+  }, 180_000);
 });
