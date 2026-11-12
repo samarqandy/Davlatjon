@@ -1,6 +1,16 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
+import {
+  ArrowUpDown,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+  ClipboardPaste,
+  Copy,
+  RotateCcw,
+} from "lucide-react";
 import { Chess } from "chess.js";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -354,7 +364,7 @@ export function AnalysisBoard() {
               <Icon icon={ChevronsRight} />
             </Button>
             <Button variant="secondary" size="sm" onClick={() => setFlipped((f) => !f)}>
-              🔄 {t("Перевернуть", "Aylantirish")}
+              <Icon icon={ArrowUpDown} /> {t("Перевернуть", "Aylantirish")}
             </Button>
           </div>
 
@@ -389,13 +399,14 @@ export function AnalysisBoard() {
 
           <div className="flex flex-wrap gap-2">
             <Button variant="ghost" size="sm" onClick={() => load({ start: START, plies: [] })}>
-              ♟ {t("Начальная позиция", "Boshlangʻich holat")}
+              <Icon icon={RotateCcw} /> {t("Начальная позиция", "Boshlangʻich holat")}
             </Button>
             <Button variant="ghost" size="sm" onClick={() => setPasteOpen((o) => !o)} aria-expanded={pasteOpen}>
-              📋 {t("Вставить FEN или PGN", "FEN yoki PGN qoʻyish")}
+              <Icon icon={ClipboardPaste} /> {t("Вставить FEN или PGN", "FEN yoki PGN qoʻyish")}
             </Button>
             <Button variant="ghost" size="sm" onClick={() => void copyFen()}>
-              {copied ? `✓ ${t("Скопировано", "Nusxalandi")}` : `📄 ${t("Скопировать FEN", "FEN nusxasini olish")}`}
+              <Icon icon={copied ? Check : Copy} />{" "}
+              {copied ? t("Скопировано", "Nusxalandi") : t("Скопировать FEN", "FEN nusxasini olish")}
             </Button>
           </div>
           {pasteOpen && (

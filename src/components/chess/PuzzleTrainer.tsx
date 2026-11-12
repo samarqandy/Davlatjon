@@ -450,93 +450,98 @@ export function PuzzlePlayer({
   const canReveal = solution && !quiet;
 
   return (
+    // board-stage: с 1024 px доска слева во всю высоту окна; сведения о задаче, кнопки и ответ — справа.
+    // stage-part: если экран режима сам раскладка (.board-stage), этот блок в ней растворяется —
+    // заголовок режима встаёт в ту же правую колонку, а не над доской.
     <div
-      className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px]"
+      className="board-stage stage-part grid gap-3 lg:space-y-3"
       data-puzzle-state={done ? (revealed ? "revealed" : "solved") : "open"}
     >
-      <div className="space-y-3">
-        {/* На телефоне задание и чей ход — над доской: раньше они были под ней, и до них приходилось листать. */}
-        <div className="lg:hidden" data-puzzle-prompt>
-          <p className="text-xs font-extrabold tracking-wide text-muted uppercase">
-            {STARS(stars)} · {solver === "w" ? t("ходят белые", "oqlar yuradi") : t("ходят чёрные", "qoralar yuradi")}
-          </p>
-          <p className="text-lg font-black text-brand-dark">{goal}</p>
-        </div>
-        <ChessBoard
-          id={`puzzle-${puzzle.id}`}
-          position={shown}
-          marks={marks}
-          orientation={solver === "w" ? "white" : "black"}
-          onSquare={tap}
-          draggable={!done && !busy}
-          onDrop={(from, to) => attempt(from, to)}
-          promotion={promo.request}
-          arrows={hintTo && hintFrom && !done ? [{ from: hintFrom, to: hintTo, color: "#10b981" }] : []}
-          maxWidth={480}
-        />
-        {/* Кнопки — всегда на одном месте, сразу под доской: ответ ниже может быть длинным, а они не «прыгают». */}
-        <div className="mx-auto flex min-h-11 w-full max-w-[480px] flex-wrap items-center gap-2" data-puzzle-actions>
-          {!done && misses < 2 && (
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => {
-                setMisses(2);
-                // Подсказка в задаче из базы — как ошибка: рейтинг не растёт, задача вернётся на повторение.
-                if (bank) {
-                  rateOnce(false);
-                  chessPuzzleMiss(key);
-                }
-                setFeedback({ tone: "info", text: t("Подсказка", "Maslahat"), sub: text.hint });
-              }}
-            >
-              <Lightbulb className="mr-1.5 h-5 w-5" strokeWidth={2.25} aria-hidden />
-              {t("Подсказка", "Maslahat")}
-            </Button>
-          )}
-          {/* Решение — только после своей попытки или подсказки: сначала пробуем сами. */}
-          {!done && canReveal && misses >= 1 && (
-            <Button variant="secondary" size="sm" onClick={reveal} disabled={busy} data-puzzle-reveal>
-              <Eye className="mr-1.5 h-5 w-5" strokeWidth={2.25} aria-hidden />
-              {t("Показать решение", "Yechimni koʻrish")}
-            </Button>
-          )}
-          {done && !quiet && frames.length > 2 && (
-            <div
-              role="group"
-              aria-label={t("Просмотр решения", "Yechimni koʻrib chiqish")}
-              className="flex gap-1.5"
-              data-puzzle-replay={at}
-            >
-              <button
-                type="button"
-                className={stepButton}
-                aria-label={t("Ход назад", "Bir yurish orqaga")}
-                disabled={at <= 0}
-                onClick={() => go(at - 1)}
-              >
-                <ChevronLeft className="h-6 w-6" strokeWidth={2.25} aria-hidden />
-              </button>
-              <button
-                type="button"
-                className={stepButton}
-                aria-label={t("Ход вперёд", "Bir yurish oldinga")}
-                disabled={at >= frames.length - 1}
-                onClick={() => go(at + 1)}
-              >
-                <ChevronRight className="h-6 w-6" strokeWidth={2.25} aria-hidden />
-              </button>
-            </div>
-          )}
-          {done && next && (
-            <Button variant="sun" onClick={next.onClick} size="lg" className="min-w-0 flex-1">
-              {next.label}
-            </Button>
-          )}
-        </div>
-        <Feedback state={feedback} silent={quiet} />
+      {/* На телефоне задание и чей ход — над доской: раньше они были под ней, и до них приходилось листать. */}
+      <div className="lg:hidden" data-puzzle-prompt>
+        <p className="text-xs font-extrabold tracking-wide text-muted uppercase">
+          {STARS(stars)} · {solver === "w" ? t("ходят белые", "oqlar yuradi") : t("ходят чёрные", "qoralar yuradi")}
+        </p>
+        <p className="text-lg font-black text-brand-dark">{goal}</p>
       </div>
-      <aside className="flex flex-col gap-3">
+      <ChessBoard
+        id={`puzzle-${puzzle.id}`}
+        position={shown}
+        marks={marks}
+        orientation={solver === "w" ? "white" : "black"}
+        onSquare={tap}
+        draggable={!done && !busy}
+        onDrop={(from, to) => attempt(from, to)}
+        promotion={promo.request}
+        arrows={hintTo && hintFrom && !done ? [{ from: hintFrom, to: hintTo, color: "#10b981" }] : []}
+        maxWidth={480}
+      />
+      {/* Кнопки — всегда на одном месте, сразу под доской: ответ ниже может быть длинным, а они не «прыгают». */}
+      <div
+        className="mx-auto flex min-h-11 w-full max-w-[480px] flex-wrap items-center gap-2 lg:order-2 lg:mx-0 lg:max-w-none"
+        data-puzzle-actions
+      >
+        {!done && misses < 2 && (
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => {
+              setMisses(2);
+              // Подсказка в задаче из базы — как ошибка: рейтинг не растёт, задача вернётся на повторение.
+              if (bank) {
+                rateOnce(false);
+                chessPuzzleMiss(key);
+              }
+              setFeedback({ tone: "info", text: t("Подсказка", "Maslahat"), sub: text.hint });
+            }}
+          >
+            <Lightbulb className="mr-1.5 h-5 w-5" strokeWidth={2.25} aria-hidden />
+            {t("Подсказка", "Maslahat")}
+          </Button>
+        )}
+        {/* Решение — только после своей попытки или подсказки: сначала пробуем сами. */}
+        {!done && canReveal && misses >= 1 && (
+          <Button variant="secondary" size="sm" onClick={reveal} disabled={busy} data-puzzle-reveal>
+            <Eye className="mr-1.5 h-5 w-5" strokeWidth={2.25} aria-hidden />
+            {t("Показать решение", "Yechimni koʻrish")}
+          </Button>
+        )}
+        {done && !quiet && frames.length > 2 && (
+          <div
+            role="group"
+            aria-label={t("Просмотр решения", "Yechimni koʻrib chiqish")}
+            className="flex gap-1.5"
+            data-puzzle-replay={at}
+          >
+            <button
+              type="button"
+              className={stepButton}
+              aria-label={t("Ход назад", "Bir yurish orqaga")}
+              disabled={at <= 0}
+              onClick={() => go(at - 1)}
+            >
+              <ChevronLeft className="h-6 w-6" strokeWidth={2.25} aria-hidden />
+            </button>
+            <button
+              type="button"
+              className={stepButton}
+              aria-label={t("Ход вперёд", "Bir yurish oldinga")}
+              disabled={at >= frames.length - 1}
+              onClick={() => go(at + 1)}
+            >
+              <ChevronRight className="h-6 w-6" strokeWidth={2.25} aria-hidden />
+            </button>
+          </div>
+        )}
+        {done && next && (
+          <Button variant="sun" onClick={next.onClick} size="lg" className="min-w-0 flex-1">
+            {next.label}
+          </Button>
+        )}
+      </div>
+      <Feedback state={feedback} silent={quiet} className="lg:order-2" />
+      {/* На широком экране сведения о задаче — в правой колонке над кнопками. */}
+      <aside className="flex flex-col gap-3 lg:order-1">
         <div className="rounded-2xl bg-surface p-4 shadow-card" data-puzzle-info>
           <p className="hidden text-xs font-extrabold tracking-wide text-muted uppercase lg:block">
             {STARS(stars)} · {solver === "w" ? t("ходят белые", "oqlar yuradi") : t("ходят чёрные", "qoralar yuradi")}

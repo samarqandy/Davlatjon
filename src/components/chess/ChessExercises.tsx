@@ -1,6 +1,6 @@
 "use client";
 
-import { RotateCcw } from "lucide-react";
+import { Lightbulb, RotateCcw } from "lucide-react";
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { Feedback, type FeedbackState } from "@/components/answers/Feedback";
 import { ListenButton } from "@/components/ListenButton";
@@ -31,6 +31,9 @@ const movesWord = (n: number) => pluralize(n, "ход", "хода", "ходов"
 /** В контрольном тесте подсказок нет: ребёнок отвечает сам. */
 const TestModeContext = createContext(false);
 
+/** Кнопки «назад» и «дальше» от экрана урока: стоят в конце упражнения, на широком экране — в колонке рядом с доской. */
+const FooterContext = createContext<ReactNode>(null);
+
 /** Оболочка упражнения: условие, доска, подсказка и объяснение после решения. */
 function ExerciseShell({
   ex,
@@ -47,8 +50,10 @@ function ExerciseShell({
   const lang = useLang();
   const [hint, setHint] = useState(false);
   const test = useContext(TestModeContext);
+  const footer = useContext(FooterContext);
   return (
-    <div className="space-y-3 lg:space-y-4">
+    // board-stage: с 1024 px доска (прямой потомок) встаёт слева во всю высоту окна, остальное — справа.
+    <div className="board-stage space-y-3 lg:space-y-4">
       {/* На телефоне и планшете «Послушать» стоит в строке с названием, а не отдельной строкой над доской. */}
       <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-2 gap-y-1 lg:block lg:space-y-1.5">
         <h3
@@ -82,16 +87,19 @@ function ExerciseShell({
         </div>
       ) : hint ? (
         <div className="rounded-2xl border-2 border-sun/40 bg-sun-soft px-4 py-3">
-          <p className="text-sm font-extrabold text-sun-ink">{t("💡 Подсказка", "💡 Maslahat")}</p>
+          <p className="text-sm font-extrabold text-sun-ink">
+            <Icon icon={Lightbulb} /> {t("Подсказка", "Maslahat")}
+          </p>
           <p className="mt-1 font-semibold text-sun-ink">
             <RichText text={ex.hint} />
           </p>
         </div>
       ) : test ? null : (
-        <Button variant="ghost" size="sm" onClick={() => setHint(true)}>
-          {t("💡 Подсказка", "💡 Maslahat")}
+        <Button variant="ghost" size="sm" onClick={() => setHint(true)} className="justify-self-start">
+          <Icon icon={Lightbulb} /> {t("Подсказка", "Maslahat")}
         </Button>
       )}
+      {footer}
     </div>
   );
 }
@@ -993,10 +1001,21 @@ function boardFen(pieces: Record<string, string>): string {
 }
 
 /** Упражнение; в режиме `test` — без подсказок (контрольные тесты). */
-export function ChessExerciseView({ exercise, test = false }: { exercise: ChessExercise; test?: boolean }) {
+export function ChessExerciseView({
+  exercise,
+  test = false,
+  footer = null,
+}: {
+  exercise: ChessExercise;
+  test?: boolean;
+  /** Что показать в конце упражнения (кнопки перехода): на широком экране оказывается рядом с доской. */
+  footer?: ReactNode;
+}) {
   return (
     <TestModeContext.Provider value={test}>
-      <ExerciseByKind exercise={exercise} />
+      <FooterContext.Provider value={footer}>
+        <ExerciseByKind exercise={exercise} />
+      </FooterContext.Provider>
     </TestModeContext.Provider>
   );
 }

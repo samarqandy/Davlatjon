@@ -1,6 +1,6 @@
 "use client";
 
-import { RotateCcw } from "lucide-react";
+import { Lightbulb, RotateCcw } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Feedback, type FeedbackState } from "@/components/answers/Feedback";
 import { Button, Icon } from "@/components/ui";
@@ -199,7 +199,7 @@ export function GuessGame({ game, onExit }: { game: FamousGame; onExit: () => vo
         ) : (
           <div className="flex flex-wrap gap-2">
             <Button size="sm" variant="secondary" onClick={() => setHint(true)} disabled={!heroTurn || hint}>
-              💡 {t("Какой фигурой? (1 очко)", "Qaysi dona bilan? (1 ochko)")}
+              <Icon icon={Lightbulb} /> {t("Какой фигурой? (1 очко)", "Qaysi dona bilan? (1 ochko)")}
             </Button>
             <Button size="sm" variant="ghost" onClick={onExit}>
               {t("Выйти", "Chiqish")}

@@ -477,7 +477,7 @@ test("разбор партии: ошибки объясняются и стан
   await expect(page.getByText(/Кf6 → лучше/)).toBeVisible();
   await page.getByRole("button", { name: /Кf6 → лучше/ }).click();
   await expect(page.getByText(/соперник ставит мат: Фxf7#/).first()).toBeVisible();
-  await page.getByRole("link", { name: "🧩 Реши эти моменты как задачи" }).click();
+  await page.getByRole("link", { name: "Реши эти моменты как задачи" }).click();
   await expect(page.getByRole("heading", { name: "Задачи из твоих партий" })).toBeVisible();
   await expect(page.getByText(/Найди ход сильнее/)).toBeVisible();
   await square(page, "own-puzzle", "a7");

@@ -435,7 +435,7 @@ function DailyView() {
   const profile = useAgeProfile();
   const puzzle = dailyPuzzleFor(profile.minStars);
   return (
-    <div className="space-y-4">
+    <div className="board-stage board-wide board-top space-y-4">
       <Back />
       <h1 className="text-2xl font-black">
         <span className="deco" aria-hidden>
@@ -455,7 +455,7 @@ function DailyView() {
 function SingleView({ puzzle }: { puzzle: ChessPuzzle }) {
   const t = useT();
   return (
-    <div className="space-y-4">
+    <div className="board-stage board-wide board-top space-y-4">
       <Back />
       <PuzzlePlayer
         key={puzzle.id}
@@ -493,7 +493,7 @@ function ThemeView({ theme, part }: { theme: PuzzleTheme; part: number | "bank" 
   const puzzle = i >= 0 ? list[i] : undefined;
 
   return (
-    <div className="space-y-4">
+    <div className="board-stage board-wide board-top space-y-4">
       <Back />
       <header className="space-y-2">
         <h1 className="text-2xl font-black">
@@ -650,7 +650,7 @@ function StreakView() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="board-stage board-wide board-top space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <Back />
         <p className="text-lg font-black">

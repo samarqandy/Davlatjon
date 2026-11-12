@@ -1,6 +1,6 @@
 "use client";
 
-import { RotateCcw } from "lucide-react";
+import { Lightbulb, RotateCcw, Undo2 } from "lucide-react";
 import { Chess } from "chess.js";
 import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
@@ -306,7 +306,7 @@ function FindDrill({ drill, solved }: { drill: EndgameDrill; solved: boolean }) 
             <p className="rounded-xl bg-sun-soft px-3 py-2 text-sm font-semibold">💡 {drill.hint}</p>
           ) : (
             <Button variant="ghost" size="sm" onClick={() => setHint(true)}>
-              💡 {t("Подсказка", "Maslahat")}
+              <Icon icon={Lightbulb} /> {t("Подсказка", "Maslahat")}
             </Button>
           )}
         </div>
@@ -468,7 +468,7 @@ function PlayDrill({ drill, solved }: { drill: EndgameDrill; solved: boolean }) 
       <div className="flex flex-wrap gap-2">
         {(slip || state === "lost") && history.length > 0 && (
           <Button variant="secondary" size="sm" onClick={undo}>
-            ↶ {t("Вернуть ход", "Yurishni qaytarish")}
+            <Icon icon={Undo2} /> {t("Вернуть ход", "Yurishni qaytarish")}
           </Button>
         )}
         {history.length > 0 && (
@@ -478,7 +478,7 @@ function PlayDrill({ drill, solved }: { drill: EndgameDrill; solved: boolean }) 
         )}
         {state === "playing" && drill.hint && !hint && (
           <Button variant="ghost" size="sm" onClick={() => setHint(true)}>
-            💡 {t("Подсказка", "Maslahat")}
+            <Icon icon={Lightbulb} /> {t("Подсказка", "Maslahat")}
           </Button>
         )}
       </div>

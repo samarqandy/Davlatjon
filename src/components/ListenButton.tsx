@@ -1,7 +1,8 @@
 "use client";
 
+import { Square, Volume2 } from "lucide-react";
 import { useEffect, useId, useState } from "react";
-import { cn } from "@/components/ui";
+import { cn, Icon } from "@/components/ui";
 import { useT } from "@/lib/i18n";
 import { useStore } from "@/lib/store";
 import { onVoiceChange, playClip, playingId, stopVoice } from "@/lib/voice";
@@ -52,7 +53,7 @@ export function ListenButton({
         className,
       )}
     >
-      <span aria-hidden>{playing ? "⏹" : "🔊"}</span>
+      <Icon icon={playing ? Square : Volume2} className={playing ? "fill-current" : undefined} />
       {!iconOnly && (playing ? t("Стоп", "Toʻxtatish") : (label ?? t("Послушать", "Tinglash")))}
     </button>
   );

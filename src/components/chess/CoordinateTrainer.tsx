@@ -1,6 +1,6 @@
 "use client";
 
-import { Play, RotateCcw } from "lucide-react";
+import { ArrowUpDown, Play, RotateCcw } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Button, cn, Icon } from "@/components/ui";
@@ -326,7 +326,7 @@ function Drill({ mode, onExit }: { mode: DrillMode; onExit: () => void }) {
                 variant="secondary"
                 onClick={() => setOrientation((o) => (o === "white" ? "black" : "white"))}
               >
-                🔄{" "}
+                <Icon icon={ArrowUpDown} />{" "}
                 {orientation === "white"
                   ? t("Смотреть за чёрных", "Qoralar tomonidan qarash")
                   : t("Смотреть за белых", "Oqlar tomonidan qarash")}

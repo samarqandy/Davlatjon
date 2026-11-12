@@ -1,7 +1,7 @@
 "use client";
 
-import { RotateCcw } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { ArrowLeft, ArrowUpDown, Flag, Lightbulb, RotateCcw, Search, Undo2 } from "lucide-react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { Confetti } from "@/components/rewards/Confetti";
 import { Button, ButtonLink, cn, Icon } from "@/components/ui";
 import { playReward } from "@/lib/sfx";
@@ -383,21 +383,23 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
   const robotMove = withRobot && !thinking && !status.over && last && turn === config.color ? san(last.san) : null;
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
-      <div className="space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-2xl font-black">{title}</h2>
-          <Button variant="ghost" size="sm" onClick={onExit}>
-            ← {t("Выбрать другой режим", "Boshqa rejimni tanlash")}
-          </Button>
-        </div>
-        {(config.odds || config.clock) && (
-          <p className="text-sm font-bold text-muted">
-            {config.odds && t(`🎁 Фора: ${oddsLabel(config.odds)}. `, `🎁 Fora: ${oddsLabel(config.odds, lang)}. `)}
-            {config.clock &&
-              t(`⏱ ${clockLabel(config.clock)} на партию.`, `⏱ Partiyaga ${clockLabel(config.clock, lang)}.`)}
-          </p>
-        )}
+    // board-stage: с 1024 px доска со счётом взятых фигур и часами — слева во всю высоту окна; название партии,
+    // чей ход, кнопки и запись ходов — справа. На телефоне порядок тот же, в одну колонку.
+    <div className="board-stage board-wide space-y-3" style={{ "--stage-chrome": "12.5rem" } as CSSProperties}>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 className="text-2xl font-black">{title}</h2>
+        <Button variant="ghost" size="sm" onClick={onExit}>
+          <Icon icon={ArrowLeft} /> {t("Выбрать другой режим", "Boshqa rejimni tanlash")}
+        </Button>
+      </div>
+      {(config.odds || config.clock) && (
+        <p className="text-sm font-bold text-muted">
+          {config.odds && t(`🎁 Фора: ${oddsLabel(config.odds)}. `, `🎁 Fora: ${oddsLabel(config.odds, lang)}. `)}
+          {config.clock &&
+            t(`⏱ ${clockLabel(config.clock)} на партию.`, `⏱ Partiyaga ${clockLabel(config.clock, lang)}.`)}
+        </p>
+      )}
+      <div className="board-col space-y-3">
         <div className="flex items-center gap-2">
           <CapturedRow
             pieces={topTrophies}
@@ -427,95 +429,95 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
           />
           {clockBox(topSide === "w" ? "b" : "w")}
         </div>
-        <p
-          className={cn(
-            "rounded-2xl px-4 py-3 text-lg font-black",
-            // Победа — зелёная, ничья — жёлтая, проигрыш роботу — спокойная, без тревожного цвета.
-            !status.over
-              ? inCheck
-                ? "bg-rose/10 text-rose"
-                : "bg-surface shadow-card"
-              : status.winner === "draw"
-                ? "bg-sun-soft text-sun-ink"
-                : withRobot && status.winner !== config.color
-                  ? "bg-brand-soft text-brand-dark"
-                  : "bg-mint-soft text-mint-ink",
-          )}
-          aria-live="polite"
-          data-play-status
-          data-result={
-            status.over
-              ? status.winner === "draw"
-                ? "draw"
-                : status.winner === config.color
-                  ? "win"
-                  : "loss"
-              : undefined
-          }
-        >
-          {robotMove && (
-            <span className="block text-sm font-extrabold opacity-80" data-robot-move>
-              {t(`🤖 Робот сыграл ${robotMove}.`, `🤖 Robot ${robotMove} yurdi.`)}
-            </span>
-          )}
-          {statusText}
-        </p>
-        {illegal && (
-          <p role="status" data-illegal className="rounded-2xl bg-rose/10 px-4 py-2 text-sm font-bold text-rose">
-            {illegal}
-          </p>
-        )}
-        {withRobot && status.over && status.winner === config.color && plies.length > 0 && <Confetti />}
-        {crowns > 0 && (
-          <p className="rounded-2xl bg-sun-soft px-4 py-2 font-black text-sun-ink" data-crowns={crowns}>
-            <span className="mr-1 text-2xl">{"👑".repeat(crowns)}</span>
-            {crowns === 3
-              ? t("Корона с золотым блеском: без подсказок!", "Oltin yaltiroq toj: maslahatsiz!")
-              : crowns === 2
-                ? t(
-                    "Две короны: робот играл без фигуры, а ты — без подсказок!",
-                    "Ikkita toj: robot donasiz oʻynadi, sen esa maslahatsiz!",
-                  )
-                : hints > 0
-                  ? t("Корона твоя! 👑 Подсказка — умный ход.", "Toj seniki! 👑 Maslahat soʻrash — aqlli qadam.")
-                  : t("Корона твоя!", "Toj seniki!")}
-          </p>
-        )}
-        {robotSays && robot && (
-          <div className="flex items-start gap-2" data-robot-says>
-            <PieceIcon piece={robot.piece} className="h-10 w-10 shrink-0 rounded-xl bg-[#f0d9b5] p-0.5" />
-            <p className="rounded-2xl rounded-tl-sm bg-surface px-3 py-2 text-sm font-bold shadow-card">{robotSays}</p>
-          </div>
-        )}
-        {status.over && (config.mode === "robot" || config.mode === "two") && plies.length > 1 && (
-          <ButtonLink href={`/chess/review#${gameId}`} variant="sun">
-            🔎{" "}
-            {t(
-              "Разбор партии: где были ошибки и лучшие ходы",
-              "Partiya tahlili: qayerda xato, qayerda eng yaxshi yurish boʻlgan",
-            )}
-          </ButtonLink>
-        )}
       </div>
+      <p
+        className={cn(
+          "rounded-2xl px-4 py-3 text-lg font-black",
+          // Победа — зелёная, ничья — жёлтая, проигрыш роботу — спокойная, без тревожного цвета.
+          !status.over
+            ? inCheck
+              ? "bg-rose/10 text-rose"
+              : "bg-surface shadow-card"
+            : status.winner === "draw"
+              ? "bg-sun-soft text-sun-ink"
+              : withRobot && status.winner !== config.color
+                ? "bg-brand-soft text-brand-dark"
+                : "bg-mint-soft text-mint-ink",
+        )}
+        aria-live="polite"
+        data-play-status
+        data-result={
+          status.over
+            ? status.winner === "draw"
+              ? "draw"
+              : status.winner === config.color
+                ? "win"
+                : "loss"
+            : undefined
+        }
+      >
+        {robotMove && (
+          <span className="block text-sm font-extrabold opacity-80" data-robot-move>
+            {t(`🤖 Робот сыграл ${robotMove}.`, `🤖 Robot ${robotMove} yurdi.`)}
+          </span>
+        )}
+        {statusText}
+      </p>
+      {illegal && (
+        <p role="status" data-illegal className="rounded-2xl bg-rose/10 px-4 py-2 text-sm font-bold text-rose">
+          {illegal}
+        </p>
+      )}
+      {withRobot && status.over && status.winner === config.color && plies.length > 0 && <Confetti />}
+      {crowns > 0 && (
+        <p className="rounded-2xl bg-sun-soft px-4 py-2 font-black text-sun-ink" data-crowns={crowns}>
+          <span className="mr-1 text-2xl">{"👑".repeat(crowns)}</span>
+          {crowns === 3
+            ? t("Корона с золотым блеском: без подсказок!", "Oltin yaltiroq toj: maslahatsiz!")
+            : crowns === 2
+              ? t(
+                  "Две короны: робот играл без фигуры, а ты — без подсказок!",
+                  "Ikkita toj: robot donasiz oʻynadi, sen esa maslahatsiz!",
+                )
+              : hints > 0
+                ? t("Корона твоя! 👑 Подсказка — умный ход.", "Toj seniki! 👑 Maslahat soʻrash — aqlli qadam.")
+                : t("Корона твоя!", "Toj seniki!")}
+        </p>
+      )}
+      {robotSays && robot && (
+        <div className="flex items-start gap-2" data-robot-says>
+          <PieceIcon piece={robot.piece} className="h-10 w-10 shrink-0 rounded-xl bg-[#f0d9b5] p-0.5" />
+          <p className="rounded-2xl rounded-tl-sm bg-surface px-3 py-2 text-sm font-bold shadow-card">{robotSays}</p>
+        </div>
+      )}
+      {status.over && (config.mode === "robot" || config.mode === "two") && plies.length > 1 && (
+        <ButtonLink href={`/chess/review#${gameId}`} variant="sun">
+          <Icon icon={Search} />{" "}
+          {t(
+            "Разбор партии: где были ошибки и лучшие ходы",
+            "Partiya tahlili: qayerda xato, qayerda eng yaxshi yurish boʻlgan",
+          )}
+        </ButtonLink>
+      )}
 
       <aside className="space-y-3">
         <div className="flex flex-wrap gap-2">
           {!config.solo && (
             <>
               <Button variant="secondary" size="sm" onClick={showHint} disabled={!myTurn || status.over || thinking}>
-                💡 {t("Подсказка", "Maslahat")}
+                <Icon icon={Lightbulb} /> {t("Подсказка", "Maslahat")}
               </Button>
               <Button variant="secondary" size="sm" onClick={undo} disabled={plies.length === 0 || thinking}>
-                ↶ {t("Отменить", "Ortga qaytarish")}
+                <Icon icon={Undo2} /> {t("Отменить", "Ortga qaytarish")}
               </Button>
             </>
           )}
           <Button variant="secondary" size="sm" onClick={() => setFlipped((f) => !f)}>
-            🔄 {t("Перевернуть", "Taxtani aylantirish")}
+            <Icon icon={ArrowUpDown} /> {t("Перевернуть", "Taxtani aylantirish")}
           </Button>
           {withRobot && !status.over && (
             <Button variant="ghost" size="sm" onClick={() => setConfirmEnd(true)} disabled={plies.length === 0}>
-              🏁 {t("Закончить партию", "Partiyani tugatish")}
+              <Icon icon={Flag} /> {t("Закончить партию", "Partiyani tugatish")}
             </Button>
           )}
           <Button size="sm" variant={status.over ? "primary" : "secondary"} onClick={restart}>
@@ -530,7 +532,7 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
           >
             {t("Началась новая партия.", "Yangi partiya boshlandi.")}
             <Button size="sm" variant="soft" onClick={restorePrevious}>
-              ↩ {t("Вернуть прежнюю", "Avvalgisini qaytarish")}
+              <Icon icon={Undo2} /> {t("Вернуть прежнюю", "Avvalgisini qaytarish")}
             </Button>
           </p>
         )}

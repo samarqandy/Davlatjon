@@ -365,3 +365,43 @@ test("шахматная школа и курс: «Начать» внизу э�
   await fab.click();
   await expect(page).toHaveURL(/\/chess\/course-2#/);
 });
+
+// Доска на широком экране: слева и во всю высоту окна (DESIGN.md, раздел 7ж). Раньше она была не шире 440–560 px
+// и стояла под шапкой урока и условием: на ноутбуке низ доски уходил за край окна.
+for (const [name, url, share] of [
+  ["упражнение курса", "/chess/course#c1-rook-exercise-1", 0.7],
+  ["задача", "/chess/puzzles#theme-backrank", 0.7],
+  ["игра с роботом", "/chess/play#robot-1-w", 0.6],
+] as const)
+  test(`широкий экран, ${name}: доска целиком в окне и занимает его высоту, остальное — справа`, async ({
+    page,
+    isMobile,
+  }) => {
+    test.skip(isMobile, "раскладка «доска слева» — от 1024 px");
+    await prepare(page);
+    for (const [width, height] of [
+      [1280, 608],
+      [1366, 768],
+      [1920, 1080],
+    ]) {
+      await page.setViewportSize({ width, height });
+      await page.goto(url);
+      await page.waitForLoadState("networkidle");
+      const board = page.locator("[data-board]").first();
+      await expect(board).toBeVisible();
+      // Страница сама подкручивается к упражнению — ждём, пока доска встанет на место.
+      await expect
+        .poll(async () => {
+          const box = (await board.boundingBox())!;
+          return Math.round(box.y + box.height);
+        })
+        .toBeLessThanOrEqual(height);
+      const box = (await board.boundingBox())!;
+      const size = `${width}×${height}`;
+      expect(box.y, size).toBeGreaterThanOrEqual(0);
+      expect(box.width, size).toBeGreaterThanOrEqual(share * height);
+      // Справа от доски остаётся колонка не уже 300 px, и страница не шире окна.
+      expect(width - (box.x + box.width), size).toBeGreaterThanOrEqual(300);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth), size).toBeLessThanOrEqual(width);
+    }
+  });

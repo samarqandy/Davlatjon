@@ -698,6 +698,62 @@ html.i18n-wait::after {
 .board-frame {
   container-type: inline-size;
 }
+
+/*
+ * Экран с доской на широком окне (от 1024 px): доска слева и занимает всю высоту окна, условие, ответ и кнопки —
+ * справа. Раньше доска была не шире 440–560 px и стояла под заголовком, вкладками и условием: на большом
+ * мониторе — маленькая, на ноутбуке — не помещалась без прокрутки.
+ *
+ * .board-stage — сама раскладка. Доска — прямой потомок; всё остальное само встаёт в правую колонку
+ * в порядке разметки (на телефоне порядок тот же, просто в одну колонку).
+ * .board-wide — блок шире колонки страницы: большой доске нужно место и для правой колонки.
+ * --stage-chrome — сколько высоты окна занято над доской и под ней (шапка сайта, строка над упражнением).
+ */
+@media (min-width: 1024px) {
+  .board-wide {
+    --stage-width: min(calc(100vw - 3rem), calc(100svh - var(--stage-chrome, 10rem) + 29.5rem), 89.5rem);
+    width: var(--stage-width);
+    margin-inline: calc((100% - var(--stage-width)) / 2);
+  }
+  .board-stage {
+    container-type: inline-size;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    /* Строк с запасом; последняя забирает высоту доски, поэтому правая колонка идёт плотно сверху. */
+    grid-template-rows: repeat(11, min-content) 1fr;
+    column-gap: 1.5rem;
+    row-gap: 0;
+    align-items: start;
+  }
+  /* Вложенный блок с доской (.stage-part) растворяется: его части становятся частями внешней раскладки. */
+  .board-stage > .stage-part {
+    display: contents;
+  }
+  .board-stage > *,
+  .board-stage > .stage-part > * {
+    grid-column: 2;
+    min-width: 0;
+  }
+  /* Раскладка начинается сразу под шапкой сайта: над доской ничего нет. */
+  .board-top {
+    --stage-chrome: 7.5rem;
+  }
+  /*
+   * Левая колонка: сама доска или блок .board-col (доска вместе с тем, что должно стоять вплотную к ней, —
+   * взятые фигуры, часы). Размер — по высоте окна, но так, чтобы справа осталось место.
+   */
+  .board-stage > .board-frame,
+  .board-stage > .stage-part > .board-frame,
+  .board-stage > .board-col {
+    --board-size: min(calc(100svh - var(--stage-chrome, 10rem)), calc(100cqw - 21.5rem), 60rem);
+    grid-column: 1;
+    grid-row: 1 / -1;
+    width: var(--board-size);
+    margin: 0;
+    position: sticky;
+    top: 5.25rem;
+  }
+}
 .board-grid {
   --edge: 5px;
   --g: 18px;
@@ -708,8 +764,9 @@ html.i18n-wait::after {
 }
 @supports (width: 1cqi) {
   .board-grid {
-    --g: clamp(14px, 5cqi, 22px);
-    --f: clamp(10px, 3.4cqi, 15px);
+    /* До 440 px рамка и подписи растут с доской и останавливаются; на большой доске (от ~700 px) растут дальше, медленнее. */
+    --g: clamp(14px, 5cqi, max(22px, 3.2cqi));
+    --f: clamp(10px, 3.4cqi, max(15px, 2.1cqi));
   }
 }
 .board-grid[data-frame="print"] {

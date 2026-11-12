@@ -1,6 +1,6 @@
 "use client";
 
-import { Repeat } from "lucide-react";
+import { Flag, Handshake, Repeat } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -333,7 +333,7 @@ function Table({ id }: { id: string }) {
           {active && offeredToMe && (
             <>
               <Button variant="success" onClick={() => void act({ action: "draw-accept" })} disabled={busy}>
-                🤝 {t("Принять ничью", "Durangni qabul qilish")}
+                <Icon icon={Handshake} /> {t("Принять ничью", "Durangni qabul qilish")}
               </Button>
               <Button variant="secondary" onClick={() => void act({ action: "draw-decline" })} disabled={busy}>
                 {t("Отказать", "Rad etish")}
@@ -346,7 +346,7 @@ function Table({ id }: { id: string }) {
               onClick={() => void act({ action: "draw-offer" })}
               disabled={busy || offeredByMe || game.moves.length < 2}
             >
-              🤝{" "}
+              <Icon icon={Handshake} />{" "}
               {offeredByMe
                 ? t("Ничья предложена", "Durang taklif qilindi")
                 : t("Предложить ничью", "Durang taklif qilish")}
@@ -377,7 +377,7 @@ function Table({ id }: { id: string }) {
               </>
             ) : (
               <Button variant="ghost" onClick={() => setConfirmResign(true)}>
-                🏳 {t("Сдаться", "Taslim boʻlish")}
+                <Icon icon={Flag} /> {t("Сдаться", "Taslim boʻlish")}
               </Button>
             ))}
           {finished && game.reason !== "aborted" && (
