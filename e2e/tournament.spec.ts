@@ -253,6 +253,50 @@ test("олимпийская: ничьей нет, победители идут
   await expect(page.locator("[data-bracket] section")).toHaveCount(3);
 });
 
+test("поделиться: пары тура и таблица уходят текстом в окно «Поделиться»; без него — копируются", async ({ page }) => {
+  await prepare(page);
+  // Системного окна в тестовом браузере нет — подставляем своё и смотрим, какой текст в него пришёл.
+  await page.addInitScript(() => {
+    const w = window as unknown as { __shared: string[]; __copied: string[] };
+    w.__shared = [];
+    w.__copied = [];
+    Object.defineProperty(navigator, "share", {
+      configurable: true,
+      value: async (data: { text?: string }) => void w.__shared.push(data.text ?? ""),
+    });
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText: async (text: string) => void w.__copied.push(text) },
+    });
+  });
+  await create(page, { format: "roundRobin", players: ["Али", "Вали", "Гани", "Дони"], name: "Турнир 3 «Б»" });
+  const shared = () => page.evaluate(() => (window as unknown as { __shared: string[] }).__shared);
+  const share = page.locator("[data-tournament-share]");
+
+  await expect(share).toHaveAccessibleName("Поделиться парами тура");
+  await share.click();
+  expect((await shared()).at(-1)).toBe(
+    ["Турнир 3 «Б»", "Тур 1 из 3. Белые — слева.", "1. Али — Дони", "2. Вали — Гани"].join("\n"),
+  );
+
+  await result(page, 1, "1-0");
+  await result(page, 2, "1/2");
+  await page.locator('[data-tab="table"]').click();
+  await expect(share).toHaveAccessibleName("Поделиться таблицей");
+  await share.click();
+  expect((await shared()).at(-1)).toBe(
+    ["Турнир 3 «Б»", "Таблица после 1 тура (всего 3)", "1. Али — 1", "2. Вали — ½", "2. Гани — ½", "4. Дони — 0"].join(
+      "\n",
+    ),
+  );
+
+  // Окна «Поделиться» нет (обычный компьютер): текст копируется, об этом сказано.
+  await page.evaluate(() => Object.defineProperty(navigator, "share", { configurable: true, value: undefined }));
+  await share.click();
+  await expect(page.locator("[data-tournament-shared]")).toHaveText("Скопировано — текст можно вставить в чат.");
+  expect(await page.evaluate(() => (window as unknown as { __copied: string[] }).__copied[0])).toContain("1. Али — 1");
+});
+
 test("турнир сохраняется в файл и загружается из файла; чужой файл не принимается; удаление — с подтверждением", async ({
   page,
 }) => {

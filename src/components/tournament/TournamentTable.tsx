@@ -88,7 +88,7 @@ function Standings({ tournament: t }: { tournament: Tournament }) {
         </table>
       </div>
 
-      <details className="rounded-3xl bg-surface p-4 shadow-card">
+      <details className="rounded-3xl bg-surface p-4 shadow-card print:hidden">
         <summary className="min-h-11 cursor-pointer py-2 font-black">
           {tr("Как считаются места", "Oʻrinlar qanday hisoblanadi")}
         </summary>
