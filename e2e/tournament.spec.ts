@@ -168,6 +168,70 @@ test("швейцарская: выбывший не получает пару, �
   expect(second).toContain("Жасур");
 });
 
+test("судья: исправить результат прошлого тура, поменять пары и цвета, имя участника, число туров", async ({
+  page,
+}) => {
+  await prepare(page);
+  await create(page, { format: "swiss", players: ["А", "Б", "В", "Г", "Д", "Е"] });
+  const first = await pairs(page);
+  for (const board of [1, 2, 3]) await result(page, board, "1-0");
+  await page.locator("[data-next-round]").click();
+  await expect(page.locator("[data-round]")).toHaveAttribute("data-round", "2");
+
+  // Прошлый тур закрыт от случайного нажатия; судья открывает его и исправляет результат.
+  await page.locator('[data-round-pick="1"]').click();
+  await expect(page.locator('[data-board="1"] [data-result="0-1"]')).toBeDisabled();
+  await page.locator("[data-fix-results]").click();
+  await result(page, 1, "0-1");
+  await expect(page.locator('[data-board="1"]')).toHaveAttribute("data-game-result", "0-1");
+  // Стереть результат прошлого тура нельзя — только заменить.
+  await result(page, 1, "0-1");
+  await expect(page.locator('[data-board="1"]')).toHaveAttribute("data-game-result", "0-1");
+  await page.locator('[data-tab="table"]').click();
+  const points = (name: string) =>
+    page.locator("[data-standings] tbody tr", { hasText: name }).locator("[data-points]").getAttribute("data-points");
+  expect(await points(first[0][0]!)).toBe("0");
+  expect(await points(first[0][1]!)).toBe("1");
+
+  // Пары второго тура: двое меняются местами, тур помечен; стрелки меняют цвет.
+  await page.locator('[data-tab="rounds"]').click();
+  await page.locator('[data-round-pick="2"]').click();
+  const before = await pairs(page);
+  await page.locator("[data-edit-pairs]").click();
+  await expect(page.locator("[data-result]")).toHaveCount(0);
+  await page.locator('[data-board="1"] [data-pick="black"]').click();
+  await page.locator('[data-board="2"] [data-pick="black"]').click();
+  await expect(page.locator('[data-note="manual"]')).toBeVisible();
+  const after = await pairs(page);
+  expect([...after[0]].sort()).toEqual([before[0][0], before[1][1]].sort());
+  expect([...after[1]].sort()).toEqual([before[1][0], before[0][1]].sort());
+  await page.locator('[data-board="3"] [data-flip]').click();
+  expect((await pairs(page))[2]).toEqual([before[2][1], before[2][0]]);
+  await page.locator("[data-edit-pairs]").click();
+  await expect(page.locator('[data-board="1"] [data-result="1-0"]')).toBeEnabled();
+  // Правка сохраняется.
+  await page.reload();
+  await expect(page.locator('[data-note="manual"]')).toBeVisible();
+  expect((await pairs(page))[2]).toEqual([before[2][1], before[2][0]]);
+
+  // Опечатка в имени и число туров.
+  await page.locator('[data-tab="players"]').click();
+  await page.locator('[data-player-edit="1"]').click();
+  await page.locator("[data-player-name]").fill("Алишер");
+  await page.locator("[data-player-rating]").fill("1500");
+  await page.locator("[data-player-save]").click();
+  await expect(page.locator('[data-player="1"]')).toContainText("Алишер");
+  await expect(page.locator('[data-player="1"]')).toContainText("1500");
+  const total = Number(await page.locator("[data-total-rounds]").getAttribute("data-total-rounds"));
+  await page.locator("[data-rounds-more]").click();
+  await expect(page.locator("[data-total-rounds]")).toHaveAttribute("data-total-rounds", String(total + 1));
+  await page.locator('[data-tab="rounds"]').click();
+  await expect(page.locator("[data-round-pick]")).toHaveCount(total + 1);
+  await expect(
+    page.locator("[data-white]", { hasText: "Алишер" }).or(page.locator("[data-black]", { hasText: "Алишер" })),
+  ).toBeVisible();
+});
+
 test("олимпийская: ничьей нет, победители идут дальше, в конце — места и сетка", async ({ page }) => {
   await prepare(page);
   await create(page, { format: "knockout", players: ["А", "Б", "В", "Г", "Д"] });

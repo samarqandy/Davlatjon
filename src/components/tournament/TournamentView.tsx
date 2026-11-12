@@ -1,25 +1,38 @@
 "use client";
 
-import { ArrowLeft, Dices, Download, Printer, Trash2, Undo2 } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowLeftRight,
+  ArrowUpDown,
+  Dices,
+  Download,
+  PencilLine,
+  Printer,
+  Trash2,
+  Undo2,
+} from "lucide-react";
 import { useState } from "react";
 import { Button, cn, Icon } from "@/components/ui";
 import { useT } from "@/lib/i18n";
 import { pluralize } from "@/lib/plural";
 import {
-  addLatePlayer,
+  canEditPairs,
   canEditRound,
   canPairNext,
   canUndoRound,
   isFinished,
   pairNextRound,
   setResult,
-  toggleWithdrawn,
+  swapColors,
+  swapPlayers,
   undoRound,
 } from "@/lib/tournament/engine";
 import { exportTournament, removeTournament, saveTournament } from "@/lib/tournament/store";
+import { roundIssues } from "@/lib/tournament/swiss";
 import type { GameResult, TGame, Tournament } from "@/lib/tournament/types";
 import { roundDone } from "@/lib/tournament/types";
 import { setHash } from "@/lib/useHash";
+import { TournamentPlayers } from "./TournamentPlayers";
 import { TournamentTable } from "./TournamentTable";
 import { downloadText, formatName, knockoutRoundName, RESULT_TEXT } from "./shared";
 
@@ -233,7 +246,7 @@ export function TournamentView({ tournament: t }: { tournament: Tournament }) {
       )}
 
       {tab === "table" && <TournamentTable tournament={t} />}
-      {tab === "players" && <Players tournament={t} />}
+      {tab === "players" && <TournamentPlayers tournament={t} />}
     </div>
   );
 }
@@ -256,31 +269,86 @@ function RoundGames({
   const tr = useT();
   const round = t.rounds[roundIndex];
   const name = new Map(t.players.map((p) => [p.id, p.name]));
-  const editable = canEditRound(t, roundIndex);
   const knockout = t.format === "knockout";
   const swiss = t.format === "swiss";
+  const last = roundIndex === t.rounds.length - 1;
+  // Сыгранный тур швейцарской закрыт от случайного нажатия: чтобы исправить результат, судья открывает его сам.
+  const past = swiss && !last;
+  const [unlocked, setUnlocked] = useState<number | null>(null);
+  const [pairEdit, setPairEdit] = useState(false);
+  const [picked, setPicked] = useState<string | null>(null);
+  const editable = canEditRound(t, roundIndex) && (!past || unlocked === roundIndex);
+  const pairsMode = pairEdit && last && canEditPairs(t);
   const finalRound = knockout && roundIndex === t.totalRounds - 1;
   const title = knockout
     ? knockoutRoundName(2 ** (t.totalRounds - 1 - roundIndex), tr)
     : tr(`Тур ${roundIndex + 1}`, `${roundIndex + 1}-tur`);
+  const rematches = round.notes?.includes("rematch") ? roundIssues(t, roundIndex).rematches : [];
+  const note = (text: string, key: string) => (
+    <p
+      key={key}
+      className="rounded-2xl bg-sun-soft px-4 py-2 text-sm font-bold text-sun-ink"
+      role="note"
+      data-note={key}
+    >
+      {text}
+    </p>
+  );
+  const pick = (id: string) => {
+    if (picked !== null && picked !== id) saveTournament(swapPlayers(t, picked, id));
+    setPicked(picked === null ? id : null);
+  };
 
   return (
     <div className="space-y-3" data-round={roundIndex + 1}>
       <h2 className="text-2xl font-black">{title}</h2>
-      {round.notes?.includes("color") && (
-        <p className="rounded-2xl bg-sun-soft px-4 py-2 text-sm font-bold text-sun-ink" role="note">
-          {tr(
-            "В этом туре кому-то пришлось играть одним цветом третий раз подряд: иначе пары не составить.",
-            "Bu turda kimdir ketma-ket uchinchi marta bir xil rangda oʻynaydi: boshqacha juftlab boʻlmadi.",
-          )}
-        </p>
-      )}
-      {round.notes?.includes("repeatBye") && (
-        <p className="rounded-2xl bg-sun-soft px-4 py-2 text-sm font-bold text-sun-ink" role="note">
-          {tr(
-            "В этом туре участник свободен от игры во второй раз: иначе пары не составить.",
-            "Bu turda ishtirokchi ikkinchi marta oʻyindan ozod: boshqacha juftlab boʻlmadi.",
-          )}
+      {round.notes?.includes("manual") &&
+        note(tr("Пары этого тура изменены вручную.", "Bu tur juftliklari qoʻlda oʻzgartirilgan."), "manual")}
+      {rematches.length > 0 &&
+        note(
+          tr(
+            `Уже встречались: ${rematches.map(([a, b]) => `${name.get(a)} — ${name.get(b)}`).join("; ")}. Повторная встреча — на усмотрение судьи.`,
+            `Avval uchrashgan: ${rematches.map(([a, b]) => `${name.get(a)} — ${name.get(b)}`).join("; ")}. Takroriy uchrashuv — hakam ixtiyorida.`,
+          ),
+          "rematch",
+        )}
+      {round.notes?.includes("color") &&
+        note(
+          round.notes.includes("manual")
+            ? tr(
+                "В этом туре кто-то играет одним цветом третий раз подряд.",
+                "Bu turda kimdir ketma-ket uchinchi marta bir xil rangda oʻynaydi.",
+              )
+            : tr(
+                "В этом туре кому-то пришлось играть одним цветом третий раз подряд: иначе пары не составить.",
+                "Bu turda kimdir ketma-ket uchinchi marta bir xil rangda oʻynaydi: boshqacha juftlab boʻlmadi.",
+              ),
+          "color",
+        )}
+      {round.notes?.includes("repeatBye") &&
+        note(
+          round.notes.includes("manual")
+            ? tr(
+                "В этом туре участник свободен от игры во второй раз.",
+                "Bu turda ishtirokchi ikkinchi marta oʻyindan ozod.",
+              )
+            : tr(
+                "В этом туре участник свободен от игры во второй раз: иначе пары не составить.",
+                "Bu turda ishtirokchi ikkinchi marta oʻyindan ozod: boshqacha juftlab boʻlmadi.",
+              ),
+          "repeatBye",
+        )}
+      {pairsMode && (
+        <p className="text-sm font-bold text-muted print:hidden" role="status">
+          {picked
+            ? tr(
+                `Выбран участник: ${name.get(picked)}. Нажмите на того, с кем поменять.`,
+                `Tanlandi: ${name.get(picked)}. Kim bilan almashtirishni bosing.`,
+              )
+            : tr(
+                "Нажмите на двух участников — они поменяются местами. Стрелки меняют цвет в паре.",
+                "Ikki ishtirokchini bosing — ular oʻrin almashadi. Strelkalar juftlikdagi rangni almashtiradi.",
+              )}
         </p>
       )}
       <ol className="grid gap-2 lg:grid-cols-2">
@@ -302,14 +370,49 @@ function RoundGames({
             editable={editable}
             allowDraw={!knockout}
             onResult={(result) => onResult(board, result)}
+            pairs={
+              pairsMode && !g.result
+                ? { picked, onPick: pick, onFlip: () => saveTournament(swapColors(t, board)) }
+                : undefined
+            }
           />
         ))}
       </ol>
-      {!editable && (
+      <div className="flex flex-wrap items-center gap-2 print:hidden">
+        {swiss && last && canEditPairs(t) && (
+          <Button
+            variant={pairsMode ? "secondary" : "ghost"}
+            size="sm"
+            aria-pressed={pairsMode}
+            onClick={() => {
+              setPairEdit(!pairsMode);
+              setPicked(null);
+            }}
+            data-edit-pairs
+          >
+            <Icon icon={ArrowLeftRight} />{" "}
+            {pairsMode ? tr("Готово", "Tayyor") : tr("Изменить пары", "Juftliklarni oʻzgartirish")}
+          </Button>
+        )}
+        {past && unlocked !== roundIndex && (
+          <Button variant="ghost" size="sm" onClick={() => setUnlocked(roundIndex)} data-fix-results>
+            <Icon icon={PencilLine} /> {tr("Исправить результат", "Natijani tuzatish")}
+          </Button>
+        )}
+      </div>
+      {past && unlocked === roundIndex && (
+        <p className="text-sm font-bold text-muted print:hidden" role="status">
+          {tr(
+            "Таблица пересчитается сама. Пары следующих туров остаются как есть.",
+            "Jadval oʻzi qayta hisoblanadi. Keyingi turlarning juftliklari oʻzgarmaydi.",
+          )}
+        </p>
+      )}
+      {knockout && !last && (
         <p className="text-sm font-bold text-muted print:hidden">
           {tr(
-            "Результаты этого тура уже учтены в жеребьёвке следующих — изменить их нельзя.",
-            "Bu tur natijalari keyingi turlar qurʼasida hisobga olingan — ularni oʻzgartirib boʻlmaydi.",
+            "Победители этого тура уже играют дальше. Чтобы исправить результат, отмените жеребьёвку следующего тура.",
+            "Bu tur gʻoliblari keyingi bosqichda oʻynayapti. Natijani tuzatish uchun keyingi tur qurʼasini bekor qiling.",
           )}
         </p>
       )}
@@ -327,6 +430,7 @@ function GameRow({
   editable,
   allowDraw,
   onResult,
+  pairs,
 }: {
   game: TGame;
   board: number;
@@ -337,6 +441,8 @@ function GameRow({
   editable: boolean;
   allowDraw: boolean;
   onResult: (result: GameResult | undefined) => void;
+  /** Правка пар: имена становятся кнопками, вместо результата — смена цвета. */
+  pairs?: { picked: string | null; onPick: (id: string) => void; onFlip: () => void };
 }) {
   const tr = useT();
   const dot = (color: "w" | "b") => (
@@ -369,6 +475,26 @@ function GameRow({
       </button>
     );
   };
+  /** Имя участника: в обычном виде — текст, при правке пар — кнопка выбора. */
+  const player = (id: string, text: string, side: "white" | "black") =>
+    pairs ? (
+      <button
+        type="button"
+        aria-pressed={pairs.picked === id}
+        onClick={() => pairs.onPick(id)}
+        data-pick={side}
+        className={cn(
+          "min-h-11 min-w-0 flex-1 rounded-xl border-2 px-3 text-left font-extrabold break-words transition",
+          pairs.picked === id ? "border-brand bg-brand text-white" : "border-line bg-surface hover:border-brand/40",
+        )}
+      >
+        <span {...{ [`data-${side}`]: "" }}>{text}</span>
+      </button>
+    ) : (
+      <span className="min-w-0 break-words" {...{ [`data-${side}`]: "" }}>
+        {text}
+      </span>
+    );
   return (
     <li className="rounded-2xl bg-surface p-3 shadow-card" data-board={board} data-game-result={game.result ?? ""}>
       {label && <p className="mb-1 text-sm font-extrabold tracking-wide text-muted uppercase">{label}</p>}
@@ -382,28 +508,36 @@ function GameRow({
         <div className="min-w-0 flex-1 space-y-1">
           <p className="flex items-center gap-2 font-extrabold">
             {black !== null && dot("w")}
-            <span className="min-w-0 break-words" data-white>
-              {white}
-            </span>
+            {player(game.white, white, "white")}
             {black !== null && <span className="sr-only">{tr(" — белые", " — oqlar")}</span>}
           </p>
-          {black === null ? (
+          {black === null || game.black === null ? (
             <p className="text-sm font-bold text-muted" data-bye>
               {byeNote}
             </p>
           ) : (
             <p className="flex items-center gap-2 font-extrabold">
               {dot("b")}
-              <span className="min-w-0 break-words" data-black>
-                {black}
-              </span>
+              {player(game.black, black, "black")}
               <span className="sr-only">{tr(" — чёрные", " — qoralar")}</span>
             </p>
           )}
         </div>
+        {pairs && black !== null && (
+          <button
+            type="button"
+            onClick={pairs.onFlip}
+            aria-label={tr(`Поменять цвета: ${white} — ${black}`, `Ranglarni almashtirish: ${white} — ${black}`)}
+            title={tr("Поменять цвета", "Ranglarni almashtirish")}
+            data-flip
+            className="grid size-11 shrink-0 place-items-center self-center rounded-xl border-2 border-line bg-surface transition hover:border-brand/40"
+          >
+            <Icon icon={ArrowUpDown} />
+          </button>
+        )}
         {game.result && <span className="hidden text-lg font-black print:block">{RESULT_TEXT[game.result]}</span>}
       </div>
-      {black !== null && (
+      {black !== null && !pairs && (
         <div className="mt-2 space-y-1 print:hidden">
           <div
             className="flex gap-2"
@@ -428,91 +562,5 @@ function GameRow({
         </div>
       )}
     </li>
-  );
-}
-
-function Players({ tournament: t }: { tournament: Tournament }) {
-  const tr = useT();
-  const [name, setName] = useState("");
-  const swiss = t.format === "swiss";
-  const canAdd = swiss && t.rounds.length < t.totalRounds;
-  const players = [...t.players].sort((a, b) => a.seed - b.seed);
-  const add = () => {
-    const m = name.trim().match(/^(.*\S)[\s,;]+(\d{3,4})$/);
-    const entry = m ? { name: m[1], rating: Number(m[2]) } : { name };
-    if (!entry.name.trim()) return;
-    saveTournament(addLatePlayer(t, entry));
-    setName("");
-  };
-  return (
-    <section className="space-y-4" aria-label={tr("Участники", "Ishtirokchilar")}>
-      <ol className="divide-y divide-line/60 rounded-3xl bg-surface px-4 shadow-card" data-players>
-        {players.map((p) => {
-          const gone = p.withdrawnAfter !== undefined;
-          return (
-            <li key={p.id} className="flex min-h-14 items-center gap-3 py-1.5">
-              <span className="w-7 shrink-0 text-right text-sm font-black text-muted tabular-nums">{p.seed}</span>
-              <span className={cn("min-w-0 flex-1 font-extrabold break-words", gone && "text-muted line-through")}>
-                {p.name}
-              </span>
-              {p.rating && <span className="text-sm font-bold text-muted tabular-nums">{p.rating}</span>}
-              {(p.joinedRound ?? 1) > 1 && (
-                <span className="text-sm font-bold text-muted">
-                  {tr(`с тура ${p.joinedRound}`, `${p.joinedRound}-turdan`)}
-                </span>
-              )}
-              {swiss && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="print:hidden"
-                  onClick={() => saveTournament(toggleWithdrawn(t, p.id))}
-                  data-withdraw={p.seed}
-                >
-                  {gone ? tr("Вернуть", "Qaytarish") : tr("Выбыл", "Chiqib ketdi")}
-                </Button>
-              )}
-            </li>
-          );
-        })}
-      </ol>
-      <p className="text-sm text-muted">
-        {tr(
-          "Номер слева — стартовый: по нему составлены пары первого тура.",
-          "Chapdagi raqam — boshlangʻich raqam: birinchi tur juftliklari shu boʻyicha tuzilgan.",
-        )}
-        {swiss &&
-          tr(
-            " «Выбыл» — участник не получает пару в следующих турах; уже сведённую партию отметьте как неявку.",
-            " «Chiqib ketdi» — ishtirokchi keyingi turlarda juftlikka qoʻyilmaydi; tuzib boʻlingan partiyani «kelmadi» deb belgilang.",
-          )}
-      </p>
-      {canAdd && (
-        <form
-          className="flex flex-wrap items-end gap-2 print:hidden"
-          onSubmit={(e) => {
-            e.preventDefault();
-            add();
-          }}
-        >
-          <label className="min-w-0 flex-1">
-            <span className="mb-1 block font-extrabold">
-              {tr("Добавить опоздавшего", "Kechikkan ishtirokchini qoʻshish")}
-            </span>
-            <input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              maxLength={80}
-              placeholder={tr("Имя и, если есть, рейтинг", "Ism va, boʻlsa, reyting")}
-              className="w-full rounded-2xl border-2 border-line bg-surface px-4 py-2.5 font-bold outline-none focus:border-brand"
-              data-late-name
-            />
-          </label>
-          <Button type="submit" disabled={!name.trim()} data-late-add>
-            {tr(`Добавить с тура ${t.rounds.length + 1}`, `${t.rounds.length + 1}-turdan qoʻshish`)}
-          </Button>
-        </form>
-      )}
-    </section>
   );
 }
