@@ -420,20 +420,32 @@ test("телефон: доска упражнения, задачи и игры 
     await page.waitForLoadState("networkidle");
     const board = page.locator("[data-board]").first();
     await expect(board).toBeVisible();
-    const box = (await board.boundingBox())!;
-    expect(Math.round(box.x), url).toBe(0);
-    expect(Math.round(box.width), url).toBe(width);
+    // Все размеры — одним снимком: после первого хода соперника страница может сдвинуться на несколько пикселей.
+    const m = await board.evaluate((el) => {
+      const rect = (x: Element) => {
+        const r = x.getBoundingClientRect();
+        return { x: r.x, y: r.y, w: r.width, h: r.height };
+      };
+      return {
+        board: rect(el),
+        square: rect(el.querySelector("[data-square]")!),
+        ranks: [...el.querySelectorAll('[data-coords="ranks"] span')].map(rect),
+        files: [...el.querySelectorAll('[data-coords="files"] span')].map(rect),
+      };
+    });
+    expect(Math.round(m.board.x), url).toBe(0);
+    expect(Math.round(m.board.w), url).toBe(width);
     // Клетка — восьмая часть экрана: рамка места не отнимает.
-    const square = (await board.locator("[data-square]").first().boundingBox())!;
-    expect(square.width, url).toBeGreaterThanOrEqual(width / 8 - 0.5);
+    expect(m.square.w, url).toBeGreaterThanOrEqual(width / 8 - 0.5);
     // Подписи на месте и не выходят за доску; страница не шире экрана.
-    for (const strip of ["ranks", "files"]) {
-      const labels = board.locator(`[data-coords="${strip}"] span`);
-      await expect(labels, url).toHaveCount(8);
-      const first = (await labels.first().boundingBox())!;
-      expect(first.x, url).toBeGreaterThanOrEqual(0);
-      expect(first.y, url).toBeGreaterThanOrEqual(box.y);
-      expect(first.y + first.height, url).toBeLessThanOrEqual(box.y + box.height + 0.5);
+    for (const labels of [m.ranks, m.files]) {
+      expect(labels, url).toHaveLength(8);
+      for (const label of labels) {
+        expect(label.x, url).toBeGreaterThanOrEqual(0);
+        expect(label.x + label.w, url).toBeLessThanOrEqual(width + 0.5);
+        expect(label.y, url).toBeGreaterThanOrEqual(m.board.y - 0.5);
+        expect(label.y + label.h, url).toBeLessThanOrEqual(m.board.y + m.board.h + 0.5);
+      }
     }
     expect(await page.evaluate(() => document.documentElement.scrollWidth), url).toBeLessThanOrEqual(width);
   }
