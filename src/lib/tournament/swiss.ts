@@ -161,6 +161,39 @@ function violated(note: PairingNote, games: TGame[], all: Seat[]): boolean {
   });
 }
 
+/** Места участников по итогам туров до roundIndex (с нуля) — история, с которой сверяется этот тур. */
+const seatsBefore = (t: Tournament, roundIndex: number) =>
+  new Map(seats({ ...t, rounds: t.rounds.slice(0, roundIndex) }, roundIndex + 1).map((s) => [s.id, s]));
+
+/**
+ * Что в туре идёт против правил жеребьёвки. Нужно для тура, пары которого правил судья: программа не запрещает,
+ * но показывает — повторные встречи, третий раз подряд один цвет, второй свободный тур.
+ */
+export function roundIssues(
+  t: Tournament,
+  roundIndex: number,
+): { notes: PairingNote[]; rematches: [string, string][] } {
+  const seat = seatsBefore(t, roundIndex);
+  const games = (t.rounds[roundIndex]?.games ?? []).filter(
+    (g) => seat.has(g.white) && (g.black === null || seat.has(g.black)),
+  );
+  const all = [...seat.values()];
+  const rematches = games
+    .filter((g) => g.black !== null && seat.get(g.white)!.met.has(g.black))
+    .map((g): [string, string] => [g.white, g.black!]);
+  const notes = (["color", "repeatBye"] as const).filter((note) => violated(note, games, all));
+  return { notes, rematches };
+}
+
+/** Кому в паре играть белыми по правилам цвета (для пары, составленной вручную): [белые, чёрные]. */
+export function colorsFor(t: Tournament, roundIndex: number, a: string, b: string): [string, string] {
+  const seat = seatsBefore(t, roundIndex);
+  const sa = seat.get(a);
+  const sb = seat.get(b);
+  if (!sa || !sb) return [a, b];
+  return whiteOf(sa, sb, t.initialColor).id === a ? [a, b] : [b, a];
+}
+
 function tryPair(all: Seat[], initial: Color, strictColor: boolean, strictBye: boolean): TGame[] | null {
   const pref = new Map(all.map((s) => [s.id, preference(s)]));
   const compatible = (a: Seat, b: Seat) => {
@@ -220,10 +253,10 @@ function tryPair(all: Seat[], initial: Color, strictColor: boolean, strictBye: b
     const calmAfter = (c: Seat) => pairsIn(without(bracket, top, c), (a, b) => compatible(a, b) && !clash(a, b));
 
     const choice =
-      // Лучшее: пара внутри группы, без спора о цвете, и остальным в группе это не мешает.
-      inside.find((c) => !clash(top, c) && keepsPairs(c) && calmAfter(c) === maxCalm - 1 && keepsRest(c)) ??
-      // Спор о цвете неизбежен, но число «спокойных» пар в группе не уменьшается.
-      inside.find((c) => keepsPairs(c) && calmAfter(c) === maxCalm && keepsRest(c)) ??
+      // Лучшее: первая по порядку пара внутри группы, при которой «спокойных» пар (без спора о цвете) в группе
+      // остаётся столько, сколько вообще возможно. Сама пара может спорить о цвете: если споров всё равно
+      // столько же, порядок важнее — первый номер группы играет с первым из нижней половины.
+      inside.find((c) => keepsPairs(c) && calmAfter(c) + (clash(top, c) ? 0 : 1) === maxCalm && keepsRest(c)) ??
       inside.find((c) => keepsPairs(c) && keepsRest(c)) ??
       inside.find(keepsRest) ??
       below.find(keepsRest);

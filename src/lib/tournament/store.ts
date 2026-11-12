@@ -6,12 +6,13 @@
  * Перенести турнир на другое устройство — файлом (exportTournament / parseTournament).
  */
 import { useSyncExternalStore } from "react";
-import type { GameResult, TGame, TPlayer, TRound, Tournament, TournamentFormat } from "./types";
+import type { GameResult, PairingNote, TGame, TPlayer, TRound, Tournament, TournamentFormat } from "./types";
 
 const KEY = "davlatjon-lab:tournaments:v1";
 const EMPTY: Tournament[] = [];
 const FORMATS: TournamentFormat[] = ["roundRobin", "doubleRoundRobin", "swiss", "knockout"];
 const RESULTS: GameResult[] = ["1-0", "0-1", "1/2", "+-", "-+"];
+const NOTES: PairingNote[] = ["manual", "rematch", "color", "repeatBye"];
 /** Больше турниров не храним: самые старые уходят (место в хранилище браузера не бесконечно). */
 const MAX_TOURNAMENTS = 50;
 
@@ -62,7 +63,7 @@ export function parseTournament(raw: unknown): Tournament | null {
         ...(result && g.black !== null ? { result } : {}),
       });
     }
-    const notes = Array.isArray(r.notes) ? r.notes.filter((n) => n === "color" || n === "repeatBye") : [];
+    const notes = Array.isArray(r.notes) ? NOTES.filter((n) => (r.notes as unknown[]).includes(n)) : [];
     rounds.push(notes.length ? { games, notes } : { games });
   }
   const totalRounds = typeof raw.totalRounds === "number" ? Math.round(raw.totalRounds) : rounds.length;

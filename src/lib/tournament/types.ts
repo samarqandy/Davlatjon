@@ -30,8 +30,11 @@ export interface TGame {
   result?: GameResult;
 }
 
-/** Что пришлось нарушить, чтобы провести жеребьёвку тура: организатор должен это видеть. */
-export type PairingNote = "color" | "repeatBye";
+/**
+ * Что организатор должен видеть над туром: что пришлось нарушить при жеребьёвке (цвет, повторный свободный тур),
+ * что пары правил судья («manual») и что среди них есть повторная встреча («rematch» — бывает только после правки).
+ */
+export type PairingNote = "color" | "repeatBye" | "manual" | "rematch";
 
 export interface TRound {
   games: TGame[];

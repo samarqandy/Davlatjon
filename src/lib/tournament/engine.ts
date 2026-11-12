@@ -4,8 +4,15 @@
  */
 import { knockoutFirstRound, knockoutNextRound, knockoutRounds } from "./knockout";
 import { roundRobinRounds } from "./roundRobin";
-import { maxSwissRounds, pairSwissRound, recommendedSwissRounds, type SwissError } from "./swiss";
-import type { Color, GameResult, TPlayer, Tournament, TournamentFormat } from "./types";
+import {
+  colorsFor,
+  maxSwissRounds,
+  pairSwissRound,
+  recommendedSwissRounds,
+  roundIssues,
+  type SwissError,
+} from "./swiss";
+import type { Color, GameResult, PairingNote, TGame, TPlayer, Tournament, TournamentFormat } from "./types";
 import { FORMAT_LIMITS, roundDone } from "./types";
 
 /** Как раздаются стартовые номера: жребий, по рейтингу (сильнейший — первый) или как в списке. */
@@ -127,13 +134,18 @@ export function pairNextRound(t: Tournament): Tournament | { error: PairError } 
 }
 
 /**
- * Результаты можно менять в любом туре круговой системы; в швейцарской и олимпийской — только в последнем
- * сведённом: от прежних туров уже зависит жеребьёвка следующих.
+ * В каком туре можно менять результаты. Круговая и швейцарская — в любом сведённом: исправленный результат
+ * прошлого тура пересчитывает таблицу и учитывается в следующих жеребьёвках, а уже составленные пары остаются
+ * (так поступает судья и по правилам ФИДЕ). Олимпийская — только в последнем: победитель уже играет дальше.
  */
 export function canEditRound(t: Tournament, roundIndex: number): boolean {
-  if (t.format === "roundRobin" || t.format === "doubleRoundRobin") return roundIndex < t.rounds.length;
-  return roundIndex === t.rounds.length - 1;
+  if (t.format === "knockout") return roundIndex === t.rounds.length - 1;
+  return roundIndex >= 0 && roundIndex < t.rounds.length;
 }
+
+/** Тур, после которого уже проведена жеребьёвка следующего (швейцарская): результат в нём можно исправить, но не стереть. */
+const isPastSwissRound = (t: Tournament, roundIndex: number) =>
+  t.format === "swiss" && roundIndex < t.rounds.length - 1;
 
 export function setResult(
   t: Tournament,
@@ -145,6 +157,8 @@ export function setResult(
   if (!game || game.black === null || !canEditRound(t, roundIndex)) return t;
   // На выбывание ничьей быть не может: кто-то должен пройти дальше.
   if (t.format === "knockout" && result === "1/2") return t;
+  // Без результата прошлый тур оказался бы «несыгранным» при уже сведённом следующем.
+  if (!result && isPastSwissRound(t, roundIndex)) return t;
   const rounds = t.rounds.map((round, r) =>
     r !== roundIndex
       ? round
@@ -156,6 +170,57 @@ export function setResult(
         },
   );
   return { ...t, rounds };
+}
+
+/** Пары можно править руками в швейцарской — в последнем сведённом туре, пока он не сыгран. */
+export function canEditPairs(t: Tournament): boolean {
+  const last = t.rounds[t.rounds.length - 1];
+  return t.format === "swiss" && !!last && !roundDone(last);
+}
+
+/** Тур после ручной правки: пометка «manual» и всё, что теперь идёт против правил жеребьёвки. */
+function withManualRound(t: Tournament, roundIndex: number, games: TGame[]): Tournament {
+  const draft = { ...t, rounds: t.rounds.map((round, r) => (r === roundIndex ? { games } : round)) };
+  const issues = roundIssues(draft, roundIndex);
+  const notes: PairingNote[] = ["manual", ...(issues.rematches.length ? (["rematch"] as const) : []), ...issues.notes];
+  return { ...t, rounds: draft.rounds.map((round, r) => (r === roundIndex ? { games, notes } : round)) };
+}
+
+/**
+ * Поменять двух участников местами в последнем туре (швейцарская): брат с сестрой, ученики одного тренера,
+ * ошибка в списке. Партии с результатом не трогаем. Цвета в новых парах ставятся по правилам; двое из одной
+ * пары просто меняются цветами. Свободный от игры тоже меняется — тогда свободным становится другой.
+ */
+export function swapPlayers(t: Tournament, a: string, b: string): Tournament {
+  if (!canEditPairs(t) || a === b) return t;
+  const roundIndex = t.rounds.length - 1;
+  const games = t.rounds[roundIndex].games;
+  const ia = games.findIndex((g) => g.white === a || g.black === a);
+  const ib = games.findIndex((g) => g.white === b || g.black === b);
+  if (ia < 0 || ib < 0 || games[ia].result || games[ib].result) return t;
+  if (ia === ib) return swapColors(t, ia);
+  const put = (g: TGame, from: string, to: string): TGame => ({
+    white: g.white === from ? to : g.white,
+    black: g.black === from ? to : g.black,
+  });
+  const next = games.map((g, i) => {
+    const moved = i === ia ? put(g, a, b) : i === ib ? put(g, b, a) : g;
+    if (moved === g || moved.black === null) return moved;
+    const [white, black] = colorsFor(t, roundIndex, moved.white, moved.black);
+    return { white, black };
+  });
+  return withManualRound(t, roundIndex, next);
+}
+
+/** Поменять цвета в паре последнего тура (швейцарская), пока у партии нет результата. */
+export function swapColors(t: Tournament, board: number): Tournament {
+  if (!canEditPairs(t)) return t;
+  const roundIndex = t.rounds.length - 1;
+  const games = t.rounds[roundIndex].games;
+  const game = games[board];
+  if (!game || game.black === null || game.result) return t;
+  const next = games.map((g, i) => (i === board ? { white: game.black!, black: game.white } : g));
+  return withManualRound(t, roundIndex, next);
 }
 
 /** Отменить жеребьёвку последнего тура (швейцарская, олимпийская), пока в нём нет результатов. */
@@ -196,4 +261,34 @@ export function addLatePlayer(t: Tournament, entry: { name: string; rating?: num
     joinedRound: t.rounds.length + 1,
   };
   return { ...t, players: [...t.players, player] };
+}
+
+/** Исправить имя или рейтинг участника (опечатка). Стартовый номер и пары не меняются. */
+export function updatePlayer(t: Tournament, playerId: string, entry: { name: string; rating?: number }): Tournament {
+  const name = entry.name.trim().slice(0, 80);
+  if (!name) return t;
+  const rating = entry.rating && entry.rating > 0 ? Math.round(entry.rating) : undefined;
+  return {
+    ...t,
+    players: t.players.map((p) => {
+      if (p.id !== playerId) return p;
+      const next: TPlayer = { ...p, name };
+      if (rating) next.rating = rating;
+      else delete next.rating;
+      return next;
+    }),
+  };
+}
+
+/** Швейцарская: сколько туров ещё можно объявить и до скольких убавить. */
+export function totalRoundsRange(t: Tournament): { min: number; max: number } {
+  return { min: Math.max(1, t.rounds.length), max: Math.max(t.rounds.length, maxSwissRounds(t.players.length)) };
+}
+
+/** Швейцарская: изменить число туров по ходу турнира (пришло меньше участников, решили сыграть ещё тур). */
+export function setTotalRounds(t: Tournament, total: number): Tournament {
+  if (t.format !== "swiss") return t;
+  const { min, max } = totalRoundsRange(t);
+  const next = Math.min(max, Math.max(min, Math.round(total)));
+  return next === t.totalRounds ? t : { ...t, totalRounds: next };
 }
