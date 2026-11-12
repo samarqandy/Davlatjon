@@ -379,6 +379,8 @@ for (const [name, url, share, below, which] of [
   ["партия мастеров", "/chess/games/opera", 0.7, true, '[data-board="game-opera"]'],
   ["дебют", "/chess/openings#open-italian", 0.7, true, '[data-board="opening-italian"]'],
   ["тренажёр дебюта", "/chess/openings#train-italian-white", 0.7, true, '[data-board="train-italian"]'],
+  ["урок эндшпиля", "/chess/endgames#square", 0.7, false, '[data-board="demo-square"]'],
+  ["упражнение эндшпиля", "/chess/endgames#opp-1", 0.7, false, '[data-board="opp-1"]'],
 ] as const)
   test(`широкий экран, ${name}: доска целиком в окне и занимает его высоту, остальное — справа`, async ({
     page,
@@ -532,6 +534,8 @@ test("телефон: главная доска экрана — во всю ш�
     ["/chess/games/opera", '[data-board="game-opera"]'],
     ["/chess/openings#open-italian", '[data-board="opening-italian"]'],
     ["/chess/openings#train-italian-white", '[data-board="train-italian"]'],
+    ["/chess/endgames#square", '[data-board="demo-square"]'],
+    ["/chess/endgames#opp-1", '[data-board="opp-1"]'],
   ] as const) {
     await page.goto(url);
     await page.waitForLoadState("networkidle");
@@ -566,4 +570,96 @@ test("телефон: главная доска экрана — во всю ш�
     }
     expect(await page.evaluate(() => document.documentElement.scrollWidth), url).toBeLessThanOrEqual(width);
   }
+});
+
+// Школа эндшпиля: один экран — одна доска (END-1). Раньше все уроки и 18 настоящих досок стояли на одной
+// странице: на медленном телефоне она оживала 1,9 с и была длиной 15,7 экрана (доски — 304–320 px).
+test("школа эндшпиля: список картинками, урок и упражнения — отдельными экранами, «дальше» ведёт по порядку", async ({
+  page,
+}) => {
+  await prepare(page);
+  await page.goto("/chess/endgames");
+  await expect(page.getByRole("heading", { level: 1, name: "Школа эндшпиля" })).toBeVisible();
+  // В списке — доски-картинки: настоящих досок на странице нет.
+  await expect(page.locator("[data-endgame-lesson]")).toHaveCount(4);
+  await expect(page.locator("[data-board-thumb]")).toHaveCount(4);
+  await expect(page.locator("[data-board]")).toHaveCount(0);
+
+  await page.locator('[data-endgame-lesson="square"]').click();
+  await expect(page).toHaveURL(/#square$/);
+  await expect(page.getByRole("heading", { level: 1, name: "Правило квадрата" })).toBeVisible();
+  await expect(page.locator("[data-board]")).toHaveCount(1);
+  expect(await page.evaluate(() => window.scrollY)).toBe(0);
+
+  // Вход в упражнения виден без прокрутки: на телефоне — панель внизу, на широком экране — блок у края окна.
+  const start = page.getByRole("button", { name: "К упражнениям →" });
+  await expect(start).toBeInViewport();
+  await start.click();
+  await expect(page).toHaveURL(/#square-1$/);
+  await expect(page.locator("[data-board]")).toHaveCount(1);
+  const strip = page.locator("[data-step-strip] button");
+  await expect(strip).toHaveCount(5);
+  await expect(strip.nth(0)).toHaveAttribute("aria-current", "step");
+
+  await page.getByRole("button", { name: "Догонит", exact: true }).click();
+  await expect(page.getByText("Верно!")).toBeVisible();
+  await expect(page.getByText("Почему так")).toBeVisible();
+  await expect(strip.nth(0)).toHaveAccessibleName(/решено/);
+  // «Дальше» после решения — на виду (на телефоне — панель внизу экрана).
+  const onward = page.getByRole("button", { name: "Следующее упражнение →" });
+  await expect(onward).toBeInViewport();
+  await onward.click();
+  await expect(page).toHaveURL(/#square-2$/);
+  await expect(strip.nth(1)).toHaveAttribute("aria-current", "step");
+  await expect(page.getByText("Верно!")).toHaveCount(0);
+  // Фокус — на задании: диктор читает новое упражнение.
+  await expect(page.locator("[data-exercise-heading]")).toBeFocused();
+
+  // «Назад» браузера возвращает предыдущее упражнение, «закрыть» — список с сохранённым счётом.
+  await page.goBack();
+  await expect(page).toHaveURL(/#square-1$/);
+  await page.getByRole("button", { name: "Все уроки" }).click();
+  await expect(page.getByRole("heading", { level: 1, name: "Школа эндшпиля" })).toBeVisible();
+  await expect(page.locator('[data-endgame-lesson="square"]')).toContainText("1 / 5");
+  await expect(page.getByText("Решено 1 из 15")).toBeVisible();
+});
+
+test("школа эндшпиля: последнее упражнение урока — праздник и переход к следующему уроку", async ({ page }) => {
+  await page.addInitScript((key) => {
+    if (localStorage.getItem(key)) return;
+    const chessEndgames = Object.fromEntries(["square-1", "square-2", "square-3", "square-4"].map((id) => [id, 1]));
+    localStorage.setItem(
+      key,
+      JSON.stringify({ version: 1, welcomed: true, settings: { age: 9, lang: "ru" }, chessEndgames }),
+    );
+  }, KEY);
+  await page.goto("/chess/endgames#square");
+  // Урок начат: кнопка ведёт к первому нерешённому упражнению.
+  await page.getByRole("button", { name: "Продолжить →" }).click();
+  await expect(page).toHaveURL(/#square-5$/);
+  await page.getByRole("button", { name: "Не догонит", exact: true }).click();
+  const party = page.locator("[data-celebration]");
+  await expect(party).toContainText("Урок пройден!");
+  await party.getByRole("button", { name: "Следующий урок: Оппозиция →" }).click();
+  await expect(page).toHaveURL(/#opposition$/);
+  await expect(page.getByRole("heading", { level: 1, name: "Оппозиция" })).toBeVisible();
+  // Повторный заход в пройденный урок салют не устраивает.
+  await page.goto("/chess/endgames#square-5");
+  await expect(page.locator('[data-board="square-5"]')).toBeVisible();
+  await expect(party).toHaveCount(0);
+});
+
+test("школа эндшпиля: игра с роботом — ход, ответ робота и «начать заново»", async ({ page }) => {
+  await prepare(page);
+  await page.goto("/chess/endgames#play-1");
+  const board = page.locator('[data-board="play-1"]');
+  await expect(board).toBeVisible();
+  await expect(page.getByText("Твой ход.")).toBeVisible();
+  // Неточный ход пешкой: робот удержит ничью — можно вернуть ход.
+  await board.locator('[data-square="e3"]').click();
+  await board.locator('[data-square="e4"]').click();
+  await expect(page.getByText(/Теперь робот удержит ничью/)).toBeVisible();
+  await page.getByRole("button", { name: "Вернуть ход" }).click();
+  await expect(page.getByText("Твой ход.")).toBeVisible();
+  await expect(board.locator('[data-square="e3"] [data-piece]')).toHaveCount(1);
 });

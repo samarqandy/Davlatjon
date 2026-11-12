@@ -93,6 +93,8 @@ const TOUCH_PAGES = [
   "/chess/pawn",
   "/chess/tactics",
   "/chess/endgames",
+  "/chess/endgames#square",
+  "/chess/endgames#square-1",
   "/chess/secrets",
   "/chess/history",
   "/achievements",
