@@ -607,8 +607,8 @@ test("шторм, повторение, награды и PGN", async ({ page })
   await expect(page.getByRole("heading", { name: "Календарь занятий" })).toBeVisible();
   await expect(page.getByText("Первая победа").locator("..")).toContainText("получена");
   await page.goto("/chess/review#gpgn");
-  await expect(page.getByRole("button", { name: "⬇️ Скачать PGN" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Скачать PGN" })).toBeVisible();
   const download = page.waitForEvent("download");
-  await page.getByRole("button", { name: "⬇️ Скачать PGN" }).click();
+  await page.getByRole("button", { name: "Скачать PGN" }).click();
   expect((await download).suggestedFilename()).toBe("partiya-gpgn.pgn");
 });

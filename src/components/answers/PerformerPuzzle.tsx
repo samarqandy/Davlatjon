@@ -1,7 +1,8 @@
 "use client";
 
+import { Undo2 } from "lucide-react";
 import { Fragment, useRef, useState } from "react";
-import { Button, cn } from "@/components/ui";
+import { Button, cn, Icon } from "@/components/ui";
 import type { PerformerPuzzle as PerformerSpec } from "@/content/types";
 import { askExplain, praise } from "@/lib/feedback";
 import { countText, useLang, useT } from "@/lib/i18n";
@@ -253,7 +254,7 @@ export function PerformerPuzzle({
         ))}
         <div className="flex flex-col gap-1.5">
           <Button variant="secondary" size="sm" onClick={undo} disabled={program.length === 0}>
-            ⌫ {t("Отменить", "Bekor qilish")}
+            <Icon icon={Undo2} /> {t("Отменить", "Bekor qilish")}
           </Button>
           <Button variant="ghost" size="sm" onClick={reset} disabled={program.length === 0}>
             {t("Сначала", "Qaytadan boshlash")}

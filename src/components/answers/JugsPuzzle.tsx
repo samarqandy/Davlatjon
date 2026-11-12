@@ -1,6 +1,6 @@
 "use client";
 
-import { RotateCcw } from "lucide-react";
+import { Droplets, RotateCcw, Undo2 } from "lucide-react";
 import { useRef, useState } from "react";
 import { Button, cn, Icon } from "@/components/ui";
 import { askExplain, praise } from "@/lib/feedback";
@@ -195,7 +195,7 @@ export function JugsPuzzle({
             />
             <div className="flex flex-wrap justify-center gap-1.5">
               <Button size="sm" variant="soft" onClick={() => act({ type: "fill", jug: j })} disabled={done}>
-                🚰 {t("Наполнить", "Toʻldirish")}
+                <Icon icon={Droplets} /> {t("Наполнить", "Toʻldirish")}
               </Button>
               <Button size="sm" variant="soft" onClick={() => act({ type: "empty", jug: j })} disabled={done}>
                 {t("Вылить", "Boʻshatish")}
@@ -220,7 +220,7 @@ export function JugsPuzzle({
           }}
           disabled={actions.length === 0}
         >
-          ↶ {t("Отменить", "Bekor qilish")}
+          <Icon icon={Undo2} /> {t("Отменить", "Bekor qilish")}
         </Button>
         <Button
           variant="ghost"

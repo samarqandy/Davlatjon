@@ -1,10 +1,11 @@
 "use client";
 
+import { Ban, MessageCircle, Swords, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { AccountPanel } from "@/components/AccountPanel";
-import { Button, cn } from "@/components/ui";
+import { Button, cn, Icon } from "@/components/ui";
 import { loginAvailable, useAccount } from "@/lib/account";
 import { activityDays } from "@/lib/calendar";
 import { useT } from "@/lib/i18n";
@@ -353,7 +354,7 @@ function Dashboard({ profile, onRename }: { profile: Profile; onRename: () => vo
                   disabled={!profile.onlineOk}
                   onClick={() => setChallenge(challenge === f.username ? null : f.username)}
                 >
-                  ⚔️ {t("Играть", "Oʻynash")}
+                  <Icon icon={Swords} /> {t("Играть", "Oʻynash")}
                 </Button>
                 <Button
                   size="sm"
@@ -361,7 +362,7 @@ function Dashboard({ profile, onRename }: { profile: Profile; onRename: () => vo
                   disabled={!profile.chatOk || !f.chatOk}
                   onClick={() => setChatWith(chatWith === f.username ? null : f.username)}
                 >
-                  💬{" "}
+                  <Icon icon={MessageCircle} />{" "}
                   {f.unread > 0 && <span className="rounded-full bg-rose px-1.5 text-xs text-white">{f.unread}</span>}
                   {t("Написать", "Yozish")}
                 </Button>
@@ -371,7 +372,7 @@ function Dashboard({ profile, onRename }: { profile: Profile; onRename: () => vo
                   onClick={() => void friendAction("remove", f.username)}
                   aria-label={t("Убрать из друзей", "Doʻstlikdan chiqarish")}
                 >
-                  ✕
+                  <Icon icon={X} />
                 </Button>
               </div>
               {challenge === f.username && (
@@ -401,7 +402,7 @@ function Dashboard({ profile, onRename }: { profile: Profile; onRename: () => vo
                     {t("Отклонить", "Rad etish")}
                   </Button>
                   <Button size="sm" variant="ghost" onClick={() => void friendAction("block", u.username)}>
-                    🚫 {t("Заблокировать", "Bloklash")}
+                    <Icon icon={Ban} /> {t("Заблокировать", "Bloklash")}
                   </Button>
                 </li>
               ))}

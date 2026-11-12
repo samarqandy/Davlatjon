@@ -1,6 +1,6 @@
 "use client";
 
-import { RotateCcw } from "lucide-react";
+import { RotateCcw, Scale, Search } from "lucide-react";
 import { useRef, useState } from "react";
 import { Button, cn, Icon } from "@/components/ui";
 import { askExplain, praise } from "@/lib/feedback";
@@ -321,7 +321,7 @@ export function ScalesPuzzle({ taskId, coins, weighings }: { taskId: string; coi
 
       <div className="flex flex-wrap items-center gap-2">
         <Button onClick={doWeigh} disabled={done || outOfWeighings}>
-          ⚖️ {t("Взвесить", "Tortish")}
+          <Icon icon={Scale} /> {t("Взвесить", "Tortish")}
         </Button>
         <Button
           variant={naming ? "sun" : "secondary"}
@@ -342,7 +342,7 @@ export function ScalesPuzzle({ taskId, coins, weighings }: { taskId: string; coi
           }}
           disabled={done}
         >
-          🔍 {t("Это фальшивая…", "Qalbakisini topdim…")}
+          <Icon icon={Search} /> {t("Это фальшивая…", "Qalbakisini topdim…")}
         </Button>
         <Button
           variant="ghost"

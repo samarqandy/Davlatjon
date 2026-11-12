@@ -1,11 +1,11 @@
 "use client";
 
-import { Lock } from "lucide-react";
+import { BookOpen, Library, Lock, Target } from "lucide-react";
 import { currentScrollBehavior } from "@/lib/useMotion";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { RichText } from "@/components/RichText";
-import { Button, ButtonLink, cn, ProgressBar } from "@/components/ui";
+import { Button, ButtonLink, cn, ProgressBar, Icon } from "@/components/ui";
 import { CHESS_LEVELS, chessLevelHref } from "@/content/chess";
 import { chessImagesIn } from "@/content/chess/imageLookup";
 import type { ChessLevel } from "@/content/chess/types";
@@ -121,15 +121,16 @@ export function ChessLevelView({ levelId }: { levelId: string }) {
           >
             {(
               [
-                ["lesson", t("📖 Урок", "📖 Dars"), "#lesson"],
+                ["lesson", BookOpen, t("Урок", "Dars"), "#lesson"],
                 [
                   "exercises",
-                  t(`🎯 Упражнения ${status.solved}/${status.total}`, `🎯 Mashqlar ${status.solved}/${status.total}`),
+                  Target,
+                  t(`Упражнения ${status.solved}/${status.total}`, `Mashqlar ${status.solved}/${status.total}`),
                   "#exercises",
                 ],
-                ["dictionary", t("📚 Словарик и факты", "📚 Lugʻat va faktlar"), "#dictionary"],
+                ["dictionary", Library, t("Словарик и факты", "Lugʻat va faktlar"), "#dictionary"],
               ] as const
-            ).map(([id, label, href]) => (
+            ).map(([id, icon, label, href]) => (
               <button
                 key={id}
                 type="button"
@@ -139,10 +140,11 @@ export function ChessLevelView({ levelId }: { levelId: string }) {
                 }}
                 aria-current={tab === id ? "page" : undefined}
                 className={cn(
-                  "rounded-xl px-2 py-2.5 text-sm leading-tight font-extrabold transition sm:px-4 sm:text-base",
+                  "inline-flex items-center justify-center gap-1.5 rounded-xl px-2 py-2.5 text-sm leading-tight font-extrabold transition sm:px-4 sm:text-base",
                   tab === id ? "bg-brand text-white" : "text-muted hover:bg-brand-soft hover:text-brand-dark",
                 )}
               >
+                <Icon icon={icon} className="max-sm:hidden" />
                 {label}
               </button>
             ))}

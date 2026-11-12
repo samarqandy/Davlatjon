@@ -1,6 +1,6 @@
 "use client";
 
-import { RotateCcw, Play } from "lucide-react";
+import { Delete, Play, RotateCcw, StepForward } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { Feedback, type FeedbackState } from "@/components/answers/Feedback";
 import { Button, cn, Icon } from "@/components/ui";
@@ -381,7 +381,7 @@ export function RobotPuzzle({
                       onClick={backspace}
                       disabled={running || program.length === 0}
                     >
-                      ⌫ {t("Стереть", "Oʻchirish")}
+                      <Icon icon={Delete} /> {t("Стереть", "Oʻchirish")}
                     </Button>
                     <Button variant="ghost" size="sm" onClick={clear} disabled={running || program.length === 0}>
                       {t("Очистить", "Tozalash")}
@@ -442,7 +442,7 @@ export function RobotPuzzle({
               onClick={stepOnce}
               disabled={running || program.length === 0 || (puzzle.mode === "trace" && !traceAnswered)}
             >
-              {t("Шаг ⏭", "Qadam ⏭")}
+              {t("Шаг", "Qadam")} <Icon icon={StepForward} />
             </Button>
             <Button variant="ghost" onClick={resetExec} disabled={exec.pc === 0 && !exec.crash}>
               <Icon icon={RotateCcw} /> {t("На старт", "Boshiga")}

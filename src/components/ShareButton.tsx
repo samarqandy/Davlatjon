@@ -1,7 +1,8 @@
 "use client";
 
+import { Check, Share2 } from "lucide-react";
 import { useState } from "react";
-import { Button } from "@/components/ui";
+import { Button, Icon } from "@/components/ui";
 import { useT } from "@/lib/i18n";
 
 /**
@@ -29,7 +30,8 @@ export function ShareButton({ text, className }: { text: string; className?: str
 
   return (
     <Button variant="secondary" size="lg" onClick={() => void share()} className={className} data-share>
-      {copied ? t("✓ Скопировано", "✓ Nusxalandi") : t("📤 Показать родителям", "📤 Ota-onaga koʻrsat")}
+      <Icon icon={copied ? Check : Share2} />{" "}
+      {copied ? t("Скопировано", "Nusxalandi") : t("Показать родителям", "Ota-onaga koʻrsat")}
     </Button>
   );
 }
