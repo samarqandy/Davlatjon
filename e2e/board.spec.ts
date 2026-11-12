@@ -95,6 +95,46 @@ test("цвета доски и набор звуков выбираются в �
   expect(stored.boardSoundSet).toBe("soft");
 });
 
+// Библиотека доски даёт каждой фигуре роль кнопки без названия; названия ставим мы. Раньше — после отрисовки:
+// 15–30 мс (на слабом телефоне до 150 мс) на доске стояли 16–32 безымянные кнопки, и проверка доступности
+// изредка попадала в это окно.
+test("фигуры на доске не бывают без названия ни в одном кадре — когда доска появляется и после хода", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    const w = window as unknown as { __unnamed: number };
+    w.__unnamed = 0;
+    const tick = () => {
+      const pieces = document.querySelectorAll('[aria-roledescription="draggable"]:not([aria-label])');
+      w.__unnamed = Math.max(w.__unnamed, pieces.length);
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  });
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send("Emulation.setCPUThrottlingRate", { rate: 4 });
+  const worst = () => page.evaluate(() => (window as unknown as { __unnamed: number }).__unnamed);
+
+  await page.goto("/chess/puzzles#practice");
+  await expect(page.locator('[aria-roledescription="draggable"]').first()).toBeVisible();
+  // Соперник делает первый ход задачи — фигуры перерисовываются.
+  await page.waitForTimeout(1500);
+  expect(await worst()).toBe(0);
+
+  // Доска анализа приходит готовым HTML: до оживления страницы названий нет (их может поставить только скрипт),
+  // но и нажать на фигуру ещё нельзя. Считаем с момента, когда страница ожила.
+  await page.goto("/chess/analysis");
+  await expect(board(page).locator('[aria-roledescription="draggable"][aria-label]')).toHaveCount(32);
+  await page.evaluate(() => void ((window as unknown as { __unnamed: number }).__unnamed = 0));
+  await sq(page, "e2").click();
+  await sq(page, "e4").click();
+  await expect(board(page).locator('[aria-label="белая пешка, e4"]')).toHaveCount(1);
+  await sq(page, "g8").click();
+  await sq(page, "f6").click();
+  await expect(board(page).locator('[aria-label="чёрный конь, f6"]')).toHaveCount(1);
+  expect(await worst()).toBe(0);
+});
+
 test("набор фигур выбирается в «Моя доска и звук»: доска рисует его, ходы работают, выбор запоминается", async ({
   page,
 }) => {
