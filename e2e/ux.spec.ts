@@ -369,14 +369,16 @@ test("шахматная школа и курс: «Начать» внизу э�
 // Доска на широком экране: слева и во всю высоту окна (DESIGN.md, раздел 7ж). Раньше она была не шире 440–560 px
 // и стояла под шапкой урока и условием: на ноутбуке низ доски уходил за край окна.
 // «Ниже» — экраны, где над доской есть рассказ или сводка: к доске сначала листают.
-for (const [name, url, share, below] of [
-  ["упражнение курса", "/chess/course#c1-rook-exercise-1", 0.7, false],
-  ["задача", "/chess/puzzles#theme-backrank", 0.7, false],
-  ["игра с роботом", "/chess/play#robot-1-w", 0.6, false],
-  ["доска анализа", "/chess/analysis", 0.7, false],
-  ["партия мастеров", "/chess/games/opera", 0.7, true],
-  ["дебют", "/chess/openings#open-italian", 0.7, true],
-  ["тренажёр дебюта", "/chess/openings#train-italian-white", 0.7, true],
+// Доска названа точно там, где страница сначала рисует список с маленькими досками, а экран открывает после
+// оживления (дебюты): «первая доска на странице» в этот момент — превью из списка, и она тут же исчезает.
+for (const [name, url, share, below, which] of [
+  ["упражнение курса", "/chess/course#c1-rook-exercise-1", 0.7, false, "[data-board]"],
+  ["задача", "/chess/puzzles#theme-backrank", 0.7, false, "[data-board]"],
+  ["игра с роботом", "/chess/play#robot-1-w", 0.6, false, "[data-board]"],
+  ["доска анализа", "/chess/analysis", 0.7, false, '[data-board="analysis"]'],
+  ["партия мастеров", "/chess/games/opera", 0.7, true, '[data-board="game-opera"]'],
+  ["дебют", "/chess/openings#open-italian", 0.7, true, '[data-board="opening-italian"]'],
+  ["тренажёр дебюта", "/chess/openings#train-italian-white", 0.7, true, '[data-board="train-italian"]'],
 ] as const)
   test(`широкий экран, ${name}: доска целиком в окне и занимает его высоту, остальное — справа`, async ({
     page,
@@ -392,14 +394,15 @@ for (const [name, url, share, below] of [
       await page.setViewportSize({ width, height });
       await page.goto(url);
       await page.waitForLoadState("networkidle");
-      const board = page.locator("[data-board]").first();
+      const board = page.locator(which).first();
       await expect(board).toBeVisible();
       if (below) await board.evaluate((el) => el.scrollIntoView({ block: "center" }));
       // Страница сама подкручивается к упражнению — ждём, пока доска встанет на место.
       await expect
         .poll(async () => {
-          const box = (await board.boundingBox())!;
-          return Math.round(box.y + box.height);
+          // Пока экран перерисовывается, доски может не быть — ждём дальше, а не падаем.
+          const box = await board.boundingBox();
+          return box ? Math.round(box.y + box.height) : Infinity;
         })
         .toBeLessThanOrEqual(height);
       const box = (await board.boundingBox())!;
@@ -436,18 +439,18 @@ test("телефон: главная доска экрана — во всю ш�
   test.skip(!isMobile, "раскладка для телефона");
   await prepare(page);
   const width = page.viewportSize()!.width;
-  for (const url of [
-    "/chess/course#c1-rook-exercise-1",
-    "/chess/puzzles#theme-backrank",
-    "/chess/play#robot-1-w",
-    "/chess/analysis",
-    "/chess/games/opera",
-    "/chess/openings#open-italian",
-    "/chess/openings#train-italian-white",
-  ]) {
+  for (const [url, which] of [
+    ["/chess/course#c1-rook-exercise-1", "[data-board]"],
+    ["/chess/puzzles#theme-backrank", "[data-board]"],
+    ["/chess/play#robot-1-w", "[data-board]"],
+    ["/chess/analysis", '[data-board="analysis"]'],
+    ["/chess/games/opera", '[data-board="game-opera"]'],
+    ["/chess/openings#open-italian", '[data-board="opening-italian"]'],
+    ["/chess/openings#train-italian-white", '[data-board="train-italian"]'],
+  ] as const) {
     await page.goto(url);
     await page.waitForLoadState("networkidle");
-    const board = page.locator("[data-board]").first();
+    const board = page.locator(which).first();
     await expect(board).toBeVisible();
     // Все размеры — одним снимком: после первого хода соперника страница может сдвинуться на несколько пикселей.
     const m = await board.evaluate((el) => {
