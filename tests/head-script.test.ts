@@ -10,8 +10,10 @@ function run(
   pathname: string,
   served: "ru" | "uz" = "ru",
   state: Record<string, unknown> = {},
+  hash = "",
 ) {
   const classes = new Set<string>();
+  let wait = 0;
   const attrs: Record<string, string> = {};
   const html = {
     lang: served,
@@ -21,12 +23,13 @@ function run(
   const storage = { getItem: () => JSON.stringify({ settings, ...state }) };
   new Function("localStorage", "location", "document", "setTimeout", code)(
     storage,
-    { pathname },
+    { pathname, hash },
     { documentElement: html },
-    () => 0,
+    (_: unknown, ms: number) => void (wait = ms),
   );
   return {
     hidden: classes.has("i18n-wait"),
+    wait,
     lang: html.lang,
     motion: attrs["data-motion"],
     age: attrs["data-age"],
@@ -59,6 +62,22 @@ describe("скрипт в <head>", () => {
     expect(run({ childName: "Анна" }, "/").hidden).toBe(false);
     expect(run({ childName: "Анна" }, "/chess/play").hidden).toBe(false);
     expect(run({}, "/week/1/day/1").hidden).toBe(false);
+  });
+
+  it("страница, открытая сразу на «экране» (адрес с якорем), ждёт загрузки — в шахматах и в занятиях", () => {
+    const at = (pathname: string, hash: string) => run({}, pathname, "ru", {}, hash);
+    expect(at("/chess/openings", "#open-italian")).toMatchObject({ hidden: true, wait: 3000 });
+    expect(at("/chess/puzzles", "#practice").hidden).toBe(true);
+    expect(at("/chess/analysis", "#fen=8%2F8").hidden).toBe(true);
+    expect(at("/week/2/day/4", "#task-8").hidden).toBe(true);
+    // Без якоря и с пустым якорем — страница раздела и есть то, что нужно.
+    expect(at("/chess/openings", "").hidden).toBe(false);
+    expect(at("/chess/openings", "#").hidden).toBe(false);
+    // На остальных страницах якорь — обычная ссылка на место в тексте.
+    expect(at("/about", "#programs").hidden).toBe(false);
+    expect(at("/", "#top").hidden).toBe(false);
+    // Смена языка ждёт по-прежнему полторы секунды.
+    expect(run({ lang: "uz" }, "/")).toMatchObject({ hidden: true, wait: 1500 });
   });
 
   it("анимации, выключенные родителем, выключены ещё до отрисовки", () => {

@@ -460,6 +460,44 @@ test("ссылка на экран другой страницы открыва�
   await expect.poll(scrollY).toBeGreaterThan(300);
 });
 
+// Прямой вход на «экран» (ссылка из мессенджера, обновление страницы). Сервер якоря не видит и отдаёт страницу
+// раздела; раньше она была видна, пока страница не оживёт: на медленном телефоне список дебютов висел полторы
+// секунды, и ребёнок мог нажать не туда. Теперь страница ждёт загрузки (скрипт в <head>).
+test("страница, открытая сразу на экране, не показывает сначала список раздела — ни в одном кадре", async ({
+  page,
+}) => {
+  await prepare(page);
+  await page.addInitScript(() => {
+    const w = window as unknown as { __seen: string[] };
+    w.__seen = [];
+    const tick = () => {
+      // Что видит ребёнок в этом кадре: заголовки страницы, если она не спрятана ожиданием.
+      const shown = !document.documentElement.classList.contains("i18n-wait");
+      if (shown)
+        for (const h of document.querySelectorAll("main h1")) {
+          const text = h.textContent ?? "";
+          if (h.getBoundingClientRect().height > 0 && !w.__seen.includes(text)) w.__seen.push(text);
+        }
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  });
+  // Медленный телефон: между первой отрисовкой и оживлением страницы проходит заметное время.
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send("Emulation.setCPUThrottlingRate", { rate: 4 });
+  const seen = () => page.evaluate(() => (window as unknown as { __seen: string[] }).__seen);
+
+  await page.goto("/chess/openings#open-italian");
+  await expect(page.getByRole("heading", { level: 1, name: "Итальянская партия" })).toBeVisible({ timeout: 20_000 });
+  expect(await seen()).toEqual(["Итальянская партия"]);
+  await expect(page.locator("html")).not.toHaveClass(/i18n-wait/);
+
+  // Без якоря страница раздела показывается сразу, ожидания нет.
+  await page.goto("/chess/openings");
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.classList.contains("i18n-wait"))).toBe(false);
+});
+
 // Тренажёр на время: доска, секундомер и «Старт» — на первом экране, листать некогда. Раньше над доской стояли
 // шапка страницы и заголовок режима, и на ноутбуке низ доски уходил за край окна.
 test("тренажёр координат: доска целиком и кнопка «Старт» — на первом экране", async ({ page }) => {
