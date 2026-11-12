@@ -415,6 +415,51 @@ for (const [name, url, share, below, which] of [
     }
   });
 
+// Ссылка на «экран» другой страницы открывает его с верха. Next при якоре без элемента с таким id страницу не
+// прокручивает: после ссылки внизу длинного разбора экран задач открывался на 214–422 px ниже начала.
+test("ссылка на экран другой страницы открывает его с верха, а «Назад» возвращает прежнее место", async ({ page }) => {
+  await page.addInitScript((key) => {
+    if (localStorage.getItem(key)) return;
+    localStorage.setItem(
+      key,
+      JSON.stringify({
+        version: 1,
+        welcomed: true,
+        settings: { hintPause: false, bigText: false, age: 9, lang: "ru" },
+        chessGames: [
+          {
+            id: "gtop1",
+            at: 1759000000000,
+            mode: "robot",
+            level: 3,
+            color: "b",
+            result: "loss",
+            winner: "w",
+            moves: 3,
+            start: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+            ucis: ["e2e4", "e7e5", "f1c4", "b8c6", "d1h5", "g8f6", "h5f7"],
+          },
+        ],
+      }),
+    );
+  }, KEY);
+  const scrollY = () => page.evaluate(() => Math.round(window.scrollY));
+  await page.goto("/chess/review#gtop1");
+  await expect(page.getByText("Твоя точность")).toBeVisible({ timeout: 20_000 });
+  const link = page.getByRole("link", { name: "Реши эти моменты как задачи" });
+  await link.scrollIntoViewIfNeeded();
+  const was = await scrollY();
+  expect(was).toBeGreaterThan(300);
+  await link.click();
+  await expect(page).toHaveURL(/\/chess\/puzzles#mine$/);
+  await expect(page.getByRole("heading", { name: "Задачи из твоих партий" })).toBeInViewport();
+  expect(await scrollY()).toBe(0);
+  // «Назад» — не новый экран: браузер возвращает место, где ребёнок был.
+  await page.goBack();
+  await expect(page).toHaveURL(/\/chess\/review#gtop1$/);
+  await expect.poll(scrollY).toBeGreaterThan(300);
+});
+
 // Тренажёр на время: доска, секундомер и «Старт» — на первом экране, листать некогда. Раньше над доской стояли
 // шапка страницы и заголовок режима, и на ноутбуке низ доски уходил за край окна.
 test("тренажёр координат: доска целиком и кнопка «Старт» — на первом экране", async ({ page }) => {

@@ -12,6 +12,7 @@ import { ThemeSync } from "@/components/ThemeSync";
 import { AgeSync } from "@/components/AgeSync";
 import { ServiceWorker } from "@/components/ServiceWorker";
 import { ActivityTracker } from "@/components/progress/ActivityTracker";
+import { ScreenTop } from "@/components/ScreenTop";
 import { RestCard } from "@/components/progress/RestCard";
 import { XpToast } from "@/components/progress/XpToast";
 import { BRAND, BRAND_TITLE } from "@/lib/brand";
@@ -89,6 +90,7 @@ export default async function RootLayout({
           <AgeSync />
           <XpToast />
           <ActivityTracker />
+          <ScreenTop />
           <RestCard />
           <AccountSync />
         </ServerLangProvider>
