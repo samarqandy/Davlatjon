@@ -3,7 +3,7 @@
 import { Flag, Handshake, Repeat } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { AccountPanel } from "@/components/AccountPanel";
 import { ChessBoard, type PromotionPiece, type SquareMark } from "@/components/chess/ChessBoard";
 import { illegalText, usePromotion } from "@/components/chess/useMoveInput";
@@ -264,25 +264,31 @@ function Table({ id }: { id: string }) {
   else statusText = t(`Ходят ${sideWord(turn, t)} — ${opponentName} думает…`, `${opponentName} oʻylayapti…`);
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]" data-online-game={game.status}>
-      <div className="space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h1 className="text-2xl font-black">
+    // board-stage: с 1024 px доска с именами и часами — слева во всю высоту окна; заголовок партии, чей ход,
+    // кнопки, запись ходов и переписка — справа. На телефоне порядок тот же, в одну колонку.
+    <div
+      className="board-stage board-wide space-y-3"
+      style={{ "--stage-chrome": "13rem" } as CSSProperties}
+      data-online-game={game.status}
+    >
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h1 className="text-2xl font-black">
+          <span className="deco" aria-hidden>
+            ⚔️{" "}
+          </span>
+          {t("Партия с", "Partiya:")} <span className="font-mono">{opponentName}</span>{" "}
+          <span className="text-base font-bold text-muted">
             <span className="deco" aria-hidden>
-              ⚔️{" "}
+              ⏱{" "}
             </span>
-            {t("Партия с", "Partiya:")} <span className="font-mono">{opponentName}</span>{" "}
-            <span className="text-base font-bold text-muted">
-              <span className="deco" aria-hidden>
-                ⏱{" "}
-              </span>
-              {game.baseS ? timeControlLabel(game) : t("без часов", "soatsiz")}
-            </span>
-          </h1>
-          <Link href="/chess/online" className="text-sm font-bold text-brand-dark hover:underline">
-            ← {t("К друзьям", "Doʻstlarga")}
-          </Link>
-        </div>
+            {game.baseS ? timeControlLabel(game) : t("без часов", "soatsiz")}
+          </span>
+        </h1>
+        <Link href="/chess/online" className="text-sm font-bold text-brand-dark hover:underline">
+          ← {t("К друзьям", "Doʻstlarga")}
+        </Link>
+      </div>
+      <div className="board-col space-y-3">
         {nameRow(you === "w" ? "b" : "w")}
         <ChessBoard
           id="online"
@@ -297,95 +303,95 @@ function Table({ id }: { id: string }) {
           maxWidth={560}
         />
         {nameRow(you)}
-        <p
-          className={cn(
-            "rounded-2xl px-4 py-3 font-bold",
-            finished ? "bg-sun-soft" : myTurn ? "bg-brand-soft text-brand-dark" : "bg-surface shadow-card",
-          )}
-          role="status"
-          data-online-status
-        >
-          {statusText}
-        </p>
-        {illegal && <p className="rounded-2xl bg-sun-soft px-4 py-2 text-sm font-bold">{illegal}</p>}
-        {error && (
-          <p className="rounded-2xl bg-rose/10 px-4 py-2 text-sm font-bold text-danger-ink" role="alert">
-            {error}
-          </p>
+      </div>
+      <p
+        className={cn(
+          "rounded-2xl px-4 py-3 font-bold",
+          finished ? "bg-sun-soft" : myTurn ? "bg-brand-soft text-brand-dark" : "bg-surface shadow-card",
         )}
+        role="status"
+        data-online-status
+      >
+        {statusText}
+      </p>
+      {illegal && <p className="rounded-2xl bg-sun-soft px-4 py-2 text-sm font-bold">{illegal}</p>}
+      {error && (
+        <p className="rounded-2xl bg-rose/10 px-4 py-2 text-sm font-bold text-danger-ink" role="alert">
+          {error}
+        </p>
+      )}
 
-        <div className="flex flex-wrap gap-2">
-          {iAmInvited && (
-            <>
-              <Button onClick={() => void act({ action: "accept" })} disabled={busy}>
-                {t("Принять", "Qabul qilish")}
-              </Button>
-              <Button variant="secondary" onClick={() => void act({ action: "decline" })} disabled={busy}>
-                {t("Отказаться", "Rad etish")}
-              </Button>
-            </>
-          )}
-          {game.status === "invited" && !iAmInvited && (
+      <div className="flex flex-wrap gap-2">
+        {iAmInvited && (
+          <>
+            <Button onClick={() => void act({ action: "accept" })} disabled={busy}>
+              {t("Принять", "Qabul qilish")}
+            </Button>
             <Button variant="secondary" onClick={() => void act({ action: "decline" })} disabled={busy}>
-              {t("Отменить приглашение", "Taklifni bekor qilish")}
+              {t("Отказаться", "Rad etish")}
             </Button>
-          )}
-          {active && offeredToMe && (
+          </>
+        )}
+        {game.status === "invited" && !iAmInvited && (
+          <Button variant="secondary" onClick={() => void act({ action: "decline" })} disabled={busy}>
+            {t("Отменить приглашение", "Taklifni bekor qilish")}
+          </Button>
+        )}
+        {active && offeredToMe && (
+          <>
+            <Button variant="success" onClick={() => void act({ action: "draw-accept" })} disabled={busy}>
+              <Icon icon={Handshake} /> {t("Принять ничью", "Durangni qabul qilish")}
+            </Button>
+            <Button variant="secondary" onClick={() => void act({ action: "draw-decline" })} disabled={busy}>
+              {t("Отказать", "Rad etish")}
+            </Button>
+          </>
+        )}
+        {active && !offeredToMe && (
+          <Button
+            variant="secondary"
+            onClick={() => void act({ action: "draw-offer" })}
+            disabled={busy || offeredByMe || game.moves.length < 2}
+          >
+            <Icon icon={Handshake} />{" "}
+            {offeredByMe
+              ? t("Ничья предложена", "Durang taklif qilindi")
+              : t("Предложить ничью", "Durang taklif qilish")}
+          </Button>
+        )}
+        {active && game.moves.length < 2 && (
+          <Button variant="secondary" onClick={() => void act({ action: "abort" })} disabled={busy}>
+            {t("Отменить партию", "Partiyani bekor qilish")}
+          </Button>
+        )}
+        {active &&
+          game.moves.length >= 2 &&
+          (confirmResign ? (
             <>
-              <Button variant="success" onClick={() => void act({ action: "draw-accept" })} disabled={busy}>
-                <Icon icon={Handshake} /> {t("Принять ничью", "Durangni qabul qilish")}
+              <Button
+                variant="sun"
+                onClick={() => {
+                  setConfirmResign(false);
+                  void act({ action: "resign" });
+                }}
+                disabled={busy}
+              >
+                {t("Да, сдаться", "Ha, taslim boʻlaman")}
               </Button>
-              <Button variant="secondary" onClick={() => void act({ action: "draw-decline" })} disabled={busy}>
-                {t("Отказать", "Rad etish")}
+              <Button variant="ghost" onClick={() => setConfirmResign(false)}>
+                {t("Нет, играю дальше", "Yoʻq, oʻynayman")}
               </Button>
             </>
-          )}
-          {active && !offeredToMe && (
-            <Button
-              variant="secondary"
-              onClick={() => void act({ action: "draw-offer" })}
-              disabled={busy || offeredByMe || game.moves.length < 2}
-            >
-              <Icon icon={Handshake} />{" "}
-              {offeredByMe
-                ? t("Ничья предложена", "Durang taklif qilindi")
-                : t("Предложить ничью", "Durang taklif qilish")}
+          ) : (
+            <Button variant="ghost" onClick={() => setConfirmResign(true)}>
+              <Icon icon={Flag} /> {t("Сдаться", "Taslim boʻlish")}
             </Button>
-          )}
-          {active && game.moves.length < 2 && (
-            <Button variant="secondary" onClick={() => void act({ action: "abort" })} disabled={busy}>
-              {t("Отменить партию", "Partiyani bekor qilish")}
-            </Button>
-          )}
-          {active &&
-            game.moves.length >= 2 &&
-            (confirmResign ? (
-              <>
-                <Button
-                  variant="sun"
-                  onClick={() => {
-                    setConfirmResign(false);
-                    void act({ action: "resign" });
-                  }}
-                  disabled={busy}
-                >
-                  {t("Да, сдаться", "Ha, taslim boʻlaman")}
-                </Button>
-                <Button variant="ghost" onClick={() => setConfirmResign(false)}>
-                  {t("Нет, играю дальше", "Yoʻq, oʻynayman")}
-                </Button>
-              </>
-            ) : (
-              <Button variant="ghost" onClick={() => setConfirmResign(true)}>
-                <Icon icon={Flag} /> {t("Сдаться", "Taslim boʻlish")}
-              </Button>
-            ))}
-          {finished && game.reason !== "aborted" && (
-            <Button onClick={() => void rematch()}>
-              <Icon icon={Repeat} /> {t("Сыграть ещё", "Yana oʻynash")}
-            </Button>
-          )}
-        </div>
+          ))}
+        {finished && game.reason !== "aborted" && (
+          <Button onClick={() => void rematch()}>
+            <Icon icon={Repeat} /> {t("Сыграть ещё", "Yana oʻynash")}
+          </Button>
+        )}
       </div>
 
       <aside className="space-y-3">
