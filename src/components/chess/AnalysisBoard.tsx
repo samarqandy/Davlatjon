@@ -2,6 +2,7 @@
 
 import {
   ArrowUpDown,
+  BookOpen,
   Check,
   ChevronLeft,
   ChevronRight,
@@ -13,8 +14,9 @@ import {
 } from "lucide-react";
 import { Chess } from "chess.js";
 import Link from "next/link";
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { Button, cn, Icon } from "@/components/ui";
+import { isStandardStart, useOpening } from "@/lib/openingBook";
 import { illegalReason, isPromotionMove, legalTargets, pieceAt, playMove, type PieceType } from "@/lib/chess";
 import { evaluatePosition, winChance, type PositionEval } from "@/lib/engine/analysis";
 import { MATE } from "@/lib/engine/search";
@@ -110,6 +112,9 @@ export function AnalysisBoard() {
   const start = setup?.start ?? fromHash ?? START;
   const plies = setup?.plies ?? [];
   const fen = cursor === 0 ? start : plies[cursor - 1].fen;
+  // Название дебюта — для ходов до текущего: при шаге назад оно снова становится общее.
+  const played = useMemo(() => (setup?.plies ?? []).slice(0, cursor).map((p) => p.san), [setup, cursor]);
+  const opening = useOpening(played, isStandardStart(start));
   const game = new Chess(fen);
   const turn = game.turn();
   const promo = usePromotion(fen);
@@ -321,6 +326,13 @@ export function AnalysisBoard() {
           <p className="text-sm font-extrabold text-muted">
             {over ?? (turn === "w" ? t("Ход белых", "Oqlar yuradi") : t("Ход чёрных", "Qoralar yuradi"))}
           </p>
+          {opening && (
+            <p className="flex items-center gap-1.5 text-sm font-bold text-ink" data-opening={opening.family}>
+              <Icon icon={BookOpen} className="shrink-0 text-muted" />
+              <span className="sr-only">{t("Название дебюта: ", "Debyut nomi: ")}</span>
+              {t(opening.ru, opening.uz)}
+            </p>
+          )}
           {engineOn && !over && (
             <p className="mt-1 text-lg font-black" aria-live="polite">
               {current ? evalText(current, t) : t("Робот думает…", "Robot oʻylayapti…")}

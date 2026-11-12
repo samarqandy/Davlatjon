@@ -115,6 +115,37 @@ test("король под шахом отмечен и в игре, и при п
   await expect(viewer.locator('[data-square="e7"] div').first()).toHaveAttribute("style", red);
 });
 
+test("доска анализа называет дебют по ходам; при шаге назад название снова общее; по-узбекски — латиницей", async ({
+  page,
+}) => {
+  await page.goto("/chess/analysis");
+  const opening = page.locator("[data-opening]");
+  // Пока ходов нет, названия нет — и книга дебютов не загружена.
+  await expect(opening).toHaveCount(0);
+  const play = async (moves: [string, string][]) => {
+    for (const [from, to] of moves) {
+      await sq(page, from).click();
+      await sq(page, to).click();
+    }
+  };
+  await play([["e2", "e4"]]);
+  await expect(opening).toHaveText("Название дебюта: Дебют королевской пешки");
+  await play([
+    ["e7", "e5"],
+    ["g1", "f3"],
+    ["b8", "c6"],
+    ["f1", "c4"],
+  ]);
+  await expect(opening).toHaveText("Название дебюта: Итальянская партия");
+  await expect(opening).toHaveAttribute("data-opening", "Italian Game");
+  await page.getByRole("button", { name: "Назад", exact: true }).click();
+  await page.getByRole("button", { name: "Назад", exact: true }).click();
+  await expect(opening).toHaveText("Название дебюта: Дебют королевского коня");
+  await page.getByRole("button", { name: "В конец" }).click();
+  await page.getByRole("button", { name: "UZ" }).click();
+  await expect(opening).toHaveText("Debyut nomi: Italyan partiyasi");
+});
+
 /** Рисунок фигуры, которую сейчас ведут: её копия лежит не в клетке. */
 const inHand = (page: Page) =>
   board(page).evaluate((root) => {
