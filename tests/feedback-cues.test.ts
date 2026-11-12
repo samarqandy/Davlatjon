@@ -5,7 +5,14 @@ import { praiseCue, retryCue, retryTitle, retrySub } from "@/lib/feedback";
 import { CUES, type Cue } from "@/lib/voice";
 import type { Field } from "@/content/types";
 
-const CHESS_ONLY: Cue[] = ["retry-chess", "praise-chess", "chess-king-check", "chess-pinned", "chess-king-attacked"];
+const CHESS_ONLY: Cue[] = [
+  "retry-chess",
+  "retry-chess-tactic",
+  "praise-chess",
+  "chess-king-check",
+  "chess-pinned",
+  "chess-king-attacked",
+];
 
 describe("реплика после неверной проверки", () => {
   for (const lang of ["ru", "uz"] as const)
@@ -64,7 +71,16 @@ describe("похвала за усилие", () => {
     const mathClips = (Object.keys(CUES) as Cue[])
       .filter((k) => !CHESS_ONLY.includes(k) && k !== "mate")
       .flatMap((k) => CUES[k] as readonly string[]);
-    for (const clip of CUES["retry-chess"]) expect(mathClips).not.toContain(clip);
+    for (const clip of [...CUES["retry-chess"], ...CUES["retry-chess-tactic"]]) expect(mathClips).not.toContain(clip);
+  });
+
+  it("обычная шахматная реплика не советует искать шах и атаку — это только в тактической", () => {
+    // «Отметь клетки, куда прыгнет конь»: после ошибки звучало «поищи шах, взятие или угрозу».
+    expect(CUES["retry-chess"]).toEqual(["retry-2"]);
+    for (const clip of ["chess-checks", "chess-attack"]) {
+      expect(CUES["retry-chess"] as readonly string[]).not.toContain(clip);
+      expect(CUES["retry-chess-tactic"] as readonly string[]).toContain(clip);
+    }
   });
 });
 

@@ -93,3 +93,33 @@ test("быстрые примеры для малыша: вопрос читае
   await page.getByRole("button", { name: "Послушать" }).first().click();
   await expect.poll(() => played(page)).toContain("/audio/exercises/pawn-squares.mp3");
 });
+
+// Упражнение без тактики («отметь клетки, куда прыгнет конь»): после ошибки звучало «поищи шах, взятие или
+// угрозу» — одна из трёх шахматных записей выбиралась случайно. Теперь там только «посмотри на доску ещё раз».
+test("шахматы: в упражнении «отметь клетки» после ошибки не звучит совет искать шах", async ({ page }) => {
+  await prepare(page);
+  await page.goto("/chess/knight#exercise-1", { waitUntil: "networkidle" });
+  await expect(page.getByRole("heading", { name: "Прыжки коня" })).toBeVisible();
+  const board = page.locator("[data-board]").first();
+  // Шесть неверных проверок подряд: при случайном выборе из трёх записей «чужая» прозвучала бы почти наверняка.
+  for (const square of ["a1", "a2", "a3", "a4", "a5", "a6"]) {
+    await board.locator(`[data-square="${square}"]`).click();
+    await page.getByRole("button", { name: "Проверить" }).click();
+  }
+  await expect.poll(async () => (await played(page)).filter((s) => s.endsWith("/audio/retry-2.mp3")).length).toBe(6);
+  expect((await played(page)).filter((s) => /chess-(checks|attack)/.test(s))).toEqual([]);
+});
+
+test("шахматы: в тактическом упражнении совет «поищи шах, взятие или угрозу» остался", async ({ page }) => {
+  await prepare(page);
+  // Выбор записи случайный; закрепляем его, чтобы тест не зависел от удачи: середина списка из трёх — «поищи шах».
+  await page.addInitScript(() => {
+    Math.random = () => 0.5;
+  });
+  await page.goto("/chess/tactics#fork-exercise-1", { waitUntil: "networkidle" });
+  await expect(page.getByRole("heading", { name: "Вилка ладьёй" })).toBeVisible();
+  const board = page.locator("[data-board]").first();
+  await board.locator('[data-square="d1"]').click();
+  await board.locator('[data-square="d2"]').click();
+  await expect.poll(() => played(page)).toContain("/audio/chess-checks.mp3");
+});

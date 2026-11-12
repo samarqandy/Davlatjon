@@ -397,6 +397,22 @@ function StarsExercise({ ex }: { ex: Of<"stars"> }) {
 // Найди ход
 // ---------------------------------------------------------------------------
 
+/**
+ * Цели, где ищут тактический ход: только там голос советует «поищи шах, взятие или угрозу» и «посмотри, кто
+ * кого атакует». В остальных упражнениях (рокировка, превращение, взятие на проходе, пат, защита от шаха)
+ * такой совет сбивает — звучит обычное «посмотри на доску ещё раз».
+ */
+const TACTIC_GOALS: ReadonlySet<Of<"move">["goal"]> = new Set([
+  "mate",
+  "capture",
+  "fork",
+  "double",
+  "pin",
+  "skewer",
+  "discover",
+  "check",
+]);
+
 const GOAL_RETRY: Record<Of<"move">["goal"], (m: NonNullable<ReturnType<typeof playMove>>, t: T) => FeedbackState> = {
   mate: (m, t) =>
     m.check
@@ -582,7 +598,10 @@ function MoveExercise({ ex }: { ex: Of<"move"> }) {
       return true;
     }
     chessMiss(ex.id);
-    setFeedback(GOAL_RETRY[ex.goal](played, t));
+    setFeedback({
+      ...GOAL_RETRY[ex.goal](played, t),
+      voice: TACTIC_GOALS.has(ex.goal) ? "retry-chess-tactic" : undefined,
+    });
     timer.current = setTimeout(() => {
       setFen(ex.fen);
       setLast(null);
@@ -732,6 +751,8 @@ function QuizExercise({ ex }: { ex: Of<"quiz"> }) {
       tone: "retry",
       text: t("Подумай ещё.", "Yana bir oʻylab koʻr."),
       sub: t("Вспомни урок — ответ там есть.", "Darsni esla — javob oʻsha yerda bor."),
+      // У вопроса без доски «посмотри на доску» некстати — звучит общая реплика.
+      voice: q.fen ? undefined : "retry-generic",
     });
   };
 
