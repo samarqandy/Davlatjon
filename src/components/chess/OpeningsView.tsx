@@ -6,7 +6,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Feedback, type FeedbackState } from "@/components/answers/Feedback";
 import { Button, cn, Icon } from "@/components/ui";
 import { getOpening, type Opening, type OpeningCategory } from "@/content/chess/openings";
-import { legalTargets, pieceAt, playMove, type Color } from "@/lib/chess";
+import { checkedKing, legalTargets, pieceAt, playMove, type Color } from "@/lib/chess";
 import { useSan, useT, type T } from "@/lib/i18n";
 import { chessOpeningLearned, useHydrated, useStore } from "@/lib/store";
 import { useChessPart, useChessImage } from "@/lib/useChess";
@@ -136,6 +136,8 @@ function OpeningDetail({ opening }: { opening: Opening }) {
   const hydrated = useHydrated();
   const cur = positions[ply];
   const marks: Record<string, SquareMark> = ply > 0 ? { [cur.from]: "last", [cur.to]: "last" } : {};
+  const checked = checkedKing(cur.fen);
+  if (checked) marks[checked] = "check";
   const picture = useChessImage(opening.image);
   return (
     <div className="space-y-5">
@@ -361,6 +363,8 @@ function OpeningTrainer({ opening, side }: { opening: Opening; side: "white" | "
     marks[positions[ply].from] = "last";
     marks[positions[ply].to] = "last";
   }
+  const checked = checkedKing(shown);
+  if (checked) marks[checked] = "check";
   if (misses >= 2 && expected && myTurn) marks[expected.from] = "hint";
   if (selected) {
     marks[selected] = "selected";

@@ -58,6 +58,24 @@ const REJECTED_STYLE: CSSProperties = {
   animation: "shake 0.35s ease-in-out",
 };
 
+/**
+ * Перетаскивание. Пальцем: фигура крупнее и поднята над пальцем — иначе палец закрывает и её, и клетку, куда
+ * её ставят; клетка под пальцем обведена широким кольцом, которое видно вокруг пальца. Мышью: фигура чуть
+ * приподнята, клетка обведена рамкой. Так принято в шахматных приложениях; код свой.
+ *
+ * Сдвиг и увеличение стоят не здесь, а в globals.css, на рисунке внутри фигуры (`[data-drag]`): библиотека
+ * ставит под указатель середину того, что измерила, и сдвиг самой фигуры сводит на нет.
+ */
+const DRAG_PIECE: CSSProperties = { transform: "none" };
+const DROP_SQUARE = {
+  touch: {
+    boxShadow: "0 0 0 18px rgba(79, 70, 229, 0.32), inset 0 0 0 4px #4f46e5",
+    position: "relative",
+    zIndex: 2,
+  },
+  mouse: { boxShadow: "inset 0 0 0 4px #4f46e5" },
+} as const satisfies Record<string, CSSProperties>;
+
 /** Курсор клавиатуры: двойная рамка (синяя по краю, белая внутри) видна и на светлой, и на тёмной клетке. */
 const CURSOR_SHADOW = "inset 0 0 0 3px #4f46e5, inset 0 0 0 6px #fff";
 
@@ -182,6 +200,8 @@ export function ChessBoard({
   const [keyFrom, setKeyFrom] = useState<string | null>(null);
   const [said, setSaid] = useState("");
   const pointerAt = useRef(0);
+  // Чем сейчас управляют доской: от этого зависит вид фигуры при перетаскивании.
+  const [finger, setFinger] = useState(false);
   const frameRef = useRef<HTMLDivElement>(null);
 
   // Звук хода: сравниваем новую расстановку с прошлой.
@@ -333,12 +353,14 @@ export function ChessBoard({
       aria-describedby={interactive ? `${id}-keys` : undefined}
       tabIndex={interactive ? 0 : undefined}
       data-board={id}
+      data-drag={finger ? "touch" : "mouse"}
       data-rejected={rejected ? rejected.square : undefined}
       data-cursor={keyboard && cursor ? cursor : undefined}
-      onPointerDownCapture={() => {
+      onPointerDownCapture={(e) => {
         sfxUnlock();
         pointerAt.current = Date.now();
         setKeyboard(false);
+        setFinger(e.pointerType === "touch");
       }}
       onKeyDown={interactive ? onKeyDown : undefined}
       onFocus={(e) => {
@@ -404,6 +426,8 @@ export function ChessBoard({
               allowDragging: draggable && !promotion,
               // Маленькое дрожание пальца — ещё нажатие, а не перетаскивание.
               dragActivationDistance: 8,
+              draggingPieceStyle: DRAG_PIECE,
+              dropSquareStyle: finger ? DROP_SQUARE.touch : DROP_SQUARE.mouse,
               canDragPiece: ({ piece, square }) => !!square && dragAllowed(square, piece.pieceType),
               allowDrawingArrows: false,
               // Пока выбирают фигуру для превращения, стрелки не мешают.
