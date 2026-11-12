@@ -11,6 +11,7 @@ import { chessOpeningLearned, useHydrated, useStore } from "@/lib/store";
 import { useChessPart, useChessImage } from "@/lib/useChess";
 import { OPENING_PART } from "@/content/chess/parts/openings";
 import { setHash, useHash } from "@/lib/useHash";
+import { BoardThumb, PieceSprite } from "./BoardThumb";
 import { ChessBoard, type SquareMark } from "./ChessBoard";
 import { Figure } from "./Figure";
 import { replayPositions } from "./GameReplay";
@@ -83,6 +84,7 @@ function OpeningsList() {
         </ol>
       </section>
 
+      <PieceSprite />
       {CATEGORY_ORDER.map((cat) => (
         <section key={cat} aria-labelledby={`cat-${cat}`}>
           <h2 id={`cat-${cat}`} className="text-2xl font-black">
@@ -102,12 +104,7 @@ function OpeningsList() {
                     onClick={() => setHash(`#open-${o.id}`)}
                     className="flex gap-3 rounded-3xl bg-surface p-3 text-left shadow-card transition hover:-translate-y-0.5"
                   >
-                    <ChessBoard
-                      id={`op-${o.id}`}
-                      position={positions[positions.length - 1].fen}
-                      maxWidth={120}
-                      className="!mx-0 shrink-0"
-                    />
+                    <BoardThumb position={positions[positions.length - 1].fen} size={120} />
                     <div className="min-w-0">
                       <p className="text-xs font-extrabold text-muted">
                         {o.eco} · {STARS(o.stars)}

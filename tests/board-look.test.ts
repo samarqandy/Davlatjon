@@ -9,6 +9,7 @@ import {
   PIECE_SETS,
   SOUND_SETS,
   boardThemeOf,
+  fenCells,
   isBoardThemeId,
   isPieceSetId,
   isSoundSetId,
@@ -107,5 +108,36 @@ describe("настройки доски в сохранённом состоян
     // Классические — значение по умолчанию: в настройках его не храним.
     expect(sanitize({ settings: { pieceSet: "classic" } }).settings.pieceSet).toBeUndefined();
     expect(sanitize({ settings: { pieceSet: "../../x" } }).settings.pieceSet).toBeUndefined();
+  });
+});
+
+describe("позиция для доски-картинки", () => {
+  it("начальная позиция: 64 клетки от a8 к h1, фигуры на своих местах", () => {
+    const cells = fenCells("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+    expect(cells).toHaveLength(64);
+    expect(cells.slice(0, 8)).toEqual(["bR", "bN", "bB", "bQ", "bK", "bB", "bN", "bR"]);
+    expect(cells.slice(8, 16).every((c) => c === "bP")).toBe(true);
+    expect(cells.slice(16, 48).every((c) => c === null)).toBe(true);
+    expect(cells[60]).toBe("wK");
+    expect(cells.filter(Boolean)).toHaveLength(32);
+  });
+
+  it("пустые клетки считаются цифрами; годится и запись без хвоста", () => {
+    const cells = fenCells("4k3/8/8/3q4/8/8/4P3/4K3");
+    expect(cells[4]).toBe("bK");
+    expect(cells[27]).toBe("bQ");
+    expect(cells[52]).toBe("wP");
+    expect(cells.filter(Boolean)).toHaveLength(4);
+  });
+
+  it("ошибочная запись — пустая доска, а не сдвинутые фигуры", () => {
+    for (const bad of ["", "8/8/8", "rnbqkbnr/ppppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR", "мусор"]) {
+      const cells = fenCells(bad);
+      expect(cells, bad).toHaveLength(64);
+      expect(
+        cells.every((c) => c === null),
+        bad,
+      ).toBe(true);
+    }
   });
 });

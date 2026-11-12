@@ -16,6 +16,7 @@ import { chessGameViewed, useHydrated, useStore } from "@/lib/store";
 import { useChessPart, useChessImages } from "@/lib/useChess";
 import { GAME_PART } from "@/content/chess/parts/games";
 import { LEVELS } from "@/content/chess/parts/levels";
+import { BoardThumb, PieceSprite } from "./BoardThumb";
 import { ChessBoard, type SquareMark } from "./ChessBoard";
 import { MoveNav } from "./MoveNav";
 import { PhotoStrip, Portrait } from "./Figure";
@@ -74,6 +75,7 @@ export function FamousGamesList() {
           )}
         </p>
       </header>
+      <PieceSprite />
       <ol className="grid grid-cols-[minmax(0,1fr)] gap-4 md:grid-cols-2">
         {games.map((g) => {
           const positions = replayPositions(g.moves);
@@ -84,12 +86,7 @@ export function FamousGamesList() {
                 href={`/chess/games/${g.id}`}
                 className="flex h-full flex-col gap-4 rounded-3xl bg-surface p-4 shadow-card transition hover:-translate-y-0.5 min-[380px]:flex-row"
               >
-                <ChessBoard
-                  id={`preview-${g.id}`}
-                  position={positions[positions.length - 1].fen}
-                  maxWidth={150}
-                  className="!mx-0 shrink-0"
-                />
+                <BoardThumb position={positions[positions.length - 1].fen} size={150} />
                 <div className="min-w-0">
                   <p className="text-xs font-extrabold tracking-wide text-muted uppercase">
                     {g.year ? `${g.year} · ` : ""}
@@ -326,6 +323,7 @@ export function GameReplay({ game: ruGame }: { game: FamousGame }) {
           </span>
           {t("Главные моменты", "Muhim lahzalar")}
         </h2>
+        <PieceSprite />
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {game.keyMoments.map((k) => (
             <button
@@ -337,12 +335,7 @@ export function GameReplay({ game: ruGame }: { game: FamousGame }) {
                 k.ply === ply && "ring-4 ring-sun",
               )}
             >
-              <ChessBoard
-                id={`moment-${game.id}-${k.ply}`}
-                position={positions[k.ply].fen}
-                maxWidth={220}
-                className="!mx-0"
-              />
+              <BoardThumb position={positions[k.ply].fen} size={220} />
               <p className="mt-2 text-xs font-extrabold text-muted">
                 {t(`Ход ${Math.ceil(k.ply / 2)}`, `${Math.ceil(k.ply / 2)}-yurish`)}
               </p>

@@ -59,6 +59,17 @@ export function isPieceSetId(id: unknown): id is string {
 export const pieceSetOf = (id: string | undefined): PieceSet =>
   PIECE_SETS.find((p) => p.id === id) ?? DEFAULT_PIECE_SET;
 
+/** Фигуры позиции по клеткам, от a8 к h1 — как их рисуют на диаграмме за белых. Ошибочная запись — пустая доска. */
+export function fenCells(fen: string): (string | null)[] {
+  const cells: (string | null)[] = [];
+  for (const char of fen.split(" ")[0] ?? "") {
+    if (char === "/") continue;
+    if (/[1-8]/.test(char)) for (let k = 0; k < Number(char); k++) cells.push(null);
+    else if (/[prnbqk]/i.test(char)) cells.push((char === char.toUpperCase() ? "w" : "b") + char.toUpperCase());
+  }
+  return cells.length === 64 ? cells : Array.from({ length: 64 }, () => null);
+}
+
 /** Адрес картинки фигуры набора («wN», «bK»); у классического набора картинок нет — он рисуется кодом. */
 export const pieceSrc = (setId: string, piece: string) => `/pieces/${setId}/${piece}.svg`;
 
