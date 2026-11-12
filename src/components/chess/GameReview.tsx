@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Copy, FlaskConical, Puzzle } from "lucide-react";
+import { Check, Copy, Download, FlaskConical, Puzzle } from "lucide-react";
 import { currentScrollBehavior } from "@/lib/useMotion";
 import { stampText } from "@/lib/dates";
 import Link from "next/link";
@@ -665,7 +665,7 @@ function PgnButtons({ game }: { game: ChessGameRecord }) {
           URL.revokeObjectURL(url);
         }}
       >
-        ⬇️ {t("Скачать PGN", "PGN yuklab olish")}
+        <Icon icon={Download} /> {t("Скачать PGN", "PGN yuklab olish")}
       </Button>
       <Button
         size="sm"

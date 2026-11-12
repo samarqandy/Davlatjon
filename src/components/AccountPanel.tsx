@@ -1,7 +1,8 @@
 "use client";
 
+import { Trash2 } from "lucide-react";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { Button } from "@/components/ui";
+import { Button, Icon } from "@/components/ui";
 import { loginAvailable, logout, refreshAccount, useAccount } from "@/lib/account";
 import { useT } from "@/lib/i18n";
 
@@ -189,7 +190,7 @@ function DeleteAccount() {
         </div>
       ) : (
         <Button variant="ghost" size="sm" onClick={() => setConfirm(true)}>
-          🗑 {t("Удалить данные аккаунта", "Hisob maʼlumotlarini oʻchirish")}
+          <Icon icon={Trash2} /> {t("Удалить данные аккаунта", "Hisob maʼlumotlarini oʻchirish")}
         </Button>
       )}
       {state === "error" && (

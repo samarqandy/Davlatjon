@@ -1,9 +1,9 @@
 "use client";
 
-import { ChevronDown, Play, SlidersHorizontal, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight, Play, Search, SlidersHorizontal } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { Button, cn } from "@/components/ui";
+import { Button, cn, Icon } from "@/components/ui";
 import { BOSS_LEVEL, bestCrowns } from "@/lib/crowns";
 import { robotLevels } from "@/lib/engine/search";
 import { loginAvailable, useAccount } from "@/lib/account";
@@ -436,9 +436,9 @@ function ModeChooser() {
           </div>
           <Link
             href="/chess/review"
-            className="rounded-2xl bg-brand-soft px-4 py-2 font-extrabold text-brand-dark hover:bg-[#e0e3ff] dark:hover:bg-[#363c80]"
+            className="inline-flex items-center gap-1.5 rounded-2xl bg-brand-soft px-4 py-2 font-extrabold text-brand-dark hover:bg-[#e0e3ff] dark:hover:bg-[#363c80]"
           >
-            🔎 {t("Разбор моих партий →", "Partiyalarim tahlili →")}
+            <Icon icon={Search} /> {t("Разбор моих партий →", "Partiyalarim tahlili →")}
           </Link>
         </section>
       )}

@@ -1,6 +1,6 @@
 "use client";
 
-import { Lock } from "lucide-react";
+import { Download, Lock, Upload } from "lucide-react";
 import { useRef, useState } from "react";
 import { AccountPanel } from "@/components/AccountPanel";
 import { BoardLookPicker } from "@/components/chess/BoardLookPicker";
@@ -150,10 +150,10 @@ export function SettingsPanel() {
         </p>
         <div className="flex flex-wrap gap-2">
           <Button variant="secondary" onClick={exportData}>
-            ⬇️ {t("Сохранить в файл", "Faylga saqlash")}
+            <Icon icon={Download} /> {t("Сохранить в файл", "Faylga saqlash")}
           </Button>
           <Button variant="secondary" onClick={() => fileRef.current?.click()}>
-            ⬆️ {t("Загрузить из файла", "Fayldan yuklash")}
+            <Icon icon={Upload} /> {t("Загрузить из файла", "Fayldan yuklash")}
           </Button>
           <input
             ref={fileRef}

@@ -1,6 +1,6 @@
 "use client";
 
-import { RotateCcw } from "lucide-react";
+import { RotateCcw, Undo2 } from "lucide-react";
 import { useRef, useState } from "react";
 import { Button, cn, Icon } from "@/components/ui";
 import type { CrossingPuzzle as CrossingSpec } from "@/content/types";
@@ -264,7 +264,7 @@ export function CrossingPuzzle({
           {toRight ? t("Плыть →", "Suzish →") : t("← Плыть", "← Suzish")}
         </Button>
         <Button variant="secondary" onClick={undo} disabled={trips.length === 0}>
-          ↶ {t("Отменить поездку", "Bekor qilish")}
+          <Icon icon={Undo2} /> {t("Отменить поездку", "Bekor qilish")}
         </Button>
         <Button variant="ghost" onClick={reset} disabled={trips.length === 0}>
           <Icon icon={RotateCcw} /> {t("Сначала", "Qaytadan boshlash")}
