@@ -483,6 +483,8 @@ test("разбор партии: ошибки объясняются и стан
   await page.getByRole("button", { name: /Робот «Слон» · поражение/ }).click();
   await expect(page.getByText("Твоя точность")).toBeVisible({ timeout: 20_000 });
   await expect(page.getByRole("heading", { name: "Главные моменты" })).toBeVisible();
+  // Партия началась 1. e4 e5 2. Сc4 — это дебют слона.
+  await expect(page.locator("[data-opening]")).toHaveText("Название дебюта: Дебют слона");
   await expect(page.getByText(/Кf6 → лучше/)).toBeVisible();
   await page.getByRole("button", { name: /Кf6 → лучше/ }).click();
   await expect(page.getByText(/соперник ставит мат: Фxf7#/).first()).toBeVisible();

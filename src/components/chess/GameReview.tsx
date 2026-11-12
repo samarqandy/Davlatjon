@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Copy, Download, FlaskConical, Puzzle } from "lucide-react";
+import { BookOpen, Check, Copy, Download, FlaskConical, Puzzle } from "lucide-react";
 import { currentScrollBehavior } from "@/lib/useMotion";
 import { stampText } from "@/lib/dates";
 import Link from "next/link";
@@ -19,6 +19,7 @@ import {
   type PositionEval,
 } from "@/lib/engine/analysis";
 import { checkedKing } from "@/lib/chess";
+import { isStandardStart, useOpening } from "@/lib/openingBook";
 import { robotLevels } from "@/lib/engine/search";
 import { tFor, useChildName, useLang, useSan, useT, type Lang, type T } from "@/lib/i18n";
 import { ODDS_PIECES, CLOCKS, clockLabel, oddsPieceLabel } from "@/lib/play";
@@ -301,6 +302,9 @@ function ReviewBody({
   const san = useSan();
   const total = review.plies.length;
   const cur: PlyReview | undefined = review.plies[ply - 1];
+  // Дебют партии целиком — по её первым ходам; у партии с форой или из своей позиции дебюта нет.
+  const played = useMemo(() => review.plies.map((p) => p.san), [review.plies]);
+  const opening = useOpening(played, isStandardStart(game.start));
   const fen = cur ? cur.fenAfter : game.start!;
   const moments = review.plies
     .filter((p) => sides.includes(p.side) && (p.kind === "mistake" || p.kind === "blunder" || p.kind === "inaccuracy"))
@@ -380,6 +384,13 @@ function ReviewBody({
         </Link>
         <aside className="rounded-2xl bg-surface p-3 shadow-card">
           <p className="mb-2 text-sm font-extrabold text-muted">{t("Ходы партии", "Partiya yurishlari")}</p>
+          {opening && (
+            <p className="mb-2 flex items-center gap-1.5 text-sm font-bold text-ink" data-opening={opening.family}>
+              <Icon icon={BookOpen} className="shrink-0 text-muted" />
+              <span className="sr-only">{t("Название дебюта: ", "Debyut nomi: ")}</span>
+              {t(opening.ru, opening.uz)}
+            </p>
+          )}
           <ol
             className="grid max-h-[460px] grid-cols-[auto_1fr_1fr] gap-x-2 gap-y-0.5 overflow-y-auto text-[0.95rem]"
             aria-label={t("Ходы с оценками", "Baholangan yurishlar")}
