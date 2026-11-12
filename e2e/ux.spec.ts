@@ -368,11 +368,15 @@ test("шахматная школа и курс: «Начать» внизу э�
 
 // Доска на широком экране: слева и во всю высоту окна (DESIGN.md, раздел 7ж). Раньше она была не шире 440–560 px
 // и стояла под шапкой урока и условием: на ноутбуке низ доски уходил за край окна.
-for (const [name, url, share] of [
-  ["упражнение курса", "/chess/course#c1-rook-exercise-1", 0.7],
-  ["задача", "/chess/puzzles#theme-backrank", 0.7],
-  ["игра с роботом", "/chess/play#robot-1-w", 0.6],
-  ["доска анализа", "/chess/analysis", 0.7],
+// «Ниже» — экраны, где над доской есть рассказ или сводка: к доске сначала листают.
+for (const [name, url, share, below] of [
+  ["упражнение курса", "/chess/course#c1-rook-exercise-1", 0.7, false],
+  ["задача", "/chess/puzzles#theme-backrank", 0.7, false],
+  ["игра с роботом", "/chess/play#robot-1-w", 0.6, false],
+  ["доска анализа", "/chess/analysis", 0.7, false],
+  ["партия мастеров", "/chess/games/opera", 0.7, true],
+  ["дебют", "/chess/openings#open-italian", 0.7, true],
+  ["тренажёр дебюта", "/chess/openings#train-italian-white", 0.7, true],
 ] as const)
   test(`широкий экран, ${name}: доска целиком в окне и занимает его высоту, остальное — справа`, async ({
     page,
@@ -390,6 +394,7 @@ for (const [name, url, share] of [
       await page.waitForLoadState("networkidle");
       const board = page.locator("[data-board]").first();
       await expect(board).toBeVisible();
+      if (below) await board.evaluate((el) => el.scrollIntoView({ block: "center" }));
       // Страница сама подкручивается к упражнению — ждём, пока доска встанет на место.
       await expect
         .poll(async () => {
@@ -407,16 +412,39 @@ for (const [name, url, share] of [
     }
   });
 
+// Тренажёр на время: доска, секундомер и «Старт» — на первом экране, листать некогда. Раньше над доской стояли
+// шапка страницы и заголовок режима, и на ноутбуке низ доски уходил за край окна.
+test("тренажёр координат: доска целиком и кнопка «Старт» — на первом экране", async ({ page }) => {
+  await prepare(page);
+  await page.goto("/chess/coordinates");
+  await page.getByRole("button", { name: /Найди клетку/ }).click();
+  const board = page.locator('[data-board="drill-find"]');
+  await expect(board).toBeVisible();
+  const { height } = page.viewportSize()!;
+  const box = (await board.boundingBox())!;
+  expect(box.y).toBeGreaterThanOrEqual(0);
+  expect(box.y + box.height).toBeLessThanOrEqual(height);
+  await expect(page.getByRole("button", { name: "Старт" })).toBeInViewport({ ratio: 1 });
+  // Заголовок страницы остаётся для экранного диктора, но места не занимает.
+  await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
+  expect(await page.evaluate(() => scrollY)).toBe(0);
+});
+
 // Телефон: главная доска экрана — во всю ширину, без полей и рамки; буквы и цифры — внутри клеток.
 // Было 86–92 % ширины: на экране 412 px клетка 44 px, стало 51 px.
-test("телефон: доска упражнения, задачи и игры — во всю ширину экрана, подписи внутри клеток", async ({
-  page,
-  isMobile,
-}) => {
+test("телефон: главная доска экрана — во всю ширину, подписи внутри клеток", async ({ page, isMobile }) => {
   test.skip(!isMobile, "раскладка для телефона");
   await prepare(page);
   const width = page.viewportSize()!.width;
-  for (const url of ["/chess/course#c1-rook-exercise-1", "/chess/puzzles#theme-backrank", "/chess/play#robot-1-w"]) {
+  for (const url of [
+    "/chess/course#c1-rook-exercise-1",
+    "/chess/puzzles#theme-backrank",
+    "/chess/play#robot-1-w",
+    "/chess/analysis",
+    "/chess/games/opera",
+    "/chess/openings#open-italian",
+    "/chess/openings#train-italian-white",
+  ]) {
     await page.goto(url);
     await page.waitForLoadState("networkidle");
     const board = page.locator("[data-board]").first();

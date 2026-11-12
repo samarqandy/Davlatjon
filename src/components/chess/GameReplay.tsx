@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronRight, Pause, Play } from "lucide-react";
+import { Pause, Play } from "lucide-react";
 import { Chess } from "chess.js";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -17,6 +17,7 @@ import { useChessPart, useChessImages } from "@/lib/useChess";
 import { GAME_PART } from "@/content/chess/parts/games";
 import { LEVELS } from "@/content/chess/parts/levels";
 import { ChessBoard, type SquareMark } from "./ChessBoard";
+import { MoveNav } from "./MoveNav";
 import { PhotoStrip, Portrait } from "./Figure";
 import { GuessGame, guessHero } from "./GuessGame";
 
@@ -240,92 +241,52 @@ export function GameReplay({ game: ruGame }: { game: FamousGame }) {
         <GuessGame game={game} onExit={() => setGuess(false)} />
       ) : (
         <section
-          className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]"
+          className="board-stage board-wide board-top space-y-3"
           aria-label={t("Разбор партии", "Partiya tahlili")}
         >
-          <div className="space-y-3">
-            <ChessBoard
-              id={`game-${game.id}`}
-              position={cur.fen}
-              marks={marks}
-              maxWidth={520}
-              label={t(
-                `Позиция после хода ${moveLabel}`,
-                ply === 0 ? moveLabel : `${moveLabel} yurishidan keyingi pozitsiya`,
-              )}
-            />
-            <div className="flex flex-wrap items-center gap-1.5">
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => go(0)}
-                disabled={ply === 0}
-                aria-label={t("В начало", "Boshiga")}
-              >
-                ⏮
-              </Button>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => go(ply - 1)}
-                disabled={ply === 0}
-                aria-label={t("Ход назад", "Bir yurish orqaga")}
-              >
-                ◀
-              </Button>
-              <Button
-                size="sm"
-                onClick={() => go(ply + 1)}
-                disabled={ply === total}
-                aria-label={t("Ход вперёд", "Bir yurish oldinga")}
-              >
-                {t("Дальше", "Oldinga")} <Icon icon={ChevronRight} />
-              </Button>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => go(total)}
-                disabled={ply === total}
-                aria-label={t("В конец", "Oxiriga")}
-              >
-                ⏭
-              </Button>
-              <Button
-                variant={isPlaying ? "sun" : "soft"}
-                size="sm"
-                onClick={() => {
-                  if (isPlaying) setPlaying(false);
-                  else {
-                    if (ply === total) setPly(0);
-                    setPlaying(true);
-                  }
-                }}
-              >
-                <Icon icon={isPlaying ? Pause : Play} className="fill-current" />
-                {isPlaying ? t("Пауза", "Pauza") : t("Смотреть", "Koʻrish")}
-              </Button>
-              <span className="ml-auto text-sm font-extrabold text-muted">
-                {ply} / {total}
-              </span>
-            </div>
-            <div
-              className={cn(
-                "min-h-20 rounded-2xl border-2 px-4 py-3",
-                comment ? "border-brand/30 bg-brand-soft/60" : "border-line bg-surface",
-              )}
-              aria-live="polite"
+          <ChessBoard
+            id={`game-${game.id}`}
+            position={cur.fen}
+            marks={marks}
+            maxWidth={520}
+            label={t(
+              `Позиция после хода ${moveLabel}`,
+              ply === 0 ? moveLabel : `${moveLabel} yurishidan keyingi pozitsiya`,
+            )}
+          />
+          <MoveNav ply={ply} total={total} onGo={go}>
+            <Button
+              variant={isPlaying ? "sun" : "soft"}
+              size="sm"
+              onClick={() => {
+                if (isPlaying) setPlaying(false);
+                else {
+                  if (ply === total) setPly(0);
+                  setPlaying(true);
+                }
+              }}
             >
-              <p className="text-sm font-extrabold text-muted">{moveLabel}</p>
-              <p className="mt-1 text-lg font-semibold">
-                {comment ??
-                  (ply === total
-                    ? t(`Партия окончена: ${game.result}.`, `Partiya tugadi: ${game.result}.`)
-                    : t(
-                        "Нажимай «Дальше» — на важных ходах появятся объяснения.",
-                        "«Oldinga» tugmasini bosib bor — muhim yurishlarda tushuntirishlar chiqadi.",
-                      ))}
-              </p>
-            </div>
+              <Icon icon={isPlaying ? Pause : Play} className="fill-current" />
+              {isPlaying ? t("Пауза", "Pauza") : t("Смотреть", "Koʻrish")}
+            </Button>
+          </MoveNav>
+          <div
+            className={cn(
+              "min-h-20 rounded-2xl border-2 px-4 py-3",
+              comment ? "border-brand/30 bg-brand-soft/60" : "border-line bg-surface",
+            )}
+            aria-live="polite"
+          >
+            <p className="text-sm font-extrabold text-muted">{moveLabel}</p>
+            <p className="mt-1 text-lg font-semibold">
+              {comment ??
+                (ply === total
+                  ? t(`Партия окончена: ${game.result}.`, `Partiya tugadi: ${game.result}.`)
+                  : t(
+                      "Нажимай «Дальше» — на важных ходах появятся объяснения.",
+                      "«Oldinga» tugmasini bosib bor — muhim yurishlarda tushuntirishlar chiqadi.",
+                    ))}
+            </p>
           </div>
           <aside className="rounded-2xl bg-surface p-3 shadow-card">
             <p className="mb-2 text-sm font-extrabold text-muted">{t("Ходы партии", "Partiya yurishlari")}</p>

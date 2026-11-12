@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { Chess } from "chess.js";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { Button, cn, Icon } from "@/components/ui";
 import { illegalReason, isPromotionMove, legalTargets, pieceAt, playMove, type PieceType } from "@/lib/chess";
 import { evaluatePosition, winChance, type PositionEval } from "@/lib/engine/analysis";
@@ -263,42 +263,57 @@ export function AnalysisBoard() {
         </p>
       </header>
 
-      <div className="board-col flex gap-2">
+      {/*
+        Полоска оценки: на телефоне — лежит над доской (доска занимает всю ширину экрана), шире — стоит слева
+        от доски во всю её высоту. Белая часть — шансы белых: на телефоне слева, на широком экране — со стороны белых.
+      */}
+      <div
+        className={cn(
+          "board-col grid gap-2",
+          engineOn && "sm:grid-cols-[auto_minmax(0,500px)] sm:justify-center lg:grid-cols-[auto_minmax(0,1fr)]",
+        )}
+      >
         {engineOn && (
           <div
-            className="relative w-4 shrink-0 overflow-hidden rounded-full bg-[#1f2937] ring-1 ring-line"
+            className="relative h-3 overflow-hidden rounded-full bg-[#1f2937] ring-1 ring-line sm:h-auto sm:w-4"
             role="img"
+            data-eval-bar
             aria-label={t(
               `Шансы белых: ${Math.round(whiteChance)}%`,
               `Oqlarning imkoniyati: ${Math.round(whiteChance)}%`,
             )}
           >
             <div
-              className="absolute inset-x-0 bg-surface transition-all duration-500"
-              style={flipped ? { top: 0, height: `${whiteChance}%` } : { bottom: 0, height: `${whiteChance}%` }}
+              className={cn(
+                "absolute inset-y-0 left-0 w-(--white) bg-surface transition-all duration-500 sm:right-0 sm:h-(--white) sm:w-auto",
+                flipped ? "sm:bottom-auto" : "sm:top-auto",
+              )}
+              style={{ "--white": `${whiteChance}%` } as CSSProperties}
             />
           </div>
         )}
-        <div className="min-w-0 flex-1">
-          <ChessBoard
-            id="analysis"
-            position={fen}
-            marks={marks}
-            arrows={arrows}
-            onSquare={tap}
-            onDrop={tryMove}
-            draggable
-            promotion={promo.request}
-            orientation={flipped ? "black" : "white"}
-            maxWidth={500}
-            label={t("Доска анализа", "Tahlil taxtasi")}
-          />
-          {illegal && (
-            <p role="status" data-illegal className="mt-2 rounded-2xl bg-rose/10 px-4 py-2 text-sm font-bold text-rose">
-              {illegal}
-            </p>
-          )}
-        </div>
+        <ChessBoard
+          id="analysis"
+          position={fen}
+          marks={marks}
+          arrows={arrows}
+          onSquare={tap}
+          onDrop={tryMove}
+          draggable
+          promotion={promo.request}
+          orientation={flipped ? "black" : "white"}
+          maxWidth={500}
+          label={t("Доска анализа", "Tahlil taxtasi")}
+        />
+        {illegal && (
+          <p
+            role="status"
+            data-illegal
+            className={cn("rounded-2xl bg-rose/10 px-4 py-2 text-sm font-bold text-rose", engineOn && "sm:col-start-2")}
+          >
+            {illegal}
+          </p>
+        )}
       </div>
 
       <div className="min-w-0 space-y-4">

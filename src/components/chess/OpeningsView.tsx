@@ -1,10 +1,9 @@
 "use client";
 
-import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Feedback, type FeedbackState } from "@/components/answers/Feedback";
-import { Button, cn, Icon } from "@/components/ui";
+import { Button, cn } from "@/components/ui";
 import { getOpening, type Opening, type OpeningCategory } from "@/content/chess/openings";
 import { checkedKing, legalTargets, pieceAt, playMove, type Color } from "@/lib/chess";
 import { useSan, useT, type T } from "@/lib/i18n";
@@ -15,6 +14,7 @@ import { setHash, useHash } from "@/lib/useHash";
 import { ChessBoard, type SquareMark } from "./ChessBoard";
 import { Figure } from "./Figure";
 import { replayPositions } from "./GameReplay";
+import { MoveNav } from "./MoveNav";
 
 const STARS = (n: number) => "⭐".repeat(n);
 const CATEGORY_ORDER: OpeningCategory[] = ["open", "semiOpen", "closed", "gambit", "trap"];
@@ -140,11 +140,11 @@ function OpeningDetail({ opening }: { opening: Opening }) {
   if (checked) marks[checked] = "check";
   const picture = useChessImage(opening.image);
   return (
-    <div className="space-y-5">
+    <div className="board-stage board-wide board-top space-y-3">
       <button
         type="button"
         onClick={() => setHash("#all")}
-        className="text-sm font-extrabold text-brand hover:underline"
+        className="justify-self-start text-sm font-extrabold text-brand hover:underline"
       >
         ← {t("Все дебюты", "Barcha debyutlar")}
       </button>
@@ -155,52 +155,28 @@ function OpeningDetail({ opening }: { opening: Opening }) {
         <h1 className="text-3xl font-black">{opening.name}</h1>
         <p className="text-lg font-bold text-brand-dark">{opening.idea}</p>
       </header>
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
-        <div className="space-y-3">
-          <ChessBoard id={`opening-${opening.id}`} position={cur.fen} marks={marks} maxWidth={480} />
-          <div className="flex flex-wrap items-center gap-1.5">
-            <Button variant="secondary" size="sm" onClick={() => setPly(0)} disabled={ply === 0}>
-              ⏮
-            </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => setPly((p) => Math.max(0, p - 1))}
-              disabled={ply === 0}
+      <div className="stage-part space-y-3">
+        <ChessBoard id={`opening-${opening.id}`} position={cur.fen} marks={marks} maxWidth={480} />
+        <MoveNav ply={ply} total={positions.length - 1} onGo={setPly} />
+        <p
+          className="flex flex-wrap gap-x-3 gap-y-1 rounded-2xl bg-surface px-4 py-3 font-bold shadow-card"
+          aria-label={t("Ходы дебюта", "Debyut yurishlari")}
+        >
+          {opening.moves.map((m, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => setPly(i + 1)}
+              className={cn(
+                "rounded-md px-1 hover:bg-brand-soft",
+                i + 1 === ply && "bg-brand text-white hover:bg-brand",
+              )}
             >
-              ◀
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => setPly((p) => Math.min(positions.length - 1, p + 1))}
-              disabled={ply === positions.length - 1}
-            >
-              {t("Дальше", "Oldinga")} <Icon icon={ChevronRight} />
-            </Button>
-            <span className="ml-auto text-sm font-extrabold text-muted">
-              {ply} / {positions.length - 1}
-            </span>
-          </div>
-          <p
-            className="flex flex-wrap gap-x-3 gap-y-1 rounded-2xl bg-surface px-4 py-3 font-bold shadow-card"
-            aria-label={t("Ходы дебюта", "Debyut yurishlari")}
-          >
-            {opening.moves.map((m, i) => (
-              <button
-                key={i}
-                type="button"
-                onClick={() => setPly(i + 1)}
-                className={cn(
-                  "rounded-md px-1 hover:bg-brand-soft",
-                  i + 1 === ply && "bg-brand text-white hover:bg-brand",
-                )}
-              >
-                {i % 2 === 0 ? `${i / 2 + 1}. ` : ""}
-                {san(m)}
-              </button>
-            ))}
-          </p>
-        </div>
+              {i % 2 === 0 ? `${i / 2 + 1}. ` : ""}
+              {san(m)}
+            </button>
+          ))}
+        </p>
         <aside className="space-y-3">
           {picture && <Figure image={picture} sizes="(max-width: 1024px) 100vw, 340px" />}
           <div className="rounded-2xl bg-surface p-4 shadow-card">
@@ -373,11 +349,11 @@ function OpeningTrainer({ opening, side }: { opening: Opening; side: "white" | "
   }
 
   return (
-    <div className="space-y-4">
+    <div className="board-stage board-wide board-top space-y-3">
       <button
         type="button"
         onClick={() => setHash(`#open-${opening.id}`)}
-        className="text-sm font-extrabold text-brand hover:underline"
+        className="justify-self-start text-sm font-extrabold text-brand hover:underline"
       >
         ← {opening.name}
       </button>
@@ -387,23 +363,19 @@ function OpeningTrainer({ opening, side }: { opening: Opening; side: "white" | "
           `${side === "white" ? "Oqlar" : "Qoralar"} uchun debyutni takrorla: ${opening.name}`,
         )}
       </h1>
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
-        <div className="space-y-3">
-          <ChessBoard
-            id={`train-${opening.id}`}
-            position={shown}
-            marks={marks}
-            orientation={side}
-            onSquare={tap}
-            draggable={myTurn && !busy}
-            onDrop={(from, to) => attempt(from, to)}
-            arrows={
-              misses >= 3 && expected && myTurn ? [{ from: expected.from, to: expected.to, color: "#10b981" }] : []
-            }
-            maxWidth={480}
-          />
-          <Feedback state={feedback} />
-        </div>
+      <div className="stage-part space-y-3">
+        <ChessBoard
+          id={`train-${opening.id}`}
+          position={shown}
+          marks={marks}
+          orientation={side}
+          onSquare={tap}
+          draggable={myTurn && !busy}
+          onDrop={(from, to) => attempt(from, to)}
+          arrows={misses >= 3 && expected && myTurn ? [{ from: expected.from, to: expected.to, color: "#10b981" }] : []}
+          maxWidth={480}
+        />
+        <Feedback state={feedback} />
         <aside className="space-y-3">
           <div className="rounded-2xl bg-surface p-4 shadow-card">
             <p className="text-sm font-extrabold text-muted">

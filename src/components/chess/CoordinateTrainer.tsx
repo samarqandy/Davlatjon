@@ -64,13 +64,16 @@ export function CoordinateTrainer() {
   const hydrated = useHydrated();
   return (
     <div className="space-y-6">
-      <Link
-        href="/chess"
-        className="inline-flex min-h-11 items-center gap-1 text-sm font-extrabold text-brand hover:underline"
-      >
-        {t("← Шахматная школа", "← Shaxmat maktabi")}
-      </Link>
-      <header>
+      {/* В тренажёре шапки страницы нет: доска и секундомер должны быть на первом экране. Заголовок остаётся для экранного диктора. */}
+      {!mode && (
+        <Link
+          href="/chess"
+          className="inline-flex min-h-11 items-center gap-1 text-sm font-extrabold text-brand hover:underline"
+        >
+          {t("← Шахматная школа", "← Shaxmat maktabi")}
+        </Link>
+      )}
+      <header className={mode ? "sr-only" : undefined}>
         <p className="text-sm font-extrabold tracking-wide text-brand uppercase">{t("Тренажёр", "Trenajyor")}</p>
         <h1 className="text-3xl font-black">{t("Координаты и запись ходов", "Koordinatalar va yurishlar yozuvi")}</h1>
         <p className="mt-1 max-w-2xl text-muted">
@@ -204,7 +207,10 @@ function Drill({ mode, onExit }: { mode: DrillMode; onExit: () => void }) {
           : "?";
 
   return (
-    <section className="space-y-4" aria-label={meta.title}>
+    <section
+      className={mode === "color" ? "space-y-4" : "board-stage board-wide board-top space-y-3"}
+      aria-label={meta.title}
+    >
       <div className="flex flex-wrap items-center gap-3">
         <h2 className="text-2xl font-black">
           {meta.emoji} {meta.title}
@@ -213,58 +219,57 @@ function Drill({ mode, onExit }: { mode: DrillMode; onExit: () => void }) {
           {t("← Другой режим", "← Boshqa rejim")}
         </Button>
       </div>
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
-        <div className="space-y-3">
-          {(mode === "find" || mode === "read" || mode === "name") && (
-            <ChessBoard
-              id={`drill-${mode}`}
-              position={mode === "read" ? (round.task?.fen ?? EMPTY) : EMPTY}
-              marks={marks}
-              orientation={mode === "read" ? (round.task?.fen.split(" ")[1] === "b" ? "black" : "white") : orientation}
-              notation={mode === "read" || mode === "name" ? true : labels}
-              showTurn={mode === "read"}
-              onSquare={mode === "find" ? tapFind : mode === "read" ? tapRead : undefined}
-              draggable={mode === "read" && running}
-              onDrop={
-                mode === "read"
-                  ? (from, to) => {
-                      if (!round.task || !running) return false;
-                      answer(readTaskSolved(round.task, from, to), to);
-                      return false;
-                    }
-                  : undefined
-              }
-              rejectFeedback={false}
-              maxWidth={480}
-            />
-          )}
-          {mode === "color" && (
-            <div className="rounded-3xl bg-surface p-8 text-center shadow-card">
-              <p className="text-sm font-extrabold text-muted">{t("Какого цвета клетка?", "Katak qaysi rangda?")}</p>
-              <p className="mt-2 text-7xl font-black" aria-live="polite">
-                {running ? round.target : "?"}
-              </p>
-              <div className="mt-6 flex justify-center gap-3">
-                <button
-                  type="button"
-                  disabled={!running}
-                  onClick={() => answer(squareColor(round.target) === "light")}
-                  className="h-20 w-32 rounded-2xl border-4 border-[#b58863] bg-[#f0d9b5] text-lg font-black text-[#7a4b00] disabled:opacity-50"
-                >
-                  {t("светлая", "oq")}
-                </button>
-                <button
-                  type="button"
-                  disabled={!running}
-                  onClick={() => answer(squareColor(round.target) === "dark")}
-                  className="h-20 w-32 rounded-2xl border-4 border-[#7c5a33] bg-[#b58863] text-lg font-black text-white disabled:opacity-50"
-                >
-                  {t("тёмная", "qora")}
-                </button>
-              </div>
+      {/* С доской — общая раскладка «доска слева во всю высоту» (заголовок встаёт справа); без доски — карточка и счёт рядом. */}
+      <div className={mode === "color" ? "grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px]" : "stage-part space-y-3"}>
+        {(mode === "find" || mode === "read" || mode === "name") && (
+          <ChessBoard
+            id={`drill-${mode}`}
+            position={mode === "read" ? (round.task?.fen ?? EMPTY) : EMPTY}
+            marks={marks}
+            orientation={mode === "read" ? (round.task?.fen.split(" ")[1] === "b" ? "black" : "white") : orientation}
+            notation={mode === "read" || mode === "name" ? true : labels}
+            showTurn={mode === "read"}
+            onSquare={mode === "find" ? tapFind : mode === "read" ? tapRead : undefined}
+            draggable={mode === "read" && running}
+            onDrop={
+              mode === "read"
+                ? (from, to) => {
+                    if (!round.task || !running) return false;
+                    answer(readTaskSolved(round.task, from, to), to);
+                    return false;
+                  }
+                : undefined
+            }
+            rejectFeedback={false}
+            maxWidth={480}
+          />
+        )}
+        {mode === "color" && (
+          <div className="rounded-3xl bg-surface p-8 text-center shadow-card">
+            <p className="text-sm font-extrabold text-muted">{t("Какого цвета клетка?", "Katak qaysi rangda?")}</p>
+            <p className="mt-2 text-7xl font-black" aria-live="polite">
+              {running ? round.target : "?"}
+            </p>
+            <div className="mt-6 flex justify-center gap-3">
+              <button
+                type="button"
+                disabled={!running}
+                onClick={() => answer(squareColor(round.target) === "light")}
+                className="h-20 w-32 rounded-2xl border-4 border-[#b58863] bg-[#f0d9b5] text-lg font-black text-[#7a4b00] disabled:opacity-50"
+              >
+                {t("светлая", "oq")}
+              </button>
+              <button
+                type="button"
+                disabled={!running}
+                onClick={() => answer(squareColor(round.target) === "dark")}
+                className="h-20 w-32 rounded-2xl border-4 border-[#7c5a33] bg-[#b58863] text-lg font-black text-white disabled:opacity-50"
+              >
+                {t("тёмная", "qora")}
+              </button>
             </div>
-          )}
-        </div>
+          </div>
+        )}
         <aside className="space-y-3">
           <div className="rounded-2xl bg-surface p-4 text-center shadow-card">
             <p className="text-sm font-extrabold text-muted">

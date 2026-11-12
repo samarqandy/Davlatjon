@@ -131,21 +131,19 @@ export function GuessGame({ game, onExit }: { game: FamousGame; onExit: () => vo
   };
 
   return (
-    <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]" aria-label={t("Угадай ход", "Yurishni top")}>
-      <div className="space-y-3">
-        <ChessBoard
-          id={`guess-${game.id}`}
-          position={fen}
-          marks={marks}
-          orientation={hero.color === "w" ? "white" : "black"}
-          onSquare={tap}
-          draggable={heroTurn}
-          onDrop={(from, to) => attempt(from, to)}
-          promotion={promo.request}
-          maxWidth={520}
-        />
-        <Feedback state={feedback} />
-      </div>
+    <section className="board-stage board-wide board-top space-y-3" aria-label={t("Угадай ход", "Yurishni top")}>
+      <ChessBoard
+        id={`guess-${game.id}`}
+        position={fen}
+        marks={marks}
+        orientation={hero.color === "w" ? "white" : "black"}
+        onSquare={tap}
+        draggable={heroTurn}
+        onDrop={(from, to) => attempt(from, to)}
+        promotion={promo.request}
+        maxWidth={520}
+      />
+      <Feedback state={feedback} />
       <aside className="space-y-3">
         <div className="rounded-2xl bg-surface p-4 shadow-card">
           <p className="text-xs font-extrabold tracking-wide text-muted uppercase">
