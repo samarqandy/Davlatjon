@@ -229,7 +229,7 @@ export function BankRun({ name, emptyText }: { name: PuzzleTheme | "mix"; emptyT
 export function PracticeView() {
   const t = useT();
   return (
-    <div className="space-y-4">
+    <div className="board-stage board-wide board-top space-y-4">
       <Back />
       <header className="space-y-2">
         <h1 className="text-2xl font-black">
@@ -454,7 +454,7 @@ export function WoodpeckerView() {
     if (last) setSummary(w.rounds.length);
   };
   return (
-    <div className="space-y-4">
+    <div className="board-stage board-wide board-top space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Back />
         <p className="text-lg font-black">

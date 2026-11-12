@@ -309,8 +309,9 @@ export function ChessBoard({
         className,
       )}
       // Доска не выше экрана: на ноутбуке и в альбомной ориентации телефона она целиком видна вместе с заголовком.
+      // На широком экране размер задаёт раскладка (.board-stage в globals.css): доска растёт до высоты окна.
       style={{
-        maxWidth: frame === "print" ? maxWidth : `min(${maxWidth}px, calc(100svh - 8rem))`,
+        maxWidth: frame === "print" ? maxWidth : `var(--board-size, min(${maxWidth}px, calc(100svh - 8rem)))`,
         backgroundColor: frame === "print" ? undefined : theme.frame,
       }}
       data-board-theme={frame === "print" ? undefined : theme.id}

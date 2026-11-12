@@ -31,6 +31,9 @@ const movesWord = (n: number) => pluralize(n, "ход", "хода", "ходов"
 /** В контрольном тесте подсказок нет: ребёнок отвечает сам. */
 const TestModeContext = createContext(false);
 
+/** Кнопки «назад» и «дальше» от экрана урока: стоят в конце упражнения, на широком экране — в колонке рядом с доской. */
+const FooterContext = createContext<ReactNode>(null);
+
 /** Оболочка упражнения: условие, доска, подсказка и объяснение после решения. */
 function ExerciseShell({
   ex,
@@ -47,8 +50,10 @@ function ExerciseShell({
   const lang = useLang();
   const [hint, setHint] = useState(false);
   const test = useContext(TestModeContext);
+  const footer = useContext(FooterContext);
   return (
-    <div className="space-y-3 lg:space-y-4">
+    // board-stage: с 1024 px доска (прямой потомок) встаёт слева во всю высоту окна, остальное — справа.
+    <div className="board-stage space-y-3 lg:space-y-4">
       {/* На телефоне и планшете «Послушать» стоит в строке с названием, а не отдельной строкой над доской. */}
       <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-2 gap-y-1 lg:block lg:space-y-1.5">
         <h3
@@ -88,10 +93,11 @@ function ExerciseShell({
           </p>
         </div>
       ) : test ? null : (
-        <Button variant="ghost" size="sm" onClick={() => setHint(true)}>
+        <Button variant="ghost" size="sm" onClick={() => setHint(true)} className="justify-self-start">
           {t("💡 Подсказка", "💡 Maslahat")}
         </Button>
       )}
+      {footer}
     </div>
   );
 }
@@ -993,10 +999,21 @@ function boardFen(pieces: Record<string, string>): string {
 }
 
 /** Упражнение; в режиме `test` — без подсказок (контрольные тесты). */
-export function ChessExerciseView({ exercise, test = false }: { exercise: ChessExercise; test?: boolean }) {
+export function ChessExerciseView({
+  exercise,
+  test = false,
+  footer = null,
+}: {
+  exercise: ChessExercise;
+  test?: boolean;
+  /** Что показать в конце упражнения (кнопки перехода): на широком экране оказывается рядом с доской. */
+  footer?: ReactNode;
+}) {
   return (
     <TestModeContext.Provider value={test}>
-      <ExerciseByKind exercise={exercise} />
+      <FooterContext.Provider value={footer}>
+        <ExerciseByKind exercise={exercise} />
+      </FooterContext.Provider>
     </TestModeContext.Provider>
   );
 }

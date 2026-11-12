@@ -7,7 +7,7 @@ import { Button, cn, ProgressBar } from "@/components/ui";
 import type { ChessTactic } from "@/content/chess/types";
 import { useTitleTranslation } from "@/lib/docTitle";
 import { useLang, useT } from "@/lib/i18n";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { Celebration } from "@/components/rewards/Celebration";
 import { useHydrated, useStore } from "@/lib/store";
 import { useChessPart } from "@/lib/useChess";
@@ -189,7 +189,8 @@ export function TopicView({
   // Панель «дальше» внизу экрана: только в решённом упражнении и не поверх праздника «Тема пройдена».
   const nextBar = tab === "exercises" && solvedNow && !celebrate;
 
-  // В упражнениях на телефоне и планшете (до 1024 px) — «один экран — одно дело»: вместо шапки урока и вкладок одна строка над заданием.
+  // В упражнениях — «один экран — одно дело»: вместо шапки урока и вкладок одна строка над заданием.
+  // На широком экране так доска получает всю высоту окна, а не то, что осталось под шапкой и вкладками.
   const focus = tab === "exercises";
 
   return (
@@ -198,7 +199,7 @@ export function TopicView({
       <header
         className={cn(
           "flex items-center gap-3 rounded-3xl bg-linear-to-br from-[#3b2f23] to-[#6b4f33] p-3 text-white shadow-card sm:p-4",
-          focus && "max-lg:hidden",
+          focus && "hidden",
         )}
       >
         <button
@@ -223,7 +224,7 @@ export function TopicView({
       </header>
 
       <nav
-        className={cn("grid grid-cols-3 gap-1.5 rounded-2xl bg-surface p-1.5 shadow-card", focus && "max-lg:hidden")}
+        className={cn("grid grid-cols-3 gap-1.5 rounded-2xl bg-surface p-1.5 shadow-card", focus && "hidden")}
         aria-label={t("Разделы темы", "Mavzu boʻlimlari")}
       >
         {(
@@ -265,12 +266,13 @@ export function TopicView({
 
       {tab === "exercises" && (
         <section
-          className={cn("space-y-2 lg:space-y-4", nextBar && "max-lg:pb-20")}
+          className={cn("board-wide space-y-2", nextBar && "max-lg:pb-20")}
+          style={{ "--stage-chrome": "10.5rem" } as CSSProperties}
           aria-label={t("Упражнения", "Mashqlar")}
         >
           <div id="exercises-top" className="scroll-mt-20 max-lg:scroll-mt-2">
-            {/* Телефон: «закрыть», полоска упражнений и возврат к уроку — одна строка, доска помещается на экран. */}
-            <div data-focus-screen className="flex items-center gap-1 lg:hidden">
+            {/* «Закрыть», полоска упражнений и возврат к уроку — одна строка: доска помещается на экран. */}
+            <div data-focus-screen className="flex items-center gap-1">
               <button
                 type="button"
                 onClick={() => setHash("#")}
@@ -317,34 +319,29 @@ export function TopicView({
                 <BookOpen className="h-5 w-5" strokeWidth={2.25} aria-hidden />
               </button>
             </div>
-            {/* С планшета: номера упражнений — только если их несколько: одна кнопка «1» лишь отодвигала доску вниз. */}
-            <div className="hidden flex-wrap gap-1.5 lg:flex">
-              {(total > 1 ? topic.exercises : []).map((e, i) => (
-                <button
-                  key={e.id}
-                  type="button"
-                  onClick={() => goExercise(i)}
-                  aria-label={t(
-                    `Упражнение ${i + 1}: ${e.title}${ids.has(e.id) ? " (решено)" : ""}`,
-                    `${i + 1}-mashq: ${e.title}${ids.has(e.id) ? " (yechilgan)" : ""}`,
-                  )}
-                  aria-current={i === exercise ? "step" : undefined}
-                  className={cn(
-                    "flex h-11 min-w-11 items-center justify-center rounded-xl border-2 px-2 text-base font-black transition",
-                    i === exercise
-                      ? "border-brand bg-brand text-white"
-                      : ids.has(e.id)
-                        ? "border-mint/50 bg-mint-soft text-mint-ink"
-                        : "border-line bg-surface hover:border-brand/40",
-                  )}
-                >
-                  {ids.has(e.id) && i !== exercise ? "✓" : i + 1}
-                </button>
-              ))}
-            </div>
           </div>
           <div className="rounded-3xl bg-paper p-1 sm:p-2">
-            <ChessExerciseView key={topic.exercises[exercise].id} exercise={topic.exercises[exercise]} />
+            <ChessExerciseView
+              key={topic.exercises[exercise].id}
+              exercise={topic.exercises[exercise]}
+              footer={
+                <div className="flex flex-wrap items-center gap-2 pt-2">
+                  <Button variant="secondary" onClick={() => goExercise(exercise - 1)} disabled={exercise === 0}>
+                    {t("← Назад", "← Orqaga")}
+                  </Button>
+                  {/* Пока упражнение не решено, «дальше» тише «Проверить»; на телефоне после решения его заменяет панель внизу. */}
+                  {onwardLabel && (
+                    <Button
+                      variant={solvedNow ? "primary" : "secondary"}
+                      onClick={goOnward}
+                      className={cn(nextBar && "max-lg:hidden")}
+                    >
+                      {onwardLabel}
+                    </Button>
+                  )}
+                </div>
+              }
+            />
           </div>
           {celebrate && (
             <Celebration
@@ -364,21 +361,6 @@ export function TopicView({
               {t(`Все ${total} упражнений решены.`, `Barcha ${total} ta mashq yechildi.`)}
             </Celebration>
           )}
-          <div className="flex flex-wrap items-center gap-2 pt-2">
-            <Button variant="secondary" onClick={() => goExercise(exercise - 1)} disabled={exercise === 0}>
-              {t("← Назад", "← Orqaga")}
-            </Button>
-            {/* Пока упражнение не решено, «дальше» тише «Проверить»; на телефоне после решения его заменяет панель внизу. */}
-            {onwardLabel && (
-              <Button
-                variant={solvedNow ? "primary" : "secondary"}
-                onClick={goOnward}
-                className={cn(nextBar && "max-lg:hidden")}
-              >
-                {onwardLabel}
-              </Button>
-            )}
-          </div>
           {/* Телефон: упражнение решено — «дальше» само появляется внизу экрана, искать его прокруткой не нужно. */}
           {nextBar && onwardLabel && (
             <div

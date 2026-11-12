@@ -97,7 +97,7 @@ export function StormView() {
   const puzzle = order[Math.min(index, order.length - 1)];
 
   return (
-    <div className="space-y-4">
+    <div className="board-stage board-wide board-top space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Back />
         <p className="text-lg font-black">
@@ -189,7 +189,7 @@ export function RepeatView() {
   const puzzle = typeof found === "object" ? found : undefined;
 
   return (
-    <div className="space-y-4">
+    <div className="board-stage board-wide board-top space-y-4">
       <Back />
       <header>
         <h1 className="text-2xl font-black">
