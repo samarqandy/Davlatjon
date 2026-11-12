@@ -90,36 +90,66 @@ for (const [name, state] of [
     for (const [i, top] of before.entries()) expect(Math.abs(after[i] - top), `блок ${i}`).toBeLessThanOrEqual(4);
   });
 
-/** Сколько килобайт скриптов пришло при загрузке страницы (в сжатом виде, как по сети). */
-async function scriptWeight(page: Page, path: string): Promise<number> {
+/**
+ * Сколько килобайт скриптов нужно самой странице (в сжатом виде, как по сети):
+ * html — скрипты из её HTML, без них страница не оживёт; page — они же плюс то, что страница догружает сама
+ * (живая птица, доска-превью).
+ *
+ * Чтобы число не зависело от случая, отключаем два посторонних источника запросов:
+ * — service worker (test.use ниже): перехваченный им запрос браузер показывает с весом 0 байт, и сумма
+ *   менялась от того, успел ли он включиться;
+ * — предзагрузку соседних страниц: Next.js заранее скачивает скрипты страниц, на которые ведут ссылки
+ *   (на главной это ещё около 470 КиБ). Это вес других страниц — его показывает `npm run vitals`.
+ */
+async function scriptWeight(page: Page, path: string): Promise<{ html: number; page: number }> {
+  await page.route("**/*", (route) => (route.request().headers().rsc ? route.abort() : route.fallback()));
   const cdp = await page.context().newCDPSession(page);
   await cdp.send("Network.enable");
+  const fromHtml = new Map<string, boolean>();
   const scripts = new Set<string>();
-  let bytes = 0;
+  let html = 0;
+  let all = 0;
+  cdp.on("Network.requestWillBeSent", (e) => {
+    fromHtml.set(e.requestId, e.initiator.type === "parser");
+  });
   cdp.on("Network.responseReceived", (e) => {
     if (e.type === "Script") scripts.add(e.requestId);
   });
   cdp.on("Network.loadingFinished", (e) => {
-    if (scripts.has(e.requestId)) bytes += e.encodedDataLength;
+    if (!scripts.has(e.requestId)) return;
+    all += e.encodedDataLength;
+    if (fromHtml.get(e.requestId)) html += e.encodedDataLength;
   });
   await page.goto(path);
   await page.waitForLoadState("networkidle");
-  return Math.round(bytes / 1024);
+  return { html: Math.round(html / 1024), page: Math.round(all / 1024) };
 }
 
 const KNOWN = { version: 1, welcomed: true, settings: { age: 9, lang: "ru", childName: "Али" } };
 
-test("главная: скриптов при загрузке — не больше 245 КиБ, шахматная доска её не задерживает", async ({ page }) => {
-  await seed(page, KNOWN);
-  // Было 275 КиБ: главная тянула доску, шесть уровней шахматной школы и список записей диктора.
-  expect(await scriptWeight(page, "/")).toBeLessThanOrEqual(245);
-});
+test.describe("вес скриптов", () => {
+  test.use({ serviceWorkers: "block" });
 
-test("главная шахмат: скриптов при загрузке — вдвое меньше прежнего", async ({ page, isMobile }) => {
-  await seed(page, KNOWN);
-  // Было 503 КиБ: все уроки пяти ступеней, тактика, истории и тайны на двух языках. Теперь страница получает
-  // с сервера сводку (названия и счётчики). На широком экране добавляется доска-превью задачи дня.
-  expect(await scriptWeight(page, "/chess")).toBeLessThanOrEqual(isMobile ? 250 : 290);
+  test("главная: скриптов в HTML — не больше 245 КиБ, шахматная доска её не задерживает", async ({
+    page,
+    isMobile,
+  }) => {
+    await seed(page, KNOWN);
+    // Было 275 КиБ: главная тянула доску, шесть уровней шахматной школы и список записей диктора.
+    const weight = await scriptWeight(page, "/");
+    expect(weight.html).toBeLessThanOrEqual(245);
+    // На широком экране после первого экрана догружается движок живой птицы (около 60 КиБ).
+    expect(weight.page).toBeLessThanOrEqual(isMobile ? 245 : 305);
+  });
+
+  test("главная шахмат: скриптов в HTML — вдвое меньше прежнего", async ({ page, isMobile }) => {
+    await seed(page, KNOWN);
+    // Было 503 КиБ: все уроки пяти ступеней, тактика, истории и тайны на двух языках. Теперь страница получает
+    // с сервера сводку (названия и счётчики). На широком экране догружается доска-превью задачи дня.
+    const weight = await scriptWeight(page, "/chess");
+    expect(weight.html).toBeLessThanOrEqual(250);
+    expect(weight.page).toBeLessThanOrEqual(isMobile ? 250 : 290);
+  });
 });
 
 for (const path of ["/", "/chess", "/chess/puzzles", "/chess/course", "/achievements", "/week/1/day/1"])

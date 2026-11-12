@@ -50,6 +50,26 @@ function observe() {
   }).observe({ type: "longtask", buffered: true });
 }
 
+/**
+ * Все скрипты первого визита: из HTML страницы, догруженные ею и скрипты соседних страниц, которые Next.js
+ * скачивает заранее по ссылкам. Без замедления сети и без service worker — иначе часть запросов не видна.
+ */
+async function allScripts(path) {
+  const context = await browser.newContext({ ...devices["Pixel 7"], serviceWorkers: "block" });
+  const page = await context.newPage();
+  if (state) await page.addInitScript((s) => localStorage.setItem("davlatjon-lab:v1", s), state);
+  const cdp = await context.newCDPSession(page);
+  await cdp.send("Network.enable");
+  const scripts = new Set();
+  let bytes = 0;
+  cdp.on("Network.responseReceived", (e) => e.type === "Script" && scripts.add(e.requestId));
+  cdp.on("Network.loadingFinished", (e) => scripts.has(e.requestId) && (bytes += e.encodedDataLength));
+  await page.goto(base + path, { waitUntil: "load" });
+  await page.waitForLoadState("networkidle");
+  await context.close();
+  return bytes;
+}
+
 const browser = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH || undefined });
 for (const path of paths) {
   const rows = [];
@@ -67,9 +87,14 @@ for (const path of paths) {
       uploadThroughput: (750 * 1024) / 8,
     });
     await cdp.send("Emulation.setCPUThrottlingRate", { rate: 4 });
+    // Скрипты из HTML страницы: они запрошены до того, как включится service worker, поэтому число устойчиво.
+    // Остальные запросы он перехватывает, и браузер показывает их вес нулём — их считает отдельный проход ниже.
     const scripts = new Set();
     let js = 0;
-    cdp.on("Network.responseReceived", (e) => e.type === "Script" && scripts.add(e.requestId));
+    cdp.on(
+      "Network.requestWillBeSent",
+      (e) => e.type === "Script" && e.initiator.type === "parser" && scripts.add(e.requestId),
+    );
     cdp.on("Network.loadingFinished", (e) => scripts.has(e.requestId) && (js += e.encodedDataLength));
     await page.goto(base + path, { waitUntil: "load" });
     await page.waitForLoadState("networkidle");
@@ -77,12 +102,13 @@ for (const path of paths) {
     rows.push({ ...(await page.evaluate(() => window.__vitals)), js });
     await context.close();
   }
+  const total = await allScripts(path);
   rows.sort((a, b) => a.lcp - b.lcp);
   const m = rows[Math.floor(rows.length / 2)];
   const sec = (ms) => (ms / 1000).toFixed(2);
   console.log(`${path}${state ? "  (свой прогресс)" : "  (новичок)"}`);
   console.log(
-    `  LCP ${sec(m.lcp)} с (все: ${rows.map((r) => sec(r.lcp)).join(", ")}) · FCP ${sec(m.fcp)} с · CLS ${m.cls.toFixed(3)} · блокировка ${Math.round(m.blocked)} мс · скрипты ${Math.round(m.js / 1024)} КиБ`,
+    `  LCP ${sec(m.lcp)} с (все: ${rows.map((r) => sec(r.lcp)).join(", ")}) · FCP ${sec(m.fcp)} с · CLS ${m.cls.toFixed(3)} · блокировка ${Math.round(m.blocked)} мс · скрипты страницы ${Math.round(m.js / 1024)} КиБ, с догрузкой и соседними страницами ${Math.round(total / 1024)} КиБ`,
   );
   console.log(`  самый большой элемент: ${m.element}`);
   for (const s of m.shifts.filter((x) => x.value >= 0.005))
