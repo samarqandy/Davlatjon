@@ -1,5 +1,6 @@
 import { defaultPieces, type PieceRenderObject } from "react-chessboard";
 import { cn } from "@/components/ui";
+import { isPieceSetId, pieceSrc } from "@/lib/boardLook";
 
 /**
  * Фигуры доски отдельно от самой доски: значок фигуры на главной и в карточках не должен тянуть
@@ -20,6 +21,32 @@ function StarPiece() {
 }
 
 export const PIECES: PieceRenderObject = { ...defaultPieces, star: StarPiece };
+
+const CODES = ["wK", "wQ", "wR", "wB", "wN", "wP", "bK", "bQ", "bR", "bB", "bN", "bP"];
+const sets = new Map<string, PieceRenderObject>([["classic", PIECES]]);
+
+/**
+ * Фигуры выбранного набора (настройка «Моя доска»). Свободные наборы лежат картинками в public/pieces:
+ * картинка не перехватывает перетаскивание и нажатие — их обрабатывает клетка доски.
+ */
+export function piecesOf(setId: string | undefined): PieceRenderObject {
+  if (!setId || !isPieceSetId(setId)) return PIECES;
+  let set = sets.get(setId);
+  if (!set) {
+    set = { ...PIECES };
+    for (const code of CODES) {
+      const src = pieceSrc(setId, code);
+      const Piece = () => (
+        // eslint-disable-next-line @next/next/no-img-element -- SVG из public: оптимизатор картинок ему не нужен
+        <img src={src} alt="" draggable={false} className="pointer-events-none block h-full w-full" />
+      );
+      Piece.displayName = `Piece(${setId}/${code})`;
+      set[code] = Piece;
+    }
+    sets.set(setId, set);
+  }
+  return set;
+}
 
 /** Картинка фигуры из набора доски — для заголовков и карточек. */
 export function PieceIcon({ piece, className }: { piece: string; className?: string }) {

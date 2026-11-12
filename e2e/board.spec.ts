@@ -95,6 +95,83 @@ test("цвета доски и набор звуков выбираются в �
   expect(stored.boardSoundSet).toBe("soft");
 });
 
+// Библиотека доски даёт каждой фигуре роль кнопки без названия; названия ставим мы. Раньше — после отрисовки:
+// 15–30 мс (на слабом телефоне до 150 мс) на доске стояли 16–32 безымянные кнопки, и проверка доступности
+// изредка попадала в это окно.
+test("фигуры на доске не бывают без названия ни в одном кадре — когда доска появляется и после хода", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    const w = window as unknown as { __unnamed: number };
+    w.__unnamed = 0;
+    const tick = () => {
+      const pieces = document.querySelectorAll('[aria-roledescription="draggable"]:not([aria-label])');
+      w.__unnamed = Math.max(w.__unnamed, pieces.length);
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  });
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send("Emulation.setCPUThrottlingRate", { rate: 4 });
+  const worst = () => page.evaluate(() => (window as unknown as { __unnamed: number }).__unnamed);
+
+  await page.goto("/chess/puzzles#practice");
+  await expect(page.locator('[aria-roledescription="draggable"]').first()).toBeVisible();
+  // Соперник делает первый ход задачи — фигуры перерисовываются.
+  await page.waitForTimeout(1500);
+  expect(await worst()).toBe(0);
+
+  // Доска анализа приходит готовым HTML: до оживления страницы названий нет (их может поставить только скрипт),
+  // но и нажать на фигуру ещё нельзя. Считаем с момента, когда страница ожила.
+  await page.goto("/chess/analysis");
+  await expect(board(page).locator('[aria-roledescription="draggable"][aria-label]')).toHaveCount(32);
+  await page.evaluate(() => void ((window as unknown as { __unnamed: number }).__unnamed = 0));
+  await sq(page, "e2").click();
+  await sq(page, "e4").click();
+  await expect(board(page).locator('[aria-label="белая пешка, e4"]')).toHaveCount(1);
+  await sq(page, "g8").click();
+  await sq(page, "f6").click();
+  await expect(board(page).locator('[aria-label="чёрный конь, f6"]')).toHaveCount(1);
+  expect(await worst()).toBe(0);
+});
+
+test("набор фигур выбирается в «Моя доска и звук»: доска рисует его, ходы работают, выбор запоминается", async ({
+  page,
+}) => {
+  await page.goto("/chess/play");
+  await page.locator("[data-board-look-details] summary").click();
+  await expect(page.locator('[data-piece-set-pick="classic"]')).toHaveAttribute("aria-checked", "true");
+  // Авторы свободных наборов названы рядом с выбором: этого требуют их лицензии.
+  await expect(page.locator("[data-piece-credits]")).toContainText("Maurizio Monge (MIT)");
+  await expect(page.locator("[data-piece-credits]")).toContainText("Alexis Luengas (Apache 2.0)");
+  await page.locator('[data-piece-set-pick="celtic"]').click();
+  await expect(page.locator('[data-piece-set-pick="celtic"]')).toHaveAttribute("aria-checked", "true");
+
+  await page.goto("/chess/analysis");
+  const knight = sq(page, "g1").locator("img");
+  await expect(knight).toHaveAttribute("src", "/pieces/celtic/wN.svg");
+  // Картинка загрузилась, а не осталась пустым местом.
+  await expect.poll(() => knight.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThan(0);
+  // Всего 32 фигуры, и у каждой для экранного диктора осталось название.
+  await expect(board(page).locator("img")).toHaveCount(32);
+  await expect(board(page).locator('[aria-label="белый конь, g1"]')).toHaveCount(1);
+  // Ход нажатиями работает так же, как с классическими фигурами.
+  await sq(page, "e2").click();
+  await sq(page, "e4").click();
+  await expect(sq(page, "e4").locator("img")).toHaveAttribute("src", "/pieces/celtic/wP.svg");
+  await expect(sq(page, "e2").locator("img")).toHaveCount(0);
+
+  const stored = await page.evaluate(() => JSON.parse(localStorage.getItem("davlatjon-lab:v1") ?? "{}").settings);
+  expect(stored.pieceSet).toBe("celtic");
+  // Вернуться к классическим: картинок на доске нет, фигуры рисуются кодом.
+  await page.goto("/chess/play");
+  await page.locator("[data-board-look-details] summary").click();
+  await page.locator('[data-piece-set-pick="classic"]').click();
+  await page.goto("/chess/analysis");
+  await expect(sq(page, "g1").locator("svg")).toHaveCount(1);
+  await expect(board(page).locator("img")).toHaveCount(0);
+});
+
 test("в углу рамки — чей ход: □ белые, ■ чёрные; после хода квадратик меняется", async ({ page }) => {
   await page.goto("/chess/analysis");
   const turn = board(page).locator(".board-turn");

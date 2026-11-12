@@ -4,7 +4,7 @@
  * Сам стор (localStorage + подписки) — в src/lib/store.ts.
  */
 import { migrateCourseIds } from "./courseMigration";
-import { isBoardThemeId, isSoundSetId, type SoundSetId } from "./boardLook";
+import { isBoardThemeId, isSoundSetId, type SoundSetId, isPieceSetId } from "./boardLook";
 import { cleanChildName } from "./childName";
 import type { PuzzleLevel, PuzzleRating } from "./puzzleRating";
 
@@ -79,6 +79,8 @@ export interface Settings {
   theme?: "dark";
   /** Цвета доски (id из boardLook.ts), настройка устройства. */
   boardTheme?: string;
+  /** Набор фигур (id из boardLook.ts), настройка устройства. Без значения — классические. */
+  pieceSet?: string;
   /** Набор звуков ходов: записанное дерево или мягкие синтезированные. */
   boardSoundSet?: SoundSetId;
   /** Язык платформы: русский или узбекский. */
@@ -414,6 +416,7 @@ export function sanitize(raw: unknown): AppState {
       animations: settings.animations !== false,
       theme: settings.theme === "dark" ? "dark" : undefined,
       boardTheme: isBoardThemeId(settings.boardTheme) ? settings.boardTheme : undefined,
+      pieceSet: isPieceSetId(settings.pieceSet) && settings.pieceSet !== "classic" ? settings.pieceSet : undefined,
       boardSoundSet: isSoundSetId(settings.boardSoundSet) ? settings.boardSoundSet : undefined,
       childName: cleanChildName(settings.childName),
       childNameUz: cleanChildName(settings.childNameUz),

@@ -31,6 +31,37 @@ export function isBoardThemeId(id: unknown): id is string {
   return typeof id === "string" && BOARD_THEMES.some((t) => t.id === id);
 }
 
+/**
+ * Наборы фигур. «classic» — фигуры библиотеки доски; остальные — свободные наборы из public/pieces
+ * (автор и лицензия — там же, в README.md и LICENSE.txt). Наборы под GPL, AGPL и «некоммерческие» не берём.
+ */
+export interface PieceSet {
+  id: string;
+  ru: string;
+  uz: string;
+  /** Автор и лицензия — показываем рядом с выбором: этого требуют MIT и Apache 2.0. */
+  author?: string;
+  license?: string;
+}
+
+export const PIECE_SETS: readonly PieceSet[] = [
+  { id: "classic", ru: "Классические", uz: "Klassik" },
+  { id: "celtic", ru: "Объёмные", uz: "Hajmli", author: "Maurizio Monge", license: "MIT" },
+  { id: "chessnut", ru: "Чёткие", uz: "Aniq", author: "Alexis Luengas", license: "Apache 2.0" },
+] as const;
+
+export const DEFAULT_PIECE_SET = PIECE_SETS[0];
+
+export function isPieceSetId(id: unknown): id is string {
+  return typeof id === "string" && PIECE_SETS.some((p) => p.id === id);
+}
+
+export const pieceSetOf = (id: string | undefined): PieceSet =>
+  PIECE_SETS.find((p) => p.id === id) ?? DEFAULT_PIECE_SET;
+
+/** Адрес картинки фигуры набора («wN», «bK»); у классического набора картинок нет — он рисуется кодом. */
+export const pieceSrc = (setId: string, piece: string) => `/pieces/${setId}/${piece}.svg`;
+
 /** Наборы звуков ходов: записанное дерево (по умолчанию) и мягкие синтезированные «игровые» звуки. */
 export const SOUND_SETS = [
   { id: "wood", ru: "Деревянные", uz: "Yogʻoch" },
