@@ -48,12 +48,27 @@ test("ход, взятие — у каждого свой звук", async ({ pa
     .toEqual(["move", "move", "capture"]);
 });
 
-test("пешка дошла до края — ребёнок сам выбирает фигуру", async ({ page }) => {
+test("пешка дошла до края — ребёнок сам выбирает фигуру", async ({ page }, info) => {
   await page.goto("/chess/analysis#fen=8/4P3/8/8/8/k7/8/K7_w_-_-_0_1");
-  await sq(page, "e7").click();
-  await sq(page, "e8").click();
+  // На телефоне — настоящее касание: доска отличает палец от мыши и увеличивает «фигуру в руке» по-разному.
+  const finger = info.project.name === "phone";
+  for (const square of ["e7", "e8"]) await (finger ? sq(page, square).tap() : sq(page, square).click());
+  if (finger) await expect(board(page)).toHaveAttribute("data-drag", "touch");
   const picker = page.locator('[data-promotion="e8"]');
   await expect(picker).toBeVisible();
+  // Каждая из четырёх фигур — внутри своего кружка и не больше клетки. Увеличение «фигуры в руке» (LI-2)
+  // задевало и это окошко: на телефоне фигуры вырастали вдвое, сдвигались вверх и закрывали друг друга.
+  const cell = (await sq(page, "a1").boundingBox())!.width;
+  for (const name of ["Ферзь", "Ладья", "Слон", "Конь"]) {
+    const button = picker.getByRole("button", { name });
+    const outer = (await button.boundingBox())!;
+    const inner = (await button.locator("svg, img").first().boundingBox())!;
+    expect(inner.width, name).toBeLessThanOrEqual(cell + 1);
+    expect(inner.x, name).toBeGreaterThanOrEqual(outer.x - 1);
+    expect(inner.y, name).toBeGreaterThanOrEqual(outer.y - 1);
+    expect(inner.x + inner.width, name).toBeLessThanOrEqual(outer.x + outer.width + 1);
+    expect(inner.y + inner.height, name).toBeLessThanOrEqual(outer.y + outer.height + 1);
+  }
   await picker.getByRole("button", { name: "Конь" }).click();
   await expect(picker).toHaveCount(0);
   await expect(page.getByRole("button", { name: /e8=К/ })).toBeVisible();
