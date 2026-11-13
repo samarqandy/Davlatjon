@@ -5,7 +5,7 @@ export const course5Uz: Uz<typeof COURSE_5> = {
   title: "5-bosqich «Farzin»",
   subtitle: "Kombinatsiyalar va shohga hujum",
   about:
-    "Hujumda bogʻlash va qoʻsh bogʻlash, bogʻlamdan chiqish va Legal gʻoyasi, qoʻsh shoh, tegirmon, qoʻsh zarba, chalgʻitish va toʻsish, mot toʻriga jalb qilish, Edvard Laskerning durdonasi, qisilgan mot, farzinni tutish, oraliq yurish, chiziqni boʻshatish va ochish, oxirgi gorizontalning zaifligi, mix-piyoda, ikki fil qurboni, donalar hamkorligi, rokirovka qilmagan shohga hujum, f7 dagi qurbon, jim yurish, himoyadagi yagona yurish, Steynits va Rubinshteyn durdonalari. Darslar mavzusi va tartibi M.I. Glotovning «Shaxmat mahorati bosqichlari. 5-bosqich „Farzin“» kitobi asosida; pozitsiyalar maktab uchun tuzilgan va shaxmat dvigateli bilan tekshirilgan.",
+    "Hujumda bogʻlash va qoʻsh bogʻlash, bogʻlamdan chiqish va Legal gʻoyasi, qoʻsh shoh, tegirmon, qoʻsh zarba, chalgʻitish va toʻsish, mot toʻriga jalb qilish, Edvard Laskerning durdonasi, qisilgan mot, farzinni tutish, oraliq yurish, chiziqni boʻshatish va ochish, oxirgi gorizontalning zaifligi, mix-piyoda, punktni egallash, h7, h6 va f6 dagi qurbonlar, ikki fil qurboni, Morfi, Fisher va Greko partiyalari, donalar hamkorligi, rokirovka qilmagan shohga hujum, f7 dagi qurbon, jim yurish, himoyadagi yagona yurish, Steynits va Rubinshteyn durdonalari. Darslar mavzusi va tartibi M.I. Glotovning «Shaxmat mahorati bosqichlari. 5-bosqich „Farzin“» kitobi asosida; pozitsiyalar maktab uchun tuzilgan va shaxmat dvigateli bilan tekshirilgan.",
 };
 
 export const course5ModulesUz: Uz<typeof COURSE_5_MODULES> = {
@@ -43,6 +43,67 @@ export const course5LessonsUz: Uz<typeof COURSE_5_LESSONS> = {
         prompt: "Oqlar yuradi. Mot qil.",
         hint: "f8 dagi ot h7 ni himoya qiladi, lekin u a8 dagi rux bilan bogʻlangan.",
         why: "♕xh7# — f8 dagi ot farzinni urishi mumkin edi, lekin u a8 dagi rux bilan shohga bogʻlangan. Farzinni d3 dagi fil himoya qiladi.",
+      },
+    },
+  },
+  "c5-pin-exchange": {
+    title: "Bogʻlangan donada almashuv",
+    idea: "Bogʻlangan dona uriladi, uning oʻrniga yangisi keladi — u ham bogʻlangan.",
+    lesson: [
+      {
+        title: "Bogʻlamga zarba ber",
+        text: [
+          "Bogʻlangan dona keta olmaydi. Demak, unga yana va yana hujum qilish mumkin — himoyachilar hujumchilardan kam boʻlib qolguncha.",
+          "Kuchli usul — **bogʻlash katagida almashuv**: bogʻlangan donani uramiz, uni javoban olishadi, lekin olgan donaning oʻzi bogʻlamga tushadi. Endi yana bir hujumchi olib kelamiz — va uni yutamiz. Morfi Parij operasidagi partiyada shunday gʻalaba qilgan.",
+        ],
+      },
+    ],
+    terms: [
+      {
+        term: "Bogʻlash katagida almashuv",
+        text: "Bogʻlangan donani urish: undan keyin javoban olgan dona bogʻlamga tushadi.",
+      },
+    ],
+    exercises: {
+      "c5-pin-exchange-rook": {
+        title: "Ot evaziga rux",
+        prompt: "d7 dagi ot fil bilan bogʻlangan. Qanday oʻynash yaxshiroq?",
+        hint: "d7 dagi almashuvdan keyin u yerda rux turadi — u ham bogʻlangan. Unga yana nima bilan hujum qilish mumkin?",
+        why: "♖xd7! ♜xd7, ♖d1 — d7 dagi rux bogʻlangan va unga ikki marta hujum qilinyapti, himoyachisi esa faqat shoh: oqlar uni oladi va ortiqcha filli boʻlib qoladi. ♗xd7+ ♜xd7, ♖xd7 ♚xd7 dan keyin hammasi teng almashgan.",
+      },
+    },
+  },
+  "c5-morphy-pin": {
+    title: "Morfi: bogʻlash ishda",
+    idea: "Bogʻlangan dona — nishon: Morfi unga ikki marta hujum qilib, partiyani yutdi.",
+    lesson: [
+      {
+        title: "Nyu-York, 1857",
+        text: [
+          "1857-yilda Pol Morfi Jon Shultenga qarshi qoralar bilan oʻynadi. Oq shoh rokirovka qilishga ulgurmadi, e2 dagi fil esa bogʻlamga tushdi: uning ortida diagonalda d1 dagi farzin turibdi.",
+          "Morfi shu fil uchun ruxini berdi: 13... ♜xe2! e2 ga ot keldi — u ham bogʻlamga tushdi. Shu zahoti ot d4 ga sakradi: bogʻlangan donaga ikki marta hujum. Oqlar uni yoʻqotdi, shoh esa mot hujumi ostida qoldi.",
+        ],
+      },
+    ],
+    terms: [{ term: "Bogʻlangan donaga bosim", text: "Bogʻlangan donaga qayta-qayta hujum qilinadi: u keta olmaydi." }],
+    exercises: {
+      "c5-morphy-pin-rook": {
+        title: "Fil evaziga rux",
+        prompt: "Morfi (qoralar) yuradi. U qanday oʻynagan?",
+        hint: "e2 dagi fil bogʻlangan. Uni urishsa, oʻrniga kim turadi?",
+        why: "13... ♜xe2! 14. ♘xe2 ♞d4 — e2 da endi ot, u g4 dagi fil orqali farzin bilan bogʻlangan. Darhol 13... ♞d4 ni Morfi oʻynamagan: e2 dagi filni uchta dona himoya qilib turibdi.",
+      },
+      "c5-morphy-pin-knight": {
+        title: "Ikkinchi zarba",
+        prompt: "Morfi (qoralar) yuradi. Bosimni qanday kuchaytirish mumkin?",
+        hint: "e2 dagi ot bogʻlangan. Unga yana bir marta hujum qil.",
+        why: "14... ♞d4! — e2 dagi ot bogʻlangan va unga ikki marta hujum qilinyapti: g4 dagi fil va d4 dagi ot. Partiyada 15. ♕b1 ♝xe2+ boʻlgan — qoralar dona yutib, mot hujumini boshladi. 14... ♝xe2+ 15. ♕xe2 dan keyin bogʻlam yoʻqoladi.",
+      },
+      "c5-morphy-pin-mate": {
+        title: "Partiya yakuni",
+        prompt: "Qoralar yuradi. Morfi kabi mot qil.",
+        hint: "Oq shoh g5 gacha kelib qoldi. Qaysi shoh undan hamma kataklarni tortib oladi?",
+        why: "23... ♛h5# — shoh f1 dan g5 gacha yoʻl bosib, mot boʻldi.",
       },
     },
   },
@@ -227,6 +288,33 @@ export const course5LessonsUz: Uz<typeof COURSE_5_LESSONS> = {
       },
     },
   },
+  "c5-deflection-defence": {
+    title: "Himoyada chalgʻitish",
+    idea: "Mot tahdid qilishyaptimi? Baʼzan eng yaxshi himoya — hujumchi donani olib ketadigan shoh.",
+    lesson: [
+      {
+        title: "Hujumchini olib ket",
+        text: [
+          "Faqat himoyachilarni emas, **hujumchilarni** ham chalgʻitish mumkin. Raqib mot bilan tahdid qilyapti — sen esa shoh berasan va shoh bergan donani faqat mot qilmoqchi boʻlgan dona ura oladi.",
+          "Raqib donasi oʻz joyidan ketdi — mot tahdidi yoʻq. Agar u muhim narsani, masalan, oxirgi gorizontalni tashlab ketgan boʻlsa, himoya darhol hujumga aylanadi.",
+        ],
+      },
+    ],
+    terms: [
+      {
+        term: "Himoyada chalgʻitish",
+        text: "Raqibning hujumchi donasini xavfli katakdan ketishga majbur qiladigan yurish (koʻpincha shoh).",
+      },
+    ],
+    exercises: {
+      "c5-deflection-defence-rook": {
+        title: "Farzin, h3 dan ket",
+        prompt: "Qoralar ♛g2# bilan tahdid qilyapti. Qanday oʻynash yaxshiroq?",
+        hint: "Faqat farzin javob bera oladigan shohni top.",
+        why: "♖c8+! ♛xc8 — farzin h3 dan ketdi, g2 da mot yoʻq. Va darhol ♖xc8# — shohni oʻz piyodalari qamab qoʻygan. ♖c3? dan keyin ♛g2# boʻladi.",
+      },
+    },
+  },
   "c5-interference": {
     title: "Toʻsish",
     idea: "Dona chiziqqa turadi — va raqibning uzoqqa uradigan donasi endi nishonni koʻrmaydi.",
@@ -297,6 +385,33 @@ export const course5LessonsUz: Uz<typeof COURSE_5_LESSONS> = {
       },
     },
   },
+  "c5-decoy-fork": {
+    title: "Ayri zarbaga jalb qilish",
+    idea: "Qurbon shohni ayri zarba yetadigan katakka chorlaydi.",
+    lesson: [
+      {
+        title: "Chorla va ur",
+        text: [
+          "Jalb qilish faqat mot uchun emas, **dona yutish** uchun ham yordam beradi. Qurbon bilan shoh yoki farzinni qoʻsh zarba yetadigan katakka chorlaymiz.",
+          "Koʻpincha ot uradi: shoh qurbonni oldi — ot esa shoh berib, farzinga ham hujum qiladi.",
+        ],
+      },
+    ],
+    terms: [
+      {
+        term: "Ayri zarbaga jalb qilish",
+        text: "Qurbon: undan keyin raqib donasi qoʻsh zarba uchun qulay katakka turadi.",
+      },
+    ],
+    exercises: {
+      "c5-decoy-fork-rook": {
+        title: "Rux shohni chaqiradi",
+        prompt: "Oqlar yuradi. Farzinni qanday yutish mumkin?",
+        hint: "f7 piyodasini faqat shoh himoya qiladi. Uni qayerga olib ketish mumkin?",
+        why: "♖h8+! ♚xh8, ♘xf7+ — ayri: shohga shoh va d6 dagi farzinga hujum. Oqlar ruxni berib, piyoda va farzinni oldi. Darhol ♘xf7? ♚xf7 — ot yoʻqotiladi.",
+      },
+    },
+  },
   "c5-smothered": {
     title: "Qisilgan mot: toʻliq rasm",
     idea: "Ot shoh beradi, farzin oʻzini qurbon qiladi, rux shohni qamaydi — ot bilan mot.",
@@ -338,6 +453,39 @@ export const course5LessonsUz: Uz<typeof COURSE_5_LESSONS> = {
         prompt: "Qora farzin a1 dagi ruxni urib oldi. Oqlar yuradi. Farzinni qanday tutish mumkin?",
         hint: "Farzinga katta diagonalni yopadigan qilib hujum qil.",
         why: "♗c3! — farzinga hujum qilindi va qutulish yoʻq: ♛xa2 ♗xa2, ♛b2+ ♗xb2, ♛xc3+ dxc3, ♛xb1+ ♔xb1. ♗b4? dan keyin farzin diagonal boʻylab qochadi: ♛d4.",
+      },
+    },
+  },
+  "c5-fischer": {
+    title: "Fisher sabogʻi",
+    idea: "f7 dagi qurbon shohni chiqarib oldi — va farzinning ketadigan joyi qolmadi.",
+    lesson: [
+      {
+        title: "Nyu-York, 1958",
+        text: [
+          "Bobbi Fisher AQSH chempionatida grossmeyster Samuel Reshevskiy bilan oʻynaganida 15 yoshda edi. Qoralar ehtiyotsizlik bilan otni taxta chetiga olib ketdi — va d8 dagi farzin boʻsh kataksiz qoldi: atrofida oʻz donalari va piyodalari.",
+          "Fisher f7 da filini qurbon qildi va ot bilan e6 ga sakradi — shoh va piyodaning zarbasi ostiga! Agar otni piyoda ursa, oq farzin qora farzinni oladi. Agar shoh ursa — uni taxta markazida mot kutadi. Reshevskiy farzinini berdi, lekin partiyani qutqara olmadi.",
+        ],
+      },
+    ],
+    terms: [
+      {
+        term: "Farzinga mot",
+        text: "Farzinning boʻsh katagi qolmaganda uni tutishadi: unga qilingan hujum farzinni yutadi.",
+      },
+    ],
+    exercises: {
+      "c5-fischer-bishop": {
+        title: "Fil f7 ni uradi",
+        prompt: "Fisher (oqlar) yuradi. Kombinatsiya qanday boshlangan?",
+        hint: "d8 dagi farzinning yuradigan joyi yoʻq. Ot unga qaysi katakdan hujum qila oladi?",
+        why: "10. ♗xf7+! ♚xf7 11. ♘e6! — ot farzinga hujum qiladi, uning esa chekinadigan joyi yoʻq. Fil f7 piyodasini yoʻq qilish uchun berildi: u e6 dagi otni «d» chizigʻini ochmasdan urgan boʻlardi.",
+      },
+      "c5-fischer-knight": {
+        title: "Ot e6 ga boradi",
+        prompt: "Fisher (oqlar) yuradi. Farzinni qanday tutish mumkin?",
+        hint: "d8 dagi farzinning bitta ham boʻsh katagi yoʻq.",
+        why: "11. ♘e6! Farzinning ketadigan joyi yoʻq. 11... dxe6 12. ♕xd8 — partiyada shunday boʻlgan. Agar 11... ♚xe6 boʻlsa, 12. ♕d5+ ♚f5 13. g4+ ♚xg4 — va shoh koʻpi bilan toʻrt yurishda mot boʻladi.",
       },
     },
   },
@@ -482,6 +630,33 @@ export const course5LessonsUz: Uz<typeof COURSE_5_LESSONS> = {
       },
     },
   },
+  "c5-seize-point": {
+    title: "Punktni egallash",
+    idea: "Muhim katakning himoyachisini yoʻq qil — katak seniki.",
+    lesson: [
+      {
+        title: "Nishondagi katak",
+        text: [
+          "Hujumda koʻpincha hammasini bitta katak — shoh yonidagi **punkt**, masalan, h7 hal qiladi. Agar unga sening ikkita donang qarab turgan, raqibning esa bitta donasi himoya qilayotgan boʻlsa, oʻsha himoyachini yoʻq qilish kerak.",
+          "Eng oson yoʻli — uni **yoʻq qilish**: qurbon evaziga boʻlsa ham urib olish. Punkt himoyasiz qoladi — va unga farzin bostirib kiradi.",
+        ],
+      },
+    ],
+    terms: [
+      {
+        term: "Punktni egallash",
+        text: "Muhim katak uchun kurash: bu katakning himoyachilari almashtiriladi, chalgʻitiladi yoki yoʻq qilinadi.",
+      },
+    ],
+    exercises: {
+      "c5-seize-point-rook": {
+        title: "h7 punkti",
+        prompt: "Farzin va fil h7 ga qarab turibdi. Qanday oʻynash yaxshiroq?",
+        hint: "h7 katagini f6 dagi ot himoya qiladi. Uni nima bilan urish mumkin?",
+        why: "♖xf6! h7 punktining himoyachisi yoʻq qilindi. Ruxni urishsa — ♕xh7#. Urishmasa, oqlarda ortiqcha ot. Darhol ♕xh7+? ♞xh7 — farzin yoʻqotiladi.",
+      },
+    },
+  },
   "c5-uncastled": {
     title: "Rokirovka qilmagan shohga hujum",
     idea: "Shoh markazda — ochiq chiziqlar toʻgʻri unga olib boradi.",
@@ -556,6 +731,97 @@ export const course5LessonsUz: Uz<typeof COURSE_5_LESSONS> = {
         prompt: "Oqlar yuradi va 2 yurishda mot qiladi. Birinchi yurish qaysi?",
         hint: "c4 dagi fil f7 ga qarab turibdi.",
         why: "♕xf7+! — farzinni c4 dagi fil himoya qiladi, shoh h8 ga ketadi va ♕f8# (yoki ♕g8#). ♖xg6+? dan keyin 2 yurishda mot yoʻq.",
+      },
+    },
+  },
+  "c5-h7-greco": {
+    title: "h7 dagi fil qurboni",
+    idea: "Fil h7 piyodasini shoh berib uradi, ot g5 ga sakraydi, farzin h5 ga shoshadi — rokirovkaga qilingan eng qadimgi hujum.",
+    lesson: [
+      {
+        title: "Greko sovgʻasi",
+        text: [
+          "Taxminan 1620-yilda italiyalik Joakino Greko hozirgacha oʻrganiladigan partiyani yozib qoldirgan. Oq fil h7 piyodasini shoh berib urdi. Shoh filni oldi — va shu zahoti g5 dan otdan shoh oldi.",
+          "Qoralar otni fil bilan urdi, lekin oqlarning h4 piyodasi javoban urdi va h1 dagi rux shoh berdi: uning oldida «h» chizigʻi ochildi. Farzin h5 ga chiqdi va partiya h8 dagi mot bilan tugadi.",
+        ],
+      },
+      {
+        title: "Qurbon qachon oʻtadi",
+        text: [
+          "h7 dagi qurbondan oldin uch narsani tekshir. Ot g5 ga shoh berib yeta olishi kerak. Farzin h5 ga tusha olishi kerak. Raqibda esa h7 katagini himoya qiladigan dona boʻlmasligi kerak — koʻpincha bu f6 dagi ot.",
+          "Bitta shart ham bajarilmasa, fil bekorga berilgan. Qurbon — bu umid emas, hisob-kitob.",
+        ],
+      },
+    ],
+    terms: [
+      {
+        term: "h7 dagi fil qurboni",
+        text: "Fil h7 piyodasini shoh berib uradi; keyin hujumga ot (g5 ga) va farzin (h5 ga) kiradi.",
+      },
+    ],
+    exercises: {
+      "c5-h7-greco-bishop": {
+        title: "Fil h7 ni uradi",
+        prompt: "Greko (oqlar) yuradi. Hujum qanday boshlangan?",
+        hint: "f3 dagi ot g5 ga sakrashga, farzin h5 ga chiqishga tayyor. Nima yetishmayapti?",
+        why: "7. ♗xh7+! ♚xh7 8. ♘g5+ ♝xg5 9. hxg5+ — shohni h1 dagi rux beradi: «h» chizigʻi ochildi. 9... ♚g8 10. ♕h5 f5 11. g6 ♜e8 dan keyin partiya mot bilan tugadi: 12. ♕h8#.",
+      },
+      "c5-h7-greco-mate": {
+        title: "Greko moti",
+        prompt: "Oqlar yuradi. Mot qil.",
+        hint: "g6 dagi piyoda shohdan f7 va h7 kataklarini tortib oldi.",
+        why: "♕h8# — farzinni h1 dagi rux himoya qiladi, g6 dagi piyoda esa f7 va h7 kataklarini ushlab turibdi.",
+      },
+    },
+  },
+  "c5-h6-sac": {
+    title: "h6 dagi qurbon",
+    idea: "Fil h6 piyodasini uradi: uni olishsa, farzin shoh yoniga bostirib kiradi.",
+    lesson: [
+      {
+        title: "Himoyani buz",
+        text: [
+          "Shoh yonidagi h6 piyodasi foydali koʻrinadi: u donalarni g5 ga qoʻymaydi. Lekin uning oʻzi **nishonga** aylanadi: agar ortidan h6 ga farzin kelsa, uni fil bilan urish mumkin.",
+          "h6 dagi qurbon hujumchilarda yordamchi — g7 katagini ushlab turgan dona boʻlganda oʻtadi. Shunda fil urilgandan keyin farzin h6 ga turadi va g7 dagi motni qaytarib boʻlmaydi.",
+        ],
+      },
+    ],
+    terms: [
+      {
+        term: "h6 dagi qurbon",
+        text: "Shohni ochish va farzinni h6 ga olib kelish uchun dona h6 piyodasi evaziga beriladi.",
+      },
+    ],
+    exercises: {
+      "c5-h6-sac-bishop": {
+        title: "Fil h6 ni uradi",
+        prompt: "f5 dagi ot g7 ga qarab turibdi. Qanday oʻynash yaxshiroq?",
+        hint: "g7 piyodasi filni ursa, nima boʻladi? Farzin qayerga keladi?",
+        why: "♗xh6! Agar gxh6 boʻlsa, ♕xh6 — va g7 dagi motdan himoya yoʻq. Filni urishmasa, oqlar piyoda yutdi, hujum esa davom etadi. ♕d4 dan keyin qoralar f6 yurishi bilan yopiladi.",
+      },
+    },
+  },
+  "c5-f6-sac": {
+    title: "f6 dagi qurbon",
+    idea: "Ot shoh berib f6 ga boradi: g7 piyodasi uradi — va shoh ochiq qoladi.",
+    lesson: [
+      {
+        title: "g7 piyodasini sindiramiz",
+        text: [
+          "g7 piyodasi — rokirovkadan keyin shohning asosiy qalqoni. **f6 dagi qurbon** uni joyidan ketishga majbur qiladi: ot yoki rux f6 ga turadi, piyoda uradi va «g» chizigʻi katta diagonal bilan birga ochiladi.",
+          "Keyin farzin va fil ishlaydi: farzin «g» chizigʻi boʻylab shoh beradi, fil esa uzun diagonal boʻylab uradi.",
+        ],
+      },
+    ],
+    terms: [
+      { term: "f6 dagi qurbon", text: "g7 piyodasi ketishi va shoh himoyasiz qolishi uchun dona f6 da beriladi." },
+    ],
+    exercises: {
+      "c5-f6-sac-knight": {
+        title: "Ot f6 ga boradi",
+        prompt: "Oqlar yuradi va 3 yurishda mot qiladi. Birinchi yurish qaysi?",
+        hint: "Ot shoh beradi, h7 katagi esa farzin zarbasi ostida.",
+        why: "♘f6+! Shoh h8 ga ketsa — ♕xh7#. Agar gxf6 boʻlsa, ♕g3+ ♚h8 va ♗xf6#. ♕g3 dan keyin qoralar g6 yurishi bilan yopiladi.",
       },
     },
   },
