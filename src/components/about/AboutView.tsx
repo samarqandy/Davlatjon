@@ -250,6 +250,13 @@ export function AboutView({ stats }: { stats: AboutStats }) {
         <h2 id="path" className="text-2xl font-black">
           {t("Путь ученика", "Oʻquvchi yoʻli")}
         </h2>
+        {/* Девиз платформы: раньше стоял в подвале каждой страницы, теперь — здесь, один раз. */}
+        <p className="mt-1 font-bold text-muted" data-about-motto>
+          {t(
+            "Любопытство → Мышление → Рассуждение → Открытие → Уверенность",
+            "Qiziquvchanlik → Fikrlash → Mulohaza → Kashfiyot → Ishonch",
+          )}
+        </p>
         <ol className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4" data-about-path>
           {(
             [

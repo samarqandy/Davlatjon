@@ -80,7 +80,18 @@ for (const [name, state] of [
           Math.round((document.querySelector(sel)?.getBoundingClientRect().top ?? NaN) + window.scrollY),
         ),
       );
-    await page.evaluate(() => document.fonts.ready);
+    // Ждём шрифты, каждый раз пересчитывая раскладку. Просто `await document.fonts.ready` в CI однажды не дождался
+    // за 30 с, хотя оба файла шрифта пришли за 80 мс (трасса PR 112): пока скрипты придержаны, страница стоит, и
+    // Chromium может не пересчитать раскладку сам — а без этого «шрифты готовы» не наступает. Опрос по таймеру, а не
+    // по кадрам: кадров у неподвижной страницы тоже может не быть.
+    await page.waitForFunction(
+      () => {
+        void document.body.offsetHeight;
+        return document.fonts.status === "loaded";
+      },
+      undefined,
+      { polling: 100 },
+    );
     const before = await tops();
     await release();
     await expect(page.locator("[data-today]")).toBeVisible();

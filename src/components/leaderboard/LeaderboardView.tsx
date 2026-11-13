@@ -130,9 +130,7 @@ export function LeaderboardView() {
                 "Reyting saytda Google yoki Telegram orqali kirish ulanganda paydo boʻladi.",
               )}
         </p>
-        {loginAvailable(account) && (
-          <ButtonLink href="/parent#account">{t("Для взрослых", "Kattalar uchun")}</ButtonLink>
-        )}
+        {loginAvailable(account) && <ButtonLink href="/parent#account">{t("Родителям", "Ota-onalarga")}</ButtonLink>}
       </Card>
     );
   } else {
@@ -145,8 +143,8 @@ export function LeaderboardView() {
             </p>
             <p className="text-[0.95rem]">
               {t(
-                "Попроси взрослого включить участие: «Для взрослых» → «Настройки» → «Участвовать в общем рейтинге». Другие увидят только имя в игре, аватарку и очки.",
-                "Kattalardan ishtirokni yoqishni soʻra: «Kattalar uchun» → «Sozlamalar» → «Umumiy reytingda qatnashish». Boshqalar faqat oʻyindagi ismingni, avataringni va ballaringni koʻradi.",
+                "Попроси взрослого включить участие: «Родителям» → «Настройки» → «Участвовать в общем рейтинге». Другие увидят только имя в игре, аватарку и очки.",
+                "Kattalardan ishtirokni yoqishni soʻra: «Ota-onalarga» → «Sozlamalar» → «Umumiy reytingda qatnashish». Boshqalar faqat oʻyindagi ismingni, avataringni va ballaringni koʻradi.",
               )}
             </p>
           </Card>
