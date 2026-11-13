@@ -326,43 +326,42 @@ test("планшет: шапка в одну строку и не обрезан
   expect(board.y + board.height).toBeLessThanOrEqual(880);
 });
 
-// Главное действие — под большим пальцем: на высоком телефоне кнопка в карточке стояла в верхней трети экрана.
-test("шахматная школа и курс: «Начать» внизу экрана на телефоне, в карточке — на широком экране", async ({
+// Главное действие раздела («Начать», «Дальше») — в карточке «Следующий шаг» на первом экране, на любой ширине.
+// До 1024 px его заменяла кнопка, закреплённая внизу экрана: она плавала поверх страницы и на настоящем телефоне
+// закрывала ссылку «Для взрослых» в подвале (снимок владельца). У Lichess, Chess.com и ChessKid на странице
+// со списком уроков плавающей кнопки «продолжить» нет: главное действие стоит в самой карточке.
+test("шахматная школа и курс: «Начать» — в карточке на первом экране, поверх страницы ничего не плавает", async ({
   page,
   isMobile,
 }) => {
   await prepare(page, { age: 7, childName: "Анна" });
-  const fab = page.locator("[data-continue-fab]");
-  const pill = page.locator("[data-course-continue]").getByText("Начать", { exact: true });
   await page.goto("/chess");
-  if (!isMobile) {
-    await expect(pill).toBeVisible();
-    await expect(fab).toBeHidden();
-    return;
+  const card = page.locator("[data-course-continue]");
+  await expect(card.getByText("Начать", { exact: true })).toBeInViewport({ ratio: 1 });
+  await expect(page.locator("[data-continue-fab]")).toHaveCount(0);
+  if (isMobile) {
+    // В самом низу страницы ссылки подвала ничем не закрыты: под пальцем — сама ссылка.
+    await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
+    const adults = page.getByRole("link", { name: /Для взрослых/ });
+    await expect(adults).toBeInViewport({ ratio: 1 });
+    const onTop = await adults.evaluate((el) => {
+      const r = el.getBoundingClientRect();
+      const at = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+      return !!at && (at === el || el.contains(at));
+    });
+    expect(onTop).toBe(true);
+    await page.evaluate(() => scrollTo(0, 0));
   }
-  await page.setViewportSize({ width: 480, height: 1040 });
-  await expect(fab).toBeVisible();
-  await expect(pill).toBeHidden();
-  await expect(fab).toHaveAccessibleName("Начать: Шахматная партия");
-  const centre = async () => {
-    const box = (await fab.boundingBox())!;
-    return (box.y + box.height / 2) / 1040;
-  };
-  // Нижняя треть экрана и не поверх нижнего меню.
-  expect(await centre()).toBeGreaterThan(0.66);
-  const nav = (await page.locator("[data-bottom-nav]").boundingBox())!;
-  const box = (await fab.boundingBox())!;
-  expect(box.y + box.height).toBeLessThanOrEqual(nav.y);
-  await fab.click();
+  await card.click();
   await expect(page).toHaveURL(/\/chess\/course#c1-game$/);
   await expect(page.getByRole("heading", { level: 1, name: /Шахматная партия/ })).toBeVisible();
 
-  // На странице ступени кнопка та же; в открытом уроке её нет — там своя строка упражнения.
-  await expect(fab).toHaveCount(0);
+  // На странице ступени — то же: кнопка в карточке урока «на очереди».
   await page.goto("/chess/course-2");
-  await expect(fab).toBeVisible();
-  expect(await centre()).toBeGreaterThan(0.66);
-  await fab.click();
+  const next = page.locator("[data-course-next]");
+  await expect(next.getByText("Начать", { exact: true })).toBeInViewport({ ratio: 1 });
+  await expect(page.locator("[data-continue-fab]")).toHaveCount(0);
+  await next.click();
   await expect(page).toHaveURL(/\/chess\/course-2#/);
 });
 
