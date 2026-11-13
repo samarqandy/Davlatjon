@@ -164,6 +164,23 @@ const AFTER: [name: string, url: string, act: (page: Page) => Promise<void>][] =
     },
   ],
   [
+    "тренажёр расчёта: ответ и разбор",
+    "/chess/drills#blunder",
+    async (page) => {
+      await page.getByRole("button", { name: "Начать", exact: true }).click();
+      await page.locator('[data-calc-option="1"]').click();
+      await expect(page.locator("[data-calc]")).toBeVisible();
+    },
+  ],
+  [
+    "тренажёр расчёта: счёт ударов",
+    "/chess/drills#count",
+    async (page) => {
+      await page.getByRole("button", { name: "Начать", exact: true }).click();
+      await expect(page.locator('[data-calc-question="attack"]')).toBeVisible();
+    },
+  ],
+  [
     "доска анализа после хода",
     "/chess/analysis",
     async (page) => {

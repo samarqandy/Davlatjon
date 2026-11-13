@@ -3,7 +3,7 @@
 import { RotateCcw } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Button, cn, ProgressBar, Icon } from "@/components/ui";
+import { Button, cn, Icon } from "@/components/ui";
 import { PIECE_WORDS } from "@/lib/board";
 import { attackersOf, pieceAt, type Color } from "@/lib/chess";
 import { useLang, useT } from "@/lib/i18n";
@@ -25,12 +25,22 @@ import { playUci, useBank } from "@/lib/puzzleBank";
 import { random } from "@/lib/random";
 import { chessDrillRecord, useHydrated, useStore } from "@/lib/store";
 import { setHash, useHash } from "@/lib/useHash";
+import { BlindDrill, BlunderDrill, CALC_ROUNDS, CountDrill } from "./CalcDrills";
 import { ChessBoard, PieceIcon, type SquareMark } from "./ChessBoard";
+import { Finish, RoundBar } from "./DrillParts";
 
-type DrillId = "safety" | "memory" | "knight";
-const DRILLS: DrillId[] = ["safety", "memory", "knight"];
+type DrillId = "safety" | "memory" | "knight" | "blunder" | "blind" | "count";
+/** Сначала тренажёры внимания, потом — расчёта: считать ответ соперника и ходы в уме. */
+const DRILLS: DrillId[] = ["safety", "memory", "knight", "blunder", "blind", "count"];
 /** Сколько очков можно набрать за подход. */
-const MAX: Record<DrillId, number> = { safety: 6, memory: MEMORY_ROUNDS.length, knight: KNIGHT_ROUNDS.length * 3 };
+const MAX: Record<DrillId, number> = {
+  safety: 6,
+  memory: MEMORY_ROUNDS.length,
+  knight: KNIGHT_ROUNDS.length * 3,
+  blunder: CALC_ROUNDS,
+  blind: CALC_ROUNDS,
+  count: CALC_ROUNDS,
+};
 
 function useDrillText() {
   const t = useT();
@@ -60,10 +70,34 @@ function useDrillText() {
           "Otni yulduzgacha eng kam yurish bilan olib bor. Keyin piyodalar paydo boʻladi — ular urib turgan kataklarga borish mumkin emas.",
         ),
       },
+      blunder: {
+        emoji: "🚨",
+        title: t("Не зевни!", "Qoʻldan boy berma!"),
+        text: t(
+          "Три хода на выбор. После одного из них соперник сразу ставит мат. Проверь каждый: что ответит соперник?",
+          "Tanlash uchun uchta yurish. Ulardan biridan keyin raqib darhol mot qiladi. Har birini tekshir: raqib nima deb javob beradi?",
+        ),
+      },
+      blind: {
+        emoji: "🙈",
+        title: t("Ходы в уме", "Xayoldagi yurishlar"),
+        text: t(
+          "Два хода записаны словами, а фигуры на доске стоят на месте. Сделай ходы в уме и найди мат в позиции, которой не видно.",
+          "Ikki yurish soʻz bilan yozilgan, taxtadagi donalar esa joyida turibdi. Yurishlarni xayolingda qil va koʻrinmayotgan pozitsiyada motni top.",
+        ),
+      },
+      count: {
+        emoji: "🧮",
+        title: t("Сосчитай удары", "Zarbalarni sana"),
+        text: t(
+          "На фигуру нападают. Сколько нападающих и сколько защитников? С этого счёта начинается любой размен.",
+          "Donaga hujum qilishyapti. Hujumchilar nechta, himoyachilar nechta? Har qanday almashuv shu hisobdan boshlanadi.",
+        ),
+      },
     })[id];
 }
 
-/** Страница тренажёров: карточки или выбранный тренажёр (#safety, #memory, #knight). */
+/** Страница тренажёров: карточки или выбранный тренажёр (#safety, #memory, #knight, #blunder, #blind, #count). */
 export function MiniDrills() {
   const t = useT();
   const hash = useHash();
@@ -74,23 +108,40 @@ export function MiniDrills() {
 
   return (
     <div className="space-y-6">
-      <Link
-        href={current ? "/chess/drills" : "/chess"}
-        className="inline-flex min-h-11 items-center gap-1 text-sm font-extrabold text-brand hover:underline"
-      >
-        ← {current ? t("Все тренажёры", "Barcha trenajyorlar") : t("Шахматная школа", "Shaxmat maktabi")}
-      </Link>
       {current ? (
-        <section className="space-y-4" data-drill={current}>
+        // Кнопка, а не ссылка на эту же страницу: переход по ссылке без «#» не сообщает странице о смене якоря,
+        // и тренажёр, открытый по прямому адресу (/chess/drills#knight), оставался на экране.
+        <button
+          type="button"
+          onClick={() => setHash("#")}
+          data-drill-back
+          className="inline-flex min-h-11 items-center gap-1 text-sm font-extrabold text-brand hover:underline"
+        >
+          ← {t("Все тренажёры", "Barcha trenajyorlar")}
+        </button>
+      ) : (
+        <Link
+          href="/chess"
+          className="inline-flex min-h-11 items-center gap-1 text-sm font-extrabold text-brand hover:underline"
+        >
+          ← {t("Шахматная школа", "Shaxmat maktabi")}
+        </Link>
+      )}
+      {current ? (
+        <section className="group space-y-4" data-drill={current}>
           <header>
-            <h1 className="text-3xl font-black">
+            <h1 className="text-3xl font-black max-lg:group-has-[[data-board]]:text-2xl">
               {text(current).emoji} {text(current).title}
             </h1>
-            <p className="mt-1 max-w-3xl text-muted">{text(current).text}</p>
+            {/* На телефоне, когда раунд начался, описание убирается: доска и вопрос должны помещаться на экран. */}
+            <p className="mt-1 max-w-3xl text-muted max-lg:group-has-[[data-board]]:hidden">{text(current).text}</p>
           </header>
           {current === "safety" && <SafetyDrill />}
           {current === "memory" && <MemoryDrill />}
           {current === "knight" && <KnightDrill />}
+          {current === "blunder" && <BlunderDrill />}
+          {current === "blind" && <BlindDrill />}
+          {current === "count" && <CountDrill />}
         </section>
       ) : (
         <>
@@ -101,8 +152,8 @@ export function MiniDrills() {
             <h1 className="text-3xl font-black">{t("Короткие тренировки", "Qisqa mashgʻulotlar")}</h1>
             <p className="mt-1 max-w-2xl text-muted">
               {t(
-                "Пять минут в день — и глаз шахматиста становится зорче: видеть опасность, помнить доску, считать ходы коня.",
-                "Kuniga besh daqiqa — va shaxmatchining koʻzi oʻtkirlashadi: xavfni koʻrish, taxtani eslab qolish, ot yurishlarini hisoblash.",
+                "Пять минут в день — и глаз шахматиста становится зорче: видеть опасность, помнить доску, считать ходы — свои и соперника.",
+                "Kuniga besh daqiqa — va shaxmatchining koʻzi oʻtkirlashadi: xavfni koʻrish, taxtani eslab qolish, yurishlarni — oʻzingnikini ham, raqibnikini ham — hisoblash.",
               )}
             </p>
           </header>
@@ -112,6 +163,7 @@ export function MiniDrills() {
                 key={d}
                 type="button"
                 onClick={() => setHash(`#${d}`)}
+                data-drill-card={d}
                 className="flex flex-col rounded-3xl bg-surface p-5 text-left shadow-card transition hover:-translate-y-0.5 hover:shadow-lift"
               >
                 <span className="text-4xl" aria-hidden>
@@ -129,43 +181,6 @@ export function MiniDrills() {
           </div>
         </>
       )}
-    </div>
-  );
-}
-
-/** Итог подхода и кнопка «Ещё раз». */
-function Finish({ id, score, onAgain }: { id: DrillId; score: number; onAgain: () => void }) {
-  const t = useT();
-  const record = useStore((s) => s.chessDrills[id] ?? 0);
-  return (
-    <div className="rounded-3xl bg-sun-soft p-6 text-center" data-drill-done={score}>
-      <p className="text-5xl" aria-hidden>
-        {score >= MAX[id] ? "🏆" : score >= MAX[id] / 2 ? "🌟" : "💪"}
-      </p>
-      <p className="mt-2 text-2xl font-black">
-        {t(`Результат: ${score} из ${MAX[id]}`, `Natija: ${MAX[id]} dan ${score}`)}
-      </p>
-      <p className="font-bold text-sun-ink">
-        {score >= record
-          ? t("Это твой рекорд!", "Bu sening rekording!")
-          : t(`Рекорд — ${record}. Попробуй ещё!`, `Rekord — ${record}. Yana urinib koʻr!`)}
-      </p>
-      <Button className="mt-4" onClick={onAgain}>
-        <Icon icon={RotateCcw} /> {t("Ещё раз", "Yana bir bor")}
-      </Button>
-    </div>
-  );
-}
-
-function RoundBar({ round, total, score }: { round: number; total: number; score: number }) {
-  const t = useT();
-  return (
-    <div className="flex items-center gap-3">
-      <ProgressBar value={round} max={total} className="flex-1" />
-      <span className="text-sm font-extrabold text-muted tabular-nums">
-        {t(`Раунд ${Math.min(round + 1, total)} из ${total}`, `${total} tadan ${Math.min(round + 1, total)}-raund`)} ·
-        ⭐ {score}
-      </span>
     </div>
   );
 }
@@ -221,7 +236,7 @@ function SafetyDrill() {
         {bank ? t("Начать", "Boshlash") : t("Загружаю позиции…", "Holatlar yuklanmoqda…")}
       </Button>
     );
-  if (round >= rounds.length) return <Finish id="safety" score={score} onAgain={start} />;
+  if (round >= rounds.length) return <Finish id="safety" max={MAX.safety} score={score} onAgain={start} />;
 
   const q = rounds[round];
   const enemy: Color = q.color === "w" ? "b" : "w";
@@ -350,7 +365,7 @@ function MemoryDrill() {
     begin(0);
   };
 
-  if (finished) return <Finish id="memory" score={score} onAgain={again} />;
+  if (finished) return <Finish id="memory" max={MAX.memory} score={score} onAgain={again} />;
   if (!task)
     return (
       <Button size="lg" onClick={again}>
@@ -454,7 +469,7 @@ function KnightDrill() {
     begin(0);
   };
 
-  if (finished) return <Finish id="knight" score={score} onAgain={again} />;
+  if (finished) return <Finish id="knight" max={MAX.knight} score={score} onAgain={again} />;
   if (!task)
     return (
       <Button size="lg" onClick={again}>

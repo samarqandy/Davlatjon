@@ -306,13 +306,13 @@ export function ChessSchool({ counts, summary }: { counts: ChessSchoolCounts; su
       emoji: "🛡️",
       title: t("Тренажёры", "Trenajyorlar"),
       text: t(
-        "Кто в опасности? Запомни доску. Путь коня. Пять минут — и глаз шахматиста становится зорче.",
-        "Kim xavf ostida? Taxtani eslab qol. Ot yoʻli. Besh daqiqa — va shaxmatchining koʻzi oʻtkirlashadi.",
+        "Кто в опасности? Не зевни! Ходы в уме. Сосчитай удары. Пять минут — и глаз шахматиста становится зорче.",
+        "Kim xavf ostida? Qoʻldan boy berma! Xayoldagi yurishlar. Zarbalarni sana. Besh daqiqa — va shaxmatchining koʻzi oʻtkirlashadi.",
       ),
       stat:
-        hydrated && (state.chessDrills.safety || state.chessDrills.memory || state.chessDrills.knight)
+        hydrated && Object.values(state.chessDrills).some(Boolean)
           ? t("Побей свои рекорды", "Oʻz rekordlaringni yangila")
-          : t("Три новые тренировки", "Uchta yangi mashgʻulot"),
+          : t("Шесть коротких тренировок", "Oltita qisqa mashgʻulot"),
     },
     {
       href: "/chess/tournaments",
