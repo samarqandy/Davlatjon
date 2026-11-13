@@ -663,3 +663,70 @@ test("школа эндшпиля: игра с роботом — ход, отв
   await expect(page.getByText("Твой ход.")).toBeVisible();
   await expect(board.locator('[data-square="e3"] [data-piece]')).toHaveCount(1);
 });
+
+// Панель кнопок у доски (BAR-1): одна «капсула» со значками и короткими подписями вместо двух-трёх рядов
+// отдельных кнопок. На телефоне 412 px в партии с роботом кнопки занимали три ряда и уезжали за край экрана.
+for (const lang of ["ru", "uz"] as const)
+  test(`панель у доски (${lang}): один ряд, подписи целиком, кнопки не у́же 44 px`, async ({ page, isMobile }) => {
+    await prepare(page, { lang });
+    const prefix = lang === "uz" ? "/uz" : "";
+    // На телефоне проверяем и узкий экран 360 px: пять кнопок с подписями должны поместиться и там.
+    const widths = isMobile ? [page.viewportSize()!.width, 360] : [page.viewportSize()!.width];
+    for (const width of widths) {
+      await page.setViewportSize({ width, height: page.viewportSize()!.height });
+      for (const url of [
+        "/chess/play#robot-1-w",
+        "/chess/analysis",
+        "/chess/games/opera",
+        "/chess/openings#open-italian",
+      ]) {
+        await page.goto("about:blank");
+        await page.goto(prefix + url, { waitUntil: "networkidle" });
+        const bar = page.locator("[data-board-bar]").first();
+        await expect(bar).toBeVisible();
+        const m = await bar.evaluate((el) => {
+          const buttons = [...el.querySelectorAll("button")];
+          const tops = new Set(buttons.map((b) => Math.round(b.getBoundingClientRect().top)));
+          return {
+            rows: tops.size,
+            height: Math.round(el.getBoundingClientRect().height),
+            narrow: buttons.filter((b) => b.getBoundingClientRect().width < 44).length,
+            cut: buttons
+              .map((b) => b.querySelector("span")!)
+              .filter((s) => s.scrollWidth > s.clientWidth + 0.5)
+              .map((s) => s.textContent),
+            unnamed: buttons.filter((b) => !(b.getAttribute("aria-label") ?? b.textContent ?? "").trim()).length,
+            // Название для экранного диктора содержит видимую подпись (WCAG 2.5.3).
+            mismatched: buttons
+              .filter((b) => {
+                const name = b.getAttribute("aria-label");
+                return name && !name.toLowerCase().includes(b.textContent!.trim().toLowerCase());
+              })
+              .map((b) => b.textContent),
+          };
+        });
+        const where = `${url} @ ${width}`;
+        expect(m.rows, where).toBe(1);
+        expect(m.height, where).toBeLessThanOrEqual(72);
+        expect(m.narrow, where).toBe(0);
+        expect(m.cut, where).toEqual([]);
+        expect(m.unnamed, where).toBe(0);
+        expect(m.mismatched, where).toEqual([]);
+        expect(await page.evaluate(() => document.documentElement.scrollWidth), where).toBeLessThanOrEqual(width);
+      }
+    }
+  });
+
+test("телефон: в партии с роботом панель кнопок и «чей ход» видны без прокрутки", async ({ page, isMobile }) => {
+  test.skip(!isMobile, "раскладка для телефона");
+  await prepare(page);
+  await page.goto("/chess/play#robot-1-w", { waitUntil: "networkidle" });
+  // Раньше кнопки стояли под сообщением и репликой робота — на 850-м пикселе при высоте экрана 839.
+  await expect(page.locator("[data-board-bar]")).toBeInViewport({ ratio: 1 });
+  await expect(page.locator("[data-play-status]")).toBeInViewport({ ratio: 1 });
+  await page.getByRole("button", { name: "Поворот доски" }).click();
+  await expect(page.locator("[data-board]").first().locator("[data-square]").first()).toHaveAttribute(
+    "data-square",
+    "h1",
+  );
+});

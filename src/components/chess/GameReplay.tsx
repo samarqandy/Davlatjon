@@ -5,7 +5,7 @@ import { Chess } from "chess.js";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { RichText } from "@/components/RichText";
-import { Button, cn, Icon } from "@/components/ui";
+import { Button, cn } from "@/components/ui";
 import { chessImagesIn } from "@/content/chess/imageLookup";
 import type { FamousGame } from "@/content/chess/games";
 import type { ChessImage } from "@/content/chess/images";
@@ -16,6 +16,7 @@ import { chessGameViewed, useHydrated, useStore } from "@/lib/store";
 import { useChessPart, useChessImages } from "@/lib/useChess";
 import { GAME_PART } from "@/content/chess/parts/games";
 import { LEVELS } from "@/content/chess/parts/levels";
+import { BarButton } from "./BoardBar";
 import { BoardThumb, PieceSprite } from "./BoardThumb";
 import { ChessBoard, type SquareMark } from "./ChessBoard";
 import { MoveNav } from "./MoveNav";
@@ -252,9 +253,11 @@ export function GameReplay({ game: ruGame }: { game: FamousGame }) {
             )}
           />
           <MoveNav ply={ply} total={total} onGo={go}>
-            <Button
-              variant={isPlaying ? "sun" : "soft"}
-              size="sm"
+            <BarButton
+              icon={isPlaying ? Pause : Play}
+              filled
+              pressed={isPlaying}
+              label={isPlaying ? t("Пауза", "Pauza") : t("Смотреть", "Koʻrish")}
               onClick={() => {
                 if (isPlaying) setPlaying(false);
                 else {
@@ -262,10 +265,7 @@ export function GameReplay({ game: ruGame }: { game: FamousGame }) {
                   setPlaying(true);
                 }
               }}
-            >
-              <Icon icon={isPlaying ? Pause : Play} className="fill-current" />
-              {isPlaying ? t("Пауза", "Pauza") : t("Смотреть", "Koʻrish")}
-            </Button>
+            />
           </MoveNav>
           <div
             className={cn(

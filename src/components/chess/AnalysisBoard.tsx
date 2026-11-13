@@ -16,6 +16,7 @@ import { Chess } from "chess.js";
 import Link from "next/link";
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { Button, cn, Icon } from "@/components/ui";
+import { BarButton, BoardBar } from "./BoardBar";
 import { isStandardStart, useOpening } from "@/lib/openingBook";
 import { illegalReason, isPromotionMove, legalTargets, pieceAt, playMove, type PieceType } from "@/lib/chess";
 import { evaluatePosition, winChance, type PositionEval } from "@/lib/engine/analysis";
@@ -322,6 +323,36 @@ export function AnalysisBoard() {
       </div>
 
       <div className="min-w-0 space-y-4">
+        {/* Панель — первой: на телефоне она стоит сразу под доской, листать к ней не нужно. */}
+        <BoardBar label={t("Просмотр ходов", "Yurishlarni koʻrish")}>
+          <BarButton
+            icon={ChevronsLeft}
+            label={t("Начало", "Boshi")}
+            name={t("В начало", "Boshiga")}
+            onClick={() => setCursor(0)}
+            disabled={cursor === 0}
+          />
+          <BarButton
+            icon={ChevronLeft}
+            label={t("Назад", "Orqaga")}
+            onClick={() => setCursor(Math.max(0, cursor - 1))}
+            disabled={cursor === 0}
+          />
+          <BarButton
+            icon={ChevronRight}
+            label={t("Вперёд", "Oldinga")}
+            onClick={() => setCursor(Math.min(plies.length, cursor + 1))}
+            disabled={cursor >= plies.length}
+          />
+          <BarButton
+            icon={ChevronsRight}
+            label={t("Конец", "Oxiri")}
+            name={t("В конец", "Oxiriga")}
+            onClick={() => setCursor(plies.length)}
+            disabled={cursor >= plies.length}
+          />
+          <BarButton icon={ArrowUpDown} label={t("Поворот", "Aylantir")} onClick={() => setFlipped((f) => !f)} />
+        </BoardBar>
         <div className="rounded-3xl bg-surface p-4 shadow-card">
           <p className="text-sm font-extrabold text-muted">
             {over ?? (turn === "w" ? t("Ход белых", "Oqlar yuradi") : t("Ход чёрных", "Qoralar yuradi"))}
@@ -348,48 +379,6 @@ export function AnalysisBoard() {
             <input type="checkbox" checked={engineOn} onChange={(e) => setEngineOn(e.target.checked)} />
             {t("Робот-подсказчик", "Yordamchi robot")}
           </label>
-        </div>
-
-        <div className="flex flex-wrap gap-2">
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => setCursor(0)}
-            disabled={cursor === 0}
-            aria-label={t("В начало", "Boshiga")}
-          >
-            <Icon icon={ChevronsLeft} />
-          </Button>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => setCursor(Math.max(0, cursor - 1))}
-            disabled={cursor === 0}
-            aria-label={t("Назад", "Orqaga")}
-          >
-            <Icon icon={ChevronLeft} />
-          </Button>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => setCursor(Math.min(plies.length, cursor + 1))}
-            disabled={cursor >= plies.length}
-            aria-label={t("Вперёд", "Oldinga")}
-          >
-            <Icon icon={ChevronRight} />
-          </Button>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => setCursor(plies.length)}
-            disabled={cursor >= plies.length}
-            aria-label={t("В конец", "Oxiriga")}
-          >
-            <Icon icon={ChevronsRight} />
-          </Button>
-          <Button variant="secondary" size="sm" onClick={() => setFlipped((f) => !f)}>
-            <Icon icon={ArrowUpDown} /> {t("Перевернуть", "Aylantirish")}
-          </Button>
         </div>
 
         <div className="rounded-3xl bg-surface p-4 shadow-card">
