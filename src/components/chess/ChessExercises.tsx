@@ -1,6 +1,6 @@
 "use client";
 
-import { Lightbulb, RotateCcw } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Eraser, Lightbulb, RotateCcw } from "lucide-react";
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { Feedback, type FeedbackState } from "@/components/answers/Feedback";
 import { ListenButton } from "@/components/ListenButton";
@@ -22,6 +22,7 @@ import { useLang, useSan, useT, type T } from "@/lib/i18n";
 import { RECORDED_CLIPS } from "@/lib/voiceRecorded";
 import { pluralize } from "@/lib/plural";
 import { chessFound, chessMiss, chessSolved, useChessExercise } from "@/lib/store";
+import { BarButton, BoardBar } from "./BoardBar";
 import { ChessBoard, type SquareMark } from "./ChessBoard";
 
 type Of<K extends ChessExercise["kind"]> = Extract<ChessExercise, { kind: K }>;
@@ -31,26 +32,43 @@ const movesWord = (n: number) => pluralize(n, "ход", "хода", "ходов"
 /** В контрольном тесте подсказок нет: ребёнок отвечает сам. */
 const TestModeContext = createContext(false);
 
-/** Кнопки «назад» и «дальше» от экрана урока: стоят в конце упражнения, на широком экране — в колонке рядом с доской. */
-const FooterContext = createContext<ReactNode>(null);
+/** Переход между упражнениями от экрана урока: «назад» и «дальше» — крайние кнопки панели под доской. */
+export interface ExerciseNav {
+  /** К предыдущему упражнению; нет — кнопка «Назад» бледная (первое упражнение). */
+  prev?: () => void;
+  /** К следующему упражнению или теме. `ready` — упражнение решено: «Дальше» становится главной кнопкой. */
+  onward?: { label: string; onClick: () => void; ready: boolean };
+}
 
-/** Оболочка упражнения: условие, доска, подсказка и объяснение после решения. */
+const NavContext = createContext<ExerciseNav | null>(null);
+
+/**
+ * Оболочка упражнения: условие, доска, одна панель кнопок, ответ, подсказка и объяснение после решения.
+ *
+ * Панель (`BoardBar`) стоит сразу под доской и не меняет места: «Назад», «Подсказка», кнопки самого упражнения
+ * (`actions`: «Проверить», «Убрать», «Сначала», «Ещё раз») и «Дальше». Раньше это были три ряда отдельных кнопок:
+ * кнопки упражнения, «Подсказка» под ответом и «← Назад / Следующее упражнение →» в самом низу.
+ */
 function ExerciseShell({
   ex,
   solved,
   children,
   feedback,
+  actions,
 }: {
   ex: ChessExercise;
   solved: boolean;
   children: ReactNode;
   feedback: FeedbackState | null;
+  /** Кнопки упражнения для панели (`BarButton`). */
+  actions?: ReactNode;
 }) {
   const t = useT();
   const lang = useLang();
   const [hint, setHint] = useState(false);
   const test = useContext(TestModeContext);
-  const footer = useContext(FooterContext);
+  const nav = useContext(NavContext);
+  const nextShort = t("Дальше", "Keyingi");
   return (
     // board-stage: с 1024 px доска (прямой потомок) встаёт слева во всю высоту окна, остальное — справа.
     <div className="board-stage space-y-3 lg:space-y-4">
@@ -77,6 +95,44 @@ function ExerciseShell({
         />
       </div>
       {children}
+      {(nav || !test || actions) && (
+        <BoardBar label={t("Кнопки упражнения", "Mashq tugmalari")} data-exercise-bar="">
+          {nav && (
+            <BarButton
+              icon={ArrowLeft}
+              label={t("Назад", "Orqaga")}
+              name={t("Назад: предыдущее упражнение", "Orqaga: oldingi mashq")}
+              disabled={!nav.prev}
+              onClick={nav.prev}
+            />
+          )}
+          {/* В контрольном тесте подсказок нет; после решения вместо подсказки — объяснение. */}
+          {!test && (
+            <BarButton
+              icon={Lightbulb}
+              label={t("Подсказка", "Maslahat")}
+              pressed={hint && !solved}
+              disabled={solved}
+              onClick={() => setHint((h) => !h)}
+            />
+          )}
+          {actions}
+          {nav?.onward && (
+            <BarButton
+              icon={ArrowRight}
+              label={nextShort}
+              name={
+                nav.onward.label.toLowerCase().includes(nextShort.toLowerCase())
+                  ? nav.onward.label
+                  : `${nextShort}: ${nav.onward.label}`
+              }
+              primary={nav.onward.ready}
+              onClick={nav.onward.onClick}
+              data-exercise-onward={nav.onward.ready ? "ready" : "open"}
+            />
+          )}
+        </BoardBar>
+      )}
       <Feedback state={feedback} context="chess" />
       {solved ? (
         <div className="rounded-2xl border-2 border-mint/40 bg-mint-soft/60 px-4 py-3">
@@ -85,8 +141,8 @@ function ExerciseShell({
             <RichText text={ex.why} />
           </p>
         </div>
-      ) : hint ? (
-        <div className="rounded-2xl border-2 border-sun/40 bg-sun-soft px-4 py-3">
+      ) : hint && !test ? (
+        <div className="rounded-2xl border-2 border-sun/40 bg-sun-soft px-4 py-3" data-exercise-hint>
           <p className="text-sm font-extrabold text-sun-ink">
             <Icon icon={Lightbulb} /> {t("Подсказка", "Maslahat")}
           </p>
@@ -94,12 +150,7 @@ function ExerciseShell({
             <RichText text={ex.hint} />
           </p>
         </div>
-      ) : test ? null : (
-        <Button variant="ghost" size="sm" onClick={() => setHint(true)} className="justify-self-start">
-          <Icon icon={Lightbulb} /> {t("Подсказка", "Maslahat")}
-        </Button>
-      )}
-      {footer}
+      ) : null}
     </div>
   );
 }
@@ -160,7 +211,24 @@ function SquaresExercise({ ex }: { ex: Of<"squares"> }) {
   if (miss) marks[miss] = "bad";
 
   return (
-    <ExerciseShell ex={ex} solved={!!progress.solvedAt} feedback={feedback}>
+    <ExerciseShell
+      ex={ex}
+      solved={!!progress.solvedAt}
+      feedback={feedback}
+      actions={
+        done && (
+          <BarButton
+            icon={RotateCcw}
+            label={t("Ещё раз", "Yana")}
+            name={t("Ещё раз", "Yana bir marta")}
+            onClick={() => {
+              setFound([]);
+              setFeedback(null);
+            }}
+          />
+        )
+      }
+    >
       <p
         className="rounded-2xl bg-brand-soft px-4 py-3 text-center text-xl font-black text-brand-dark"
         aria-live="polite"
@@ -177,17 +245,6 @@ function SquaresExercise({ ex }: { ex: Of<"squares"> }) {
         onSquare={tap}
         showTurn={false}
       />
-      {done && (
-        <Button
-          variant="secondary"
-          onClick={() => {
-            setFound([]);
-            setFeedback(null);
-          }}
-        >
-          <Icon icon={RotateCcw} /> {t("Ещё раз", "Yana bir marta")}
-        </Button>
-      )}
     </ExerciseShell>
   );
 }
@@ -265,27 +322,36 @@ function MovesExercise({ ex }: { ex: Of<"moves"> }) {
             : "mark";
 
   return (
-    <ExerciseShell ex={ex} solved={!!progress.solvedAt} feedback={feedback}>
+    <ExerciseShell
+      ex={ex}
+      solved={!!progress.solvedAt}
+      feedback={feedback}
+      actions={
+        <>
+          {/* На самых узких экранах (до 340 px) места на пять кнопок нет: отметку снимает и нажатие на клетку. */}
+          <BarButton
+            icon={Eraser}
+            label={t("Убрать", "Tozalash")}
+            name={t("Убрать отметки", "Belgilarni tozalash")}
+            className="max-[339px]:hidden"
+            onClick={() => {
+              setMarked([]);
+              setChecked(false);
+              setFeedback(null);
+            }}
+            disabled={marked.length === 0}
+          />
+          <BarButton
+            icon={Check}
+            label={t("Проверить", "Tekshirish")}
+            primary={!solvedNow}
+            onClick={check}
+            disabled={marked.length === 0 || solvedNow}
+          />
+        </>
+      }
+    >
       <ChessBoard id={`mv-${ex.id}`} position={ex.fen} marks={marks} onSquare={tap} showTurn={false} />
-      <div className="flex flex-wrap items-center gap-2">
-        <Button onClick={check} disabled={marked.length === 0 || solvedNow}>
-          {t("Проверить", "Tekshirish")}
-        </Button>
-        <Button
-          variant="ghost"
-          onClick={() => {
-            setMarked([]);
-            setChecked(false);
-            setFeedback(null);
-          }}
-          disabled={marked.length === 0}
-        >
-          {t("Убрать отметки", "Belgilarni tozalash")}
-        </Button>
-        <span className="text-sm font-bold text-muted">
-          {t("Отмечено", "Belgilandi")}: {marked.length}
-        </span>
-      </div>
     </ExerciseShell>
   );
 }
@@ -371,10 +437,16 @@ function StarsExercise({ ex }: { ex: Of<"stars"> }) {
   targets.forEach((sq) => (marks[sq] = "target"));
 
   return (
-    <ExerciseShell ex={ex} solved={!!progress.solvedAt} feedback={feedback}>
+    <ExerciseShell
+      ex={ex}
+      solved={!!progress.solvedAt}
+      feedback={feedback}
+      actions={<BarButton icon={RotateCcw} label={t("Сначала", "Boshidan")} onClick={restart} disabled={moves === 0} />}
+    >
       <ChessBoard id={`st-${ex.id}`} position={pieces} marks={marks} onSquare={tap} />
-      <div className="flex flex-wrap items-center gap-3">
-        <span className="tabular rounded-2xl bg-surface px-4 py-2 text-lg font-black shadow-card">
+      {/* Счёт — одной строкой: на телефоне он стоит между доской и панелью и не должен сдвигать её за край экрана. */}
+      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 px-1">
+        <span className="tabular text-lg leading-tight font-black">
           {t("Ходов", "Yurishlar")}: {moves}
         </span>
         <span className="text-sm font-bold text-muted">
@@ -385,9 +457,6 @@ function StarsExercise({ ex }: { ex: Of<"stars"> }) {
             {t(`Рекорд: ${movesWord(progress.best)}`, `Rekord: ${progress.best} ta yurish`)}
           </span>
         )}
-        <Button variant="ghost" onClick={restart} disabled={moves === 0}>
-          <Icon icon={RotateCcw} /> {t("Сначала", "Boshidan")}
-        </Button>
       </div>
     </ExerciseShell>
   );
@@ -634,7 +703,27 @@ function MoveExercise({ ex }: { ex: Of<"move"> }) {
   }
 
   return (
-    <ExerciseShell ex={ex} solved={!!progress.solvedAt} feedback={feedback}>
+    <ExerciseShell
+      ex={ex}
+      solved={!!progress.solvedAt}
+      feedback={feedback}
+      actions={
+        done && (
+          <BarButton
+            icon={RotateCcw}
+            label={t("Ещё раз", "Yana")}
+            name={t("Решить ещё раз", "Yana bir bor yechish")}
+            onClick={() => {
+              setFen(ex.fen);
+              setLast(null);
+              setCheckSq(null);
+              setDone(false);
+              setFeedback(null);
+            }}
+          />
+        )
+      }
+    >
       <p className="text-sm font-bold text-muted">
         {turn === "w" ? t("Ходят белые.", "Oqlar yuradi.") : t("Ходят чёрные.", "Qoralar yuradi.")}{" "}
         {t(
@@ -654,20 +743,6 @@ function MoveExercise({ ex }: { ex: Of<"move"> }) {
           return attempt(from, to);
         }}
       />
-      {done && (
-        <Button
-          variant="secondary"
-          onClick={() => {
-            setFen(ex.fen);
-            setLast(null);
-            setCheckSq(null);
-            setDone(false);
-            setFeedback(null);
-          }}
-        >
-          <Icon icon={RotateCcw} /> {t("Решить ещё раз", "Yana bir bor yechish")}
-        </Button>
-      )}
     </ExerciseShell>
   );
 }
@@ -757,7 +832,24 @@ function QuizExercise({ ex }: { ex: Of<"quiz"> }) {
   };
 
   return (
-    <ExerciseShell ex={ex} solved={!!progress.solvedAt} feedback={feedback}>
+    <ExerciseShell
+      ex={ex}
+      solved={!!progress.solvedAt}
+      feedback={feedback}
+      actions={
+        done && (
+          <BarButton
+            icon={RotateCcw}
+            label={t("Ещё раз", "Yana")}
+            name={t("Пройти ещё раз", "Yana bir bor oʻtish")}
+            onClick={() => {
+              setIndex(0);
+              setFeedback(null);
+            }}
+          />
+        )
+      }
+    >
       {!done ? (
         <div className="space-y-3 rounded-3xl bg-surface p-4 shadow-card">
           <p className="text-sm font-extrabold text-muted">
@@ -773,17 +865,7 @@ function QuizExercise({ ex }: { ex: Of<"quiz"> }) {
             ))}
           </div>
         </div>
-      ) : (
-        <Button
-          variant="secondary"
-          onClick={() => {
-            setIndex(0);
-            setFeedback(null);
-          }}
-        >
-          <Icon icon={RotateCcw} /> {t("Пройти ещё раз", "Qaytadan boshlash")}
-        </Button>
-      )}
+      ) : null}
     </ExerciseShell>
   );
 }
@@ -843,7 +925,25 @@ function ChooseExercise({ ex }: { ex: Of<"choose"> }) {
   } else if (wrong !== null) marks[ex.moves[wrong].slice(2, 4)] = "bad";
 
   return (
-    <ExerciseShell ex={ex} solved={!!progress.solvedAt} feedback={feedback}>
+    <ExerciseShell
+      ex={ex}
+      solved={!!progress.solvedAt}
+      feedback={feedback}
+      actions={
+        done && (
+          <BarButton
+            icon={RotateCcw}
+            label={t("Ещё раз", "Yana")}
+            name={t("Решить ещё раз", "Yana bir bor yechish")}
+            onClick={() => {
+              setDone(false);
+              setWrong(null);
+              setFeedback(null);
+            }}
+          />
+        )
+      }
+    >
       <p className="text-sm font-bold text-muted">
         {turn === "w" ? t("Ходят белые.", "Oqlar yuradi.") : t("Ходят чёрные.", "Qoralar yuradi.")}{" "}
         {t("Стрелки — ходы на выбор.", "Strelkalar — tanlash uchun yurishlar.")}
@@ -879,18 +979,6 @@ function ChooseExercise({ ex }: { ex: Of<"choose"> }) {
           </Button>
         ))}
       </div>
-      {done && (
-        <Button
-          variant="secondary"
-          onClick={() => {
-            setDone(false);
-            setWrong(null);
-            setFeedback(null);
-          }}
-        >
-          <Icon icon={RotateCcw} /> {t("Решить ещё раз", "Yana bir bor yechish")}
-        </Button>
-      )}
     </ExerciseShell>
   );
 }
@@ -967,7 +1055,23 @@ function QueensExercise({ ex }: { ex: Of<"queens"> }) {
   const marks: Record<string, SquareMark> = Object.fromEntries(conflicts.map((q) => [q, "attacked" as const]));
 
   return (
-    <ExerciseShell ex={ex} solved={!!progress.solvedAt} feedback={feedback}>
+    <ExerciseShell
+      ex={ex}
+      solved={!!progress.solvedAt}
+      feedback={feedback}
+      actions={
+        <BarButton
+          icon={Eraser}
+          label={t("Убрать", "Tozalash")}
+          name={t("Убрать всех", "Hammasini tozalash")}
+          onClick={() => {
+            setQueens([]);
+            setFeedback(null);
+          }}
+          disabled={queens.length === 0}
+        />
+      }
+    >
       <ChessBoard
         id={`qn-${ex.id}`}
         position={pieces}
@@ -977,23 +1081,14 @@ function QueensExercise({ ex }: { ex: Of<"queens"> }) {
         onSquare={tap}
         maxWidth={320}
       />
-      <div className="flex flex-wrap items-center gap-3">
-        <span className="tabular rounded-2xl bg-surface px-4 py-2 text-lg font-black shadow-card">
+      {/* Счёт — одной строкой: на телефоне он стоит между доской и панелью и не должен сдвигать её за край экрана. */}
+      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 px-1">
+        <span className="tabular text-lg leading-tight font-black">
           {t(`Ферзей: ${queens.length} из ${ex.size}`, `Farzinlar: ${queens.length} / ${ex.size}`)}
         </span>
         <span className="text-sm font-bold text-muted">
           {t(`Найдено решений: ${found.length} из ${total}`, `Topilgan yechimlar: ${found.length} / ${total}`)}
         </span>
-        <Button
-          variant="ghost"
-          onClick={() => {
-            setQueens([]);
-            setFeedback(null);
-          }}
-          disabled={queens.length === 0}
-        >
-          {t("Убрать всех", "Hammasini olib tashlash")}
-        </Button>
       </div>
     </ExerciseShell>
   );
@@ -1025,18 +1120,18 @@ function boardFen(pieces: Record<string, string>): string {
 export function ChessExerciseView({
   exercise,
   test = false,
-  footer = null,
+  nav = null,
 }: {
   exercise: ChessExercise;
   test?: boolean;
-  /** Что показать в конце упражнения (кнопки перехода): на широком экране оказывается рядом с доской. */
-  footer?: ReactNode;
+  /** Переход к соседним упражнениям: «Назад» и «Дальше» в панели под доской. */
+  nav?: ExerciseNav | null;
 }) {
   return (
     <TestModeContext.Provider value={test}>
-      <FooterContext.Provider value={footer}>
+      <NavContext.Provider value={nav}>
         <ExerciseByKind exercise={exercise} />
-      </FooterContext.Provider>
+      </NavContext.Provider>
     </TestModeContext.Provider>
   );
 }

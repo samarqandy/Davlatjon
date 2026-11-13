@@ -415,26 +415,31 @@ test("курс на телефоне: упражнение решено — «д
   await page.goto("/chess/course");
   await openHash(page, "/chess/course#c1-rook-exercise-1");
   const mark = (sq: string) => page.locator(`[data-board] [data-square="${sq}"]`).first().click();
-  const nextBar = page.locator("[data-exercise-next]");
+  // «Дальше» — крайняя кнопка панели под доской: она всегда на экране, а после решения становится главной.
+  const bar = page.locator("[data-exercise-bar]");
+  const next = bar.getByRole("button", { name: "Следующее упражнение →" });
   await expect(page.locator("[data-exercise-heading]")).toBeVisible();
-  await expect(nextBar).toHaveCount(0);
+  await expect(bar).toBeInViewport({ ratio: 1 });
+  await expect(next).toHaveAttribute("data-exercise-onward", "open");
+  // Отдельной панели «дальше» внизу экрана больше нет.
+  await expect(page.locator("[data-exercise-next]")).toHaveCount(0);
 
-  // Отмечена одна лишняя клетка — ответ неверный: сигнал есть, панели «дальше» нет.
+  // Отмечена одна лишняя клетка — ответ неверный: сигнал есть, «Дальше» главной не стала.
   await mark("a1");
   await page.getByRole("button", { name: "Проверить" }).click();
   await expect
     .poll(() => page.evaluate(() => (window as unknown as { __answer: string[] }).__answer))
     .toEqual(["retry"]);
-  await expect(nextBar).toHaveCount(0);
+  await expect(next).toHaveAttribute("data-exercise-onward", "open");
 
   await mark("a1");
   for (const sq of ["d1", "d2", "d3", "d5", "d6", "d7", "d8", "a4", "b4", "c4", "e4", "f4", "g4", "h4"]) await mark(sq);
   await page.getByRole("button", { name: "Проверить" }).click();
-  const next = nextBar.getByRole("button", { name: "Следующее упражнение →" });
-  await expect(next).toBeInViewport();
-  // Кнопка «дальше» на экране одна: та, что под упражнением, на телефоне скрыта.
+  await expect(next).toHaveAttribute("data-exercise-onward", "ready");
+  await expect(next).toBeInViewport({ ratio: 1 });
+  // Кнопка «дальше» на экране одна.
   await expect(page.getByRole("button", { name: "Следующее упражнение →" })).toHaveCount(1);
   await next.click();
   await expect(page).toHaveURL(/#c1-rook-exercise-2$/);
-  await expect(nextBar).toHaveCount(0);
+  await expect(page.locator("[data-exercise-onward]")).toHaveAttribute("data-exercise-onward", "open");
 });

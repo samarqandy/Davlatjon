@@ -680,6 +680,7 @@ for (const lang of ["ru", "uz"] as const)
         "/chess/games/opera",
         "/chess/openings#open-italian",
         "/chess/puzzles#practice",
+        "/chess/course#c1-rook-exercise-1",
       ]) {
         await page.goto("about:blank");
         await page.goto(prefix + url, { waitUntil: "networkidle" });
@@ -813,3 +814,57 @@ test("телефон: сложность задач — в меню верхне
   await expect(page.locator("[data-site-header]")).toBeVisible();
   await expect(page.locator("[data-site-footer]")).toBeVisible();
 });
+
+// Упражнение курса на телефоне: под доской одна панель — «Назад», «Подсказка», кнопки упражнения и «Дальше».
+// Раньше это были два-пять рядов отдельных кнопок, и в 12 упражнениях первой ступени из 147 нижний ряд
+// («← Назад / Следующее упражнение →») стоял за краем экрана 412×839.
+for (const [name, hash, cells] of [
+  ["отметь клетки", "c1-rook-exercise-1", 5],
+  ["собери звёзды", "c1-rook-exercise-3", 4],
+  ["сделай ход", "c1-game-exercise-2", 3],
+  ["выбери ход", "c1-develop-exercise-2", 3],
+  ["вопросы без доски", "c1-game-exercise-1", 3],
+] as const)
+  test(`телефон, упражнение «${name}»: одна панель под доской, страница не длиннее экрана`, async ({
+    page,
+    isMobile,
+  }) => {
+    test.skip(!isMobile, "раскладка для телефона");
+    await prepare(page);
+    const device = page.viewportSize()!;
+    for (const [width, height] of [
+      [device.width, device.height],
+      [360, 740],
+    ]) {
+      const where = `${width}×${height}`;
+      await page.setViewportSize({ width, height });
+      await page.goto("about:blank");
+      await page.goto(`/chess/course#${hash}`, { waitUntil: "networkidle" });
+      const bar = page.locator("[data-exercise-bar]");
+      await expect(bar, where).toBeInViewport({ ratio: 1 });
+      await expect(page.locator("[data-site-footer]"), where).toBeHidden();
+      const buttons = bar.locator("button");
+      await expect(buttons, where).toHaveCount(cells);
+      const tops = await buttons.evaluateAll((list) => [
+        ...new Set(list.map((b) => Math.round(b.getBoundingClientRect().top))),
+      ]);
+      expect(tops, where).toHaveLength(1);
+      // Кроме панели, под заданием нет рядов с «Назад», «Подсказка» и «Дальше».
+      await expect(page.getByRole("button", { name: /Подсказка/ }), where).toHaveCount(1);
+      await expect(page.getByRole("button", { name: /Следующее упражнение/ }), where).toHaveCount(1);
+      await expect(page.locator("[data-exercise-next]"), where).toHaveCount(0);
+      expect(await page.evaluate(() => document.documentElement.scrollHeight - innerHeight), where).toBeLessThanOrEqual(
+        0,
+      );
+    }
+    // «Подсказка» открывает и закрывает подсказку, панель при этом стоит на месте.
+    const bar = page.locator("[data-exercise-bar]");
+    const before = (await bar.boundingBox())!.y;
+    const hint = page.getByRole("button", { name: /Подсказка/ });
+    await hint.click();
+    await expect(hint).toHaveAttribute("aria-pressed", "true");
+    await expect(page.locator("[data-exercise-hint]")).toBeVisible();
+    expect((await bar.boundingBox())!.y).toBe(before);
+    await hint.click();
+    await expect(page.locator("[data-exercise-hint]")).toHaveCount(0);
+  });
