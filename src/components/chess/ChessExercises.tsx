@@ -738,6 +738,7 @@ function MoveExercise({ ex }: { ex: Of<"move"> }) {
       <ChessBoard
         id={`mo-${ex.id}`}
         position={fen}
+        orientation={sideOf(ex.fen)}
         marks={marks}
         onSquare={tap}
         draggable={!done && !busy}
@@ -958,6 +959,7 @@ function ChooseExercise({ ex }: { ex: Of<"choose"> }) {
       <ChessBoard
         id={`ch-${ex.id}`}
         position={played?.fen ?? ex.fen}
+        orientation={sideOf(ex.fen)}
         marks={marks}
         arrows={
           played
@@ -1102,6 +1104,14 @@ function QueensExercise({ ex }: { ex: Of<"queens"> }) {
 }
 
 /** FEN доски 8 × 8 из набора фигур (для проверки ходов через chess.js). */
+/**
+ * С чьей стороны показывать доску: решающий сидит «за своими» фигурами, как за настоящей доской.
+ * Так же устроен центр задач; раньше упражнения курса всегда показывали доску со стороны белых.
+ */
+function sideOf(fen: string): "white" | "black" {
+  return fen.split(" ")[1] === "b" ? "black" : "white";
+}
+
 function boardFen(pieces: Record<string, string>): string {
   const rows: string[] = [];
   for (let r = 8; r >= 1; r--) {

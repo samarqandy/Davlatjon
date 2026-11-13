@@ -3,7 +3,8 @@
 import { currentScrollBehavior } from "@/lib/useMotion";
 import Link from "next/link";
 import { RichText } from "@/components/RichText";
-import { Button, cn, ProgressBar } from "@/components/ui";
+import { Button, ButtonLink, cn, ProgressBar } from "@/components/ui";
+import { LESSON_PRACTICE } from "@/content/chess/lessonPractice";
 import type { ChessTactic } from "@/content/chess/types";
 import { useTitleTranslation } from "@/lib/docTitle";
 import { useLang, useT } from "@/lib/i18n";
@@ -148,6 +149,13 @@ export function TopicView({
   const total = topic.exercises.length;
   const index = siblings.findIndex((x) => x.id === topic.id);
   const next = siblings[index + 1];
+  // «Закрепи»: тема центра задач про тот же приём (есть не у каждого урока).
+  const practice = LESSON_PRACTICE[topic.id];
+  const practiceLink = practice && (
+    <ButtonLink href={`/chess/puzzles#theme-${practice}`} variant="secondary" size="lg" data-lesson-practice={practice}>
+      {t("Закрепи на задачах →", "Masalalarda mustahkamla →")}
+    </ButtonLink>
+  );
 
   // Последнее упражнение темы решено только что (а не раньше) — праздник. Считаем от первого числа после загрузки
   // сохранённого прогресса, чтобы повторный заход в пройденную тему не устраивал салют.
@@ -258,6 +266,22 @@ export function TopicView({
 
       {tab === "lesson" && <p className="text-lg font-bold text-pretty">{topic.idea}</p>}
 
+      {/* Упражнения урока решены — больше позиций на тот же приём ждёт в центре задач. */}
+      {tab === "lesson" && practiceLink && hydrated && count === total && (
+        <div
+          className="flex flex-wrap items-center justify-between gap-3 rounded-3xl bg-mint-soft p-4"
+          data-lesson-practice-card
+        >
+          <p className="font-bold">
+            {t(
+              "Упражнения урока решены. В центре задач — ещё десятки позиций на этот приём.",
+              "Dars mashqlari yechildi. Masalalar markazida shu usulga oid yana oʻnlab pozitsiyalar bor.",
+            )}
+          </p>
+          {practiceLink}
+        </div>
+      )}
+
       {tab === "lesson" && (
         <ChessLesson levelId={`${lessonKeyPrefix}${topic.id}`} cards={topic.lesson} onDone={() => goExercise(0)} />
       )}
@@ -340,15 +364,18 @@ export function TopicView({
             <Celebration
               title={t("Тема пройдена! 🏆", "Mavzu oʻzlashtirildi! 🏆")}
               actions={
-                next ? (
-                  <Button size="lg" onClick={() => setHash(`#${next.id}`)}>
-                    {t(`Дальше: ${next.title} →`, `Keyingisi: ${next.title} →`)}
-                  </Button>
-                ) : (
-                  <Button size="lg" variant="secondary" onClick={() => setHash("#")}>
-                    {backLabel}
-                  </Button>
-                )
+                <>
+                  {next ? (
+                    <Button size="lg" onClick={() => setHash(`#${next.id}`)}>
+                      {t(`Дальше: ${next.title} →`, `Keyingisi: ${next.title} →`)}
+                    </Button>
+                  ) : (
+                    <Button size="lg" variant="secondary" onClick={() => setHash("#")}>
+                      {backLabel}
+                    </Button>
+                  )}
+                  {practiceLink}
+                </>
               }
             >
               {t(`Все ${total} упражнений решены.`, `Barcha ${total} ta mashq yechildi.`)}
