@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ChessSchool, type ChessSchoolCounts } from "@/components/chess/ChessSchool";
+import { ENDGAME_PIECES } from "@/content/chess/endgamePieces";
 import { ENDGAME_LESSONS } from "@/content/chess/endgames";
 import { FAMOUS_GAMES } from "@/content/chess/games";
 import { OPENINGS } from "@/content/chess/openings";
@@ -16,6 +17,7 @@ const COUNTS: ChessSchoolCounts = {
   openings: OPENINGS.length,
   games: FAMOUS_GAMES.length,
   endgameDrills: ENDGAME_LESSONS.flatMap((l) => l.drills).length,
+  endgamePieces: ENDGAME_PIECES.flatMap((x) => x.exercises.map((e) => e.id)),
   secrets: SECRETS.length,
   riddles: RIDDLES.length,
   testExercises: CHESS_TESTS.flatMap((t) => t.exercises.map((e) => e.id)),

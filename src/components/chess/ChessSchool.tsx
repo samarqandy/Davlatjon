@@ -35,6 +35,8 @@ export interface ChessSchoolCounts {
   openings: number;
   games: number;
   endgameDrills: number;
+  /** id упражнений второй части эндшпиля (ладья, ферзь, слон) — прогресс у них общий с уроками, по id. */
+  endgamePieces: string[];
   secrets: number;
   riddles: number;
   /** id упражнений всех тестов — чтобы посчитать, сколько решено. */
@@ -67,6 +69,11 @@ export function ChessSchool({ counts, summary }: { counts: ChessSchoolCounts; su
   const openingsLearned = hydrated ? new Set(Object.keys(state.chessOpenings).map((k) => k.split(":")[0])).size : 0;
   const tacticsTotal = tacticExercises.length;
   const tacticsSolved = hydrated ? tacticExercises.filter((id) => state.chess[id]?.solvedAt).length : 0;
+  // Эндшпиль: первая часть хранит прогресс отдельно (chessEndgames), вторая — как обычные упражнения.
+  const endgamesTotal = counts.endgameDrills + counts.endgamePieces.length;
+  const endgamesSolved = hydrated
+    ? Object.keys(state.chessEndgames).length + counts.endgamePieces.filter((id) => state.chess[id]?.solvedAt).length
+    : 0;
   const solvedIn = (list: StepLessons) =>
     hydrated ? list.reduce((n, x) => n + x.exercises.filter((id) => state.chess[id]?.solvedAt).length, 0) : 0;
   const totalIn = (list: StepLessons) => list.reduce((n, x) => n + x.exercises.length, 0);
@@ -264,14 +271,11 @@ export function ChessSchool({ counts, summary }: { counts: ChessSchoolCounts; su
       emoji: "♔",
       title: t("Эндшпиль", "Endshpil"),
       text: t(
-        "Король и пешка против короля: правило квадрата, оппозиция, ключевые поля — и робот, который защищается без ошибок.",
-        "Shoh va piyoda yolgʻiz shohga qarshi: kvadrat qoidasi, oppozitsiya, kalit kataklar — va xato qilmaydigan robot.",
+        "Король и пешка: правило квадрата, оппозиция и робот, который защищается без ошибок. Ладья, ферзь и слон: «мост», позиция Филидора, спасение патом.",
+        "Shoh va piyoda: kvadrat qoidasi, oppozitsiya va xato qilmaydigan robot. Rux, farzin va fil: «koʻprik», Filidor pozitsiyasi, pat bilan qutulish.",
       ),
       stat: hydrated
-        ? t(
-            `${Object.keys(state.chessEndgames).length} из ${counts.endgameDrills} заданий`,
-            `${counts.endgameDrills} ta topshiriqdan ${Object.keys(state.chessEndgames).length} tasi`,
-          )
+        ? t(`${endgamesSolved} из ${endgamesTotal} заданий`, `${endgamesTotal} ta topshiriqdan ${endgamesSolved} tasi`)
         : t("Начни с правила квадрата", "Kvadrat qoidasidan boshla"),
     },
     {

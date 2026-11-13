@@ -18,6 +18,7 @@ describe("словарь шахматиста", () => {
       ...c.course3Lessons,
       ...c.course4Lessons,
       ...c.course5Lessons,
+      ...c.endgamePieces,
     ];
     // Каждый термин из уроков есть в словаре; повторы убраны по русскому названию — число статей в языках одно.
     const written = new Set(sources.flatMap((s) => s.terms.map((t) => glossaryKey(t.term))));
@@ -49,6 +50,7 @@ describe("словарь шахматиста", () => {
       ...c.course3Lessons.map((l) => `/chess/course-3#${l.id}`),
       ...c.course4Lessons.map((l) => `/chess/course-4#${l.id}`),
       ...c.course5Lessons.map((l) => `/chess/course-5#${l.id}`),
+      ...c.endgamePieces.map((l) => `/chess/endgames/pieces#${l.id}`),
     ]);
     for (const e of chessGlossary("ru")) expect(known, `${e.term}: ${e.href}`).toContain(e.href);
   });

@@ -26,7 +26,9 @@ export function Glossary({ entries }: { entries: Both<GlossaryEntry[]> }) {
       ? t("Основы", "Asoslar")
       : g === "tactics"
         ? t("Тактика", "Taktika")
-        : t(`Ступень ${g.slice(4)}`, `${g.slice(4)}-bosqich`);
+        : g === "endgame"
+          ? t("Эндшпиль", "Endshpil")
+          : t(`Ступень ${g.slice(4)}`, `${g.slice(4)}-bosqich`);
 
   const found = useMemo(() => {
     const q = glossaryKey(query);

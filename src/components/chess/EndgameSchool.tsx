@@ -25,7 +25,7 @@ import { ChessBoard, type SquareMark } from "./ChessBoard";
  * Три экрана, на каждом одна доска: список уроков (доски-картинки), урок (`#square` — рассказ и показ на доске)
  * и упражнение (`#square-2`). Раньше всё стояло на одной странице: 18 настоящих досок подряд.
  */
-export function EndgameSchool() {
+export function EndgameSchool({ piecesExercises }: { piecesExercises: string[] }) {
   const hash = useHash();
   const { endgames } = useChessPart(ENDGAME_PART);
   const id = hash.slice(1);
@@ -35,7 +35,7 @@ export function EndgameSchool() {
     const index = l.drills.findIndex((d) => d.id === id);
     if (index >= 0) return <DrillRun key={l.id} lesson={l} index={index} lessons={endgames} />;
   }
-  return <LessonList />;
+  return <LessonList piecesExercises={piecesExercises} />;
 }
 
 /** Решённые упражнения; до загрузки сохранённого прогресса — пусто, как на сервере. */
@@ -46,10 +46,13 @@ function useSolvedDrills(): Record<string, number> {
 }
 const NONE: Record<string, number> = {};
 
-function LessonList() {
+function LessonList({ piecesExercises }: { piecesExercises: string[] }) {
   const t = useT();
   const { endgameSchool, endgames, endgameMates } = useChessPart(ENDGAME_PART);
   const solved = useSolvedDrills();
+  const hydrated = useHydrated();
+  const chess = useStore((s) => s.chess);
+  const piecesDone = hydrated ? piecesExercises.filter((id) => chess[id]?.solvedAt).length : 0;
   const all = endgames.flatMap((l) => l.drills);
   const done = all.filter((d) => solved[d.id]).length;
 
@@ -107,6 +110,33 @@ function LessonList() {
           );
         })}
       </ol>
+
+      {/* Вторая часть школы — на своей странице: ладейные окончания, ферзь против пешки, слон «не того цвета». */}
+      <Link
+        href="/chess/endgames/pieces"
+        data-endgame-pieces-link
+        className="flex gap-3 rounded-3xl bg-surface p-3 shadow-card transition hover:-translate-y-0.5 hover:shadow-lift sm:items-center sm:p-4"
+      >
+        <BoardThumb position="3K4/3P1k2/8/8/8/8/r7/4R3 w - - 0 1" size={120} />
+        <span className="flex min-w-0 flex-1 flex-col">
+          <span className="text-xs font-extrabold tracking-wide text-brand uppercase">{t("Часть 2", "2-qism")}</span>
+          <span className="text-xl leading-tight font-black">{t("Ладья, ферзь и слон", "Rux, farzin va fil")}</span>
+          <span className="mt-1 text-sm text-muted">
+            {t(
+              "«Мост», позиция Филидора, ферзь против пешки, слон «не того цвета» — позиции, которые знают наизусть.",
+              "«Koʻprik», Filidor pozitsiyasi, farzin piyodaga qarshi, «notoʻgʻri rangli» fil — yoddan bilinadigan pozitsiyalar.",
+            )}
+          </span>
+          <span className="mt-2 flex max-w-sm items-center gap-2">
+            <ProgressBar value={piecesDone} max={piecesExercises.length} className="flex-1" />
+            <span className="text-sm font-extrabold whitespace-nowrap">
+              {piecesDone === piecesExercises.length
+                ? t("✓ пройдено", "✓ tugallandi")
+                : `${piecesDone} / ${piecesExercises.length}`}
+            </span>
+          </span>
+        </span>
+      </Link>
 
       <section className="rounded-3xl bg-surface p-5 shadow-card" aria-labelledby="mates-h">
         <h2 id="mates-h" className="text-2xl font-black">

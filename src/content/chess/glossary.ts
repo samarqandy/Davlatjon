@@ -2,16 +2,26 @@
  * Словарь шахматиста: термины всех разделов школы одним списком — для страницы /chess/glossary.
  *
  * Термины уже написаны в уроках (блок «Словарик» в конце урока) на двух языках; здесь они только собираются:
- * звания («Основы»), раздел «Тактика» и пять ступеней курса. У каждого термина — урок, где он объясняется
- * с доской и упражнениями. Одинаковые термины из разных уроков показываются один раз — по первому уроку.
+ * звания («Основы»), раздел «Тактика», пять ступеней курса и эндшпиль (ладья, ферзь, слон). У каждого термина —
+ * урок, где он объясняется с доской и упражнениями. Одинаковые термины из разных уроков показываются один раз —
+ * по первому уроку.
  * Собирается на сервере: тексты уроков и позиции в браузер не попадают.
  */
 import type { Lang } from "@/lib/lang";
 import { chessContent } from "./content";
 
-export type GlossaryGroup = "basics" | "tactics" | "step1" | "step2" | "step3" | "step4" | "step5";
+export type GlossaryGroup = "basics" | "tactics" | "step1" | "step2" | "step3" | "step4" | "step5" | "endgame";
 
-export const GLOSSARY_GROUPS: GlossaryGroup[] = ["basics", "tactics", "step1", "step2", "step3", "step4", "step5"];
+export const GLOSSARY_GROUPS: GlossaryGroup[] = [
+  "basics",
+  "tactics",
+  "step1",
+  "step2",
+  "step3",
+  "step4",
+  "step5",
+  "endgame",
+];
 
 export interface GlossaryEntry {
   term: string;
@@ -33,7 +43,7 @@ export function glossaryKey(s: string): string {
     .trim();
 }
 
-/** Все термины по порядку разделов: звания, тактика, ступени курса. Порядок одинаков на обоих языках. */
+/** Все термины по порядку разделов: звания, тактика, ступени курса, эндшпиль. Порядок одинаков на обоих языках. */
 function collect(lang: Lang): GlossaryEntry[] {
   const c = chessContent(lang);
   const all: GlossaryEntry[] = [];
@@ -49,6 +59,9 @@ function collect(lang: Lang): GlossaryEntry[] {
       for (const t of lesson.terms)
         all.push({ ...t, group: `step${i + 1}` as GlossaryGroup, lesson: lesson.title, href: `${base}#${lesson.id}` });
   });
+  for (const topic of c.endgamePieces)
+    for (const t of topic.terms)
+      all.push({ ...t, group: "endgame", lesson: topic.title, href: `/chess/endgames/pieces#${topic.id}` });
   return all;
 }
 

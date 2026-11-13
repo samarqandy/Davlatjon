@@ -12,6 +12,7 @@ import { COURSE4_PART } from "./parts/course4";
 import { COURSE5_PART } from "./parts/course5";
 import { DID_YOU_KNOW_PART } from "./parts/didYouKnow";
 import { ENCYCLOPEDIA_PART } from "./parts/encyclopedia";
+import { ENDGAME_PIECES_PART } from "./parts/endgamePieces";
 import { ENDGAME_PART } from "./parts/endgames";
 import { GAME_PART } from "./parts/games";
 import { IMAGE_PART } from "./parts/images";
@@ -40,6 +41,7 @@ export const CHESS_PARTS = [
   ENCYCLOPEDIA_PART,
   IMAGE_PART,
   ENDGAME_PART,
+  ENDGAME_PIECES_PART,
   TACTIC_PART,
   TEST_PART,
   COURSE_PART,
