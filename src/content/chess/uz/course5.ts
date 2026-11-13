@@ -5,7 +5,7 @@ export const course5Uz: Uz<typeof COURSE_5> = {
   title: "5-bosqich «Farzin»",
   subtitle: "Kombinatsiyalar va shohga hujum",
   about:
-    "Hujumda bogʻlash va qoʻsh bogʻlash, bogʻlamdan chiqish va Legal gʻoyasi, qoʻsh shoh, tegirmon, qoʻsh zarba, chalgʻitish va toʻsish, mot toʻriga jalb qilish, Edvard Laskerning durdonasi, qisilgan mot, farzinni tutish, chiziqni boʻshatish, oxirgi gorizontalning zaifligi, donalar hamkorligi, rokirovka qilmagan shohga hujum, f7 dagi qurbon, jim yurish, himoyadagi yagona yurish, Steynits va Rubinshteyn durdonalari. Darslar mavzusi va tartibi M.I. Glotovning «Shaxmat mahorati bosqichlari. 5-bosqich „Farzin“» kitobi asosida; pozitsiyalar maktab uchun tuzilgan va shaxmat dvigateli bilan tekshirilgan.",
+    "Hujumda bogʻlash va qoʻsh bogʻlash, bogʻlamdan chiqish va Legal gʻoyasi, qoʻsh shoh, tegirmon, qoʻsh zarba, chalgʻitish va toʻsish, mot toʻriga jalb qilish, Edvard Laskerning durdonasi, qisilgan mot, farzinni tutish, oraliq yurish, chiziqni boʻshatish va ochish, oxirgi gorizontalning zaifligi, mix-piyoda, ikki fil qurboni, donalar hamkorligi, rokirovka qilmagan shohga hujum, f7 dagi qurbon, jim yurish, himoyadagi yagona yurish, Steynits va Rubinshteyn durdonalari. Darslar mavzusi va tartibi M.I. Glotovning «Shaxmat mahorati bosqichlari. 5-bosqich „Farzin“» kitobi asosida; pozitsiyalar maktab uchun tuzilgan va shaxmat dvigateli bilan tekshirilgan.",
 };
 
 export const course5ModulesUz: Uz<typeof COURSE_5_MODULES> = {
@@ -14,6 +14,7 @@ export const course5ModulesUz: Uz<typeof COURSE_5_MODULES> = {
   "q-deflect": { title: "Chalgʻitish va toʻsish" },
   "q-decoy": { title: "Jalb qilish" },
   "q-trap": { title: "«Farzinga mot»" },
+  "q-between": { title: "Oraliq yurish" },
   "q-lines": { title: "Chiziqlar va oxirgi gorizontal" },
   "q-attack": { title: "Shohga hujum" },
   "q-sacrifice": { title: "Odatiy qurbonlar" },
@@ -340,6 +341,33 @@ export const course5LessonsUz: Uz<typeof COURSE_5_LESSONS> = {
       },
     },
   },
+  "c5-zwischenzug": {
+    title: "Oraliq yurish",
+    idea: "Javoban urishga shoshilma: avval kuchliroq shoh yoki urishni qidir.",
+    lesson: [
+      {
+        title: "Avval shoh",
+        text: [
+          "Raqib donangni urdi — qoʻl oʻzi javoban urishga choʻziladi. Shoshilma! Baʼzan kuchliroq yurish bor: shoh, urish yoki mot tahdidi. Javob urishdan **oldin** qilingan bunday yurish **oraliq yurish** deyiladi.",
+          "Javob urish qochib ketmaydi: avval yomon turgan narsani ol, keyin javoban ur. Har bir almashuvdan oldin tekshir: shoh yoʻqmi?",
+        ],
+      },
+    ],
+    terms: [
+      {
+        term: "Oraliq yurish",
+        text: "Kutilgan javob urish oʻrniga qilingan kuchli yurish (koʻpincha shoh).",
+      },
+    ],
+    exercises: {
+      "c5-zwischenzug-check": {
+        title: "Farzin kutib turadi",
+        prompt: "Qoralar e2 da farzinni urdi. Qanday oʻynash yaxshiroq?",
+        hint: "d8 dagi ruxni farzin himoya qilardi. Endi-chi?",
+        why: "♖xd8+! — oraliq shoh: d8 dagi ruxni faqat farzin himoya qilardi, u esa e2 ga ketdi. Qoralar shohni olib ketadi yoki toʻsadi, oqlar shundan keyingina farzinni uradi — ularda ortiqcha rux. ♗xe2? dan keyin ♜xd1+ ♗xd1 — donalar teng.",
+      },
+    },
+  },
   "c5-clearance": {
     title: "Chiziqni boʻshatish",
     idea: "Oʻz donang xalaqit beryaptimi? Uni shoh berib qurbon qil — chiziq ochiladi.",
@@ -391,6 +419,33 @@ export const course5LessonsUz: Uz<typeof COURSE_5_LESSONS> = {
         prompt: "Oqlar yuradi va 2 yurishda mot qiladi. Birinchi yurish qaysi?",
         hint: "Sakkizinchi gorizontalni bitta rux himoya qilyapti. U ursa, nima boʻladi?",
         why: "♕e8+! ♜xe8, ♖xe8# — shohning «darcha»si yoʻq. Rux bilan boshlash ham mumkin: ♖e8+ ♜xe8, ♕xe8#. ♕b7? dan keyin qoralar ruxni olib ketishga yoki «darcha» ochishga ulguradi.",
+      },
+    },
+  },
+  "c5-open-file": {
+    title: "Chiziqni ochish",
+    idea: "Shoh yonidagi qurbon vertikalni ochadi — rux shu chiziqdan mot bilan kirib keladi.",
+    lesson: [
+      {
+        title: "Ruxga yoʻl och",
+        text: [
+          "Ruxga ochiq vertikal kerak. Agar raqib shohi yonidagi chiziqni piyoda yopib turgan boʻlsa, uni **ochish** mumkin: almashuv yoki qurbon bilan.",
+          "Eng keskin yoʻl — shohni toʻsib turgan piyodaga qurbon berish. Shoh uradi, vertikal ochiladi va rux boʻsh chiziq boʻylab shoh beradi.",
+        ],
+      },
+    ],
+    terms: [
+      {
+        term: "Chiziqni ochish",
+        text: "Almashuv yoki qurbon: undan keyin shohga boradigan vertikal yoki diagonal ochiq boʻladi.",
+      },
+    ],
+    exercises: {
+      "c5-open-file-queen": {
+        title: "«h» chizigʻi",
+        prompt: "Oqlar yuradi va 3 yurishda mot qiladi. Birinchi yurish qaysi?",
+        hint: "h7 dagi piyodani faqat shoh himoya qiladi. U ursa, nima boʻladi?",
+        why: "♕xh7+! ♚xh7, ♖h1+ ♚g8, ♖h8# — h8 katagini f6 dagi fil ushlab turibdi. ♖h1? dan keyin qoralar h5 yurishi bilan chiziqni yopishga ulguradi — uch yurishda mot yoʻq.",
       },
     },
   },
@@ -446,6 +501,33 @@ export const course5LessonsUz: Uz<typeof COURSE_5_LESSONS> = {
         prompt: "Oqlar yuradi va 2 yurishda mot qiladi. Birinchi yurish qaysi?",
         hint: "e vertikali boʻylab shoh. Shunda shoh qayerga boradi?",
         why: "♖e4+! — shoh f8 ga bora olmaydi (bu katakni b4 dagi farzin uradi), faqat ♚d8 qoladi. Keyin ♕b8#: farzin c7 va c8 ni, rux — e7 va e8 ni ushlab turadi. ♕e7+? dan keyin ♚xe7 — farzin yoʻqoladi.",
+      },
+    },
+  },
+  "c5-nail": {
+    title: "Mix-piyoda",
+    idea: "Shoh yonidagi f6 piyoda — mixdek: g7 katagini tortib oladi va mot qilishga yordam beradi.",
+    lesson: [
+      {
+        title: "Shoh yonidagi mix",
+        text: [
+          "f6 yoki h6 gacha — raqib rokirovkasining yoniga yetib borgan piyoda **mix** deyiladi. Uni urib chiqarish qiyin, u esa g7 katagini ushlab turadi: farzin piyoda himoyasida oʻsha yerga turadi — va mot.",
+          "Agar g7 katagini rux bilan himoya qilishga ulgurishgan boʻlsa ham, mix yordam beradi: shoh burchakda qamalgan va «h» chizigʻi boʻylab bitta shoh yetarli.",
+        ],
+      },
+    ],
+    terms: [
+      {
+        term: "Mix-piyoda",
+        text: "Raqib shohi yonida, oltinchi gorizontalda turgan piyoda: shohdan kataklarni tortib oladi va oʻz donalarini qoʻllaydi.",
+      },
+    ],
+    exercises: {
+      "c5-nail-queen": {
+        title: "Shoh qamalgan",
+        prompt: "Oqlar yuradi va 2 yurishda mot qiladi. Birinchi yurish qaysi?",
+        hint: "g8 dagi rux g7 ni himoya qiladi. h7 ni-chi, kim himoya qiladi?",
+        why: "♕xh7+! ♚xh7, ♖h3# — shoh qamalgan: g7 katagini f6 dagi mix-piyoda ushlab turibdi, g8 da oʻz ruxi. ♕g7+? dan keyin ♜xg7 — farzin yoʻqotiladi.",
       },
     },
   },
@@ -563,6 +645,52 @@ export const course5LessonsUz: Uz<typeof COURSE_5_LESSONS> = {
         ],
         hint: "Yagona yurish saralash bilan topiladi: barcha himoyalar, har biri — oxirigacha.",
         why: "Himoya ham hujum kabi diqqat bilan qidiriladi: barcha nomzod yurishlar, har biri oxirigacha tekshiriladi.",
+      },
+    },
+  },
+  "c5-two-bishops": {
+    title: "Ikki fil qurboni",
+    idea: "Birinchi fil h7 da, ikkinchisi g7 da beriladi: shoh yonida bitta ham piyoda qolmaydi.",
+    lesson: [
+      {
+        title: "Amsterdam, 1889",
+        text: [
+          "Emanuil Lasker — ikkinchi jahon chempioni. 1889-yilda, hali chempion boʻlmasidan oldin, u Iogann Bauer bilan hozirgacha eslanadigan partiya oʻynadi: Lasker **ikkala filini** qurbon qildi.",
+          "Birinchi fil h7 dagi piyodani shoh berib urdi — shoh filni oldi. Farzin h5 dagi otni shoh berib oldi, shoh g8 ga qaytdi. Shunda ikkinchi fil g7 dagi piyodani urdi! Shohni endi bitta ham piyoda toʻsmaydi.",
+        ],
+      },
+      {
+        title: "Rux ishni tugatadi",
+        text: [
+          "Qoralar ikkinchi filni ham oldi. Farzin g4 dan shoh berdi, shoh h7 ga ketdi — va jangga rux kirdi: f3 ga, u yerdan h3 ga. Mot boʻlmaslik uchun Bauer farzinini ruxga berdi.",
+          "Soʻnggi zarba — farzinning d7 ga yurishi: qoralarning ikki filiga qoʻsh zarba. Ulardan biri yoʻqotiladi va Lasker partiyani yutdi.",
+        ],
+      },
+    ],
+    terms: [
+      {
+        term: "Ikki fil qurboni",
+        text: "Fillar h7 va g7 piyodalari evaziga beriladi; himoyasiz qolgan shohga farzin va rux hujum qiladi.",
+      },
+    ],
+    exercises: {
+      "c5-two-bishops-first": {
+        title: "Birinchi fil",
+        prompt: "Lasker (oqlar) yuradi. Kombinatsiya qanday boshlangan?",
+        hint: "Farzin h5 dagi otni shoh berib oladi — agar avval h7 piyodasi yoʻq qilinsa.",
+        why: "15. ♗xh7+! ♚xh7 16. ♕xh5+ ♚g8 — farzin otni shoh berib oldi, shohning h7 piyodasi esa endi yoʻq. Oddiy 15. ♕xh5 ga qoralar f5 deb javob beradi: d3 dagi filning diagonali yopiladi va hujum sekinlashadi.",
+      },
+      "c5-two-bishops-second": {
+        title: "Ikkinchi fil",
+        prompt: "Lasker (oqlar) yuradi. Hujumni qanday davom ettirish kerak?",
+        hint: "Shoh yonida bitta piyoda qoldi. Uni nima bilan urish mumkin?",
+        why: "17. ♗xg7! ♚xg7 18. ♕g4+ ♚h7 (18... ♚f6 19. ♕g5#) 19. ♖f3 — rux h3 ga boradi va qoralar farzinni berishga majbur boʻldi. 17. ♕g4 ga qoralar f6 yurishi bilan himoyalanishga ulguradi.",
+      },
+      "c5-two-bishops-fork": {
+        title: "Qoʻsh zarba",
+        prompt: "Lasker (oqlar) yuradi. Filni qanday yutish mumkin?",
+        hint: "Farzin birdaniga ikki filga hujum qiladigan katakni top.",
+        why: "22. ♕d7! — qoʻsh zarba: b7 va e7 dagi fillar zarba ostida, ikkalasini himoya qilib boʻlmaydi. Partiyada 22... ♝f6 23. ♕xb7 boʻlgan. fxe5 yurishi faqat piyoda yutadi.",
       },
     },
   },

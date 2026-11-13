@@ -299,6 +299,7 @@ test("ступень 5 «Ферзь»: страница курса, завлеч
     "q-deflect",
     "q-decoy",
     "q-trap",
+    "q-between",
     "q-lines",
     "q-attack",
     "q-sacrifice",
@@ -340,6 +341,25 @@ test("ступень 5: идея Легаля — конь c6 мешает, ве
   await expect(page.getByText(/Почему так/)).toBeVisible();
   const stored = await page.evaluate((key) => JSON.parse(localStorage.getItem(key) ?? "{}").chess ?? {}, KEY);
   expect(stored["c5-legal-fails"]?.solvedAt).toBeTruthy();
+});
+
+// Партия Ласкер — Бауэр: три позиции подряд, урок проходится целиком.
+test("ступень 5: жертва двух слонов — три упражнения из партии Ласкера", async ({ page }) => {
+  await prepare(page);
+  await openHash(page, "/chess/course-5#c5-two-bishops-exercise-1");
+  await page.locator('[data-choice="e2h5"]').click();
+  await expect(page.getByText("не лучший выбор")).toBeVisible();
+  await page.locator('[data-choice="d3h7"]').click();
+  await expect(page.getByText(/Почему так/)).toBeVisible();
+  await openHash(page, "/chess/course-5#c5-two-bishops-exercise-2");
+  await page.locator('[data-choice="e5g7"]').click();
+  await expect(page.getByText(/Почему так/)).toBeVisible();
+  await openHash(page, "/chess/course-5#c5-two-bishops-exercise-3");
+  await page.locator('[data-choice="g4d7"]').click();
+  await expect(page.getByText(/Почему так/)).toBeVisible();
+  const stored = await page.evaluate((key) => JSON.parse(localStorage.getItem(key) ?? "{}").chess ?? {}, KEY);
+  for (const id of ["c5-two-bishops-first", "c5-two-bishops-second", "c5-two-bishops-fork"])
+    expect(stored[id]?.solvedAt, id).toBeTruthy();
 });
 
 // Перекрытие: один из вариантов — превращение пешки (ход с буквой фигуры на конце).

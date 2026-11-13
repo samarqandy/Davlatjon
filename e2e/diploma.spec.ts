@@ -45,10 +45,10 @@ test("диплом получен: лист с именем и датой, ка�
   await expect(sheet).toContainText("Диплом");
   await expect(sheet).toContainText("Пешка");
   await expect(page.locator("[data-certificate-name]")).toHaveText("Анна");
-  // Логотип Parvoz Edu на листе загружен.
+  // Логотип Parvoz Edu на листе загружен. Картинка догружается после появления листа — ждём, а не проверяем сразу.
   const logo = sheet.locator("[data-certificate-logo]");
   await expect(logo).toBeVisible();
-  expect(await logo.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0)).toBe(true);
+  await expect.poll(() => logo.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0)).toBe(true);
 });
 
 test("диплом ступени «Конь»: открывается после итогового теста ступени 2", async ({ page }) => {

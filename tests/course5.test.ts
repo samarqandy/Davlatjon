@@ -3,7 +3,7 @@ import { Chess } from "chess.js";
 import { describe, expect, it, vi } from "vitest";
 import { COURSE_5_LESSONS } from "@/content/chess/course5";
 import { matingMoves } from "@/lib/chess";
-import { searchBest } from "@/lib/engine/search";
+import { matingMovesIn, searchBest } from "@/lib/engine/search";
 
 /** Мат не более чем в n ходов белых, где каждый ход белых — шах. */
 function mateInChecks(fen: string, n: number): boolean {
@@ -413,5 +413,106 @@ describe("курс «Ферзь»: развязывание, мельница, �
     expect(forcesMate(fen, "e1e8", 2)).toBe(true);
     expect(after(fen, "Qe8+").moves()).toEqual(["Rxe8"]);
     expect(matesNext(fen, wrong[0])).toBe(false);
+  });
+
+  /** Материал белых минус материал чёрных (пешка — 1, лёгкая фигура — 3, ладья — 5, ферзь — 9). */
+  const balance = (fen: string) => {
+    const value: Record<string, number> = { p: 1, n: 3, b: 3, r: 5, q: 9 };
+    let sum = 0;
+    for (const ch of fen.split(" ")[0]) {
+      const v = value[ch.toLowerCase()];
+      if (v) sum += ch === ch.toLowerCase() ? -v : v;
+    }
+    return sum;
+  };
+
+  it("промежуточный ход: после Лxd8+ белые забирают ферзя и остаются с лишней ладьёй; после Сxe2 — поровну", () => {
+    const { fen, right, wrong } = choose("c5-zwischenzug", "c5-zwischenzug-check");
+    expect([right, wrong]).toEqual(["d1d8", ["f1e2"]]);
+    const c = after(fen, "Rxd8+");
+    expect(c.moves().sort()).toEqual(["Be8", "Kh7", "Qe8"]);
+    for (const reply of c.moves()) {
+      const d = after(c.fen(), reply);
+      const takes = d.moves({ verbose: true }).find((m) => m.captured === "q");
+      expect(takes, reply).toBeTruthy();
+      d.move(takes!);
+      expect(balance(d.fen()), reply).toBe(5);
+    }
+    expect(balance(after(fen, "Bxe2", "Rxd1+", "Bxd1").fen())).toBe(0);
+  });
+
+  it("вскрытие линии: Фxh7+ — единственный мат в три хода, ответы чёрных единственные", () => {
+    const { fen, right, wrong } = choose("c5-open-file", "c5-open-file-queen");
+    expect([right, wrong]).toEqual(["h4h7", ["d1h1"]]);
+    expect(matingMovesIn(fen, 3)).toEqual(["h4h7"]);
+    const c = after(fen, "Qxh7+");
+    expect(c.moves()).toEqual(["Kxh7"]);
+    c.move("Kxh7");
+    c.move("Rh1+");
+    expect(c.moves()).toEqual(["Kg8"]);
+    c.move("Kg8");
+    c.move("Rh8#");
+    expect(c.isCheckmate()).toBe(true);
+    // После Лh1 чёрные закрывают линию пешкой.
+    expect(after(fen, "Rh1").moves()).toContain("h5");
+  });
+
+  it("пешка-гвоздь: Фxh7+ — единственный мат в два хода; Фg7+ теряет ферзя", () => {
+    const { fen, right, wrong } = choose("c5-nail", "c5-nail-queen");
+    expect([right, wrong]).toEqual(["h6h7", ["h6g7"]]);
+    expect(matingMovesIn(fen, 2)).toEqual(["h6h7"]);
+    const c = after(fen, "Qxh7+");
+    expect(c.moves()).toEqual(["Kxh7"]);
+    c.move("Kxh7");
+    c.move("Rh3#");
+    expect(c.isCheckmate()).toBe(true);
+    expect(after(fen, "Qg7+").moves()).toEqual(["Rxg7"]);
+    // Позиция на карточке урока: ферзь встаёт на g7 под защитой пешки — мат.
+    const demo = COURSE_5_LESSONS.find((l) => l.id === "c5-nail")!.lesson[0].demo!;
+    expect(matingMoves(demo.fen)).toEqual(["h6g7"]);
+  });
+
+  it("Ласкер — Бауэр (Амстердам, 1889): три позиции — из партии, запись ходов возможна до конца", () => {
+    const start =
+      "f4 d5 e3 Nf6 b3 e6 Bb2 Be7 Bd3 b6 Nf3 Bb7 Nc3 Nbd7 O-O O-O Ne2 c5 Ng3 Qc7 Ne5 Nxe5 Bxe5 Qc6 Qe2 a6 Nh5 Nxh5";
+    const first = choose("c5-two-bishops", "c5-two-bishops-first");
+    const second = choose("c5-two-bishops", "c5-two-bishops-second");
+    const fork = choose("c5-two-bishops", "c5-two-bishops-fork");
+    expect(play(start).fen()).toBe(first.fen);
+    expect(play(`${start} Bxh7+ Kxh7 Qxh5+ Kg8`).fen()).toBe(second.fen);
+    const attack = `${start} Bxh7+ Kxh7 Qxh5+ Kg8 Bxg7 Kxg7 Qg4+ Kh7 Rf3`;
+    expect(play(`${attack} e5 Rh3+ Qh6 Rxh6+ Kxh6`).fen()).toBe(fork.fen);
+    expect([first.right, second.right, fork.right]).toEqual(["d3h7", "e5g7", "g4d7"]);
+    const end = play(
+      `${attack} e5 Rh3+ Qh6 Rxh6+ Kxh6 Qd7 Bf6 Qxb7 Kg7 Rf1 Rab8 Qd7 Rfd8 Qg4+ Kf8 fxe5 Bg7 e6 Rb7 Qg6 f6 Rxf6+ Bxf6 Qxf6+ Ke8 Qh8+ Ke7 Qg7+`,
+    );
+    expect(end.inCheck()).toBe(true);
+
+    // 15. Фxh5 вместо жертвы: чёрные закрывают диагональ слона d3 ходом f5.
+    expect(after(first.fen, "Qxh5").moves()).toContain("f5");
+    // 17. Сxg7: кроме взятия слона и ходов пешки «f», любой ответ пропускает мат не позже чем в два хода.
+    const taken = after(second.fen, "Bxg7");
+    const alive = taken.moves().filter((san) => matingMovesIn(after(taken.fen(), san).fen(), 2).length === 0);
+    expect(alive.sort()).toEqual(["Kxg7", "f5", "f6"]);
+    // 18... Крf6 — мат в один ход.
+    expect(matingMoves(after(taken.fen(), "Kxg7", "Qg4+", "Kf6").fen())).toEqual(["g4g5"]);
+    // 17. Фg4 вместо жертвы: после f6 у белых нет мата в два хода.
+    expect(matingMovesIn(after(second.fen, "Qg4", "f6").fen(), 2)).toEqual([]);
+    // 19. Лf3: от мата в два хода спасают только ходы, отдающие материал, — в партии e5 и ферзь за ладью.
+    const lift = play(attack);
+    const saved = lift.moves().filter((san) => matingMovesIn(after(lift.fen(), san).fen(), 2).length === 0);
+    expect(saved.sort()).toEqual(["Bg5", "Bh4", "e5"]);
+    // 22. Фd7: на любой ответ ферзь берёт одного из слонов, и взять ферзя в ответ нечем.
+    const forked = after(fork.fen, "Qd7");
+    expect(forked.attackers("b7", "w")).toEqual(["d7"]);
+    expect(forked.attackers("e7", "w")).toEqual(["d7"]);
+    for (const reply of forked.moves()) {
+      const d = after(forked.fen(), reply);
+      const safe = d
+        .moves({ verbose: true })
+        .filter((m) => m.piece === "q" && m.captured === "b")
+        .some((m) => after(d.fen(), m.san).attackers(m.to, "b").length === 0);
+      expect(safe, reply).toBe(true);
+    }
   });
 });
