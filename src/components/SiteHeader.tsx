@@ -95,7 +95,7 @@ export function SiteFooter() {
           {t("Приватность", "Maxfiylik")}
         </Link>
         <Link href="/parent" data-adults-link className={link}>
-          <Icon icon={Lock} /> {t("Для взрослых", "Kattalar uchun")}
+          <Icon icon={Lock} /> {t("Родителям", "Ota-onalarga")}
         </Link>
       </nav>
     </footer>
