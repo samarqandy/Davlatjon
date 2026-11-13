@@ -379,6 +379,23 @@ test("ступень 5: партия Шультен — Морфи — чёрн�
   for (const id of ["c5-morphy-pin-rook", "c5-morphy-pin-mate"]) expect(stored[id]?.solvedAt, id).toBeTruthy();
 });
 
+// Вопросы с доской и мат в одном уроке; затем спасение патом.
+test("ступень 5: главный принцип атаки — вопросы по доске и мат; спасение патом", async ({ page }) => {
+  await prepare(page);
+  await openHash(page, "/chess/course-5#c5-attack-principle-exercise-2");
+  await square(page, "c5-attack-principle-mate", "h5");
+  await square(page, "c5-attack-principle-mate", "h7");
+  await expect(page.getByText(/Почему так/)).toBeVisible();
+  await openHash(page, "/chess/course-5#c5-stalemate-save-exercise-1");
+  await page.locator('[data-choice="e7c5"]').click();
+  await expect(page.getByText("не лучший выбор")).toBeVisible();
+  await page.locator('[data-choice="e7e3"]').click();
+  await expect(page.getByText(/Почему так/)).toBeVisible();
+  const stored = await page.evaluate((key) => JSON.parse(localStorage.getItem(key) ?? "{}").chess ?? {}, KEY);
+  for (const id of ["c5-attack-principle-mate", "c5-stalemate-save-queen"])
+    expect(stored[id]?.solvedAt, id).toBeTruthy();
+});
+
 // Перекрытие: один из вариантов — превращение пешки (ход с буквой фигуры на конце).
 test("ступень 5: перекрытие — сразу в ферзи нельзя, сначала конь закрывает диагональ", async ({ page }) => {
   await prepare(page);

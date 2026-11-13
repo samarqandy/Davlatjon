@@ -660,4 +660,73 @@ describe("курс «Ферзь»: развязывание, мельница, �
     expect(matingMoves(after(line.fen(), "Kh8").fen())).toEqual(["b2f6"]);
     expect(after(fen, "Qg3").moves()).toContain("g6");
   });
+
+  it("главный принцип атаки: на h7 три белые фигуры против одного короля — Фxh7#", () => {
+    const lesson = COURSE_5_LESSONS.find((l) => l.id === "c5-attack-principle")!;
+    const quiz = lesson.exercises.find((e) => e.id === "c5-attack-principle-count")!;
+    const mate = lesson.exercises.find((e) => e.id === "c5-attack-principle-mate")!;
+    if (quiz.kind !== "quiz" || mate.kind !== "move") throw new Error("в уроке вопросы и упражнение на мат");
+    const c = new Chess(mate.fen);
+    expect(c.attackers("h7", "w").sort()).toEqual(["d3", "g5", "h5"]);
+    expect(c.attackers("h7", "b")).toEqual(["g8"]);
+    expect(matingMoves(mate.fen)).toEqual(["h5h7"]);
+    // Ответы на вопросы совпадают с доской: «три» нападают, защищает «одна — только король».
+    expect(quiz.questions[0].fen).toBe(mate.fen);
+    expect(quiz.questions[0].options[quiz.questions[0].correct]).toBe("три");
+    expect(quiz.questions[1].options[quiz.questions[1].correct]).toBe("одна — только король");
+    // У чёрных материала больше — перевес белых только на участке у короля.
+    expect(balance(mate.fen)).toBeLessThan(0);
+  });
+
+  it("пешечный штурм: hxg6 — единственный мат в три хода; после h6 мата в один ход нет", () => {
+    const { fen, right, wrong } = choose("c5-pawn-storm", "c5-pawn-storm-open");
+    expect([right, wrong]).toEqual(["h5g6", ["h5h6"]]);
+    expect(matingMovesIn(fen, 3)).toEqual(["h5g6"]);
+    expect(matingMoves(after(fen, "hxg6", "hxg6").fen())).toContain("h2h8");
+    expect(matingMoves(after(fen, "hxg6", "fxg6").fen())).toEqual(["h2h7"]);
+    const closed = after(fen, "h6");
+    for (const reply of closed.moves()) expect(matingMoves(after(closed.fen(), reply).fen()), reply).toEqual([]);
+  });
+
+  it("слабые поля: Фh6 — единственный мат в два хода", () => {
+    const { fen, right, wrong } = choose("c5-weak-squares", "c5-weak-squares-queen");
+    expect([right, wrong]).toEqual(["d2h6", ["d2d4"]]);
+    expect(matingMovesIn(fen, 2)).toEqual(["d2h6"]);
+    expect(matesNext(fen, right)).toBe(true);
+    expect(matesNext(fen, wrong[0])).toBe(false);
+  });
+
+  it("спасение патом: после Фe3+ ответ один — Сxe3, и белым пат; остальные ходы без шаха проигрывают", () => {
+    const { fen, right, wrong } = choose("c5-stalemate-save", "c5-stalemate-save-queen");
+    expect([right, wrong]).toEqual(["e7e3", ["e7c5"]]);
+    expect(balance(fen)).toBeLessThan(0);
+    expect(matingMoves(fen.replace(" w ", " b ")).sort()).toEqual(["a2g2", "a2h2"]);
+    const c = after(fen, "Qe3+");
+    expect(c.moves()).toEqual(["Bxe3"]);
+    expect(after(c.fen(), "Bxe3").isStalemate()).toBe(true);
+    expect(matingMoves(after(fen, "Qxc5").fen()).sort()).toEqual(["a2g2", "a2h2"]);
+    // Любой ход без шаха пропускает мат не позже чем в два хода.
+    for (const san of new Chess(fen).moves().filter((m) => !m.includes("+")))
+      expect(matingMovesIn(after(fen, san).fen(), 2).length, san).toBeGreaterThan(0);
+  });
+
+  it("Таль — Трингов (Амстердам, 1964): позиции из партии, 17. Фe6+ — единственный мат в три хода", () => {
+    const start =
+      "e4 g6 d4 Bg7 Nc3 d6 Nf3 c6 Bg5 Qb6 Qd2 Qxb2 Rb1 Qa3 Bc4 Qa5 O-O e6 Rfe1 a6 Bf4 e5 dxe5 dxe5 Qd6 Qxc3 Red1 Nd7";
+    const bishop = choose("c5-tal", "c5-tal-bishop");
+    const queen = choose("c5-tal", "c5-tal-queen");
+    expect(play(start).fen()).toBe(bishop.fen);
+    expect(play(`${start} Bxf7+ Kxf7 Ng5+ Ke8`).fen()).toBe(queen.fen);
+    expect([bishop.right, queen.right]).toEqual(["c4f7", "d6e6"]);
+    expect(new Chess(bishop.fen).attackers("f7", "b")).toEqual(["e8"]);
+    expect(after(bishop.fen, "Bxf7+", "Kxf7", "Ng5+").moves()).toEqual(["Ke8"]);
+    expect(matingMovesIn(queen.fen, 3)).toEqual(["d6e6"]);
+    for (const line of [
+      ["Qe6+", "Kf8", "Qf7#"],
+      ["Qe6+", "Kd8", "Nf7+", "Kc7", "Qd6#"],
+      ["Qe6+", "Ne7", "Qf7+", "Kd8", "Ne6#"],
+    ])
+      expect(after(queen.fen, ...line).isCheckmate(), line.join(" ")).toBe(true);
+    expect(after(queen.fen, "Qe6+").moves().sort()).toEqual(["Kd8", "Kf8", "Ne7"]);
+  });
 });
