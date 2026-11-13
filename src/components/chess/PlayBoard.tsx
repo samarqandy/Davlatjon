@@ -38,6 +38,7 @@ import { pluralize } from "@/lib/plural";
 import { random } from "@/lib/random";
 import { cue, sayIllegal } from "@/lib/voice";
 import { recordChessGame, removeChessGame } from "@/lib/store";
+import { BarButton, BoardBar } from "./BoardBar";
 import { ChessBoard, PieceIcon, type PromotionPiece, type SquareMark } from "./ChessBoard";
 import { illegalText, usePromotion } from "./useMoveInput";
 
@@ -430,6 +431,39 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
           {clockBox(topSide === "w" ? "b" : "w")}
         </div>
       </div>
+      {/* Панель — сразу под доской: на телефоне она на первом экране вместе с «чей ход». */}
+      <BoardBar label={t("Управление партией", "Partiyani boshqarish")}>
+        {!config.solo && (
+          <>
+            <BarButton
+              icon={Lightbulb}
+              label={t("Подсказка", "Maslahat")}
+              onClick={showHint}
+              disabled={!myTurn || status.over || thinking}
+            />
+            <BarButton
+              icon={Undo2}
+              label={t("Отменить", "Qaytar")}
+              name={t("Отменить ход", "Yurishni qaytar")}
+              onClick={undo}
+              disabled={plies.length === 0 || thinking}
+            />
+          </>
+        )}
+        <BarButton
+          icon={ArrowUpDown}
+          label={t("Поворот", "Aylantir")}
+          name={t("Поворот доски", "Taxtani aylantir")}
+          onClick={() => setFlipped((f) => !f)}
+        />
+        <BarButton
+          icon={RotateCcw}
+          label={t("Новая", "Yangi")}
+          name={t("Новая партия", "Yangi partiya")}
+          primary={status.over}
+          onClick={restart}
+        />
+      </BoardBar>
       <p
         className={cn(
           "rounded-2xl px-4 py-3 text-lg font-black",
@@ -501,29 +535,12 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
       )}
 
       <aside className="space-y-3">
-        <div className="flex flex-wrap gap-2">
-          {!config.solo && (
-            <>
-              <Button variant="secondary" size="sm" onClick={showHint} disabled={!myTurn || status.over || thinking}>
-                <Icon icon={Lightbulb} /> {t("Подсказка", "Maslahat")}
-              </Button>
-              <Button variant="secondary" size="sm" onClick={undo} disabled={plies.length === 0 || thinking}>
-                <Icon icon={Undo2} /> {t("Отменить", "Ortga qaytarish")}
-              </Button>
-            </>
-          )}
-          <Button variant="secondary" size="sm" onClick={() => setFlipped((f) => !f)}>
-            <Icon icon={ArrowUpDown} /> {t("Перевернуть", "Taxtani aylantirish")}
+        {/* «Закончить партию» — отдельно от панели: действие редкое и необратимое, рядом с «Отменить» его легко задеть. */}
+        {withRobot && !status.over && (
+          <Button variant="ghost" size="sm" onClick={() => setConfirmEnd(true)} disabled={plies.length === 0}>
+            <Icon icon={Flag} /> {t("Закончить партию", "Partiyani tugatish")}
           </Button>
-          {withRobot && !status.over && (
-            <Button variant="ghost" size="sm" onClick={() => setConfirmEnd(true)} disabled={plies.length === 0}>
-              <Icon icon={Flag} /> {t("Закончить партию", "Partiyani tugatish")}
-            </Button>
-          )}
-          <Button size="sm" variant={status.over ? "primary" : "secondary"} onClick={restart}>
-            <Icon icon={RotateCcw} /> {t("Новая партия", "Yangi partiya")}
-          </Button>
-        </div>
+        )}
         {previous && (
           <p
             role="status"

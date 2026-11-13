@@ -2,11 +2,12 @@
 
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { useEffect, useRef, type ReactNode } from "react";
-import { Button, Icon } from "@/components/ui";
+import { BarButton, BarInfo, BoardBar } from "./BoardBar";
 import { useT } from "@/lib/i18n";
 
 /**
- * Просмотр ходов: в начало, назад, «Дальше», в конец и счётчик. Один и тот же ряд кнопок в разборе своей
+ * Просмотр ходов: в начало, назад, «Дальше», в конец и счётчик — одной панелью под доской (BoardBar).
+ * Один и тот же ряд кнопок в разборе своей
  * партии, в партиях мастеров и в дебютах. Стрелки клавиатуры ← и → делают то же, что «назад» и «Дальше»
  * (как на доске анализа), если ребёнок в это время не печатает и не ходит по доске с клавиатуры.
  */
@@ -19,7 +20,7 @@ export function MoveNav({
   ply: number;
   total: number;
   onGo: (ply: number) => void;
-  /** Свои кнопки экрана — например, «Смотреть»: встают перед счётчиком. */
+  /** Свои кнопки экрана (BarButton) — например, «Смотреть»: встают перед счётчиком. */
   children?: ReactNode;
 }) {
   const t = useT();
@@ -44,46 +45,39 @@ export function MoveNav({
   }, []);
 
   return (
-    <div
-      role="group"
-      aria-label={t("Просмотр ходов", "Yurishlarni koʻrish")}
-      className="flex flex-wrap items-center gap-1.5"
-      data-move-nav={ply}
-    >
-      <Button
-        variant="secondary"
-        size="sm"
+    <BoardBar label={t("Просмотр ходов", "Yurishlarni koʻrish")} data-move-nav={ply}>
+      <BarButton
+        icon={ChevronsLeft}
+        label={t("Начало", "Boshi")}
+        name={t("В начало", "Boshiga")}
         onClick={() => onGo(0)}
         disabled={ply === 0}
-        aria-label={t("В начало", "Boshiga")}
-      >
-        <Icon icon={ChevronsLeft} />
-      </Button>
-      <Button
-        variant="secondary"
-        size="sm"
+      />
+      <BarButton
+        icon={ChevronLeft}
+        label={t("Назад", "Orqaga")}
+        name={t("Ход назад", "Bir yurish orqaga")}
         onClick={() => onGo(ply - 1)}
         disabled={ply === 0}
-        aria-label={t("Ход назад", "Bir yurish orqaga")}
-      >
-        <Icon icon={ChevronLeft} />
-      </Button>
-      <Button size="sm" onClick={() => onGo(ply + 1)} disabled={ply === total}>
-        {t("Дальше", "Oldinga")} <Icon icon={ChevronRight} />
-      </Button>
-      <Button
-        variant="secondary"
-        size="sm"
+      />
+      <BarButton
+        icon={ChevronRight}
+        label={t("Дальше", "Oldinga")}
+        primary
+        onClick={() => onGo(ply + 1)}
+        disabled={ply === total}
+      />
+      <BarButton
+        icon={ChevronsRight}
+        label={t("Конец", "Oxiri")}
+        name={t("В конец", "Oxiriga")}
         onClick={() => onGo(total)}
         disabled={ply === total}
-        aria-label={t("В конец", "Oxiriga")}
-      >
-        <Icon icon={ChevronsRight} />
-      </Button>
+      />
       {children}
-      <span className="ml-auto text-sm font-extrabold text-muted tabular-nums">
+      <BarInfo label={t(`Ход ${ply} из ${total}`, `${total} tadan ${ply}-yurish`)}>
         {ply} / {total}
-      </span>
-    </div>
+      </BarInfo>
+    </BoardBar>
   );
 }

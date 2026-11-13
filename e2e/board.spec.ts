@@ -28,7 +28,7 @@ test("на рамке доски — буквы снизу и цифры сле�
   await page.goto("/chess/analysis");
   expect(await text(page, "files")).toBe("abcdefgh");
   expect(await text(page, "ranks")).toBe("87654321");
-  await page.getByRole("button", { name: /Перевернуть/ }).click();
+  await page.getByRole("button", { name: "Поворот" }).click();
   await expect.poll(() => text(page, "files")).toBe("hgfedcba");
   expect(await text(page, "ranks")).toBe("12345678");
 });
