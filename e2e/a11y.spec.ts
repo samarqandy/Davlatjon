@@ -51,6 +51,7 @@ const PAGES = [
   "/about",
   "/chess/tournaments",
   "/chess/tournaments#new",
+  "/chess/glossary",
 ];
 
 async function violations(page: Page, url: string) {
@@ -215,6 +216,7 @@ const TOUCH_PAGES = [
   "/quick",
   "/chess/tournaments",
   "/chess/tournaments#new",
+  "/chess/glossary",
 ];
 
 test("область нажатия на телефоне: кнопки, поля и ссылки-блоки не меньше 44 px", async ({ page, isMobile }) => {

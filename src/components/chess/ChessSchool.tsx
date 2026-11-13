@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { ChildNameBanner } from "@/components/home/ChildNameBanner";
 import { TodayCard } from "@/components/progress/TodayCard";
-import { cn, ProgressBar } from "@/components/ui";
+import { cn, Icon, ProgressBar } from "@/components/ui";
 import type { ChessHubSummary } from "@/content/chess/hubSummary";
 import { chessLevelHref } from "@/content/chess/levelIds";
 import { profileText, useAgeProfile } from "@/lib/age";
@@ -20,7 +20,7 @@ import { useToday } from "@/lib/useToday";
 import { xpTotal } from "@/lib/xp";
 import { DidYouKnow } from "./DidYouKnow";
 import { TurnMark } from "./TurnMark";
-import { Check, ChevronDown, Dumbbell, Lock, Play, Route } from "lucide-react";
+import { ArrowRight, Check, ChevronDown, Dumbbell, Lock, Play, Route } from "lucide-react";
 
 // Фигуры и доска — из набора react-chessboard: отдельными кусками, чтобы не задерживать запуск страницы.
 // Значки фигур есть в HTML с сервера; доска-превью задачи дня нужна только широкому экрану и грузится там.
@@ -49,7 +49,7 @@ export function ChessSchool({ counts, summary }: { counts: ChessSchoolCounts; su
   const hydrated = useHydrated();
   const t = useT();
   const lang = useLang();
-  const { levels, school, glossary, steps: stepData, tacticExercises, puzzles, didYouKnow } = useBoth(summary);
+  const { levels, school, glossaryCount, steps: stepData, tacticExercises, puzzles, didYouKnow } = useBoth(summary);
   const state = useStore((s) => s);
   const statuses = levelStatuses(levels, state);
   const rank = hydrated ? currentRank(levels, state) : null;
@@ -649,32 +649,22 @@ export function ChessSchool({ counts, summary }: { counts: ChessSchoolCounts; su
             </li>
           </ul>
         </details>
-        <details className="rounded-3xl bg-surface p-4 shadow-card md:col-span-2">
-          <summary className="cursor-pointer py-2 text-lg font-black">
+        <Link
+          href="/chess/glossary"
+          className="flex min-h-11 items-center justify-between gap-3 rounded-3xl bg-surface p-4 text-lg font-black shadow-card hover:bg-brand-soft md:col-span-2"
+          data-glossary-link
+        >
+          <span>
             <span className="deco" aria-hidden>
               📚{" "}
             </span>
-            {t("Словарик", "Lugʻat")}{" "}
+            {t("Словарь шахматиста", "Shaxmatchi lugʻati")}{" "}
             <span className="text-sm font-bold text-muted">
-              {t(`(${glossary.length} слов)`, `(${glossary.length} ta soʻz)`)}
+              {t(`(${glossaryCount} слов)`, `(${glossaryCount} ta soʻz)`)}
             </span>
-          </summary>
-          <dl className="mt-3 space-y-2">
-            {glossary.map((term, i) => (
-              <div key={i}>
-                <dt className="font-black">
-                  {term.term}
-                  {term.uz && lang === "ru" && (
-                    <span lang="uz" className="ml-2 text-sm font-extrabold text-brand-dark">
-                      {term.uz}
-                    </span>
-                  )}
-                </dt>
-                <dd className="text-sm text-muted">{term.text}</dd>
-              </div>
-            ))}
-          </dl>
-        </details>
+          </span>
+          <Icon icon={ArrowRight} />
+        </Link>
       </section>
     </div>
   );

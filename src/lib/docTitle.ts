@@ -23,6 +23,7 @@ const TITLE_UZ: Record<string, string> = {
   "Дневник партий": "Partiyalar kundaligi",
   "Награды и календарь": "Mukofotlar va taqvim",
   "Турниры: жеребьёвка и таблица": "Turnirlar: qurʼa va jadval",
+  "Словарь шахматиста": "Shaxmatchi lugʻati",
   "Задачи для печати": "Chop etish uchun masalalar",
   "Знаменитые партии": "Mashhur partiyalar",
   "Мои задачи": "Mening masalalarim",
