@@ -260,3 +260,158 @@ describe("курс «Ферзь»: единственный ход в защит
     // Поиск на глубину 6 на нагруженной машине идёт дольше обычного — времени с запасом.
   }, 180_000);
 });
+
+describe("курс «Ферзь»: развязывание, мельница, отвлечение, линии", () => {
+  /** Упражнение «выбери ход» из курса: позиция и ходы — те самые, что видит ученик. */
+  const choose = (lessonId: string, exerciseId: string) => {
+    const ex = COURSE_5_LESSONS.find((l) => l.id === lessonId)?.exercises.find((e) => e.id === exerciseId);
+    if (ex?.kind !== "choose") throw new Error(`${exerciseId}: упражнение должно быть выбором хода`);
+    return { fen: ex.fen, right: ex.moves[ex.correct], wrong: ex.moves.filter((_, i) => i !== ex.correct) };
+  };
+  const after = (fen: string, ...sans: string[]) => {
+    const c = new Chess(fen);
+    for (const san of sans) c.move(san);
+    return c;
+  };
+  /** После хода `first` на любой ответ чёрных у белых есть мат в один ход. */
+  const matesNext = (fen: string, first: string) => {
+    const c = new Chess(fen);
+    c.move({ from: first.slice(0, 2), to: first.slice(2, 4) });
+    return (
+      c.moves().length > 0 &&
+      c.moves({ verbose: true }).every((r) => {
+        const e = new Chess(c.fen());
+        e.move(r);
+        return matingMoves(e.fen()).length > 0;
+      })
+    );
+  };
+
+  it("развязывание: Кe6+ — шах, на любой ответ конь берёт ладью d8; после Кf3 теряется ферзь", () => {
+    const { fen, right, wrong } = choose("c5-unpin", "c5-unpin-check");
+    expect([right, wrong]).toEqual(["d4e6", ["d4f3"]]);
+    const c = after(fen, "Ne6+");
+    expect(c.inCheck()).toBe(true);
+    expect(c.moves().length).toBeGreaterThan(0);
+    for (const reply of c.moves()) {
+      const takes = after(c.fen(), reply)
+        .moves({ verbose: true })
+        .some((m) => m.from === "e6" && m.to === "d8");
+      expect(takes, reply).toBe(true);
+    }
+    expect(after(fen, "Nf3").moves()).toContain("Rxd1+");
+  });
+
+  it("идея Легаля: позиция из дебюта; на взятие ферзя — мат в два хода, на взятие коня — Фxg4", () => {
+    const { fen, right } = choose("c5-legal", "c5-legal-choose");
+    expect(play("e4 e5 Nf3 d6 Bc4 Bg4 Nc3 g6").fen()).toBe(fen);
+    expect(right).toBe("f3e5");
+    const line = after(fen, "Nxe5", "Bxd1", "Bxf7+");
+    expect(line.moves()).toEqual(["Ke7"]);
+    line.move("Ke7");
+    line.move("Nd5#");
+    expect(line.isCheckmate()).toBe(true);
+    expect(after(fen, "Nxe5", "dxe5").moves()).toContain("Qxg4");
+  });
+
+  it("идея Легаля не проходит: конь c6 бьёт на e5 и защищает слона g4 — белые без фигуры", () => {
+    const { fen, right, wrong } = choose("c5-legal", "c5-legal-fails");
+    expect(play("e4 e5 Nf3 Nc6 Bc4 d6 Nc3 Bg4").fen()).toBe(fen);
+    expect([right, wrong]).toEqual(["h2h3", ["f3e5"]]);
+    const c = after(fen, "Nxe5", "Nxe5");
+    expect(c.attackers("g4", "b")).toContain("e5");
+    // У белых нет ни мата, ни шаха слоном с выигрышем: на Фxg4 конь бьёт ферзя.
+    expect(matingMoves(c.fen())).toEqual([]);
+    expect(after(c.fen(), "Qxg4").moves()).toContain("Nxg4");
+    const minor = (pieces: string) => [...c.fen().split(" ")[0]].filter((ch) => pieces.includes(ch)).length;
+    expect(minor("NB")).toBe(minor("nb") - 1);
+  });
+
+  it("мельница: на каждый шах у короля один ход; ладья забирает две пешки, слона, коня и ладью", () => {
+    const { fen, right, wrong } = choose("c5-windmill", "c5-windmill-start");
+    expect([right, wrong]).toEqual(["g7f7", ["g7g3"]]);
+    const c = new Chess(fen);
+    const before = c
+      .fen()
+      .split(" ")[0]
+      .replace(/[^a-z]/g, "").length;
+    for (const [white, black] of [
+      ["Rxf7+", "Kg8"],
+      ["Rg7+", "Kh8"],
+      ["Rxd7+", "Kg8"],
+      ["Rg7+", "Kh8"],
+      ["Rxb7+", "Kg8"],
+      ["Rg7+", "Kh8"],
+      ["Rxa7+", "Kg8"],
+    ]) {
+      c.move(white);
+      expect(c.moves(), white).toEqual([black]);
+      c.move(black);
+    }
+    c.move("Rxa8");
+    expect(
+      before -
+        c
+          .fen()
+          .split(" ")[0]
+          .replace(/[^a-z]/g, "").length,
+    ).toBe(5);
+    // Неверный шах: король уходит на h7, вскрытого шаха больше нет.
+    expect(after(fen, "Rg3+").moves()).toContain("Kh7");
+  });
+
+  it("отвлечение: после Лe8 на любой ответ — мат в один ход; Фxf8+ не матует", () => {
+    const { fen, right, wrong } = choose("c5-deflection", "c5-deflection-rook");
+    expect([right, wrong]).toEqual(["e1e8", ["h6f8"]]);
+    expect(matesNext(fen, right)).toBe(true);
+    expect(matingMoves(after(fen, "Re8", "Qxe8").fen())).toEqual(["h6g7"]);
+    expect(matesNext(fen, wrong[0])).toBe(false);
+    expect(after(fen, "Qxf8+").moves()).toContain("Kxf8");
+  });
+
+  it("перекрытие: после Кd5 пешка проходит в ферзи при любой игре чёрных; сразу a8Ф — слон бьёт", () => {
+    const { fen, right, wrong } = choose("c5-interference", "c5-interference-knight");
+    expect([right, wrong]).toEqual(["b4d5", ["a7a8q"]]);
+    const queens = (position: string, label: string) => {
+      const d = after(position, "a8=Q");
+      expect(d.attackers("a8", "b"), label).toEqual([]);
+    };
+    const c = after(fen, "Nd5");
+    for (const reply of c.moves()) {
+      const d = after(c.fen(), reply);
+      if (reply !== "Bxd5") {
+        queens(d.fen(), reply);
+        continue;
+      }
+      // Слон взял коня: пешка c4 бьёт в ответ — диагональ закрыта пешкой.
+      d.move("cxd5");
+      for (const next of d.moves()) queens(after(d.fen(), next).fen(), `Bxd5 cxd5 ${next}`);
+    }
+    expect(after(fen, "a8=Q").moves()).toContain("Bxa8");
+  });
+
+  it("освобождение линии: Лh8+ Крxh8, Фh1+ Крg8, Фh7# — ответы единственные; после Фh5 чёрные бьют g6", () => {
+    const { fen, right, wrong } = choose("c5-clearance", "c5-clearance-rook");
+    expect([right, wrong]).toEqual(["h1h8", ["d1h5"]]);
+    expect(forcesMate(fen, right, 3)).toBe(true);
+    const c = after(fen, "Rh8+");
+    expect(c.moves()).toEqual(["Kxh8"]);
+    c.move("Kxh8");
+    c.move("Qh1+");
+    expect(c.moves()).toEqual(["Kg8"]);
+    c.move("Kg8");
+    c.move("Qh7#");
+    expect(c.isCheckmate()).toBe(true);
+    expect(after(fen, "Qh5").moves()).toContain("Qxg6");
+    expect(matingMoves(after(fen, "Qh5", "Qxg6").fen())).toEqual([]);
+  });
+
+  it("последняя горизонталь: Фe8+ и Лe8+ матуют в два хода, Фb7 — нет", () => {
+    const { fen, right, wrong } = choose("c5-back-rank", "c5-back-rank-queen");
+    expect([right, wrong]).toEqual(["b5e8", ["b5b7"]]);
+    expect(forcesMate(fen, right, 2)).toBe(true);
+    expect(forcesMate(fen, "e1e8", 2)).toBe(true);
+    expect(after(fen, "Qe8+").moves()).toEqual(["Rxe8"]);
+    expect(matesNext(fen, wrong[0])).toBe(false);
+  });
+});

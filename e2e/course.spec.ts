@@ -296,8 +296,10 @@ test("ступень 5 «Ферзь»: страница курса, завлеч
   for (const id of [
     "q-pin",
     "q-double",
+    "q-deflect",
     "q-decoy",
     "q-trap",
+    "q-lines",
     "q-attack",
     "q-sacrifice",
     "q-defence",
@@ -325,6 +327,31 @@ test("ступень 5: единственный ход — закрыться �
   await expect(page.getByText(/Почему так/)).toBeVisible();
   const stored = await page.evaluate((key) => JSON.parse(localStorage.getItem(key) ?? "{}").chess ?? {}, KEY);
   expect(stored["c5-only-move-queen"]?.solvedAt).toBeTruthy();
+});
+
+// Идея Легаля: сначала позиция, где прыжок коня не проходит, — проверить важнее, чем запомнить.
+test("ступень 5: идея Легаля — конь c6 мешает, верно спокойное h3", async ({ page }) => {
+  await prepare(page);
+  await openHash(page, "/chess/course-5#c5-legal-exercise-2");
+  await expect(page.getByRole("heading", { name: "Сначала проверь" })).toBeVisible();
+  await page.locator('[data-choice="f3e5"]').click();
+  await expect(page.getByText("не лучший выбор")).toBeVisible();
+  await page.locator('[data-choice="h2h3"]').click();
+  await expect(page.getByText(/Почему так/)).toBeVisible();
+  const stored = await page.evaluate((key) => JSON.parse(localStorage.getItem(key) ?? "{}").chess ?? {}, KEY);
+  expect(stored["c5-legal-fails"]?.solvedAt).toBeTruthy();
+});
+
+// Перекрытие: один из вариантов — превращение пешки (ход с буквой фигуры на конце).
+test("ступень 5: перекрытие — сразу в ферзи нельзя, сначала конь закрывает диагональ", async ({ page }) => {
+  await prepare(page);
+  await openHash(page, "/chess/course-5#c5-interference-exercise-1");
+  await page.locator('[data-choice="a7a8q"]').click();
+  await expect(page.getByText("не лучший выбор")).toBeVisible();
+  await page.locator('[data-choice="b4d5"]').click();
+  await expect(page.getByText(/Почему так/)).toBeVisible();
+  const stored = await page.evaluate((key) => JSON.parse(localStorage.getItem(key) ?? "{}").chess ?? {}, KEY);
+  expect(stored["c5-interference-knight"]?.solvedAt).toBeTruthy();
 });
 
 // Третья позиция урока — без шаха: взятие слона и форточка пропускают мат, спасает тихий ход ладьёй.
