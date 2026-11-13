@@ -396,6 +396,44 @@ test("ступень 5: главный принцип атаки — вопро�
     expect(stored[id]?.solvedAt, id).toBeTruthy();
 });
 
+// «Закрепи»: после упражнений урока — ссылка в центр задач, на тему про тот же приём.
+test("закрепление: урок решён — ссылка ведёт в центр задач на ту же тему", async ({ page }) => {
+  await page.addInitScript((key) => {
+    if (localStorage.getItem(key)) return;
+    const chess = { "c5-fork-queen": { solvedAt: Date.now() - 60_000, misses: 0 } };
+    localStorage.setItem(
+      key,
+      JSON.stringify({ version: 1, welcomed: true, settings: { age: 10, lang: "ru", sound: false }, chess }),
+    );
+  }, KEY);
+  await openHash(page, "/chess/course-5#c5-fork");
+  const card = page.locator("[data-lesson-practice-card]");
+  await expect(card).toBeVisible();
+  await card.locator('[data-lesson-practice="fork"]').click();
+  await expect(page).toHaveURL(/\/chess\/puzzles#theme-fork/);
+  await expect(page.locator("[data-puzzle-actions]")).toBeVisible();
+});
+
+test("закрепление: пока упражнения не решены, ссылки нет; у урока-рассказа её нет никогда", async ({ page }) => {
+  await prepare(page);
+  await openHash(page, "/chess/course-5#c5-fork");
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  await expect(page.locator("[data-lesson-practice-card]")).toHaveCount(0);
+});
+
+// Доска — со стороны того, кто решает: когда ходят чёрные, внизу восьмая горизонталь.
+test("упражнение за чёрных: доска повёрнута, упражнение за белых — нет", async ({ page }) => {
+  await prepare(page);
+  await openHash(page, "/chess/course-5#c5-morphy-pin-exercise-3");
+  const rank = (id: string, sq: string) =>
+    page.locator(`[data-board="${id}"] [data-square="${sq}"]`).evaluate((el) => el.getBoundingClientRect().top);
+  expect(await rank("mo-c5-morphy-pin-mate", "h8")).toBeGreaterThan(await rank("mo-c5-morphy-pin-mate", "h1"));
+  await openHash(page, "/chess/course-5#c5-attack-principle-exercise-2");
+  expect(await rank("mo-c5-attack-principle-mate", "h1")).toBeGreaterThan(
+    await rank("mo-c5-attack-principle-mate", "h8"),
+  );
+});
+
 // Перекрытие: один из вариантов — превращение пешки (ход с буквой фигуры на конце).
 test("ступень 5: перекрытие — сразу в ферзи нельзя, сначала конь закрывает диагональ", async ({ page }) => {
   await prepare(page);
