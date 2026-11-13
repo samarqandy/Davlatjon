@@ -210,9 +210,10 @@ export function awards(s: AppState, lang: Lang = "ru"): Award[] {
       "famous-all",
       "🏛️",
       t("Историк", "Tarixchi"),
-      t("Разбери все знаменитые партии.", "Barcha mashhur partiyalarni tahlil qil."),
+      // Восемь — столько партий было в библиотеке, когда появилась награда: с новыми партиями она не отбирается.
+      t("Разбери 8 знаменитых партий.", "8 ta mashhur partiyani tahlil qil."),
       viewed,
-      FAMOUS_GAME_IDS.length,
+      8,
     ),
     a(
       "guess-70",

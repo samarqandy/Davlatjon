@@ -101,6 +101,8 @@ const SCREENS = [
   "/chess/endgames/pieces#eg-philidor-exercise-1",
   "/chess/openings#open-italian",
   "/chess/games/opera",
+  "/chess/games",
+  "/chess/games/ding-gukesh",
   "/chess/analysis",
   "/chess/history",
   "/chess/puzzles#theme-backrank",

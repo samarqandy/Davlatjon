@@ -1,8 +1,15 @@
+import { MORE_GAMES } from "./gamesMore";
 import type { ChessLevelId } from "./types";
+
+/** Тема партии — для отбора на странице списка. Порядок здесь — порядок кнопок. */
+export const GAME_TAGS = ["trap", "attack", "sacrifice", "strategy", "endgame", "champions", "uzbekistan"] as const;
+export type GameTag = (typeof GAME_TAGS)[number];
 
 /**
  * Знаменитые партии для разбора: ходы в международной записи (SAN),
  * комментарии привязаны к полуходам (1 — первый ход белых, 2 — ответ чёрных…).
+ * Партия кончается матом или сдачей; если сдачей — у последнего хода обязательно есть комментарий, который
+ * объясняет, чем всё кончилось. Вторая часть списка — в gamesMore.ts.
  */
 export interface FamousGame {
   id: string;
@@ -14,7 +21,7 @@ export interface FamousGame {
   place: string;
   event?: string;
   result: "1-0" | "0-1" | "½-½";
-  /** Сколько ходов длилась партия (для карточки). */
+  /** Эпоха или событие одной строкой (для шапки партии). */
   era: string;
   /** С какого уровня школы партию удобно разбирать. */
   level: ChessLevelId;
@@ -28,11 +35,14 @@ export interface FamousGame {
   facts: string[];
   /** Картинки: портреты игроков, места, где играли (id из images.ts). */
   pictures?: string[];
+  /** Темы партии: по ним список можно сузить («Атака», «Чемпионы мира»…). */
+  tags: GameTag[];
 }
 
 export const FAMOUS_GAMES: FamousGame[] = [
   {
     id: "fools-mate",
+    tags: ["trap"],
     title: "Дурацкий мат",
     white: "Неосторожный игрок",
     black: "Внимательный игрок",
@@ -60,6 +70,7 @@ export const FAMOUS_GAMES: FamousGame[] = [
   },
   {
     id: "scholars-mate",
+    tags: ["trap"],
     title: "Детский мат",
     white: "Нападающий",
     black: "Зазевавшийся",
@@ -91,6 +102,7 @@ export const FAMOUS_GAMES: FamousGame[] = [
   },
   {
     id: "legal",
+    tags: ["trap", "sacrifice"],
     pictures: ["philidor", "cafe-regence"],
     title: "Мат Легаля",
     white: "Кермюр де Легаль",
@@ -125,6 +137,7 @@ export const FAMOUS_GAMES: FamousGame[] = [
   },
   {
     id: "opera",
+    tags: ["attack", "sacrifice"],
     pictures: ["morphy", "brunswick", "salle-ventadour"],
     title: "Партия в опере",
     white: "Пол Морфи",
@@ -199,6 +212,7 @@ export const FAMOUS_GAMES: FamousGame[] = [
   },
   {
     id: "immortal",
+    tags: ["attack", "sacrifice"],
     pictures: ["anderssen", "kieseritzky", "crystal-palace"],
     title: "Бессмертная партия",
     white: "Адольф Андерсен",
@@ -286,6 +300,7 @@ export const FAMOUS_GAMES: FamousGame[] = [
   },
   {
     id: "evergreen",
+    tags: ["attack", "sacrifice"],
     pictures: ["anderssen", "dufresne"],
     title: "Вечнозелёная партия",
     white: "Адольф Андерсен",
@@ -372,6 +387,7 @@ export const FAMOUS_GAMES: FamousGame[] = [
   },
   {
     id: "reti-tartakower",
+    tags: ["attack", "sacrifice"],
     pictures: ["reti", "tartakower"],
     title: "Двойной шах",
     white: "Рихард Рети",
@@ -431,6 +447,7 @@ export const FAMOUS_GAMES: FamousGame[] = [
   },
   {
     id: "game-of-the-century",
+    tags: ["sacrifice", "champions"],
     pictures: ["fischer", "marshall-club"],
     title: "Партия века",
     white: "Дональд Бирн",
@@ -552,6 +569,7 @@ export const FAMOUS_GAMES: FamousGame[] = [
       "В 15 лет Фишер стал самым молодым гроссмейстером мира на тот момент. Сегодня этот рекорд принадлежит игрокам, которым не было и 13 лет.",
     ],
   },
+  ...MORE_GAMES,
 ];
 
 export function getFamousGame(id: string): FamousGame | undefined {

@@ -270,7 +270,7 @@ test("в списке дебютов позиции нарисованы кар�
 
   // В списке партий карточка выше картинки: рамка доски не должна тянуться на всю высоту карточки.
   await page.goto("/chess/games");
-  await expect(thumbs).toHaveCount(8);
+  await expect(thumbs).toHaveCount(16);
   const sizes = await thumbs.evaluateAll((els) =>
     els.map((el) => el.getBoundingClientRect()).map((r) => [r.width, r.height]),
   );
