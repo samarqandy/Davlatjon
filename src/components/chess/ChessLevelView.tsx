@@ -3,7 +3,7 @@
 import { BookOpen, Library, Lock, Target } from "lucide-react";
 import { currentScrollBehavior } from "@/lib/useMotion";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { RichText } from "@/components/RichText";
 import { Button, ButtonLink, cn, ProgressBar, Icon } from "@/components/ui";
 import { CHESS_LEVELS, chessLevelHref } from "@/content/chess";
@@ -26,6 +26,7 @@ import { ListenButton } from "@/components/ListenButton";
 import { VOICE_CLIPS } from "@/lib/voice";
 import { ChessExerciseView } from "./ChessExercises";
 import { ChessLesson } from "./ChessLesson";
+import { StepRow } from "./StepRow";
 
 type Tab = "lesson" | "exercises" | "dictionary";
 
@@ -46,6 +47,7 @@ export function ChessLevelView({ levelId }: { levelId: string }) {
   // Заголовок вкладки «Шахматы · Пешка» → «Shaxmat · Piyoda».
   useTitleTranslation(CHESS_LEVELS[index].name, level.name);
   const state = useStore((s) => s);
+  const hydrated = useHydrated();
   const statuses = levelStatuses(levels, state);
   const status = statuses[index];
   const hash = useHash();
@@ -69,16 +71,30 @@ export function ChessLevelView({ levelId }: { levelId: string }) {
     setHash(`#exercise-${i + 1}`, { keepScroll: true });
   };
 
+  // В упражнениях — «один экран — одно дело», как в курсе: вместо ссылки назад, шапки уровня и вкладок —
+  // одна строка над заданием. Раньше доска на телефоне начиналась на 620–710-м пикселе при высоте экрана 839.
+  const focus = tab === "exercises" && status.unlocked;
+  const solvedNow = hydrated && solvedIds.has(level.exercises[exercise]?.id);
+
   return (
-    <div className="space-y-6">
+    <div className={focus ? "space-y-2" : "space-y-6"}>
       <Link
         href="/chess"
-        className="inline-flex min-h-11 items-center gap-1 text-sm font-extrabold text-brand hover:underline"
+        // «hidden» вместе с «inline-flex» не работает: в таблице стилей «inline-flex» стоит позже и побеждает.
+        className={cn(
+          "min-h-11 items-center gap-1 text-sm font-extrabold text-brand hover:underline",
+          focus ? "hidden" : "inline-flex",
+        )}
       >
         {t("← Шахматная школа", "← Shaxmat maktabi")}
       </Link>
 
-      <header className="relative overflow-hidden rounded-[2rem] bg-linear-to-br from-[#3b2f23] via-[#5b4632] to-[#7c5a33] p-5 text-white shadow-lift sm:p-7">
+      <header
+        className={cn(
+          "relative overflow-hidden rounded-[2rem] bg-linear-to-br from-[#3b2f23] via-[#5b4632] to-[#7c5a33] p-5 text-white shadow-lift sm:p-7",
+          focus && "hidden",
+        )}
+      >
         <div className="flex items-center gap-4">
           <PieceIcon
             piece={level.piece}
@@ -113,10 +129,10 @@ export function ChessLevelView({ levelId }: { levelId: string }) {
         <LockedLevel prev={prev} level={level} need={index > 0 ? statuses[index - 1].need : 0} />
       ) : (
         <>
-          {status.passed && <RankEarned level={level} next={next} />}
+          {status.passed && !focus && <RankEarned level={level} next={next} />}
 
           <nav
-            className="grid grid-cols-3 gap-1.5 rounded-2xl bg-surface p-1.5 shadow-card"
+            className={cn("grid grid-cols-3 gap-1.5 rounded-2xl bg-surface p-1.5 shadow-card", focus && "hidden")}
             aria-label={t("Разделы уровня", "Daraja boʻlimlari")}
           >
             {(
@@ -158,54 +174,63 @@ export function ChessLevelView({ levelId }: { levelId: string }) {
           )}
 
           {tab === "exercises" && (
-            <section className="space-y-4" aria-label={t("Упражнения", "Mashqlar")}>
-              <div id="exercises-top" className="flex scroll-mt-20 flex-wrap gap-1.5">
-                {level.exercises.map((e, i) => (
-                  <button
-                    key={e.id}
-                    type="button"
-                    onClick={() => goExercise(i)}
-                    aria-label={t(
+            <section
+              className="board-wide space-y-2"
+              style={{ "--stage-chrome": "10.5rem" } as CSSProperties}
+              aria-label={t("Упражнения", "Mashqlar")}
+            >
+              {/* Шапка уровня в упражнении скрыта — главный заголовок страницы остаётся для экранного диктора. */}
+              <h1 className="sr-only">
+                {t(
+                  `${level.name}: упражнение ${exercise + 1} из ${level.exercises.length}`,
+                  `${level.name}: ${level.exercises.length} tadan ${exercise + 1}-mashq`,
+                )}
+              </h1>
+              <div id="exercises-top" className="scroll-mt-20 max-lg:scroll-mt-2">
+                <StepRow
+                  closeLabel={t("К уроку", "Darsga qaytish")}
+                  onClose={() => setHash("#lesson")}
+                  stripLabel={t("Упражнения уровня", "Daraja mashqlari")}
+                  steps={level.exercises.map((e, i) => ({
+                    key: e.id,
+                    label: t(
                       `Упражнение ${i + 1}: ${e.title}${solvedIds.has(e.id) ? " (решено)" : ""}`,
                       `${i + 1}-mashq: ${e.title}${solvedIds.has(e.id) ? " (yechilgan)" : ""}`,
-                    )}
-                    aria-current={i === exercise ? "step" : undefined}
-                    className={cn(
-                      "flex h-11 min-w-11 items-center justify-center rounded-xl border-2 px-2 text-base font-black transition",
-                      i === exercise
-                        ? "border-brand bg-brand text-white"
-                        : solvedIds.has(e.id)
-                          ? "border-mint/50 bg-mint-soft text-mint-ink"
-                          : "border-line bg-surface hover:border-brand/40",
-                    )}
-                  >
-                    {solvedIds.has(e.id) && i !== exercise ? "✓" : i + 1}
-                  </button>
-                ))}
+                    ),
+                    state: solvedIds.has(e.id) ? "done" : "open",
+                  }))}
+                  current={exercise}
+                  onStep={goExercise}
+                />
               </div>
               <div className="rounded-3xl bg-paper p-1 sm:p-2">
-                <ChessExerciseView key={level.exercises[exercise].id} exercise={level.exercises[exercise]} />
+                <ChessExerciseView
+                  key={level.exercises[exercise].id}
+                  exercise={level.exercises[exercise]}
+                  nav={{
+                    prev: exercise > 0 ? () => goExercise(exercise - 1) : undefined,
+                    onward:
+                      exercise < level.exercises.length - 1
+                        ? {
+                            label: t("Следующее упражнение →", "Keyingi mashq →"),
+                            onClick: () => goExercise(exercise + 1),
+                            ready: solvedNow,
+                          }
+                        : undefined,
+                  }}
+                />
               </div>
-              <div className="flex flex-wrap items-center gap-2 pt-2">
-                <Button variant="secondary" onClick={() => goExercise(exercise - 1)} disabled={exercise === 0}>
-                  {t("← Назад", "← Orqaga")}
-                </Button>
-                {exercise < level.exercises.length - 1 ? (
-                  <Button onClick={() => goExercise(exercise + 1)}>
-                    {t("Следующее упражнение →", "Keyingi mashq →")}
-                  </Button>
-                ) : next && status.passed ? (
-                  <ButtonLink href={chessLevelHref(next.id)}>
-                    {t(`Следующий уровень: ${next.name} →`, `Keyingi daraja: ${next.name} →`)}
-                  </ButtonLink>
-                ) : null}
-              </div>
+              {/*
+                Звание получено — сертификат и следующий уровень. Плашка стоит под упражнением, а не над ним:
+                над доской на этом экране только строка с полоской упражнений.
+              */}
+              {status.passed && <RankEarned level={level} next={next} />}
             </section>
           )}
 
           {tab === "dictionary" && <Dictionary level={level} />}
 
-          <Extras levelId={level.id} />
+          {!focus && <Extras levelId={level.id} />}
         </>
       )}
     </div>
