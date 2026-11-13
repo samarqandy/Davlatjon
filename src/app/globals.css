@@ -706,12 +706,16 @@ html.i18n-wait::after {
  * Мышью — чуть приподнята. Пальцем — почти вдвое крупнее и поднята над пальцем: палец не закрывает ни её,
  * ни клетку. Сдвигаем рисунок внутри копии, а не саму копию: её место библиотека считает по размерам.
  */
-[data-board] [data-piece]:not([data-square] *) > * {
+/*
+ * Только фигура в руке: фигуры в окошке превращения пешки ([data-promotion]) тоже лежат вне клеток, но их
+ * увеличивать нельзя — на телефоне они вырастали вдвое, наезжали друг на друга и закрывали выбор.
+ */
+[data-board] [data-piece]:not([data-square] *, [data-promotion] *) > * {
   transform: scale(1.15);
   filter: drop-shadow(0 5px 4px rgb(0 0 0 / 0.3));
   pointer-events: none;
 }
-[data-board][data-drag="touch"] [data-piece]:not([data-square] *) > * {
+[data-board][data-drag="touch"] [data-piece]:not([data-square] *, [data-promotion] *) > * {
   transform: translateY(-62%) scale(1.9);
   filter: drop-shadow(0 8px 6px rgb(0 0 0 / 0.35));
 }
