@@ -7,11 +7,12 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { RichText } from "@/components/RichText";
 import { Button, cn } from "@/components/ui";
 import { chessImagesIn } from "@/content/chess/imageLookup";
-import type { FamousGame } from "@/content/chess/games";
+import { GAME_TAGS, type FamousGame, type GameTag } from "@/content/chess/games";
 import type { ChessImage } from "@/content/chess/images";
 import { checkedKing } from "@/lib/chess";
 import { useTitleTranslation } from "@/lib/docTitle";
 import { useLang, useSan, useT } from "@/lib/i18n";
+import { pluralize } from "@/lib/plural";
 import { chessGameViewed, useHydrated, useStore } from "@/lib/store";
 import { useChessPart, useChessImages } from "@/lib/useChess";
 import { GAME_PART } from "@/content/chess/parts/games";
@@ -54,6 +55,23 @@ export function FamousGamesList() {
   const { games } = useChessPart(GAME_PART);
   const { levels } = useChessPart(LEVELS);
   const viewed = useStore((s) => s.chessGamesViewed);
+  // Отбор по теме: шестнадцать партий подряд — длинный список, а «Ловушки» или «Эндшпиль» — три-четыре карточки.
+  const [tag, setTag] = useState<GameTag | "all">("all");
+  const shown = tag === "all" ? games : games.filter((g) => g.tags.includes(tag));
+  const tagName: Record<GameTag, string> = {
+    trap: t("Ловушки", "Tuzoqlar"),
+    attack: t("Атака", "Hujum"),
+    sacrifice: t("Жертвы", "Qurbonlar"),
+    strategy: t("Стратегия", "Strategiya"),
+    endgame: t("Эндшпиль", "Endshpil"),
+    champions: t("Чемпионы мира", "Jahon chempionlari"),
+    uzbekistan: t("Узбекистан", "Oʻzbekiston"),
+  };
+  const chip = (on: boolean) =>
+    cn(
+      "min-h-11 shrink-0 rounded-full border-2 px-4 text-sm font-extrabold transition",
+      on ? "border-brand bg-brand-soft text-brand-dark" : "border-line bg-surface hover:border-brand/40",
+    );
   return (
     <div className="space-y-6">
       <Link
@@ -76,15 +94,47 @@ export function FamousGamesList() {
           )}
         </p>
       </header>
+      <div className="space-y-2">
+        <div
+          className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:px-0"
+          role="group"
+          aria-label={t("Тема партии", "Partiya mavzusi")}
+        >
+          <button
+            type="button"
+            className={chip(tag === "all")}
+            aria-pressed={tag === "all"}
+            onClick={() => setTag("all")}
+          >
+            {t("Все", "Hammasi")}
+          </button>
+          {GAME_TAGS.map((x) => (
+            <button
+              key={x}
+              type="button"
+              className={chip(tag === x)}
+              aria-pressed={tag === x}
+              onClick={() => setTag(x)}
+              data-game-tag={x}
+            >
+              {tagName[x]}
+            </button>
+          ))}
+        </div>
+        <p className="text-sm font-bold text-muted" aria-live="polite" data-game-count>
+          {t(`Партий: ${shown.length}`, `Partiyalar: ${shown.length}`)}
+        </p>
+      </div>
       <PieceSprite />
       <ol className="grid grid-cols-[minmax(0,1fr)] gap-4 md:grid-cols-2">
-        {games.map((g) => {
+        {shown.map((g) => {
           const positions = replayPositions(g.moves);
           const level = levels.find((l) => l.id === g.level);
           return (
             <li key={g.id}>
               <Link
                 href={`/chess/games/${g.id}`}
+                data-game-card={g.id}
                 className="flex h-full flex-col gap-4 rounded-3xl bg-surface p-4 shadow-card transition hover:-translate-y-0.5 min-[380px]:flex-row"
               >
                 <BoardThumb position={positions[positions.length - 1].fen} size={150} />
@@ -103,7 +153,7 @@ export function FamousGamesList() {
                   <p className="mt-1 line-clamp-3 text-sm text-muted">{g.story[0]}</p>
                   <p className="mt-2 text-xs font-extrabold text-brand-dark">
                     {t(
-                      `${Math.ceil(g.moves.length / 2)} ходов · уровень «${level?.name ?? ""}»`,
+                      `${pluralize(Math.ceil(g.moves.length / 2), "ход", "хода", "ходов")} · уровень «${level?.name ?? ""}»`,
                       `${Math.ceil(g.moves.length / 2)} ta yurish · «${level?.name ?? ""}» darajasi`,
                     )}
                     {hydrated && viewed[g.id] ? t(" · ✅ разобрана", " · ✅ tahlil qilingan") : ""}

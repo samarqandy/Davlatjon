@@ -48,4 +48,12 @@ export const FAMOUS_GAME_IDS: readonly string[] = [
   "evergreen",
   "reti-tartakower",
   "game-of-the-century",
+  "lasker-bauer",
+  "steinitz-bardeleben",
+  "botvinnik-capablanca",
+  "fischer-spassky",
+  "deep-blue-kasparov",
+  "kasimdzhanov-adams",
+  "carlsen-karjakin",
+  "ding-gukesh",
 ];

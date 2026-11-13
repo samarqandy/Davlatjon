@@ -1,5 +1,6 @@
 import type { Uz } from "../../localize";
 import type { FamousGame } from "../games";
+import { gamesMoreUz } from "./gamesMore";
 
 /** Знаменитые партии по-узбекски: только тексты, ходы и позиции — из русского оригинала. */
 export const gamesUz: Uz<FamousGame[]> = {
@@ -246,4 +247,5 @@ export const gamesUz: Uz<FamousGame[]> = {
       "Fisher 15 yoshida oʻsha paytdagi dunyoning eng yosh grossmeysteri boʻlgan. Bugun bu rekord hali 13 yoshga ham toʻlmagan oʻyinchilarga tegishli.",
     ],
   },
+  ...gamesMoreUz,
 };

@@ -62,12 +62,17 @@ texts.push(
 );
 
 describe("знаменитые партии", () => {
-  it("каждая партия разыгрывается по правилам и заканчивается матом", () => {
+  it("каждая партия разыгрывается по правилам и заканчивается матом — или сдачей с объяснением", () => {
     for (const g of FAMOUS_GAMES) {
       const chess = new Chess();
       g.moves.forEach((m, i) => expect(() => chess.move(m), `${g.id}: полуход ${i + 1} ${m}`).not.toThrow());
-      expect(chess.isCheckmate(), g.id).toBe(true);
-      expect(g.result, g.id).toBe(chess.turn() === "b" ? "1-0" : "0-1");
+      if (chess.isCheckmate()) expect(g.result, g.id).toBe(chess.turn() === "b" ? "1-0" : "0-1");
+      else {
+        // Партия без мата: соперник сдался. Последний ход сделал победитель, и к нему есть комментарий — чем кончилось.
+        expect(chess.isGameOver(), g.id).toBe(false);
+        expect(g.result, g.id).toBe(chess.turn() === "b" ? "1-0" : "0-1");
+        expect(g.comments[g.moves.length], `${g.id}: нужен комментарий к последнему ходу`).toBeTruthy();
+      }
       for (const ply of Object.keys(g.comments).map(Number)) {
         expect(ply, `${g.id}: комментарий ${ply}`).toBeGreaterThanOrEqual(1);
         expect(ply, `${g.id}: комментарий ${ply}`).toBeLessThanOrEqual(g.moves.length);
