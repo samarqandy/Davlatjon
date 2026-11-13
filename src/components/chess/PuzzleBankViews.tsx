@@ -1,6 +1,6 @@
 "use client";
 
-import { RotateCcw, Play } from "lucide-react";
+import { RotateCcw, Play, SlidersHorizontal } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { Button, cn, ProgressBar, Icon } from "@/components/ui";
 import { getPuzzle, type PuzzleTheme } from "@/content/chess/puzzles";
@@ -31,6 +31,7 @@ import {
 import { useChessPart } from "@/lib/useChess";
 import { PUZZLE_PART } from "@/content/chess/parts/puzzles";
 import { setHash } from "@/lib/useHash";
+import { PuzzleTop, TopMenu } from "./PuzzleTop";
 import { PuzzlePlayer, type AnyPuzzle } from "./PuzzleTrainer";
 
 function Back() {
@@ -197,6 +198,16 @@ export function LoadError({ onRetry }: { onRetry: () => void }) {
   );
 }
 
+/** Пояснение в меню сложности: выбор действует не на задачу, которая уже на доске. */
+export function LevelNote() {
+  const t = useT();
+  return (
+    <p className="text-sm font-bold text-muted">
+      {t("Сложность — со следующей задачи:", "Qiyinlik — keyingi masaladan:")}
+    </p>
+  );
+}
+
 /** Одна задача из базы за другой — для «задач по силам» и для темы. */
 export function BankRun({ name, emptyText }: { name: PuzzleTheme | "mix"; emptyText: string }) {
   const t = useT();
@@ -230,26 +241,34 @@ export function PracticeView() {
   const t = useT();
   return (
     <div className="board-stage board-wide board-top space-y-2 sm:space-y-4">
-      <Back />
-      <header className="space-y-2">
-        <h1 className="text-2xl font-black">
-          <span className="deco" aria-hidden>
-            🧠{" "}
-          </span>
-          {t("Задачи по силам", "Kuchingga mos masalalar")}
-        </h1>
-        {/* На телефоне пояснение не занимает первый экран: доска важнее. */}
-        <p className="hidden text-muted sm:block">
-          {t(
-            "Темы вперемешку. Решаешь с первой попытки — задачи становятся труднее, ошибаешься — полегче.",
-            "Mavzular aralash keladi. Birinchi urinishda yechsang — masalalar qiyinlashadi, xato qilsang — osonlashadi.",
-          )}
-        </p>
-        <PuzzleRatingBar />
-      </header>
+      {/* Телефон: в строке — только уровень с полоской; сложность меняют редко, она открывается кнопкой справа. */}
+      <PuzzleTop
+        end={
+          <TopMenu icon={SlidersHorizontal} label={t("Сложность задач", "Masalalar qiyinligi")} className="lg:hidden">
+            <LevelNote />
+            <LevelChooser />
+          </TopMenu>
+        }
+      >
+        <header className="lg:space-y-2">
+          <h1 className="text-2xl font-black max-lg:sr-only">
+            <span className="deco" aria-hidden>
+              🧠{" "}
+            </span>
+            {t("Задачи по силам", "Kuchingga mos masalalar")}
+          </h1>
+          <p className="hidden text-muted lg:block">
+            {t(
+              "Темы вперемешку. Решаешь с первой попытки — задачи становятся труднее, ошибаешься — полегче.",
+              "Mavzular aralash keladi. Birinchi urinishda yechsang — masalalar qiyinlashadi, xato qilsang — osonlashadi.",
+            )}
+          </p>
+          <PuzzleRatingBar />
+        </header>
+      </PuzzleTop>
       <BankRun name="mix" emptyText={t("Все задачи набора решены!", "Toʻplamdagi barcha masalalarni yechding!")} />
-      {/* Сложность меняют редко — она под задачей, а не над доской. */}
-      <div className="flex flex-wrap items-center gap-2" data-puzzle-level-chooser>
+      {/* Широкий экран: сложность — под задачей в правой колонке, места там хватает. */}
+      <div className="flex flex-wrap items-center gap-2 max-lg:hidden" data-puzzle-level-chooser>
         <p className="text-sm font-extrabold text-muted">{t("Сложность:", "Qiyinlik:")}</p>
         <LevelChooser />
       </div>
@@ -455,9 +474,8 @@ export function WoodpeckerView() {
   };
   return (
     <div className="board-stage board-wide board-top space-y-2 sm:space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <Back />
-        <p className="text-lg font-black">
+      <PuzzleTop>
+        <p className="leading-tight font-black lg:text-lg">
           🐦{" "}
           {t(
             `Круг ${round} из ${WOODPECKER_ROUNDS} · задача ${w.index + 1} из ${w.keys.length}`,
@@ -465,8 +483,13 @@ export function WoodpeckerView() {
           )}{" "}
           · ⏱ <span className="tabular-nums">{clock(elapsed)}</span>
         </p>
-      </div>
-      {w.rounds.length > 0 && <Rounds rounds={w.rounds} />}
+      </PuzzleTop>
+      {/* Итоги прошлых кругов на телефоне места у доски не занимают: они есть на экране между кругами. */}
+      {w.rounds.length > 0 && (
+        <div className="max-lg:hidden">
+          <Rounds rounds={w.rounds} />
+        </div>
+      )}
       {mix === "error" ? (
         <LoadError onRetry={() => setHash("#woodpecker")} />
       ) : !puzzle ? (

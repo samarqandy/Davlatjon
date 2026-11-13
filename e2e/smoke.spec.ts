@@ -337,7 +337,8 @@ test("шахматы: задача по теме решается, серия с
   await square(page, "puzzle-m1-backrank", "d8");
   await expect(page.getByText(/Лxd8# — мат!/)).toBeVisible();
   await page.getByRole("button", { name: "Следующая задача →" }).click();
-  await expect(page.getByText("Детский мат", { exact: true })).toBeVisible();
+  // Название задачи: на широком экране — в карточке у доски, на телефоне оно появляется после решения.
+  await expect(page.locator("[data-puzzle-info]")).toContainText("Детский мат");
 });
 
 test("шахматы: разбор знаменитой партии и главные моменты", async ({ page }) => {

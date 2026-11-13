@@ -77,7 +77,7 @@ export function SiteFooter() {
   const t = useT();
   const account = useAccount();
   return (
-    <footer className="no-print mt-16 border-t border-line/70">
+    <footer data-site-footer className="no-print mt-16 border-t border-line/70">
       {/* Слева — девиз и где хранится прогресс, справа — ссылки одной ровной строкой, без переносов внутри ссылок. */}
       <div className="mx-auto grid max-w-6xl gap-3 px-4 py-6 text-sm text-muted sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:gap-x-8">
         <div className="space-y-1">

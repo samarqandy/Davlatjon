@@ -14,6 +14,7 @@ import { chessDrillRecord, duePuzzles, usePuzzleRating, useStore } from "@/lib/s
 import { setHash } from "@/lib/useHash";
 import { useToday } from "@/lib/useToday";
 import { Loading, usePuzzleByKey } from "./PuzzleBankViews";
+import { PuzzleTop } from "./PuzzleTop";
 import { PuzzlePlayer, puzzleKey, type AnyPuzzle } from "./PuzzleTrainer";
 
 export const STORM_SECONDS = 180;
@@ -95,24 +96,40 @@ export function StormView() {
   };
 
   const puzzle = order[Math.min(index, order.length - 1)];
+  const clock = (
+    <p className="text-lg font-black">
+      ⚡ {score} · ⏱{" "}
+      <span className={cn("tabular-nums", running && left <= 20 && "text-rose")}>
+        {Math.floor(left / 60)}:{String(left % 60).padStart(2, "0")}
+      </span>
+    </p>
+  );
+  const title = (
+    <>
+      <span className="deco" aria-hidden>
+        ⚡{" "}
+      </span>
+      {t("Шторм", "Boʻron")}
+    </>
+  );
 
   return (
     <div className="board-stage board-wide board-top space-y-2 sm:space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <Back />
-        <p className="text-lg font-black">
-          ⚡ {score} · ⏱{" "}
-          <span className={cn("tabular-nums", running && left <= 20 && "text-rose")}>
-            {Math.floor(left / 60)}:{String(left % 60).padStart(2, "0")}
-          </span>
-        </p>
-      </div>
-      <h1 className="text-2xl font-black">
-        <span className="deco" aria-hidden>
-          ⚡{" "}
-        </span>
-        {t("Шторм", "Boʻron")}
-      </h1>
+      {running ? (
+        // Идёт шторм: на телефоне в строке — только счёт и время, доска сразу под ней.
+        <PuzzleTop>
+          <h1 className="text-2xl font-black max-lg:sr-only">{title}</h1>
+          {clock}
+        </PuzzleTop>
+      ) : (
+        <>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <Back />
+            {clock}
+          </div>
+          <h1 className="text-2xl font-black">{title}</h1>
+        </>
+      )}
       {!running && (
         <div className="rounded-3xl bg-surface p-6 text-center shadow-card">
           {over ? (
@@ -187,21 +204,43 @@ export function RepeatView() {
   const id = index < list.length ? list[index] : undefined;
   const found = usePuzzleByKey(id);
   const puzzle = typeof found === "object" ? found : undefined;
+  // Задача на доске: на телефоне от шапки режима остаётся одна строка со счётом.
+  const solving = queue !== null && !!puzzle && index < list.length;
+  const count = (
+    <p className="font-bold text-muted max-lg:text-lg max-lg:font-black max-lg:text-ink">
+      {t(`Задача ${index + 1} из ${list.length}`, `${index + 1}-masala (jami ${list.length} ta)`)}
+    </p>
+  );
+  const head = (
+    <header className={cn(solving && "max-lg:sr-only")}>
+      <h1 className="text-2xl font-black">
+        <Icon icon={Repeat} /> {t("Повторение", "Takrorlash")}
+      </h1>
+      <p className="text-muted">
+        {t(
+          "Задачи, в которых были ошибки, возвращаются через день, потом через 3, 7 и 21 день. Реши без ошибки — и задача уйдёт дальше. Так трудное запоминается навсегда.",
+          "Xato qilingan masalalar bir kundan keyin, soʻng 3, 7 va 21 kundan keyin yana qaytib keladi. Xatosiz yechsang — masala keyingi bosqichga oʻtadi. Shunda qiyin narsalar bir umr esda qoladi.",
+        )}
+      </p>
+    </header>
+  );
 
   return (
     <div className="board-stage board-wide board-top space-y-2 sm:space-y-4">
-      <Back />
-      <header>
-        <h1 className="text-2xl font-black">
-          <Icon icon={Repeat} /> {t("Повторение", "Takrorlash")}
-        </h1>
-        <p className="text-muted">
-          {t(
-            "Задачи, в которых были ошибки, возвращаются через день, потом через 3, 7 и 21 день. Реши без ошибки — и задача уйдёт дальше. Так трудное запоминается навсегда.",
-            "Xato qilingan masalalar bir kundan keyin, soʻng 3, 7 va 21 kundan keyin yana qaytib keladi. Xatosiz yechsang — masala keyingi bosqichga oʻtadi. Shunda qiyin narsalar bir umr esda qoladi.",
-          )}
-        </p>
-      </header>
+      {solving ? (
+        // Счёт — один на оба вида: на телефоне он в строке вместо шапки режима, на широком экране — под ней.
+        <PuzzleTop>
+          <div className="lg:space-y-4">
+            {head}
+            {count}
+          </div>
+        </PuzzleTop>
+      ) : (
+        <>
+          <Back />
+          {head}
+        </>
+      )}
       {queue === null ? (
         <div className="rounded-3xl bg-surface p-6 text-center shadow-card">
           <p className="text-xl font-black">
@@ -248,17 +287,12 @@ export function RepeatView() {
           </Button>
         </div>
       ) : (
-        <>
-          <p className="font-bold text-muted">
-            {t(`Задача ${index + 1} из ${list.length}`, `${index + 1}-masala (jami ${list.length} ta)`)}
-          </p>
-          <PuzzlePlayer
-            key={puzzleKey(puzzle)}
-            puzzle={puzzle}
-            onSolved={() => setDone((d) => d + 1)}
-            next={{ label: t("Следующая →", "Keyingisi →"), onClick: () => setIndex((i) => i + 1) }}
-          />
-        </>
+        <PuzzlePlayer
+          key={puzzleKey(puzzle)}
+          puzzle={puzzle}
+          onSolved={() => setDone((d) => d + 1)}
+          next={{ label: t("Следующая →", "Keyingisi →"), onClick: () => setIndex((i) => i + 1) }}
+        />
       )}
     </div>
   );

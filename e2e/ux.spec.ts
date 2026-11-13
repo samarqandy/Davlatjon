@@ -679,6 +679,7 @@ for (const lang of ["ru", "uz"] as const)
         "/chess/analysis",
         "/chess/games/opera",
         "/chess/openings#open-italian",
+        "/chess/puzzles#practice",
       ]) {
         await page.goto("about:blank");
         await page.goto(prefix + url, { waitUntil: "networkidle" });
@@ -729,4 +730,86 @@ test("телефон: в партии с роботом панель кнопо�
     "data-square",
     "h1",
   );
+});
+
+// Экран задачи на телефоне — один экран, как у Lichess, Chess.com и ChessKid: строка режима, задание, доска,
+// одна панель кнопок и ответ. Раньше страница занимала 1,4–1,7 экрана: под доской шли кнопка, сообщение,
+// карточка «Задача из базы», выбор сложности и подвал сайта, а в теме кнопка «Подсказка» была за краем экрана.
+for (const [name, url, bank] of [
+  ["задачи по силам", "/chess/puzzles#practice", true],
+  ["тема из базы", "/chess/puzzles#theme-backrank", true],
+  ["тема с задачами школы", "/chess/puzzles#theme-mate1", false],
+  ["задача дня", "/chess/puzzles#daily", false],
+] as const)
+  test(`телефон, ${name}: экран задачи — один экран, листать не нужно`, async ({ page, isMobile }) => {
+    test.skip(!isMobile, "раскладка для телефона");
+    await prepare(page);
+    const device = page.viewportSize()!;
+    const overflow = () => page.evaluate(() => document.documentElement.scrollHeight - innerHeight);
+    // Экран теста (412×839) и телефон поменьше (360×740).
+    for (const [width, height] of [
+      [device.width, device.height],
+      [360, 740],
+    ]) {
+      const where = `${width}×${height}`;
+      await page.setViewportSize({ width, height });
+      await page.goto("about:blank");
+      await page.goto(url, { waitUntil: "networkidle" });
+      const bar = page.locator("[data-puzzle-actions]");
+      await expect(bar).toBeVisible();
+      // Задача из базы начинается с хода соперника — ждём сообщение о нём, оно тоже должно поместиться.
+      if (bank) await expect(page.getByText(/Соперник сыграл/)).toBeVisible();
+      await expect(page.locator("[data-site-header]"), where).toBeHidden();
+      await expect(page.locator("[data-site-footer]"), where).toBeHidden();
+      await expect(page.locator("[data-puzzle-info]"), where).toBeHidden();
+      expect(await overflow(), where).toBeLessThanOrEqual(0);
+      await expect(page.locator("[data-puzzle-prompt]"), where).toBeInViewport({ ratio: 1 });
+      await expect(page.locator('[data-board^="puzzle-"]'), where).toBeInViewport({ ratio: 1 });
+      await expect(bar, where).toBeInViewport({ ratio: 1 });
+      // Под доской — только панель: один ряд кнопок.
+      const tops = await bar
+        .locator("button")
+        .evaluateAll((list) => [...new Set(list.map((b) => Math.round(b.getBoundingClientRect().top)))]);
+      expect(tops, where).toHaveLength(1);
+    }
+    // На экране теста и подсказка помещается без прокрутки.
+    await page.setViewportSize(device);
+    await page.goto("about:blank");
+    await page.goto(url, { waitUntil: "networkidle" });
+    if (bank) await expect(page.getByText(/Соперник сыграл/)).toBeVisible();
+    await page.getByRole("button", { name: /Подсказка/ }).click();
+    const answer = page.locator('[aria-live="polite"] > div').last();
+    await expect(answer).toContainText("Подсказка");
+    await expect(answer).toBeInViewport({ ratio: 1 });
+    expect(await overflow()).toBeLessThanOrEqual(0);
+    expect(await page.evaluate(() => scrollY)).toBe(0);
+  });
+
+test("телефон: сложность задач — в меню верхней строки; «закрыть» возвращает к списку задач", async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(!isMobile, "раскладка для телефона");
+  await prepare(page);
+  await page.goto("/chess/puzzles#practice", { waitUntil: "networkidle" });
+  // Пока меню закрыто, выбора сложности на экране нет.
+  await expect(page.getByRole("button", { name: "Потруднее" })).toHaveCount(0);
+  const menu = page.getByRole("button", { name: "Сложность задач" });
+  await menu.click();
+  await expect(menu).toHaveAttribute("aria-expanded", "true");
+  await page.getByRole("button", { name: "Потруднее" }).click();
+  await expect(page.getByRole("button", { name: "Потруднее" })).toHaveAttribute("aria-pressed", "true");
+  expect(await page.evaluate((key) => JSON.parse(localStorage.getItem(key)!).settings.puzzleLevel, KEY)).toBe("hard");
+  await page.keyboard.press("Escape");
+  await expect(menu).toHaveAttribute("aria-expanded", "false");
+  await expect(page.getByRole("button", { name: "Потруднее" })).toHaveCount(0);
+  // Нажатие мимо меню тоже его закрывает.
+  await menu.click();
+  await expect(menu).toHaveAttribute("aria-expanded", "true");
+  await page.mouse.click(8, page.viewportSize()!.height - 8);
+  await expect(menu).toHaveAttribute("aria-expanded", "false");
+  await page.getByRole("button", { name: "Все задачи" }).click();
+  await expect(page).toHaveURL(/#all$/);
+  await expect(page.locator("[data-site-header]")).toBeVisible();
+  await expect(page.locator("[data-site-footer]")).toBeVisible();
 });
