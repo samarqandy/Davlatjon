@@ -580,8 +580,10 @@ test("школа эндшпиля: список картинками, урок �
   await page.goto("/chess/endgames");
   await expect(page.getByRole("heading", { level: 1, name: "Школа эндшпиля" })).toBeVisible();
   // В списке — доски-картинки: настоящих досок на странице нет.
+  // Четыре урока и карточка второй части (ладья, ферзь, слон) — у каждой своя картинка.
   await expect(page.locator("[data-endgame-lesson]")).toHaveCount(4);
-  await expect(page.locator("[data-board-thumb]")).toHaveCount(4);
+  await expect(page.locator("[data-endgame-pieces-link]")).toHaveCount(1);
+  await expect(page.locator("[data-board-thumb]")).toHaveCount(5);
   await expect(page.locator("[data-board]")).toHaveCount(0);
 
   await page.locator('[data-endgame-lesson="square"]').click();

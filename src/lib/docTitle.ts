@@ -38,6 +38,7 @@ const TITLE_UZ: Record<string, string> = {
   "Страница не найдена": "Sahifa topilmadi",
   Печать: "Chop etish",
   Эндшпиль: "Endshpil",
+  "Эндшпиль: ладья, ферзь и слон": "Endshpil: rux, farzin va fil",
   "Доска анализа": "Tahlil taxtasi",
   Тренажёры: "Trenajyorlar",
 };
