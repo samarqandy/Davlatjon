@@ -5,6 +5,7 @@ import {
   CalendarDays,
   ChevronRight,
   Flame,
+  Info,
   type LucideIcon,
   Play,
   Puzzle,
@@ -13,7 +14,7 @@ import {
   RotateCcw,
 } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Button, cn, ProgressBar, Icon } from "@/components/ui";
 import {
   PUZZLES,
@@ -40,6 +41,7 @@ import { OwnPuzzlesView, ownPuzzles } from "./OwnPuzzles";
 import {
   BankRun,
   LevelChooser,
+  LevelNote,
   Loading,
   PracticeView,
   PuzzleLevel,
@@ -47,6 +49,7 @@ import {
   useThemeName,
 } from "./PuzzleBankViews";
 import { RepeatView, StormView } from "./PuzzleModes";
+import { PuzzleTop, TopMenu } from "./PuzzleTop";
 import { PuzzlePlayer, puzzleKey, type AnyPuzzle } from "./PuzzleTrainer";
 
 const STARS = (n: number) => "⭐".repeat(n);
@@ -436,13 +439,14 @@ function DailyView() {
   const puzzle = dailyPuzzleFor(profile.minStars);
   return (
     <div className="board-stage board-wide board-top space-y-2 sm:space-y-4">
-      <Back />
-      <h1 className="text-2xl font-black">
-        <span className="deco" aria-hidden>
-          📅{" "}
-        </span>
-        {t("Задача дня", "Kun masalasi")}
-      </h1>
+      <PuzzleTop>
+        <h1 className="truncate text-lg font-black lg:text-2xl lg:whitespace-normal">
+          <span className="deco" aria-hidden>
+            📅{" "}
+          </span>
+          {t("Задача дня", "Kun masalasi")}
+        </h1>
+      </PuzzleTop>
       <PuzzlePlayer
         key={puzzle.id}
         puzzle={puzzle}
@@ -454,9 +458,15 @@ function DailyView() {
 
 function SingleView({ puzzle }: { puzzle: ChessPuzzle }) {
   const t = useT();
+  const { puzzles } = useChessPart(PUZZLE_PART);
+  // Название — на языке интерфейса; у задач из своих партий перевода нет — как есть.
+  const title = (puzzles.find((p) => p.id === puzzle.id) ?? puzzle).title;
   return (
     <div className="board-stage board-wide board-top space-y-2 sm:space-y-4">
-      <Back />
+      {/* На телефоне карточки с названием задачи нет — оно в верхней строке. */}
+      <PuzzleTop>
+        <p className="truncate text-lg font-black lg:hidden">{title}</p>
+      </PuzzleTop>
       <PuzzlePlayer
         key={puzzle.id}
         puzzle={puzzle}
@@ -480,6 +490,7 @@ function ThemeView({ theme, part }: { theme: PuzzleTheme; part: number | "bank" 
   const progress = useStore((s) => s.chessPuzzles);
   const stat = themeStats(hydrated ? progress : {}).get(theme);
   const hasBank = bankCount(theme) > 0;
+  const strip = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (part !== null || !hydrated) return;
@@ -488,29 +499,64 @@ function ThemeView({ theme, part }: { theme: PuzzleTheme; part: number | "bank" 
     replaceHash(open >= 0 || !hasBank ? `#theme-${theme}-${Math.max(open, 0)}` : `#theme-${theme}-bank`);
   }, [part, hydrated, list, hasBank, theme]);
 
+  // Ряд номеров на телефоне листается вбок: выбранную задачу подкручиваем в видимую часть.
+  useEffect(() => {
+    strip.current
+      ?.querySelector('[aria-selected="true"], [aria-pressed="true"]')
+      ?.scrollIntoView({ inline: "center", block: "nearest" });
+  }, [part]);
+
   if (part === null) return <Loading />;
   const i = part === "bank" ? -1 : Math.min(Math.max(part, 0), list.length - 1);
   const puzzle = i >= 0 ? list[i] : undefined;
+  const solvedLine = stat && (
+    <p className="text-sm font-bold text-muted">
+      {t(
+        `Решено: ${stat.solved} · с первой попытки: ${Math.round(accuracy(stat) * 100)}%`,
+        `Yechildi: ${stat.solved} · birinchi urinishda: ${Math.round(accuracy(stat) * 100)}%`,
+      )}
+    </p>
+  );
 
   return (
     <div className="board-stage board-wide board-top space-y-2 sm:space-y-4">
-      <Back />
-      <header className="space-y-2">
-        <h1 className="text-2xl font-black">
+      {/*
+        Телефон: в строке — название темы; рассказ о теме, счёт и сложность открываются кнопкой справа —
+        над доской остаётся только ряд с номерами задач.
+      */}
+      <PuzzleTop
+        end={
+          <TopMenu icon={Info} label={t("О теме", "Mavzu haqida")} className="lg:hidden">
+            <p className="text-muted">{info.about}</p>
+            {solvedLine}
+            {part === "bank" && (
+              <>
+                <LevelNote />
+                <LevelChooser />
+              </>
+            )}
+          </TopMenu>
+        }
+      >
+        <h1 className="truncate text-lg font-black lg:text-2xl lg:whitespace-normal">
           {info.emoji} {info.name}
         </h1>
-        <p className="max-w-3xl text-muted">{info.about}</p>
-        {stat && (
-          <p className="text-sm font-bold text-muted">
-            {t(
-              `Решено: ${stat.solved} · с первой попытки: ${Math.round(accuracy(stat) * 100)}%`,
-              `Yechildi: ${stat.solved} · birinchi urinishda: ${Math.round(accuracy(stat) * 100)}%`,
-            )}
-          </p>
-        )}
-        <div className="flex flex-wrap items-center gap-2">
+      </PuzzleTop>
+      <div className="space-y-2">
+        <p className="max-w-3xl text-muted max-lg:hidden">{info.about}</p>
+        {solvedLine && <div className="max-lg:hidden">{solvedLine}</div>}
+        {/* Телефон: номера задач — одним рядом, который листается вбок; выбранный номер всегда виден. */}
+        <div
+          ref={strip}
+          className="flex items-center gap-2 max-lg:-mx-4 max-lg:-my-1 max-lg:[scrollbar-width:none] max-lg:overflow-x-auto max-lg:px-4 max-lg:py-1 lg:flex-wrap"
+          data-puzzle-strip
+        >
           {list.length > 0 && (
-            <div className="flex flex-wrap gap-1" role="tablist" aria-label={t("Задачи школы", "Maktab masalalari")}>
+            <div
+              className="flex shrink-0 gap-1 lg:shrink lg:flex-wrap"
+              role="tablist"
+              aria-label={t("Задачи школы", "Maktab masalalari")}
+            >
               {list.map((p, k) => (
                 <button
                   key={p.id}
@@ -519,7 +565,7 @@ function ThemeView({ theme, part }: { theme: PuzzleTheme; part: number | "bank" 
                   aria-selected={k === i}
                   onClick={() => setHash(`#theme-${theme}-${k}`)}
                   className={cn(
-                    "h-9 min-w-9 rounded-lg border-2 px-2 text-sm font-black",
+                    "h-9 min-w-9 shrink-0 rounded-lg border-2 px-2 text-sm font-black",
                     k === i
                       ? "border-brand bg-brand text-white"
                       : progress[p.id]?.solvedAt
@@ -538,16 +584,20 @@ function ThemeView({ theme, part }: { theme: PuzzleTheme; part: number | "bank" 
               aria-pressed={part === "bank"}
               onClick={() => setHash(`#theme-${theme}-bank`)}
               className={cn(
-                "h-9 rounded-lg border-2 px-3 text-sm font-black",
+                "h-9 shrink-0 rounded-lg border-2 px-3 text-sm font-black whitespace-nowrap",
                 part === "bank" ? "border-brand bg-brand text-white" : "border-line bg-surface",
               )}
             >
               {t(`📚 Задачи из базы · ${bankCount(theme)}`, `📚 Bazadan · ${bankCount(theme)}`)}
             </button>
           )}
-          {part === "bank" && <LevelChooser />}
+          {part === "bank" && (
+            <div className="max-lg:hidden">
+              <LevelChooser />
+            </div>
+          )}
         </div>
-      </header>
+      </div>
       {puzzle ? (
         <PuzzlePlayer
           key={puzzle.id}
@@ -651,13 +701,12 @@ function StreakView() {
 
   return (
     <div className="board-stage board-wide board-top space-y-2 sm:space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <Back />
+      <PuzzleTop>
         <p className="text-lg font-black">
           🔥 {t("Серия", "Ketma-ket")}: {streak} · {t("жизни", "jonlar")}: {"❤️".repeat(lives)}
           {"🤍".repeat(3 - lives)}
         </p>
-      </div>
+      </PuzzleTop>
       <PuzzlePlayer
         key={`${puzzleKey(puzzle)}-${round}-${index}`}
         puzzle={puzzle}

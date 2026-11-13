@@ -1,9 +1,9 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, Eye, Lightbulb } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight, Eye, Lightbulb } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Feedback, type FeedbackState } from "@/components/answers/Feedback";
-import { Button } from "@/components/ui";
+import { cn } from "@/components/ui";
 import type { ChessPuzzle } from "@/content/chess/puzzles";
 import { isInCheck, isPromotionMove, legalTargets, pieceAt, playMove, type Color, type PieceType } from "@/lib/chess";
 import { matingMovesIn, searchBest } from "@/lib/engine/search";
@@ -15,13 +15,11 @@ import { starsFor } from "@/lib/puzzleRating";
 import { chessPuzzleMiss, chessPuzzleRated, chessPuzzleSolved, getState } from "@/lib/store";
 import { useChessPart } from "@/lib/useChess";
 import { PUZZLE_PART } from "@/content/chess/parts/puzzles";
+import { BarButton, BoardBar } from "./BoardBar";
 import { ChessBoard, type PromotionPiece, type SquareMark } from "./ChessBoard";
 import { usePromotion } from "./useMoveInput";
 
 const STARS = (n: number) => "⭐".repeat(n);
-
-const stepButton =
-  "flex h-11 w-11 items-center justify-center rounded-2xl border-2 border-line bg-surface text-ink transition hover:border-brand/40 disabled:opacity-40";
 
 /** Задача школы (с текстами) или задача из базы Lichess. */
 export type AnyPuzzle = ChessPuzzle | BankPuzzle;
@@ -238,6 +236,31 @@ export function PuzzlePlayer({
     setLastTone(null);
   };
 
+  /**
+   * «Подсказка» — три ступени: сначала слова, потом подсвечена фигура, потом стрелка показывает ход.
+   * Первая подсказка в задаче из базы — как ошибка: рейтинг не растёт, задача вернётся на повторение.
+   */
+  const hint = () => {
+    if (done || misses >= 4) return;
+    const n = Math.max(2, misses + 1);
+    if (bank && misses < 2) {
+      rateOnce(false);
+      chessPuzzleMiss(key);
+    }
+    setMisses(n);
+    setFeedback({
+      tone: "info",
+      text:
+        n === 2
+          ? t("Подсказка", "Maslahat")
+          : n === 3
+            ? t("Подсвечена фигура, которой нужно ходить.", "Qaysi dona yurishi kerakligi belgilab qoʻyildi.")
+            : t("Зелёная стрелка показывает ход.", "Yashil strelka yurishni koʻrsatib turibdi."),
+      // Слова подсказки нужны на первой ступени; дальше ход показан на самой доске.
+      sub: n === 2 ? text.hint || undefined : undefined,
+    });
+  };
+
   const solvedText = (played: { san: string; mate: boolean }): FeedbackState => ({
     tone: "success",
     text: t(
@@ -448,6 +471,9 @@ export function PuzzlePlayer({
   // Название темы задачи из базы — готовая подсказка: пока задача не решена, прячем (если тему не выбирали сами).
   const secret = !!bank && !themed && !done;
   const canReveal = solution && !quiet;
+  // После задачи решение можно пролистать — если в нём больше одного хода.
+  const replay = done && !quiet && frames.length > 2;
+  const nextShort = t("Дальше", "Keyingi");
 
   return (
     // board-stage: с 1024 px доска слева во всю высоту окна; сведения о задаче, кнопки и ответ — справа.
@@ -476,82 +502,82 @@ export function PuzzlePlayer({
         arrows={hintTo && hintFrom && !done ? [{ from: hintFrom, to: hintTo, color: "#10b981" }] : []}
         maxWidth={480}
       />
-      {/* Кнопки — всегда на одном месте, сразу под доской: ответ ниже может быть длинным, а они не «прыгают». */}
-      <div
-        className="mx-auto flex min-h-11 w-full max-w-[480px] flex-wrap items-center gap-2 lg:order-2 lg:mx-0 lg:max-w-none"
-        data-puzzle-actions
-      >
-        {!done && misses < 2 && (
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => {
-              setMisses(2);
-              // Подсказка в задаче из базы — как ошибка: рейтинг не растёт, задача вернётся на повторение.
-              if (bank) {
-                rateOnce(false);
-                chessPuzzleMiss(key);
+      {/*
+        Кнопки — одной панелью сразу под доской, всегда на одном месте: ответ ниже может быть длинным, а они
+        не «прыгают». Пока задача не решена — «Подсказка» и «Решение», после — просмотр решения и «Дальше».
+      */}
+      {(!done || replay || next) && (
+        <BoardBar
+          label={t("Кнопки задачи", "Masala tugmalari")}
+          className="mx-auto w-full max-w-[480px] lg:order-2 lg:mx-0 lg:max-w-none"
+          data-puzzle-actions=""
+          data-puzzle-replay={replay ? at : undefined}
+        >
+          {!done && (
+            <BarButton icon={Lightbulb} label={t("Подсказка", "Maslahat")} onClick={hint} disabled={misses >= 4} />
+          )}
+          {/* Решение — только после своей попытки или подсказки: сначала пробуем сами. */}
+          {!done && canReveal && (
+            <BarButton
+              icon={Eye}
+              label={t("Решение", "Yechim")}
+              name={t("Показать решение", "Yechimni koʻrish")}
+              onClick={reveal}
+              disabled={busy || misses < 1}
+              data-puzzle-reveal
+            />
+          )}
+          {replay && (
+            <>
+              <BarButton
+                icon={ChevronLeft}
+                label={t("Назад", "Orqaga")}
+                name={t("Ход назад", "Bir yurish orqaga")}
+                disabled={at <= 0}
+                onClick={() => go(at - 1)}
+              />
+              <BarButton
+                icon={ChevronRight}
+                label={t("Вперёд", "Oldinga")}
+                name={t("Ход вперёд", "Bir yurish oldinga")}
+                disabled={at >= frames.length - 1}
+                onClick={() => go(at + 1)}
+              />
+            </>
+          )}
+          {done && next && (
+            <BarButton
+              icon={ArrowRight}
+              label={nextShort}
+              name={
+                next.label.toLowerCase().includes(nextShort.toLowerCase()) ? next.label : `${nextShort}: ${next.label}`
               }
-              setFeedback({ tone: "info", text: t("Подсказка", "Maslahat"), sub: text.hint });
-            }}
-          >
-            <Lightbulb className="mr-1.5 h-5 w-5" strokeWidth={2.25} aria-hidden />
-            {t("Подсказка", "Maslahat")}
-          </Button>
-        )}
-        {/* Решение — только после своей попытки или подсказки: сначала пробуем сами. */}
-        {!done && canReveal && misses >= 1 && (
-          <Button variant="secondary" size="sm" onClick={reveal} disabled={busy} data-puzzle-reveal>
-            <Eye className="mr-1.5 h-5 w-5" strokeWidth={2.25} aria-hidden />
-            {t("Показать решение", "Yechimni koʻrish")}
-          </Button>
-        )}
-        {done && !quiet && frames.length > 2 && (
-          <div
-            role="group"
-            aria-label={t("Просмотр решения", "Yechimni koʻrib chiqish")}
-            className="flex gap-1.5"
-            data-puzzle-replay={at}
-          >
-            <button
-              type="button"
-              className={stepButton}
-              aria-label={t("Ход назад", "Bir yurish orqaga")}
-              disabled={at <= 0}
-              onClick={() => go(at - 1)}
-            >
-              <ChevronLeft className="h-6 w-6" strokeWidth={2.25} aria-hidden />
-            </button>
-            <button
-              type="button"
-              className={stepButton}
-              aria-label={t("Ход вперёд", "Bir yurish oldinga")}
-              disabled={at >= frames.length - 1}
-              onClick={() => go(at + 1)}
-            >
-              <ChevronRight className="h-6 w-6" strokeWidth={2.25} aria-hidden />
-            </button>
-          </div>
-        )}
-        {done && next && (
-          <Button variant="sun" onClick={next.onClick} size="lg" className="min-w-0 flex-1">
-            {next.label}
-          </Button>
-        )}
-      </div>
+              primary
+              className="grow-3"
+              onClick={next.onClick}
+            />
+          )}
+        </BoardBar>
+      )}
       <Feedback state={feedback} silent={quiet} className="lg:order-2" />
-      {/* На широком экране сведения о задаче — в правой колонке над кнопками. */}
-      <aside className="flex flex-col gap-3 lg:order-1">
-        <div className="rounded-2xl bg-surface p-4 shadow-card" data-puzzle-info>
+      {/*
+        Сведения о задаче. Широкий экран — карточка в правой колонке над кнопками. Телефон — пока задача
+        не решена, их нет (задание и чей ход — над доской); после решения — одна строка: название и источник.
+      */}
+      <aside className={cn("flex flex-col gap-3 lg:order-1", !done && "max-lg:hidden")}>
+        <div
+          className="rounded-2xl bg-surface p-4 shadow-card max-lg:flex max-lg:flex-wrap max-lg:items-baseline max-lg:gap-x-2 max-lg:bg-transparent max-lg:px-1 max-lg:py-0 max-lg:shadow-none"
+          data-puzzle-info
+        >
           <p className="hidden text-xs font-extrabold tracking-wide text-muted uppercase lg:block">
             {STARS(stars)} · {solver === "w" ? t("ходят белые", "oqlar yuradi") : t("ходят чёрные", "qoralar yuradi")}
           </p>
-          <h2 className="mt-1 text-xl font-black">
+          <h2 className="mt-1 text-xl font-black max-lg:mt-0 max-lg:text-base">
             {secret ? t("Задача из базы", "Bazadan masala") : `${bank && theme ? `${theme.emoji} ` : ""}${text.title}`}
           </h2>
           <p className="mt-1 hidden text-lg font-bold text-brand-dark lg:block">{goal}</p>
-          {text.source && <p className="mt-1 text-xs text-muted">{text.source}</p>}
-          <p className="mt-2 text-sm text-muted">
+          {text.source && <p className="mt-1 text-xs text-muted max-lg:mt-0">{text.source}</p>}
+          <p className="mt-2 hidden text-sm text-muted lg:block">
             {secret
               ? t(
                   "Тему задачи покажу после решения — так интереснее искать ход.",

@@ -110,6 +110,14 @@ test("ошибка в задаче из базы: рейтинг падает, �
   const s = await saved(page);
   expect(s.chessRating!.r).toBeLessThan(700);
   expect(s.chessPuzzles[`fork/${expected[0]}`].misses).toBe(1);
+  // Подсказка — три ступени: слова, подсвеченная фигура, стрелка. Ошибкой считается только первая.
+  const hint = page.getByRole("button", { name: /Подсказка/ });
+  await hint.click();
+  await expect(page.getByText("Подсвечена фигура, которой нужно ходить.")).toBeVisible();
+  await hint.click();
+  await expect(page.getByText("Зелёная стрелка показывает ход.")).toBeVisible();
+  await expect(hint).toBeDisabled();
+  expect((await saved(page)).chessPuzzles[`fork/${expected[0]}`].misses).toBe(1);
 });
 
 test("«задачи по силам»: тема спрятана, решение можно посмотреть и пролистать, задача уходит на повторение", async ({
@@ -123,8 +131,8 @@ test("«задачи по силам»: тема спрятана, решени�
   await expect(page.getByText(/Соперник сыграл/)).toBeVisible();
   // Название темы — подсказка: до решения его нет.
   await expect(page.locator("[data-puzzle-info]")).toContainText("Задача из базы");
-  // Решение — только после своей попытки или подсказки.
-  await expect(page.locator("[data-puzzle-reveal]")).toHaveCount(0);
+  // Решение — только после своей попытки или подсказки: до этого кнопка в панели есть, но не нажимается.
+  await expect(page.locator("[data-puzzle-reveal]")).toBeDisabled();
   await page.getByRole("button", { name: /Подсказка/ }).click();
   await page.locator("[data-puzzle-reveal]").click();
   await expect(page.locator('[data-puzzle-state="revealed"]')).toBeVisible({ timeout: 15_000 });
