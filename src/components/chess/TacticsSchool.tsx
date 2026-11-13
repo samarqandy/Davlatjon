@@ -186,8 +186,6 @@ export function TopicView({
     if (exercise < total - 1) goExercise(exercise + 1);
     else if (next) setHash(`#${next.id}`);
   };
-  // Панель «дальше» внизу экрана: только в решённом упражнении и не поверх праздника «Тема пройдена».
-  const nextBar = tab === "exercises" && solvedNow && !celebrate;
 
   // В упражнениях — «один экран — одно дело»: вместо шапки урока и вкладок одна строка над заданием.
   // На широком экране так доска получает всю высоту окна, а не то, что осталось под шапкой и вкладками.
@@ -266,7 +264,7 @@ export function TopicView({
 
       {tab === "exercises" && (
         <section
-          className={cn("board-wide space-y-2", nextBar && "max-lg:pb-20")}
+          className="board-wide space-y-2"
           style={{ "--stage-chrome": "10.5rem" } as CSSProperties}
           aria-label={t("Упражнения", "Mashqlar")}
         >
@@ -331,23 +329,11 @@ export function TopicView({
             <ChessExerciseView
               key={topic.exercises[exercise].id}
               exercise={topic.exercises[exercise]}
-              footer={
-                <div className="flex flex-wrap items-center gap-2 pt-2">
-                  <Button variant="secondary" onClick={() => goExercise(exercise - 1)} disabled={exercise === 0}>
-                    {t("← Назад", "← Orqaga")}
-                  </Button>
-                  {/* Пока упражнение не решено, «дальше» тише «Проверить»; на телефоне после решения его заменяет панель внизу. */}
-                  {onwardLabel && (
-                    <Button
-                      variant={solvedNow ? "primary" : "secondary"}
-                      onClick={goOnward}
-                      className={cn(nextBar && "max-lg:hidden")}
-                    >
-                      {onwardLabel}
-                    </Button>
-                  )}
-                </div>
-              }
+              nav={{
+                prev: exercise > 0 ? () => goExercise(exercise - 1) : undefined,
+                // Пока упражнение не решено, «Дальше» — обычная кнопка панели; после решения — главная.
+                onward: onwardLabel ? { label: onwardLabel, onClick: goOnward, ready: solvedNow } : undefined,
+              }}
             />
           </div>
           {celebrate && (
@@ -367,17 +353,6 @@ export function TopicView({
             >
               {t(`Все ${total} упражнений решены.`, `Barcha ${total} ta mashq yechildi.`)}
             </Celebration>
-          )}
-          {/* Телефон: упражнение решено — «дальше» само появляется внизу экрана, искать его прокруткой не нужно. */}
-          {nextBar && onwardLabel && (
-            <div
-              data-exercise-next
-              className="fixed inset-x-0 bottom-0 z-20 animate-fade-up border-t border-line bg-surface/95 px-4 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] backdrop-blur lg:hidden"
-            >
-              <Button onClick={goOnward} className="w-full">
-                {onwardLabel}
-              </Button>
-            </div>
           )}
         </section>
       )}
