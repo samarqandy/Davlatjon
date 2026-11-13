@@ -20,6 +20,7 @@ import { useMedia } from "@/lib/useMedia";
 import { useToday } from "@/lib/useToday";
 import { xpTotal } from "@/lib/xp";
 import { DidYouKnow } from "./DidYouKnow";
+import { TurnMark } from "./TurnMark";
 import { Check, ChevronDown, Dumbbell, Lock, Play, Route } from "lucide-react";
 
 // Фигуры и доска — из набора react-chessboard: отдельными кусками, чтобы не задерживать запуск страницы.
@@ -607,7 +608,7 @@ export function ChessSchool({ counts, summary }: { counts: ChessSchoolCounts; su
           <div className={dailyKnown ? undefined : "invisible"}>
             <p className="text-lg font-black">{daily.title}</p>
             <p className="text-xs font-bold text-muted sm:mb-2">
-              {"⭐".repeat(daily.stars)} ·{" "}
+              {"⭐".repeat(daily.stars)} · <TurnMark side={daily.fen.split(" ")[1] === "w" ? "w" : "b"} />{" "}
               {daily.fen.split(" ")[1] === "w" ? t("ходят белые", "oqlar yuradi") : t("ходят чёрные", "qoralar yuradi")}
               {hydrated && state.chessPuzzles[daily.id]?.solvedAt ? " · ✅" : ""}
             </p>

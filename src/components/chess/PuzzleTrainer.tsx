@@ -17,6 +17,7 @@ import { useChessPart } from "@/lib/useChess";
 import { PUZZLE_PART } from "@/content/chess/parts/puzzles";
 import { BarButton, BoardBar } from "./BoardBar";
 import { ChessBoard, type PromotionPiece, type SquareMark } from "./ChessBoard";
+import { TurnMark } from "./TurnMark";
 import { usePromotion } from "./useMoveInput";
 
 const STARS = (n: number) => "⭐".repeat(n);
@@ -485,8 +486,13 @@ export function PuzzlePlayer({
     >
       {/* На телефоне задание и чей ход — над доской: раньше они были под ней, и до них приходилось листать. */}
       <div className="lg:hidden" data-puzzle-prompt>
-        <p className="text-xs font-extrabold tracking-wide text-muted uppercase">
-          {STARS(stars)} · {solver === "w" ? t("ходят белые", "oqlar yuradi") : t("ходят чёрные", "qoralar yuradi")}
+        {/* Квадратик цвета стороны, как в углу рамки доски: кто ходит, видно сразу, не читая. */}
+        <p className="text-sm font-extrabold tracking-wide text-muted uppercase">
+          <TurnMark side={solver} className="mr-1.5" />
+          <span className="text-ink">
+            {solver === "w" ? t("ходят белые", "oqlar yuradi") : t("ходят чёрные", "qoralar yuradi")}
+          </span>{" "}
+          · {STARS(stars)}
         </p>
         <p className="text-lg font-black text-brand-dark">{goal}</p>
       </div>
@@ -569,8 +575,12 @@ export function PuzzlePlayer({
           className="rounded-2xl bg-surface p-4 shadow-card max-lg:flex max-lg:flex-wrap max-lg:items-baseline max-lg:gap-x-2 max-lg:bg-transparent max-lg:px-1 max-lg:py-0 max-lg:shadow-none"
           data-puzzle-info
         >
-          <p className="hidden text-xs font-extrabold tracking-wide text-muted uppercase lg:block">
-            {STARS(stars)} · {solver === "w" ? t("ходят белые", "oqlar yuradi") : t("ходят чёрные", "qoralar yuradi")}
+          <p className="hidden text-sm font-extrabold tracking-wide text-muted uppercase lg:block">
+            <TurnMark side={solver} className="mr-1.5" />
+            <span className="text-ink">
+              {solver === "w" ? t("ходят белые", "oqlar yuradi") : t("ходят чёрные", "qoralar yuradi")}
+            </span>{" "}
+            · {STARS(stars)}
           </p>
           <h2 className="mt-1 text-xl font-black max-lg:mt-0 max-lg:text-base">
             {secret ? t("Задача из базы", "Bazadan masala") : `${bank && theme ? `${theme.emoji} ` : ""}${text.title}`}

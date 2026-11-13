@@ -370,6 +370,34 @@ test("в углу рамки — чей ход: □ белые, ■ чёрные
   await expect(turn).toHaveAttribute("data-turn", "b");
 });
 
+// На экранах без рамки доски знака в углу нет — тот же квадратик стоит у слов «ходят белые / чёрные»:
+// кто ходит, видно с одного взгляда. Просьба владельца: «у надписи "ходят белые" — белый квадрат, у чёрных — чёрный».
+test("у слов «чей ход» — квадратик цвета стороны: задача, упражнение, доска анализа", async ({ page }) => {
+  const mark = page.locator("[data-turn-mark]:visible");
+  const fill = () => mark.evaluate((el) => getComputedStyle(el).backgroundColor);
+  // Задача школы «мат в 1 ход»: в первой ходят белые, в одиннадцатой — чёрные.
+  await page.goto("/chess/puzzles#theme-mate1-0");
+  await expect(mark).toHaveCount(1);
+  await expect(mark).toHaveAttribute("data-turn-mark", "w");
+  await expect(mark.locator("xpath=..")).toContainText(/ходят белые/i);
+  expect(await fill()).toBe("rgb(255, 255, 255)");
+  await page.goto("/chess/puzzles#theme-mate1-10");
+  await expect(mark).toHaveAttribute("data-turn-mark", "b");
+  await expect(mark.locator("xpath=..")).toContainText(/ходят чёрные/i);
+  expect(await fill()).toBe("rgb(17, 24, 39)");
+  // Упражнение «выбери ход».
+  await page.goto("/chess/course#c1-develop-exercise-2");
+  await expect(mark).toHaveAttribute("data-turn-mark", "w");
+  await expect(mark.locator("xpath=..")).toContainText("Ходят белые.");
+  // Доска анализа: после хода белых квадратик становится чёрным.
+  await page.goto("/chess/analysis");
+  await expect(mark).toHaveAttribute("data-turn-mark", "w");
+  await sq(page, "e2").click();
+  await sq(page, "e4").click();
+  await expect(mark).toHaveAttribute("data-turn-mark", "b");
+  await expect(mark.locator("xpath=..")).toContainText("Ход чёрных");
+});
+
 test("на телефоне задание и чей ход — над доской задачи, а доска целиком на экране", async ({ page }, info) => {
   test.skip(info.project.name !== "phone", "раскладка для телефона");
   await page.goto("/chess/puzzles#theme-mate1");
