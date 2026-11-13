@@ -24,6 +24,7 @@ import { MATE } from "@/lib/engine/search";
 import { useSan, useT, type T } from "@/lib/i18n";
 import { useHash } from "@/lib/useHash";
 import { ChessBoard, type PromotionPiece, type SquareMark } from "./ChessBoard";
+import { TurnMark } from "./TurnMark";
 import { illegalText, usePromotion } from "./useMoveInput";
 import { sayIllegal } from "@/lib/voice";
 
@@ -355,6 +356,7 @@ export function AnalysisBoard() {
         </BoardBar>
         <div className="rounded-3xl bg-surface p-4 shadow-card">
           <p className="text-sm font-extrabold text-muted">
+            {!over && <TurnMark side={turn} className="mr-1.5" />}
             {over ?? (turn === "w" ? t("Ход белых", "Oqlar yuradi") : t("Ход чёрных", "Qoralar yuradi"))}
           </p>
           {opening && (

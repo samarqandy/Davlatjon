@@ -40,6 +40,7 @@ import { cue, sayIllegal } from "@/lib/voice";
 import { recordChessGame, removeChessGame } from "@/lib/store";
 import { BarButton, BoardBar } from "./BoardBar";
 import { ChessBoard, PieceIcon, type PromotionPiece, type SquareMark } from "./ChessBoard";
+import { TurnMark } from "./TurnMark";
 import { illegalText, usePromotion } from "./useMoveInput";
 
 export interface PlayConfig {
@@ -495,6 +496,8 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
             {t(`🤖 Робот сыграл ${robotMove}.`, `🤖 Robot ${robotMove} yurdi.`)}
           </span>
         )}
+        {/* Пока партия идёт — квадратик цвета стороны, чей сейчас ход (робот думает — ход его стороны). */}
+        {!status.over && <TurnMark side={turn} className="mr-2" />}
         {statusText}
       </p>
       {illegal && (

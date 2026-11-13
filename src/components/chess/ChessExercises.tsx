@@ -24,6 +24,7 @@ import { pluralize } from "@/lib/plural";
 import { chessFound, chessMiss, chessSolved, useChessExercise } from "@/lib/store";
 import { BarButton, BoardBar } from "./BoardBar";
 import { ChessBoard, type SquareMark } from "./ChessBoard";
+import { TurnMark } from "./TurnMark";
 
 type Of<K extends ChessExercise["kind"]> = Extract<ChessExercise, { kind: K }>;
 
@@ -725,7 +726,10 @@ function MoveExercise({ ex }: { ex: Of<"move"> }) {
       }
     >
       <p className="text-sm font-bold text-muted">
-        {turn === "w" ? t("Ходят белые.", "Oqlar yuradi.") : t("Ходят чёрные.", "Qoralar yuradi.")}{" "}
+        <TurnMark side={turn === "w" ? "w" : "b"} className="mr-1.5" />
+        <span className="text-ink">
+          {turn === "w" ? t("Ходят белые.", "Oqlar yuradi.") : t("Ходят чёрные.", "Qoralar yuradi.")}
+        </span>{" "}
         {t(
           "Нажми на фигуру, а потом на клетку — или перетащи фигуру.",
           "Avval donani, keyin katakni bos — yoki donani sudrab olib bor.",
@@ -945,7 +949,10 @@ function ChooseExercise({ ex }: { ex: Of<"choose"> }) {
       }
     >
       <p className="text-sm font-bold text-muted">
-        {turn === "w" ? t("Ходят белые.", "Oqlar yuradi.") : t("Ходят чёрные.", "Qoralar yuradi.")}{" "}
+        <TurnMark side={turn === "w" ? "w" : "b"} className="mr-1.5" />
+        <span className="text-ink">
+          {turn === "w" ? t("Ходят белые.", "Oqlar yuradi.") : t("Ходят чёрные.", "Qoralar yuradi.")}
+        </span>{" "}
         {t("Стрелки — ходы на выбор.", "Strelkalar — tanlash uchun yurishlar.")}
       </p>
       <ChessBoard
