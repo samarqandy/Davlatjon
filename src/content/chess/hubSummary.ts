@@ -1,19 +1,20 @@
 /**
  * Сводка для главной шахмат — собирается на сервере (app/[lang]/chess/page.tsx). Странице нужны названия,
- * счётчики, словарик и короткий список задач для «задачи дня»; тексты уроков, позиции упражнений, истории и
+ * счётчики, число слов в словаре и короткий список задач для «задачи дня»; тексты уроков, позиции упражнений, истории и
  * список записей диктора в браузер не попадают (раньше — около 330 КБ скриптов на двух языках).
  */
 import type { Lang } from "@/lib/lang";
 import { RECORDED_CLIPS } from "@/lib/voiceRecorded";
 import { chessContent, courseLessons } from "./content";
+import { chessGlossary } from "./glossary";
 import type { ChessLevelId } from "./types";
 
 export interface ChessHubSummary {
   school: { title: string; about: string };
   /** Шесть званий: фигура, название и id упражнений — для прогресса и замков. */
   levels: { id: ChessLevelId; piece: string; name: string; exercises: { id: string }[] }[];
-  /** Словарик: термины всех уровней по порядку. */
-  glossary: { term: string; text: string; uz?: string }[];
+  /** Сколько слов в словаре школы (сам словарь — на странице /chess/glossary). */
+  glossaryCount: number;
   /** Ступени курса по порядку: название и уроки с id упражнений. */
   steps: { title: string; lessons: { id: string; title: string; exercises: string[] }[] }[];
   /** id упражнений раздела «Тактика». */
@@ -42,7 +43,7 @@ export function chessHubSummary(lang: Lang): ChessHubSummary {
       name: l.name,
       exercises: l.exercises.map((e) => ({ id: e.id })),
     })),
-    glossary: c.levels.flatMap((l) => l.terms.map(({ term, text, uz }) => ({ term, text, ...(uz ? { uz } : {}) }))),
+    glossaryCount: chessGlossary(lang).length,
     steps: courses.map(([course, lessons]) => ({
       title: course.title,
       lessons: courseLessons(pool, lessons).map((l) => ({

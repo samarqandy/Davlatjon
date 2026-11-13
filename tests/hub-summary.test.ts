@@ -1,6 +1,7 @@
 /** Сводка главной шахмат: совпадает с контентом, не тянет в браузер уроки и решения, остаётся лёгкой. */
 import { describe, expect, it } from "vitest";
 import { chessContent, courseLessons } from "@/content/chess/content";
+import { chessGlossary } from "@/content/chess/glossary";
 import { chessHubSummary } from "@/content/chess/hubSummary";
 import { dailyPuzzle } from "@/content/chess/puzzles";
 import { pickDaily } from "@/lib/dailyPuzzle";
@@ -36,7 +37,7 @@ describe("сводка главной шахмат", () => {
     expect(s.levels.map((l) => [l.id, l.piece, l.name, l.exercises.map((e) => e.id)])).toEqual(
       c.levels.map((l) => [l.id, l.piece, l.name, l.exercises.map((e) => e.id)]),
     );
-    expect(s.glossary.map((x) => x.term)).toEqual(c.levels.flatMap((l) => l.terms.map((x) => x.term)));
+    expect(s.glossaryCount).toBe(chessGlossary(lang).length);
     expect(s.tacticExercises).toEqual(c.tactics.flatMap((x) => x.exercises.map((e) => e.id)));
     expect(s.puzzles.map((p) => [p.id, p.title, p.stars, p.fen])).toEqual(
       c.puzzles.map((p) => [p.id, p.title, p.stars, p.fen]),
