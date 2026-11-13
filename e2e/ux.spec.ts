@@ -868,3 +868,47 @@ for (const [name, hash, cells] of [
     await hint.click();
     await expect(page.locator("[data-exercise-hint]")).toHaveCount(0);
   });
+
+// Страницы уровней («Пешка», «Конь»…) и контрольные тесты: упражнение — тот же «один экран», что в курсе.
+// Раньше на телефоне 412×839 доска начиналась на 620–710-м пикселе (уровень) и 510–560-м (тест) и на экран
+// не помещалась: над ней стояли шапка сайта, ссылка назад, шапка уровня, вкладки и номера упражнений;
+// страница занимала 2,2–2,7 и 1,7 экрана.
+for (const [name, url, closeName, closed] of [
+  ["уровень, отметь клетки", "/chess/pawn#exercise-3", "К уроку", /#lesson$/],
+  ["уровень, найди клетку", "/chess/pawn#exercise-1", "К уроку", /#lesson$/],
+  ["контрольный тест, отметь клетки", "/chess/tests#test-1-1", "Все тесты", /\/chess\/tests#?$/],
+  ["контрольный тест, найди ход", "/chess/tests#test-1-5", "Все тесты", /\/chess\/tests#?$/],
+] as const)
+  test(`телефон, ${name}: доска и панель на первом экране, шапки сайта нет`, async ({ page, isMobile }) => {
+    test.skip(!isMobile, "раскладка для телефона");
+    await prepare(page);
+    const device = page.viewportSize()!;
+    for (const [width, height] of [
+      [device.width, device.height],
+      [360, 740],
+    ]) {
+      const where = `${width}×${height}`;
+      await page.setViewportSize({ width, height });
+      await page.goto("about:blank");
+      await page.goto(url, { waitUntil: "networkidle" });
+      await expect(page.locator("[data-exercise-heading]"), where).toBeVisible();
+      await expect(page.locator("[data-site-header]"), where).toBeHidden();
+      await expect(page.locator("[data-site-footer]"), where).toBeHidden();
+      await expect(page.getByRole("heading", { level: 1 }), where).toHaveCount(1);
+      await expect(page.locator("main [data-board]").first(), where).toBeInViewport({ ratio: 1 });
+      const bar = page.locator("[data-exercise-bar]");
+      await expect(bar, where).toBeInViewport({ ratio: 1 });
+      const tops = await bar
+        .locator("button")
+        .evaluateAll((list) => [...new Set(list.map((b) => Math.round(b.getBoundingClientRect().top)))]);
+      expect(tops, where).toHaveLength(1);
+      expect(await page.evaluate(() => document.documentElement.scrollHeight - innerHeight), where).toBeLessThanOrEqual(
+        0,
+      );
+      expect(await page.evaluate(() => scrollY), where).toBe(0);
+    }
+    // «Закрыть» возвращает к уроку или к списку тестов — там шапка сайта снова на месте.
+    await page.getByRole("button", { name: closeName, exact: true }).click();
+    await expect(page).toHaveURL(closed);
+    await expect(page.locator("[data-site-header]")).toBeVisible();
+  });

@@ -231,7 +231,7 @@ function SquaresExercise({ ex }: { ex: Of<"squares"> }) {
       }
     >
       <p
-        className="rounded-2xl bg-brand-soft px-4 py-3 text-center text-xl font-black text-brand-dark"
+        className="rounded-2xl bg-brand-soft px-4 py-1.5 text-center text-xl font-black text-brand-dark sm:py-3"
         aria-live="polite"
       >
         {done ? t("Готово! ✨", "Tayyor! ✨") : t(`Найди клетку ${target}`, `${target} katagini top`)}

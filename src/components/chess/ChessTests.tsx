@@ -2,7 +2,7 @@
 
 import { currentScrollBehavior } from "@/lib/useMotion";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import { Celebration } from "@/components/rewards/Celebration";
 import { Button, cn, ProgressBar } from "@/components/ui";
 import type { ChessTest } from "@/content/chess/types";
@@ -14,6 +14,7 @@ import { useChessPart } from "@/lib/useChess";
 import { TEST_PART } from "@/content/chess/parts/tests";
 import { setHash, useHash } from "@/lib/useHash";
 import { ChessExerciseView } from "./ChessExercises";
+import { StepRow } from "./StepRow";
 
 /** Результат: решено с первой попытки (балл), решено с ошибками, не решено. */
 export type ItemMark = "perfect" | "retry" | "open";
@@ -143,16 +144,37 @@ function TestRun({ test, index }: { test: ChessTest; index: number | null }) {
     window.scrollTo({ top: 0, behavior: currentScrollBehavior() });
   };
 
+  // Вопрос на экране — «один экран — одно дело», как в курсе: вместо ссылки назад, шапки теста и номеров
+  // вопросов — одна строка над заданием. Раньше доска на телефоне начиналась на 510–560-м пикселе
+  // и не помещалась на экран 839 px. Итог теста показан с шапкой, как раньше.
+  const focus = current !== null;
+  const label = (i: number) => {
+    const mark = markOf(state, test.exercises[i].id);
+    return t(
+      `Вопрос ${i + 1}${mark === "perfect" ? " (верно с первой попытки)" : mark === "retry" ? " (решён с ошибками)" : ""}`,
+      `${i + 1}-savol${mark === "perfect" ? " (birinchi urinishda toʻgʻri)" : mark === "retry" ? " (xatolar bilan yechilgan)" : ""}`,
+    );
+  };
+
   return (
     <>
       <button
         type="button"
         onClick={() => setHash("#")}
-        className="inline-flex min-h-11 items-center gap-1 text-sm font-extrabold text-brand hover:underline"
+        // «hidden» вместе с «inline-flex» не работает: в таблице стилей «inline-flex» стоит позже и побеждает.
+        className={cn(
+          "min-h-11 items-center gap-1 text-sm font-extrabold text-brand hover:underline",
+          focus ? "hidden" : "inline-flex",
+        )}
       >
         {t("← Все тесты", "← Barcha testlar")}
       </button>
-      <header className="rounded-[2rem] bg-linear-to-br from-[#3b2f23] via-[#5b4632] to-[#7c5a33] p-5 text-white shadow-lift sm:p-7">
+      <header
+        className={cn(
+          "rounded-[2rem] bg-linear-to-br from-[#3b2f23] via-[#5b4632] to-[#7c5a33] p-5 text-white shadow-lift sm:p-7",
+          focus && "hidden",
+        )}
+      >
         <h1 className="text-2xl leading-tight font-black sm:text-3xl">
           {test.emoji} {test.title}
         </h1>
@@ -162,7 +184,10 @@ function TestRun({ test, index }: { test: ChessTest; index: number | null }) {
         </div>
       </header>
 
-      <div className="flex flex-wrap gap-1.5" aria-label={t("Вопросы теста", "Test savollari")}>
+      <div
+        className={cn("flex flex-wrap gap-1.5", focus && "hidden")}
+        aria-label={t("Вопросы теста", "Test savollari")}
+      >
         {test.exercises.map((e, i) => {
           const mark = markOf(state, e.id);
           return (
@@ -170,10 +195,7 @@ function TestRun({ test, index }: { test: ChessTest; index: number | null }) {
               key={e.id}
               type="button"
               onClick={() => go(i)}
-              aria-label={t(
-                `Вопрос ${i + 1}${mark === "perfect" ? " (верно с первой попытки)" : mark === "retry" ? " (решён с ошибками)" : ""}`,
-                `${i + 1}-savol${mark === "perfect" ? " (birinchi urinishda toʻgʻri)" : mark === "retry" ? " (xatolar bilan yechilgan)" : ""}`,
-              )}
+              aria-label={label(i)}
               aria-current={i === current ? "step" : undefined}
               className={cn(
                 "flex h-11 min-w-11 items-center justify-center rounded-xl border-2 px-2 text-base font-black transition",
@@ -232,19 +254,54 @@ function TestRun({ test, index }: { test: ChessTest; index: number | null }) {
           </div>
         </section>
       ) : (
-        <section aria-label={t("Вопрос", "Savol")} className="space-y-4">
-          <div className="rounded-3xl bg-paper p-1 sm:p-2">
-            <ChessExerciseView key={test.exercises[current].id} exercise={test.exercises[current]} test />
-          </div>
-          <div className="flex flex-wrap items-center gap-2 pt-2">
-            <Button variant="secondary" onClick={() => go(current - 1)} disabled={current === 0}>
-              {t("← Назад", "← Orqaga")}
-            </Button>
-            {markOf(state, test.exercises[current].id) !== "open" && (
-              <Button onClick={() => go(current < test.exercises.length - 1 ? current + 1 : null)} data-test-next>
-                {current < test.exercises.length - 1 ? t("Дальше →", "Keyingisi →") : t("Результат →", "Natija →")}
-              </Button>
+        <section
+          aria-label={t("Вопрос", "Savol")}
+          className="board-wide space-y-2"
+          style={{ "--stage-chrome": "10.5rem" } as CSSProperties}
+        >
+          {/* Шапка теста на экране вопроса скрыта — главный заголовок страницы остаётся для экранного диктора. */}
+          <h1 className="sr-only">
+            {t(
+              `${test.title}: вопрос ${current + 1} из ${test.exercises.length}`,
+              `${test.title}: ${test.exercises.length} tadan ${current + 1}-savol`,
             )}
+          </h1>
+          <StepRow
+            closeLabel={t("Все тесты", "Barcha testlar")}
+            onClose={() => setHash("#")}
+            stripLabel={t("Вопросы теста", "Test savollari")}
+            steps={test.exercises.map((e, i) => {
+              const mark = markOf(state, e.id);
+              return {
+                key: e.id,
+                label: label(i),
+                state: mark === "perfect" ? "done" : mark === "retry" ? "retry" : "open",
+              };
+            })}
+            current={current}
+            onStep={go}
+          />
+          <div className="rounded-3xl bg-paper p-1 sm:p-2">
+            <ChessExerciseView
+              key={test.exercises[current].id}
+              exercise={test.exercises[current]}
+              test
+              nav={{
+                prev: current > 0 ? () => go(current - 1) : undefined,
+                // «Дальше» появляется после ответа: пропустить вопрос можно только по полоске сверху.
+                onward:
+                  markOf(state, test.exercises[current].id) !== "open"
+                    ? {
+                        label:
+                          current < test.exercises.length - 1
+                            ? t("Дальше →", "Keyingisi →")
+                            : t("Результат →", "Natija →"),
+                        onClick: () => go(current < test.exercises.length - 1 ? current + 1 : null),
+                        ready: true,
+                      }
+                    : undefined,
+              }}
+            />
           </div>
         </section>
       )}
