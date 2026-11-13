@@ -515,4 +515,149 @@ describe("курс «Ферзь»: развязывание, мельница, �
       expect(safe, reply).toBe(true);
     }
   });
+
+  it("размен на поле связки: после Лxd7 Лxd7 Лd1 белые при любой игре остаются с лишней фигурой", () => {
+    const { fen, right, wrong } = choose("c5-pin-exchange", "c5-pin-exchange-rook");
+    expect([right, wrong]).toEqual(["d1d7", ["b5d7"]]);
+    expect(balance(fen)).toBe(0);
+    const c = after(fen, "Rxd7", "Rxd7", "Rd1");
+    for (const reply of c.moves()) {
+      const d = after(c.fen(), reply);
+      // Лучшее взятие белых: после него чёрные могут взять что-то в ответ — считаем худший для белых случай.
+      const best = Math.max(
+        ...d
+          .moves({ verbose: true })
+          .filter((m) => m.captured)
+          .map((m) => {
+            const e = after(d.fen(), m.san);
+            const recaptures = e.moves({ verbose: true }).filter((x) => x.captured);
+            return Math.min(balance(e.fen()), ...recaptures.map((x) => balance(after(e.fen(), x.san).fen())));
+          }),
+      );
+      expect(best, reply).toBeGreaterThanOrEqual(3);
+    }
+    expect(balance(after(fen, "Bxd7+", "Rxd7", "Rxd7", "Kxd7").fen())).toBe(0);
+  });
+
+  it("Шультен — Морфи (Нью-Йорк, 1857): позиции из партии, конь e2 связан и атакован дважды, в конце мат", () => {
+    const start = "e4 e5 f4 d5 exd5 e4 Nc3 Nf6 d3 Bb4 Bd2 e3 Bxe3 O-O Bd2 Bxc3 bxc3 Re8+ Be2 Bg4 c4 c6 dxc6 Nxc6 Kf1";
+    const rook = choose("c5-morphy-pin", "c5-morphy-pin-rook");
+    const knight = choose("c5-morphy-pin", "c5-morphy-pin-knight");
+    expect(play(start).fen()).toBe(rook.fen);
+    expect(play(`${start} Rxe2 Nxe2`).fen()).toBe(knight.fen);
+    expect([rook.right, knight.right]).toEqual(["e8e2", "c6d4"]);
+    // До жертвы слона e2 защищают три фигуры; после Кd4 конь e2 атакован дважды, а уйти не может: за ним ферзь.
+    expect(play(start).attackers("e2", "w").sort()).toEqual(["d1", "f1", "g1"]);
+    const pinned = play(`${start} Rxe2 Nxe2 Nd4`);
+    expect(pinned.attackers("e2", "b").sort()).toEqual(["d4", "g4"]);
+    expect(pinned.attackers("e2", "w").sort()).toEqual(["d1", "f1"]);
+    const attack = `${start} Rxe2 Nxe2 Nd4 Qb1 Bxe2+ Kf2 Ng4+ Kg1 Nf3+ gxf3 Qd4+ Kg2 Qf2+ Kh3 Qxf3+ Kh4 Nh6 Qg1 Nf5+ Kg5`;
+    const mate = COURSE_5_LESSONS.find((l) => l.id === "c5-morphy-pin")!.exercises.find(
+      (e) => e.id === "c5-morphy-pin-mate",
+    )!;
+    if (mate.kind !== "move") throw new Error("финал партии — упражнение на мат");
+    expect(play(attack).fen()).toBe(mate.fen);
+    expect(matingMoves(mate.fen)).toEqual(["f3h5"]);
+  });
+
+  it("отвлечение в защите: грозит Фg2#, спасает только Лc8+ — и после Фxc8 следует Лxc8#", () => {
+    const { fen, right, wrong } = choose("c5-deflection-defence", "c5-deflection-defence-rook");
+    expect([right, wrong]).toEqual(["c2c8", ["c2c3"]]);
+    expect(matingMoves(fen.replace(" w ", " b "))).toEqual(["h3g2"]);
+    const safe = new Chess(fen).moves().filter((san) => matingMoves(after(fen, san).fen()).length === 0);
+    expect(safe).toEqual(["Rc8+"]);
+    expect(after(fen, "Rc8+").moves()).toEqual(["Qxc8"]);
+    expect(matingMoves(after(fen, "Rc8+", "Qxc8").fen())).toEqual(["c1c8"]);
+  });
+
+  it("завлечение под вилку: Лh8+ Крxh8, Кxf7+ — конь забирает ферзя; сразу Кxf7 теряет коня", () => {
+    const { fen, right, wrong } = choose("c5-decoy-fork", "c5-decoy-fork-rook");
+    expect([right, wrong]).toEqual(["h1h8", ["g5f7"]]);
+    const start = balance(fen);
+    expect(after(fen, "Rh8+").moves()).toEqual(["Kxh8"]);
+    const fork = after(fen, "Rh8+", "Kxh8", "Nxf7+");
+    for (const reply of fork.moves()) expect(balance(after(fork.fen(), reply, "Nxd6").fen()), reply).toBe(start + 5);
+    expect(balance(after(fen, "Nxf7", "Kxf7").fen())).toBe(start - 2);
+  });
+
+  it("Фишер — Решевский (Нью-Йорк, 1958): после 11. Кe6 чёрные теряют ферзя, а на Крxe6 — мат шахами", () => {
+    const start = "e4 c5 Nf3 Nc6 d4 cxd4 Nxd4 g6 Nc3 Bg7 Be3 Nf6 Bc4 O-O Bb3 Na5 e5 Ne8";
+    const bishop = choose("c5-fischer", "c5-fischer-bishop");
+    const knight = choose("c5-fischer", "c5-fischer-knight");
+    expect(play(start).fen()).toBe(bishop.fen);
+    expect(play(`${start} Bxf7+ Kxf7`).fen()).toBe(knight.fen);
+    expect([bishop.right, knight.right]).toEqual(["b3f7", "d4e6"]);
+    expect(play(`${start} Bxf7+ Kxf7 Ne6 dxe6 Qxd8`).isGameOver()).toBe(false);
+    const losesQueen = (position: string) =>
+      new Chess(position).moves().filter(
+        (san) =>
+          !after(position, san)
+            .moves({ verbose: true })
+            .some((m) => m.captured === "q"),
+      );
+    // Король взял слона: после Кe6 ферзь теряется при любом ответе, кроме взятия коня королём.
+    expect(losesQueen(after(knight.fen, "Ne6").fen())).toEqual(["Kxe6"]);
+    // Слона взяла ладья или король ушёл в угол — конь всё равно ловит ферзя.
+    expect(losesQueen(after(bishop.fen, "Bxf7+", "Rxf7", "Ne6").fen())).toEqual([]);
+    expect(losesQueen(after(bishop.fen, "Bxf7+", "Kh8", "Ne6").fen())).toEqual([]);
+    // 11... Крxe6 12. Фd5+ Крf5 13. g4+ Крxg4 — ответы единственные, дальше мат шахами не позже чем в 4 хода.
+    const walk = after(knight.fen, "Ne6", "Kxe6", "Qd5+");
+    expect(walk.moves()).toEqual(["Kf5"]);
+    walk.move("Kf5");
+    walk.move("g4+");
+    expect(walk.moves()).toEqual(["Kxg4"]);
+    walk.move("Kxg4");
+    expect(mateInChecks(walk.fen(), 4)).toBe(true);
+  });
+
+  it("захват пункта: после Лxf6 взятие ладьи ведёт к Фxh7#, иначе у белых лишний конь", () => {
+    const { fen, right, wrong } = choose("c5-seize-point", "c5-seize-point-rook");
+    expect([right, wrong]).toEqual(["f1f6", ["d3h7"]]);
+    expect(balance(fen)).toBe(0);
+    const c = after(fen, "Rxf6");
+    const alive = c.moves().filter((san) => matingMoves(after(c.fen(), san).fen()).length === 0);
+    expect(alive.sort()).toEqual(["Bf5", "Re8", "g6"]);
+    for (const san of alive) expect(balance(after(c.fen(), san).fen()), san).toBe(3);
+    for (const san of ["Qxf6", "gxf6"]) expect(matingMoves(after(c.fen(), san).fen()), san).toEqual(["d3h7"]);
+    expect(after(fen, "Qxh7+").moves()).toEqual(["Nxh7"]);
+  });
+
+  it("Греко (около 1620): позиции из партии, шах пешкой открывает ладью h1, партия кончается матом", () => {
+    const start = "e4 e6 d4 Nf6 Bd3 Nc6 Nf3 Be7 h4 O-O e5 Nd5";
+    const { fen, right } = choose("c5-h7-greco", "c5-h7-greco-bishop");
+    expect(play(start).fen()).toBe(fen);
+    expect(right).toBe("d3h7");
+    const opened = play(`${start} Bxh7+ Kxh7 Ng5+ Bxg5 hxg5+`);
+    expect(opened.attackers("h7", "w")).toEqual(["h1"]);
+    const mate = COURSE_5_LESSONS.find((l) => l.id === "c5-h7-greco")!.exercises.find(
+      (e) => e.id === "c5-h7-greco-mate",
+    )!;
+    if (mate.kind !== "move") throw new Error("финал партии — упражнение на мат");
+    expect(play(`${start} Bxh7+ Kxh7 Ng5+ Bxg5 hxg5+ Kg8 Qh5 f5 g6 Re8`).fen()).toBe(mate.fen);
+    expect(matingMoves(mate.fen)).toEqual(["h5h8"]);
+  });
+
+  it("жертва на h6: если слона взять — мат в два хода; если не брать — белые выиграли пешку", () => {
+    const { fen, right, wrong } = choose("c5-h6-sac", "c5-h6-sac-bishop");
+    expect([right, wrong]).toEqual(["e3h6", ["d2d4"]]);
+    const start = balance(fen);
+    const c = after(fen, "Bxh6");
+    expect(matingMovesIn(after(c.fen(), "gxh6").fen(), 2)).toEqual(["d2h6"]);
+    for (const san of c.moves().filter((m) => m !== "gxh6"))
+      expect(balance(after(c.fen(), san).fen()), san).toBe(start + 1);
+    expect(matingMoves(after(fen, "Qd4", "f6").fen())).toEqual([]);
+  });
+
+  it("жертва на f6: Кf6+ — единственный мат в три хода", () => {
+    const { fen, right, wrong } = choose("c5-f6-sac", "c5-f6-sac-knight");
+    expect([right, wrong]).toEqual(["e4f6", ["d3g3"]]);
+    expect(matingMovesIn(fen, 3)).toEqual(["e4f6"]);
+    const c = after(fen, "Nf6+");
+    expect(c.moves().sort()).toEqual(["Kh8", "gxf6"]);
+    expect(matingMoves(after(c.fen(), "Kh8").fen())).toEqual(["d3h7"]);
+    const line = after(c.fen(), "gxf6", "Qg3+");
+    expect(line.moves()).toEqual(["Kh8"]);
+    expect(matingMoves(after(line.fen(), "Kh8").fen())).toEqual(["b2f6"]);
+    expect(after(fen, "Qg3").moves()).toContain("g6");
+  });
 });

@@ -362,6 +362,23 @@ test("ступень 5: жертва двух слонов — три упраж
     expect(stored[id]?.solvedAt, id).toBeTruthy();
 });
 
+// Партия Морфи: ходят чёрные — и в выборе хода, и в упражнении на мат.
+test("ступень 5: партия Шультен — Морфи — чёрные выбирают ход и ставят мат", async ({ page }) => {
+  await prepare(page);
+  await openHash(page, "/chess/course-5#c5-morphy-pin-exercise-1");
+  await expect(page.locator('[data-turn-mark="b"]').first()).toBeVisible();
+  await page.locator('[data-choice="c6d4"]').click();
+  await expect(page.getByText("не лучший выбор")).toBeVisible();
+  await page.locator('[data-choice="e8e2"]').click();
+  await expect(page.getByText(/Почему так/)).toBeVisible();
+  await openHash(page, "/chess/course-5#c5-morphy-pin-exercise-3");
+  await page.locator('[data-board="mo-c5-morphy-pin-mate"] [data-square="f3"]').click();
+  await page.locator('[data-board="mo-c5-morphy-pin-mate"] [data-square="h5"]').click();
+  await expect(page.getByText(/Почему так/)).toBeVisible();
+  const stored = await page.evaluate((key) => JSON.parse(localStorage.getItem(key) ?? "{}").chess ?? {}, KEY);
+  for (const id of ["c5-morphy-pin-rook", "c5-morphy-pin-mate"]) expect(stored[id]?.solvedAt, id).toBeTruthy();
+});
+
 // Перекрытие: один из вариантов — превращение пешки (ход с буквой фигуры на конце).
 test("ступень 5: перекрытие — сразу в ферзи нельзя, сначала конь закрывает диагональ", async ({ page }) => {
   await prepare(page);
