@@ -149,9 +149,14 @@ describe("курс: ответы", () => {
       expect(e.correct, e.id).toBeLessThan(e.moves.length);
       const all = new Chess(e.fen).moves({ verbose: true }).map((m) => `${m.from}${m.to}${m.promotion ?? ""}`);
       for (const u of e.moves) expect(all, `${e.id}: ${u}`).toContain(u);
-      // Если среди вариантов есть мат — верный ход и есть мат.
-      const mates = matingMoves(e.fen);
-      if (e.moves.some((u) => mates.includes(u))) expect(mates, e.id).toContain(e.moves[e.correct]);
+      // Если среди вариантов есть мат — верный ход и есть мат. Проверяем только сами варианты: перебирать все ходы
+      // позиции (matingMoves) незачем, а на сотне с лишним упражнений это выходило за пять секунд.
+      const mates = (u: string) => {
+        const c = new Chess(e.fen);
+        c.move({ from: u.slice(0, 2), to: u.slice(2, 4), promotion: u[4] });
+        return c.isCheckmate();
+      };
+      if (e.moves.some(mates)) expect(mates(e.moves[e.correct]), e.id).toBe(true);
     }
   });
 
