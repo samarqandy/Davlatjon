@@ -137,6 +137,14 @@ export function awards(s: AppState, lang: Lang = "ru"): Award[] {
       1,
     ),
     a(
+      "blind-win",
+      "🙈",
+      t("Вслепую", "Koʻr-koʻrona"),
+      t("Выиграй у робота партию вслепую.", "Robotni koʻr-koʻrona partiyada yut."),
+      s.chessGames.some((g) => g.mode === "robot" && g.blind && g.result === "win") ? 1 : 0,
+      1,
+    ),
+    a(
       "crowns-3",
       "👑",
       t("Три короны", "Uchta toj"),

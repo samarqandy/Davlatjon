@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, ArrowUpDown, Flag, Lightbulb, RotateCcw, Search, Undo2 } from "lucide-react";
+import { ArrowLeft, ArrowUpDown, Eye, Flag, Lightbulb, RotateCcw, Search, Undo2 } from "lucide-react";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { Confetti } from "@/components/rewards/Confetti";
 import { Button, ButtonLink, cn, Icon } from "@/components/ui";
@@ -12,6 +12,7 @@ import {
   legalTargets,
   pieceAt,
   playMove,
+  sanOf,
   type Color,
   type PieceType,
 } from "@/lib/chess";
@@ -36,10 +37,12 @@ import {
 import { crownsForWin, robotPersona } from "@/lib/crowns";
 import { pluralize } from "@/lib/plural";
 import { random } from "@/lib/random";
+import { matchTypedMove } from "@/lib/typedMove";
 import { cue, sayIllegal } from "@/lib/voice";
 import { recordChessGame, removeChessGame } from "@/lib/store";
 import { BarButton, BoardBar } from "./BoardBar";
 import { ChessBoard, PieceIcon, type PromotionPiece, type SquareMark } from "./ChessBoard";
+import { MoveKeypad } from "./MoveKeypad";
 import { TurnMark } from "./TurnMark";
 import { illegalText, usePromotion } from "./useMoveInput";
 
@@ -56,7 +59,23 @@ export interface PlayConfig {
   odds?: Odds;
   /** «Сам»: без подсказок и отмены ходов — за победу корона с золотым блеском. */
   solo?: boolean;
+  /**
+   * Игра вслепую (только с роботом): фигур на доске не видно. Ход делают по пустой доске или записью
+   * («Кf3»); ход робота написан словами. Кнопка «Показать» открывает позицию на несколько секунд.
+   */
+  blind?: boolean;
 }
+
+/** На сколько «Показать» открывает позицию в игре вслепую. */
+const PEEK_MS = 4000;
+
+/** Пустая доска для игры вслепую. Один и тот же объект — чтобы доска не считала позицию новой при каждой отрисовке. */
+const NO_PIECES = {};
+const entryChip = (on: boolean) =>
+  cn(
+    "min-h-11 rounded-full border-2 px-3 text-sm font-extrabold transition",
+    on ? "border-brand bg-brand-soft text-brand-dark" : "border-line bg-surface hover:border-brand/40",
+  );
 
 const newGameId = () => `g${Math.floor(random() * 36 ** 8).toString(36)}`;
 
@@ -109,6 +128,13 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
   } | null>(null);
   const previousTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [flipped, setFlipped] = useState(false);
+  // Игра вслепую: чем вводится ход (пустая доска или запись), что набрано, открыта ли сейчас позиция и сколько раз.
+  const [entry, setEntry] = useState<"board" | "text">("board");
+  const [typed, setTyped] = useState("");
+  const [typedError, setTypedError] = useState<string | null>(null);
+  const [peek, setPeek] = useState(false);
+  const [peeks, setPeeks] = useState(0);
+  const peekTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const recorded = useRef(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -195,8 +221,9 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
       clock: config.clock?.id,
       odds: config.odds ? `${config.odds.side}${config.odds.piece}` : undefined,
       ...(config.mode === "robot" ? { hints, undos, solo: !!config.solo } : {}),
+      ...(config.blind ? { blind: true, peeks } : {}),
     });
-  }, [status.over, status.winner, status.mate, withRobot, config, myMoves, gameId, start, plies, hints, undos]);
+  }, [status.over, status.winner, status.mate, withRobot, config, myMoves, gameId, start, plies, hints, undos, peeks]);
 
   const tryMove = (from: string, to: string, promotion?: PromotionPiece): boolean => {
     if (!myTurn || status.over || thinking) return false;
@@ -212,6 +239,8 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
       return false;
     }
     setIllegal(null);
+    setTyped("");
+    setTypedError(null);
     setPlies((p) => [...p, { san: played.san, uci: played.uci, fen: played.fen }]);
     if (config.clock && plies.length > 0) setClock((c) => ({ ...c, [turn]: c[turn] + config.clock!.inc * 1000 }));
     setSelected(null);
@@ -231,6 +260,35 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
     setSelected(null);
     // Ход нельзя сделать из-за короля — подсказываем почему; просто мимо — тихо снимаем выбор.
     if (illegalReason(fen, selected, sq)) return false;
+  };
+
+  /** Ход записью: «Кf3», «e4», «0-0». Неясную запись не угадываем — просим уточнить. */
+  const submitTyped = () => {
+    if (!myTurn || status.over || thinking) return;
+    const found = matchTypedMove(fen, typed);
+    if (found.kind === "move") {
+      tryMove(found.uci.slice(0, 2), found.uci.slice(2, 4), (found.uci[4] as PromotionPiece | undefined) ?? undefined);
+      return;
+    }
+    setTypedError(
+      found.kind === "ambiguous"
+        ? t(
+            `Так могут пойти две фигуры. Уточни: ${found.sans.map(san).join(" или ")}.`,
+            `Bunday ikkita dona yura oladi. Aniqlashtir: ${found.sans.map(san).join(" yoki ")}.`,
+          )
+        : inCheck
+          ? t("Так пойти нельзя: тебе шах.", "Bunday yurib boʻlmaydi: senga shoh berilgan.")
+          : t("Такого хода сейчас нет. Проверь запись.", "Hozir bunday yurish yoʻq. Yozuvni tekshir."),
+    );
+  };
+
+  /** «Показать»: позиция видна несколько секунд, потом снова прячется. Каждое нажатие считается. */
+  const showBoard = () => {
+    if (peek || status.over) return;
+    setPeek(true);
+    setPeeks((n) => n + 1);
+    if (peekTimer.current) clearTimeout(peekTimer.current);
+    peekTimer.current = setTimeout(() => setPeek(false), PEEK_MS);
   };
 
   const undo = () => {
@@ -275,6 +333,10 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
     setUndos(0);
     setResigned(false);
     setThinking(withRobot && config.color === "b");
+    setTyped("");
+    setTypedError(null);
+    setPeek(false);
+    setPeeks(0);
     recorded.current = false;
   };
 
@@ -299,22 +361,26 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
   useEffect(
     () => () => {
       if (previousTimer.current) clearTimeout(previousTimer.current);
+      if (peekTimer.current) clearTimeout(peekTimer.current);
     },
     [],
   );
 
+  // Вслепую фигур не видно, пока партия идёт и позиция не открыта кнопкой «Показать».
+  const hidden = !!config.blind && !status.over && !peek;
   const marks: Record<string, SquareMark> = {};
   if (last) {
     marks[last.uci.slice(0, 2)] = "last";
     marks[last.uci.slice(2, 4)] = "last";
   }
-  if (inCheck) {
+  if (inCheck && !hidden) {
     const k = kingOf(fen, turn);
     if (k) marks[k] = "check";
   }
   if (selected) {
     marks[selected] = "selected";
-    for (const sq of legalTargets(fen, selected)) marks[sq] = pieceAt(fen, sq) ? "capture" : "target";
+    // Вслепую клетки, куда может пойти фигура, не подсвечиваются: их нужно держать в голове.
+    if (!hidden) for (const sq of legalTargets(fen, selected)) marks[sq] = pieceAt(fen, sq) ? "capture" : "target";
   }
   const orientation = (config.color === "b") !== flipped ? "black" : "white";
   // Трофеи игрока сверху — съеденные фигуры того, кто снизу, и наоборот.
@@ -339,7 +405,9 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
   const variant = config.variant ? endgameText(config.variant, lang) : undefined;
   const title =
     config.mode === "robot"
-      ? t(`Робот «${robot?.name ?? ""}»`, `Robot «${robot?.name ?? ""}»`)
+      ? config.blind
+        ? t(`Вслепую: робот «${robot?.name ?? ""}»`, `Koʻr-koʻrona: robot «${robot?.name ?? ""}»`)
+        : t(`Робот «${robot?.name ?? ""}»`, `Robot «${robot?.name ?? ""}»`)
       : config.mode === "two"
         ? t("Партия вдвоём", "Ikki kishilik partiya")
         : config.mode === "pawns"
@@ -381,13 +449,57 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
           ? t("🙂 Твой ход", "🙂 Navbat senda")
           : t(`Ходят ${sideName(turn)}`, `${sideName(turn)} yuradi`);
 
+  const sanOfHint = hint ? sanOf(fen, hint) : "";
   // Ход робота называем словами: иначе его видно только на доске, а экранный диктор говорит лишь «Твой ход».
   const robotMove = withRobot && !thinking && !status.over && last && turn === config.color ? san(last.san) : null;
+
+  const statusLine = (
+    <p
+      className={cn(
+        "rounded-2xl px-4 py-3 text-lg font-black",
+        // Победа — зелёная, ничья — жёлтая, проигрыш роботу — спокойная, без тревожного цвета.
+        !status.over
+          ? inCheck
+            ? "bg-rose/10 text-rose"
+            : "bg-surface shadow-card"
+          : status.winner === "draw"
+            ? "bg-sun-soft text-sun-ink"
+            : withRobot && status.winner !== config.color
+              ? "bg-brand-soft text-brand-dark"
+              : "bg-mint-soft text-mint-ink",
+      )}
+      aria-live="polite"
+      data-play-status
+      data-result={
+        status.over ? (status.winner === "draw" ? "draw" : status.winner === config.color ? "win" : "loss") : undefined
+      }
+    >
+      {robotMove && (
+        <span className="block text-sm font-extrabold opacity-80" data-robot-move>
+          {t(`🤖 Робот сыграл ${robotMove}.`, `🤖 Robot ${robotMove} yurdi.`)}
+        </span>
+      )}
+      {/* Пока партия идёт — квадратик цвета стороны, чей сейчас ход (робот думает — ход его стороны). */}
+      {!status.over && <TurnMark side={turn} className="mr-2" />}
+      {statusText}
+      {config.blind && hint && !status.over && (
+        // Вслепую стрелку подсказки на доске не увидеть (а при записи доски и нет) — подсказка ещё и словами.
+        <span className="block text-sm font-extrabold opacity-80" data-blind-hint>
+          {t(`Подсказка: ${san(sanOfHint)}.`, `Maslahat: ${san(sanOfHint)}.`)}
+        </span>
+      )}
+    </p>
+  );
 
   return (
     // board-stage: с 1024 px доска со счётом взятых фигур и часами — слева во всю высоту окна; название партии,
     // чей ход, кнопки и запись ходов — справа. На телефоне порядок тот же, в одну колонку.
-    <div className="board-stage board-wide space-y-3" style={{ "--stage-chrome": "12.5rem" } as CSSProperties}>
+    <div
+      className="board-stage board-wide space-y-3"
+      style={{ "--stage-chrome": "12.5rem" } as CSSProperties}
+      // Вслепую на телефоне нужна вся высота экрана: строка «ход робота», доска или клавиатура и кнопки.
+      data-focus-screen={config.blind ? "" : undefined}
+    >
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-2xl font-black">{title}</h1>
         <Button variant="ghost" size="sm" onClick={onExit}>
@@ -401,36 +513,99 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
             t(`⏱ ${clockLabel(config.clock)} на партию.`, `⏱ Partiyaga ${clockLabel(config.clock, lang)}.`)}
         </p>
       )}
+      {config.blind && !status.over && (
+        <div
+          className="flex flex-wrap items-center gap-1.5"
+          role="group"
+          aria-label={t("Как делать ход", "Yurish usuli")}
+          data-blind-entry={entry}
+        >
+          <span className="text-sm font-extrabold text-muted">{t("Ход:", "Yurish:")}</span>
+          <button
+            type="button"
+            className={entryChip(entry === "board")}
+            aria-pressed={entry === "board"}
+            onClick={() => setEntry("board")}
+            data-entry="board"
+          >
+            {t("на пустой доске", "boʻsh taxtada")}
+          </button>
+          <button
+            type="button"
+            className={entryChip(entry === "text")}
+            aria-pressed={entry === "text"}
+            onClick={() => {
+              setEntry("text");
+              setSelected(null);
+            }}
+            data-entry="text"
+          >
+            {t("записью", "yozib")}
+          </button>
+        </div>
+      )}
+      {/* Вслепую ход робота узнают только из этой строки — она над доской, на первом экране телефона. */}
+      {config.blind && statusLine}
       <div className="board-col space-y-3">
-        <div className="flex items-center gap-2">
-          <CapturedRow
-            pieces={topTrophies}
-            lead={worth(topTrophies) - worth(bottomTrophies)}
-            label={t("Взято у соперника сверху", "Raqibdan olingan donalar (yuqorida)")}
-          />
-          {clockBox(topSide)}
-        </div>
-        <ChessBoard
-          id="play"
-          position={fen}
-          marks={marks}
-          orientation={orientation}
-          onSquare={tap}
-          draggable={myTurn && !status.over && !thinking}
-          onDrop={(from, to) => tryMove(from, to)}
-          canDrag={(_, piece) => piece[0] === turn}
-          promotion={promo.request}
-          arrows={hint ? [{ from: hint.slice(0, 2), to: hint.slice(2, 4), color: "#10b981" }] : []}
-          maxWidth={560}
-        />
-        <div className="flex items-center gap-2">
-          <CapturedRow
-            pieces={bottomTrophies}
-            lead={worth(bottomTrophies) - worth(topTrophies)}
-            label={t("Взято у соперника снизу", "Raqibdan olingan donalar (pastda)")}
-          />
-          {clockBox(topSide === "w" ? "b" : "w")}
-        </div>
+        {/* Запись без доски: вместо доски — клавиатура ходов. «Показать» на несколько секунд возвращает доску. */}
+        {hidden && entry === "text" ? (
+          <div className="space-y-2 rounded-3xl bg-surface p-3 shadow-card" data-blind-text>
+            <MoveKeypad
+              value={typed}
+              onChange={(v) => {
+                setTyped(v);
+                setTypedError(null);
+              }}
+              onSubmit={submitTyped}
+              disabled={!myTurn || thinking}
+            />
+            {typedError && (
+              <p
+                role="status"
+                className="rounded-xl bg-rose/10 px-3 py-2 text-sm font-bold text-danger-ink"
+                data-typed-error
+              >
+                {typedError}
+              </p>
+            )}
+          </div>
+        ) : (
+          <>
+            {!hidden && (
+              <div className="flex items-center gap-2">
+                <CapturedRow
+                  pieces={topTrophies}
+                  lead={worth(topTrophies) - worth(bottomTrophies)}
+                  label={t("Взято у соперника сверху", "Raqibdan olingan donalar (yuqorida)")}
+                />
+                {clockBox(topSide)}
+              </div>
+            )}
+            <ChessBoard
+              id="play"
+              position={hidden ? NO_PIECES : fen}
+              marks={marks}
+              orientation={orientation}
+              onSquare={tap}
+              draggable={!hidden && myTurn && !status.over && !thinking}
+              onDrop={(from, to) => tryMove(from, to)}
+              canDrag={(_, piece) => piece[0] === turn}
+              promotion={promo.request}
+              arrows={hint ? [{ from: hint.slice(0, 2), to: hint.slice(2, 4), color: "#10b981" }] : []}
+              maxWidth={560}
+            />
+            {!hidden && (
+              <div className="flex items-center gap-2">
+                <CapturedRow
+                  pieces={bottomTrophies}
+                  lead={worth(bottomTrophies) - worth(topTrophies)}
+                  label={t("Взято у соперника снизу", "Raqibdan olingan donalar (pastda)")}
+                />
+                {clockBox(topSide === "w" ? "b" : "w")}
+              </div>
+            )}
+          </>
+        )}
       </div>
       {/* Панель — сразу под доской: на телефоне она на первом экране вместе с «чей ход». */}
       <BoardBar label={t("Управление партией", "Partiyani boshqarish")}>
@@ -451,6 +626,15 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
             />
           </>
         )}
+        {config.blind && (
+          <BarButton
+            icon={Eye}
+            label={t("Показать", "Koʻrsat")}
+            name={t("Показать позицию на несколько секунд", "Pozitsiyani bir necha soniyaga koʻrsat")}
+            onClick={showBoard}
+            disabled={peek || status.over}
+          />
+        )}
         <BarButton
           icon={ArrowUpDown}
           label={t("Поворот", "Aylantir")}
@@ -465,41 +649,27 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
           onClick={restart}
         />
       </BoardBar>
-      <p
-        className={cn(
-          "rounded-2xl px-4 py-3 text-lg font-black",
-          // Победа — зелёная, ничья — жёлтая, проигрыш роботу — спокойная, без тревожного цвета.
-          !status.over
-            ? inCheck
-              ? "bg-rose/10 text-rose"
-              : "bg-surface shadow-card"
-            : status.winner === "draw"
-              ? "bg-sun-soft text-sun-ink"
-              : withRobot && status.winner !== config.color
-                ? "bg-brand-soft text-brand-dark"
-                : "bg-mint-soft text-mint-ink",
-        )}
-        aria-live="polite"
-        data-play-status
-        data-result={
-          status.over
-            ? status.winner === "draw"
-              ? "draw"
-              : status.winner === config.color
-                ? "win"
-                : "loss"
-            : undefined
-        }
-      >
-        {robotMove && (
-          <span className="block text-sm font-extrabold opacity-80" data-robot-move>
-            {t(`🤖 Робот сыграл ${robotMove}.`, `🤖 Robot ${robotMove} yurdi.`)}
-          </span>
-        )}
-        {/* Пока партия идёт — квадратик цвета стороны, чей сейчас ход (робот думает — ход его стороны). */}
-        {!status.over && <TurnMark side={turn} className="mr-2" />}
-        {statusText}
-      </p>
+      {!config.blind && statusLine}
+      {config.blind && (
+        <p className="text-sm font-bold text-muted" data-blind-note={peeks}>
+          {status.over
+            ? peeks
+              ? t(
+                  `Партия вслепую сыграна. Позицию открывали: ${peeks} раз(а).`,
+                  `Koʻr-koʻrona partiya oʻynaldi. Pozitsiya ${peeks} marta ochib koʻrildi.`,
+                )
+              : t(
+                  "Партия вслепую сыграна — и позицию ни разу не открывали!",
+                  "Koʻr-koʻrona partiya oʻynaldi — pozitsiya biror marta ham ochib koʻrilmadi!",
+                )
+            : peek
+              ? t("Позиция открыта на несколько секунд…", "Pozitsiya bir necha soniyaga ochildi…")
+              : t(
+                  "Фигуры спрятаны: держи позицию в голове. Запись ходов — ниже.",
+                  "Donalar yashirilgan: pozitsiyani xayolingda tut. Yurishlar yozuvi — pastda.",
+                )}
+        </p>
+      )}
       {illegal && (
         <p role="status" data-illegal className="rounded-2xl bg-rose/10 px-4 py-2 text-sm font-bold text-rose">
           {illegal}

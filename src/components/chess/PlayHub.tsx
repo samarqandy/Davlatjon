@@ -16,7 +16,10 @@ import { BoardLookPicker } from "./BoardLookPicker";
 import { PieceIcon } from "./ChessBoard";
 import { PlayBoard, type PlayConfig } from "./PlayBoard";
 
-/** Адрес вида #robot-3-w, #two, #pawns-2-b, #endgame-kq; после «?» — часы, фора и режим «Сам»: #two?c=5_3&o=bq, #robot-2-w?s=1. */
+/**
+ * Адрес вида #robot-3-w, #two, #pawns-2-b, #endgame-kq; после «?» — часы, фора, режим «Сам» и игра вслепую:
+ * #two?c=5_3&o=bq, #robot-2-w?s=1, #robot-1-w?b=1.
+ */
 export function parseConfig(hash: string): PlayConfig | null {
   const [path, query = ""] = hash.replace(/^#/, "").split("?");
   const [mode, a, b] = path.split("-");
@@ -33,6 +36,7 @@ export function parseConfig(hash: string): PlayConfig | null {
       // Фору даёт робот: он играет без фигуры.
       odds: oddsPiece ? { side: color === "w" ? "b" : "w", piece: oddsPiece } : undefined,
       solo: params.get("s") === "1",
+      blind: params.get("b") === "1",
     };
   }
   if (mode === "two")
@@ -75,7 +79,8 @@ function ModeChooser() {
   const [oddsSide, setOddsSide] = useState<"w" | "b">("w");
   const [oddsPiece, setOddsPiece] = useState("");
   const [solo, setSolo] = useState(false);
-  const robotQuery = [robotOdds && `o=${robotOdds}`, solo && "s=1"].filter(Boolean).join("&");
+  const [blind, setBlind] = useState(false);
+  const robotQuery = [robotOdds && `o=${robotOdds}`, solo && "s=1", blind && "b=1"].filter(Boolean).join("&");
   const robotQuerySuffix = robotQuery ? `?${robotQuery}` : "";
   const twoParams = [clock && `c=${clock}`, oddsPiece && `o=${oddsSide}${oddsPiece}`].filter(Boolean).join("&");
   const chip = (on: boolean) =>
@@ -150,6 +155,7 @@ function ModeChooser() {
                 {" · "}
                 {robotOdds ? oddsPieceLabel(robotOdds, lang) : t("со всеми фигурами", "barcha donalar bilan")}
                 {solo ? t(" · сам", " · oʻzim") : ""}
+                {blind ? t(" · вслепую", " · koʻr-koʻrona") : ""}
               </span>
             </span>
             <ChevronDown
@@ -190,6 +196,24 @@ function ModeChooser() {
                 {t(
                   "Сам: без подсказок и отмены → корона с блеском ✨",
                   "Oʻzim: maslahatsiz va qaytarishsiz → yaltiroq toj ✨",
+                )}
+              </button>
+            </div>
+            <div className="mt-2 flex flex-wrap items-center gap-1.5" role="group" aria-label={t("Доска", "Taxta")}>
+              <span className="text-sm font-extrabold text-muted">{t("Доска:", "Taxta:")}</span>
+              <button type="button" className={chip(!blind)} aria-pressed={!blind} onClick={() => setBlind(false)}>
+                {t("фигуры видны", "donalar koʻrinadi")}
+              </button>
+              <button
+                type="button"
+                className={chip(blind)}
+                aria-pressed={blind}
+                onClick={() => setBlind(true)}
+                data-blind
+              >
+                {t(
+                  "Вслепую 🙈: фигур не видно, ходы — в уме или записью",
+                  "Koʻr-koʻrona 🙈: donalar koʻrinmaydi, yurishlar — xayolda yoki yozuv bilan",
                 )}
               </button>
             </div>

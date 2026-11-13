@@ -73,6 +73,17 @@ describe("награды и календарь", () => {
     }
   });
 
+  it("награда «Вслепую» — только за победу над роботом в слепой партии", () => {
+    const game = { id: "g", at: 1, mode: "robot", level: 1, color: "w", moves: 20 };
+    const has = (g: object) =>
+      awards(sanitize({ chessGames: [{ ...game, ...g }] }))
+        .filter(earned)
+        .some((a) => a.id === "blind-win");
+    expect(has({ result: "win", blind: true, peeks: 2 })).toBe(true);
+    expect(has({ result: "win" })).toBe(false);
+    expect(has({ result: "loss", blind: true })).toBe(false);
+  });
+
   it("награды приходят за дела", () => {
     const at = new Date(2026, 8, 20, 12).getTime();
     const s = sanitize({

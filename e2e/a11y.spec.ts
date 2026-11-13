@@ -156,6 +156,16 @@ const AFTER: [name: string, url: string, act: (page: Page) => Promise<void>][] =
     },
   ],
   [
+    "партия вслепую: запись хода кнопками",
+    "/chess/play#robot-1-w?b=1",
+    async (page) => {
+      await page.locator('[data-entry="text"]').click();
+      await page.locator('[data-key="a"]').click();
+      await page.locator("[data-move-submit]").click();
+      await expect(page.locator("[data-typed-error]")).toBeVisible();
+    },
+  ],
+  [
     "эндшпиль: ответ и объяснение",
     "/chess/endgames#square-1",
     async (page) => {
