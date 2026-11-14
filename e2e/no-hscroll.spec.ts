@@ -22,6 +22,8 @@ const PAGES = [
   "/chess/awards",
   "/chess/openings",
   "/chess/games",
+  "/chess/games/base",
+  "/chess/games/base#wp-1379339785-0",
   "/chess/review",
   "/chess/history",
   "/chess/endgames",

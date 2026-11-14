@@ -11,7 +11,7 @@
  *
  * Из источника берутся только сведения о партии: игроки, рейтинги, турнир, город, дата, тур, результат и ходы.
  * Оценки движка, время на часах, комментарии и пометки источника не переносятся. Каждый ход проверяется chess.js
- * и записывается в UCI. Дебют (семейство) считается по нашей книге дебютов (открытый список Lichess, CC0).
+ * и записывается в UCI. Дебют (код ECO и семейство) — по позиции, по открытому списку дебютов Lichess (CC0).
  * Наборы с разными лицензиями пишутся в разные файлы, рядом — ATTRIBUTION.md.
  *
  * Запуск (Node 22.18+: модули .ts из src читаются напрямую):
@@ -24,7 +24,6 @@ import path from "node:path";
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { Chess } from "chess.js";
-import { makeOpeningBook } from "../../src/lib/openingBook.ts";
 import { OPENING_NAMES } from "../../src/content/chess/openingNames.ts";
 import { isUzbek } from "../../src/lib/games/library.ts";
 
@@ -70,11 +69,21 @@ async function fetchAll() {
     console.log("lichess", tour.id, tour.event);
     await fetchBroadcast(tour.id);
   }
-  for (const [name, digest] of Object.entries(SOURCES.kingfisher.files)) {
-    const file = path.join(CACHE, "kingfisher", name);
-    if (fs.existsSync(file) && sha256(fs.readFileSync(file)) === digest) continue;
-    console.log("kingfisher", name);
-    download(SOURCES.kingfisher.base + name, file);
+  for (const [dir, source] of [
+    ["kingfisher", SOURCES.kingfisher],
+    ["openings", SOURCES.openings],
+  ]) {
+    for (const [name, digest] of Object.entries(source.files)) {
+      const file = path.join(CACHE, dir, name);
+      if (fs.existsSync(file) && sha256(fs.readFileSync(file)) === digest) continue;
+      console.log(dir, name);
+      download(source.base + name, file);
+      // Оборванная загрузка или другой файл — не оставляем в кэше: следующая сборка не должна его взять.
+      if (sha256(fs.readFileSync(file)) !== digest) {
+        fs.rmSync(file);
+        throw new Error(`${dir}/${name}: скачанный файл не совпал с контрольной суммой`);
+      }
+    }
   }
   for (const article of SOURCES.wiki) {
     const file = path.join(CACHE, "wiki", `${article.oldid}.wiki`);
@@ -122,11 +131,22 @@ function sanTokens(movetext) {
   return out;
 }
 
+/** Сила фигур в пешках — для границы эндшпиля. */
+const VALUE = { n: 3, b: 3, r: 5, q: 9 };
+
+/** Эндшпиль: у каждой стороны фигур (без пешек и короля) не больше чем на ладью с лёгкой фигурой — 8 очков. */
+function isEndgame(chess) {
+  const material = { w: 0, b: 0 };
+  for (const row of chess.board()) for (const p of row) if (p && VALUE[p.type]) material[p.color] += VALUE[p.type];
+  return material.w <= 8 && material.b <= 8;
+}
+
 /** Проиграть ходы. Незаконный ход — ошибка источника: партия не берётся. */
 function replay(sans, fen) {
   const chess = fen ? new Chess(fen) : new Chess();
   const uci = [];
   const san = [];
+  let endgame;
   for (const token of sans) {
     let move;
     try {
@@ -136,8 +156,9 @@ function replay(sans, fen) {
     }
     uci.push(move.from + move.to + (move.promotion ?? ""));
     san.push(move.san);
+    if (endgame === undefined && isEndgame(chess)) endgame = uci.length;
   }
-  return { uci, san, mate: chess.isCheckmate() };
+  return { uci, san, mate: chess.isCheckmate(), endgame };
 }
 
 /* ───────────────────────── имена ───────────────────────── */
@@ -207,10 +228,55 @@ function makeNames(allGames) {
 
 /* ───────────────────────── общее ───────────────────────── */
 
-const book = makeOpeningBook(
-  JSON.parse(fs.readFileSync(path.join(ROOT, "src/content/chess/opening-book.json"), "utf8")),
-  OPENING_NAMES,
-);
+/**
+ * Дебют партии — по позиции, как его определяет сам Lichess (README списка: «play moves backwards until a named
+ * position is found»). Открытый список дебютов Lichess (lichess-org/chess-openings, CC0) проигрывается один раз,
+ * и каждой его позиции (расстановка, очередь хода, рокировки, взятие на проходе) сопоставляются код ECO и семейство.
+ * В партии берётся последняя позиция из списка, у семейства которой есть наше название по-русски и по-узбекски:
+ * партия, пришедшая в ферзевый гамбит другим порядком ходов, — ферзевый гамбит, а не «Индийская защита».
+ * Код ECO и семейство — от одной и той же позиции, чтобы подпись «Название (код)» не спорила сама с собой.
+ * Таблица строится только при сборке: `--fetch` должен уметь заменить испорченный файл, а не падать на нём.
+ * Файлы закреплены коммитом и контрольными суммами (sources.json → openings).
+ */
+let openingPositions = null;
+const epd = (chess) => chess.fen().split(" ").slice(0, 4).join(" ");
+
+function openingTable() {
+  if (openingPositions) return openingPositions;
+  openingPositions = new Map();
+  for (const [name, digest] of Object.entries(SOURCES.openings.files)) {
+    const file = path.join(CACHE, "openings", name);
+    if (!fs.existsSync(file)) throw new Error(`${name}: нет файла списка дебютов — сначала --fetch`);
+    const text = fs.readFileSync(file, "utf8");
+    if (sha256(text) !== digest) throw new Error(`${name}: контрольная сумма не совпала — запустите --fetch`);
+    for (const row of text.split("\n").slice(1)) {
+      const [eco, title, pgn] = row.split("\t");
+      if (!eco || !title || !pgn) continue;
+      const chess = new Chess();
+      for (const token of sanTokens(pgn)) chess.move(token);
+      openingPositions.set(epd(chess), { eco, family: title.split(":")[0].trim() });
+    }
+  }
+  return openingPositions;
+}
+
+/** Код ECO и семейство дебюта партии с обычной расстановки (ходы — в UCI). */
+function openingOf(uci) {
+  const table = openingTable();
+  const chess = new Chess();
+  let named;
+  let any;
+  for (const u of uci) {
+    chess.move({ from: u.slice(0, 2), to: u.slice(2, 4), promotion: u[4] });
+    const hit = table.get(epd(chess));
+    if (!hit) continue;
+    any = hit;
+    if (OPENING_NAMES[hit.family]) named = hit;
+  }
+  const pick = named ?? any;
+  return { eco: pick?.eco, op: named?.family };
+}
+
 const elo = (v) => (/^\d{3,4}$/.test(v ?? "") && +v > 0 ? +v : undefined);
 const fullDate = (v) => (/^\d{4}\.\d{2}\.\d{2}$/.test(v ?? "") ? v : undefined);
 const yearOf = (...dates) => {
@@ -238,6 +304,8 @@ function entry(g) {
     "fen",
     "m",
     "op",
+    "eco",
+    "en",
     "src",
   ]) {
     if (g[key] !== undefined && g[key] !== "") out[key] = g[key];
@@ -249,8 +317,18 @@ function finish(game, sans) {
   const played = replay(sans, game.fen);
   if (played.error) return { error: played.error };
   if (played.uci.length < 10) return { error: "меньше десяти полуходов" };
-  const opening = game.fen ? null : book.find(played.san);
-  return { ...game, m: played.uci.join(" "), op: opening?.family, plies: played.uci.length, mate: played.mate };
+  const opening = game.fen ? {} : openingOf(played.uci);
+  // Эндшпиль, в котором ещё есть что показать (хотя бы 8 полуходов), — с этого полухода кнопка «К эндшпилю».
+  const en = played.endgame !== undefined && played.uci.length - played.endgame >= 8 ? played.endgame : undefined;
+  return {
+    ...game,
+    m: played.uci.join(" "),
+    op: opening.op,
+    eco: opening.eco,
+    en,
+    plies: played.uci.length,
+    mate: played.mate,
+  };
 }
 
 const surnameKey = (name) => name.split(/[,\s]/)[0].toLowerCase();
@@ -615,8 +693,9 @@ function attribution(counts) {
 Файлы в этой папке собирает \`scripts/games/build-games.mjs\` (список источников — \`scripts/games/sources.json\`).
 Из источников взяты только сведения о партиях: игроки, рейтинги, турнир, город, дата, тур, результат и ходы.
 Изменения: ходы проверены и переписаны в запись UCI; имена игроков приведены к одному написанию; оценки движка,
-время на часах, комментарии и пометки источников удалены; добавлено семейство дебюта по открытому списку
-дебютов Lichess (CC0). Наши подписи, разделы и заметки в эти файлы не входят.
+время на часах, комментарии и пометки источников удалены; добавлены посчитанные программой по позиции семейство
+дебюта и код ECO (по открытому списку дебютов Lichess, CC0) и полуход, с которого партия перешла в эндшпиль. Наши подписи,
+разделы и заметки в эти файлы не входят.
 
 ## ${files.broadcasts.file} — ${counts.broadcasts} партий
 

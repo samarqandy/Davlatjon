@@ -1210,7 +1210,7 @@ html:has([data-mentor][data-present]) {
   overflow: hidden;
   padding: max(16px, 2.4vh) max(16px, 2vw);
 }
-[data-mentor][data-present] .mentor-games {
+[data-mentor][data-present] .games-browser {
   height: 100%;
   display: grid;
   grid-template-columns: minmax(16rem, 2fr) minmax(0, 3fr);
@@ -1220,18 +1220,18 @@ html:has([data-mentor][data-present]) {
     "controls results";
   gap: max(10px, 1.6vh) max(16px, 2vw);
 }
-[data-mentor][data-present] .mentor-games-head {
+[data-mentor][data-present] .games-head {
   grid-area: head;
 }
-[data-mentor][data-present] :is(.mentor-games-controls, .mentor-games-results) {
+[data-mentor][data-present] :is(.games-controls, .games-results) {
   overflow-y: auto;
   overscroll-behavior: contain;
   touch-action: pan-y;
 }
-[data-mentor][data-present] .mentor-games-controls {
+[data-mentor][data-present] .games-controls {
   grid-area: controls;
 }
-[data-mentor][data-present] .mentor-games-results {
+[data-mentor][data-present] .games-results {
   grid-area: results;
 }
 /* Экран-«портрет» (повёрнутая панель): одна колонка, листается весь список. */
@@ -1239,12 +1239,12 @@ html:has([data-mentor][data-present]) {
   [data-mentor][data-present] [data-mentor-part="sheet"][data-mentor-sheet="games"] {
     overflow-y: auto;
   }
-  [data-mentor][data-present] .mentor-games {
+  [data-mentor][data-present] .games-browser {
     height: auto;
     display: flex;
     flex-direction: column;
   }
-  [data-mentor][data-present] :is(.mentor-games-controls, .mentor-games-results) {
+  [data-mentor][data-present] :is(.games-controls, .games-results) {
     overflow: visible;
   }
 }

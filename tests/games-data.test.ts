@@ -1,12 +1,14 @@
 /**
  * Файлы базы партий (public/data/games, собирает scripts/games/build-games.mjs): лицензии и источники на месте,
- * каждая партия проигрывается по правилам, нет повторов, дебюты названы по нашему списку, файлы не разрослись.
+ * каждая партия проигрывается по правилам, нет повторов, дебюты названы по нашему списку, код ECO и начало эндшпиля
+ * верны, файлы не разрослись.
  */
+import { Chess } from "chess.js";
 import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { OPENING_NAMES } from "@/content/chess/openingNames";
-import { LIBRARY_FILES, prepare, type LibFile } from "@/lib/games/library";
+import { EMPTY_QUERY, LIBRARY_FILES, OPENING_GROUPS, filterGames, prepare, type LibFile } from "@/lib/games/library";
 import { LIMITS, START_FEN, fensOf, isUci } from "@/lib/mentor/model";
 
 const read = (url: string) =>
@@ -125,6 +127,79 @@ describe("файлы базы партий", () => {
   it("дебют — семейство из нашего списка названий (RU и UZ)", () => {
     for (const g of ALL) if (g.op) expect(OPENING_NAMES[g.op], `${g.id}: ${g.op}`).toBeTruthy();
     expect(ALL.filter((g) => g.op).length / ALL.length).toBeGreaterThan(0.9);
+  });
+
+  it("код ECO — у каждой партии с начальной позиции, по форме «B90»; группы дебютов — в своих кодах ECO", () => {
+    for (const g of ALL) {
+      if (g.fen) expect(g.eco, g.id).toBeUndefined();
+      else expect(g.eco, g.id).toMatch(/^[A-E]\d\d$/);
+    }
+    // Название дебюта — по нашей книге, код — по списку Lichess: они должны говорить об одном и том же дебюте.
+    const RANGES: Record<string, RegExp> = {
+      "g:italian": /^C5/,
+      "g:sicilian": /^B[2-9]/,
+      "g:ruy": /^C[6-9]/,
+      "g:french": /^C[01]/,
+      "g:carokann": /^B1/,
+      "g:qg": /^D[0-6]/,
+      "g:kid": /^E[6-9]/,
+    };
+    const games = FILES.flatMap(({ file }) => prepare(file));
+    for (const group of OPENING_GROUPS) {
+      const found = filterGames(games, { ...EMPTY_QUERY, op: group.key });
+      expect(found.length, group.key).toBeGreaterThanOrEqual(10);
+      const inRange = found.filter((g) => RANGES[group.key].test(g.eco ?? ""));
+      expect(inRange.length / found.length, group.key).toBeGreaterThan(0.95);
+    }
+  });
+
+  it("дебют — по позиции, а не по порядку ходов: партия, пришедшая в ферзевый гамбит через 1.d4 Nf6 2.Nf3, — ферзевый гамбит", () => {
+    const games = FILES.flatMap(({ file }) => prepare(file));
+    const byId = (id: string) => games.find((g) => g.id === id)!;
+    // Карлсен — Каруана, ЧМ-2018, партии 2 и 7: 1.d4 Nf6 2.Nf3 d5 3.c4 e6 4.Nc3 Be7 5.Bf4 — атака Гарвица (D37).
+    for (const id of ["wp-1379339785-1", "wp-1379339785-6"])
+      expect([byId(id).op, byId(id).eco], id).toEqual(["Queen's Gambit Declined", "D37"]);
+    // 1.c4 e6 2.Nc3 d5 3.d4 Nf6 4.cxd5 exd5 5.Bg5 — разменный вариант ферзевого гамбита (D35), а не английское начало.
+    expect([byId("lb-4nFtKUUk").op, byId("lb-4nFtKUUk").eco]).toEqual(["Queen's Gambit Declined", "D35"]);
+    // Ларсен — Глигорич, 1956: 1.Nf3 c5 2.e4 d6 3.d4 — сицилианская защита, вариант Найдорфа (B92).
+    expect([byId("kf-larsen-v-gligoric-1956").op, byId("kf-larsen-v-gligoric-1956").eco]).toEqual([
+      "Sicilian Defense",
+      "B92",
+    ]);
+    // Каруана — Карлсен, ЧМ-2018, партия 1: Россолимо (B31) — тот же порядок ходов, что и в списке.
+    expect(byId("wp-1379339785-0").eco).toBe("B31");
+    const qg = filterGames(games, { ...EMPTY_QUERY, op: "g:qg" }).map((g) => g.id);
+    expect(qg).toContain("wp-1379339785-1");
+    expect(qg).toContain("lb-4nFtKUUk");
+  });
+
+  it("начало эндшпиля: первый полуход, после которого у каждой стороны фигур не больше чем на 8 пешек, и дальше ещё ≥ 8 полуходов", () => {
+    const VALUE: Record<string, number> = { n: 3, b: 3, r: 5, q: 9 };
+    const endgame = (chess: Chess) => {
+      const m = { w: 0, b: 0 };
+      for (const row of chess.board()) for (const p of row) if (p) m[p.color] += VALUE[p.type] ?? 0;
+      return m.w <= 8 && m.b <= 8;
+    };
+    let count = 0;
+    for (const g of ALL) {
+      const moves = g.m.split(" ");
+      const chess = new Chess(g.fen ?? START_FEN);
+      let first: number | undefined;
+      moves.forEach((u, i) => {
+        chess.move({ from: u.slice(0, 2), to: u.slice(2, 4), promotion: u[4] });
+        if (first === undefined && endgame(chess)) first = i + 1;
+      });
+      const expected = first !== undefined && moves.length - first >= 8 ? first : undefined;
+      expect(g.en, g.id).toBe(expected);
+      if (g.en !== undefined) count++;
+    }
+    expect(count).toBeGreaterThan(200);
+  }, 180_000);
+
+  it("разделы для учеников не пустые: знаменитые, эндшпиль, короткие победы", () => {
+    const games = FILES.flatMap(({ file }) => prepare(file));
+    for (const section of ["famous", "endgame", "short"] as const)
+      expect(filterGames(games, { ...EMPTY_QUERY, section }).length, section).toBeGreaterThan(20);
   });
 
   it("разделы не пустые: Узбекистан, чемпионаты мира, классика, последние годы; Синдаров, Карлсен, Каспаров, Карпов", () => {

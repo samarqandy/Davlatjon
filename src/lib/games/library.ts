@@ -6,6 +6,8 @@
  * века — общественное достояние. В сборку сайта эти файлы не входят: страница загружает их, когда тренер
  * открывает список. Свои пометки (разделы) считаем здесь, из данных партии, — в файлы-источники их не пишем.
  */
+import { Chess } from "chess.js";
+
 export type GameResult = "1-0" | "0-1" | "1/2-1/2";
 export type TimeControl = "c" | "r" | "b";
 
@@ -34,6 +36,10 @@ export interface LibGame {
   m: string;
   /** Семейство дебюта (по открытому списку Lichess, CC0) — ключ в OPENING_NAMES. */
   op?: string;
+  /** Код ECO по тому же списку. */
+  eco?: string;
+  /** Полуход, после которого на доске эндшпиль (у каждой стороны фигур не больше чем на ладью и лёгкую). */
+  en?: number;
   /** Где партия взята (страница партии, правка статьи). */
   src: string;
 }
@@ -230,7 +236,7 @@ export function prepare(file: LibFile): LoadedGame[] {
   });
 }
 
-export type Section = "all" | "uz" | "championship" | "classic" | "modern";
+export type Section = "all" | "uz" | "championship" | "famous" | "classic" | "modern" | "endgame" | "short";
 
 export interface GameQuery {
   text: string;
@@ -240,13 +246,42 @@ export interface GameQuery {
   to: number;
   result: "any" | GameResult;
   tc: "any" | TimeControl;
-  /** Семейство дебюта или «any». */
+  /** Семейство дебюта, группа дебютов («g:qg») или «any». */
   op: string;
 }
 
+/**
+ * Дебюты, которые проходят в школе, — кнопками; группа объединяет семейства одного дебюта (принятый и отказанный
+ * ферзевый гамбит — оба «Ферзевый гамбит»). name — ключ названия в OPENING_NAMES.
+ */
+export const OPENING_GROUPS: { key: string; name: string; families: string[] }[] = [
+  { key: "g:italian", name: "Italian Game", families: ["Italian Game"] },
+  { key: "g:sicilian", name: "Sicilian Defense", families: ["Sicilian Defense"] },
+  { key: "g:ruy", name: "Ruy Lopez", families: ["Ruy Lopez"] },
+  { key: "g:french", name: "French Defense", families: ["French Defense"] },
+  { key: "g:carokann", name: "Caro-Kann Defense", families: ["Caro-Kann Defense"] },
+  {
+    key: "g:qg",
+    name: "Queen's Gambit",
+    families: ["Queen's Gambit", "Queen's Gambit Declined", "Queen's Gambit Accepted"],
+  },
+  { key: "g:kid", name: "King's Indian Defense", families: ["King's Indian Defense"] },
+];
+
+const opMatches = (g: LibGame, op: string) =>
+  op === "any" ||
+  (op.startsWith("g:") ? !!OPENING_GROUPS.find((x) => x.key === op)?.families.includes(g.op ?? "") : g.op === op);
+
+/** Короткая победа — решённая партия не длиннее 30 ходов: такие партии ребёнку проще всего разобрать. */
+export const SHORT_PLIES = 60;
+
 export const EMPTY_QUERY: GameQuery = { text: "", section: "all", from: 0, to: 0, result: "any", tc: "any", op: "any" };
 
-/** Классика — партии до 1950 года; современные — с 2020 (трансляции). */
+/**
+ * Разделы. Классика — до 1950 года; последние годы — с 2020 (трансляции); знаменитые — партии со своим названием
+ * и знаменитые партии из статей и книги (не матчи за звание); эндшпиль — партия дошла до эндшпиля и в нём ещё
+ * было что играть; короткие победы — решённые партии не длиннее 30 ходов.
+ */
 export function inSection(g: LoadedGame, s: Section): boolean {
   switch (s) {
     case "all":
@@ -255,10 +290,16 @@ export function inSection(g: LoadedGame, s: Section): boolean {
       return g.uz;
     case "championship":
       return g.championship;
+    case "famous":
+      return !!g.t || g.set === "pd" || (g.set === "wikimedia" && !g.championship);
     case "classic":
       return g.y < 1950;
     case "modern":
       return g.y >= 2020;
+    case "endgame":
+      return g.en !== undefined;
+    case "short":
+      return g.res !== "1/2-1/2" && g.plies <= SHORT_PLIES;
   }
 }
 
@@ -271,7 +312,7 @@ export function filterGames(games: readonly LoadedGame[], q: GameQuery): LoadedG
     if (q.to && g.y > q.to) return false;
     if (q.result !== "any" && g.res !== q.result) return false;
     if (q.tc !== "any" && g.tc !== q.tc) return false;
-    if (q.op !== "any" && g.op !== q.op) return false;
+    if (!opMatches(g, q.op)) return false;
     return words.every((w) => (/^\d{4}$/.test(w) ? String(g.y) === w : g.text.includes(w)));
   });
 }
@@ -370,6 +411,33 @@ export function openingFamilies(games: readonly LoadedGame[]): [family: string, 
   const counts = new Map<string, number>();
   for (const g of games) if (g.op) counts.set(g.op, (counts.get(g.op) ?? 0) + 1);
   return [...counts].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+}
+
+/**
+ * Партия в PGN — для «Скачать PGN». Ходы — в записи SAN (их читает любая шахматная программа), в заголовке —
+ * источник и лицензия: партия из файла CC BY-SA остаётся под CC BY-SA и в скачанном файле.
+ */
+export function libraryPgn(g: LibGame, file?: Pick<LibFileMeta, "license" | "licenseUrl">): string {
+  const chess = g.fen ? new Chess(g.fen) : new Chess();
+  for (const u of g.m.split(" ")) chess.move({ from: u.slice(0, 2), to: u.slice(2, 4), promotion: u[4] ?? "q" });
+  const tags: [string, string | number | undefined][] = [
+    ["Event", g.ev],
+    ["Site", g.si ?? "?"],
+    ["Date", g.d ?? `${g.y}.??.??`],
+    ["Round", g.rd ?? "?"],
+    ["White", g.w],
+    ["Black", g.b],
+    ["Result", g.res],
+    ["WhiteElo", g.we],
+    ["BlackElo", g.be],
+    ["ECO", g.eco],
+    ["Source", g.src],
+    ["License", file ? [file.license, file.licenseUrl].filter(Boolean).join(" ") : undefined],
+  ];
+  if (g.fen) tags.push(["SetUp", "1"], ["FEN", g.fen]);
+  for (const [k, v] of tags) if (v !== undefined && v !== "") chess.setHeader(k, String(v));
+  const pgn = chess.pgn();
+  return /(1-0|0-1|1\/2-1\/2|\*)\s*$/.test(pgn) ? pgn : `${pgn} ${g.res}`;
 }
 
 /** Только для тестов. */
