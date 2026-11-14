@@ -931,3 +931,313 @@ html.i18n-wait::after {
 .board-grid[data-frame="print"] .board-files {
   color: #111827;
 }
+
+/*
+ * Доска тренера (MENTOR-1, src/components/chess/mentor). Анимации слоя стрелок и знаков: стрелка «прорисовывается»
+ * от начала к острию, кружок и знак появляются с лёгким увеличением, шторка — плавно. Ничего не мигает и не
+ * повторяется; задержек (animation-delay) нет — правило «меньше движения» выше сокращает длительность, но не задержку.
+ */
+@keyframes mentor-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes mentor-appear {
+  0%,
+  60% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes mentor-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes mentor-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+[data-mentor] .mentor-draw {
+  stroke-dasharray: 1;
+  animation: mentor-draw 250ms ease-out both;
+}
+[data-mentor] .mentor-appear {
+  animation: mentor-appear 250ms ease-out both;
+}
+[data-mentor] .mentor-pop {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: mentor-pop 180ms ease-out both;
+}
+[data-mentor] .mentor-fade {
+  animation: mentor-fade 250ms ease-out both;
+}
+
+/*
+ * Режим класса (#present): интерактивная панель или проектор. Слой во весь экран (и без полного экрана — там,
+ * где браузер его не даёт): слева колонка крупных кнопок, в середине доска во всю высоту, справа — чей ход,
+ * последний ход и задание крупно. Кнопки — не меньше 56 px и растут с экраном; частые — в нижней части колонки,
+ * куда учитель дотягивается сбоку от панели. Касание не листает и не увеличивает страницу, долгое нажатие
+ * не открывает меню. Слой всегда светлый (класс light-island): тёмная тема ноутбука на проекторе не видна.
+ * Размеры — в vh и vmin: панель 1920×1080 и 3840×2160 выглядит одинаково, только крупнее.
+ */
+html:has([data-mentor][data-present]) :is([data-site-header], [data-site-footer], [data-bottom-nav]) {
+  display: none;
+}
+html:has([data-mentor][data-present]) {
+  overflow: hidden;
+}
+[data-mentor][data-present] {
+  --btn-w: max(84px, 9vmin);
+  --btn-h: max(56px, 6.5vmin);
+  --btn-gap: max(8px, 1.2vmin);
+  --col-gap: max(12px, 1.6vmin);
+  --rail-w: calc(3 * var(--btn-w) + 2 * var(--btn-gap));
+  --board-size: min(calc(100dvh - 6vh), calc(100vw - var(--rail-w) - 12rem - 6vw - 2 * var(--col-gap)));
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  grid-template-columns: var(--rail-w) var(--board-size) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  grid-template-areas: "rail board info";
+  column-gap: var(--col-gap);
+  padding: 3vh 3vw;
+  overflow: hidden;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  color-scheme: light;
+  touch-action: none;
+  overscroll-behavior: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  animation: mentor-fade 200ms ease-out both;
+}
+[data-mentor][data-present][data-mentor-side="right"] {
+  grid-template-columns: minmax(0, 1fr) var(--board-size) var(--rail-w);
+  grid-template-areas: "info board rail";
+}
+[data-mentor][data-present] :is(input, textarea) {
+  user-select: text;
+  -webkit-user-select: text;
+  touch-action: manipulation;
+}
+[data-mentor][data-present] > header {
+  position: absolute;
+}
+[data-mentor][data-present] > .board-frame {
+  grid-area: board;
+  width: var(--board-size);
+  align-self: center;
+  justify-self: center;
+  margin: 0;
+}
+/* «Доска пониже»: маленький ученик у панели 86″ дотягивается до восьмой горизонтали. */
+[data-mentor][data-present][data-mentor-low] > .board-frame {
+  --board-size: min(58dvh, 100%);
+  align-self: end;
+  justify-self: start;
+}
+[data-mentor][data-present][data-mentor-low][data-mentor-side="right"] > .board-frame {
+  justify-self: end;
+}
+/* Буквы и цифры на рамке — крупно: их читают с последней парты. */
+[data-mentor][data-present] > .board-frame > .board-grid[data-frame="wood"] {
+  --g: max(22px, 5.2vh);
+  --f: max(15px, 3.6vh);
+  --edge: max(5px, 0.7vh);
+}
+[data-mentor][data-present] > .board-frame > .board-grid[data-coords-off] {
+  --g: var(--edge);
+}
+[data-mentor][data-present] [data-mentor-part="rail"] {
+  grid-area: rail;
+  display: flex;
+  flex-direction: column;
+  gap: var(--btn-gap);
+  min-height: 0;
+  padding-top: 5vh;
+}
+[data-mentor][data-present] .mentor-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--btn-gap);
+  margin-top: auto;
+}
+[data-mentor][data-present] .mentor-top {
+  margin-bottom: var(--btn-gap);
+}
+[data-mentor][data-present] .mentor-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--btn-gap);
+}
+[data-mentor][data-present] [data-mentor-control] {
+  min-height: var(--btn-h);
+  border-radius: max(16px, 1.8vmin);
+  font-size: max(14px, 1.7vh);
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-card);
+}
+[data-mentor][data-present] [data-mentor-control][aria-pressed="true"] {
+  background-color: var(--color-brand-soft);
+  box-shadow: inset 0 0 0 max(3px, 0.4vmin) var(--color-brand);
+}
+[data-mentor][data-present] [data-mentor-control]:is(.bg-brand) {
+  background-color: var(--color-brand);
+}
+[data-mentor][data-present] [data-mentor-control]:disabled {
+  background-color: transparent;
+  box-shadow: none;
+}
+[data-mentor][data-present] [data-mentor-control] .mentor-icon {
+  width: max(20px, 2.8vh);
+  height: max(20px, 2.8vh);
+}
+[data-mentor][data-present] [data-mentor-control].mentor-piece .mentor-icon {
+  width: max(32px, 5vh);
+  height: max(32px, 5vh);
+}
+[data-mentor][data-present] [data-mentor-part="info"] {
+  grid-area: info;
+  align-self: start;
+  min-width: 0;
+  max-height: 100%;
+  overflow: hidden;
+  padding-top: 4vh;
+}
+[data-mentor][data-present] .mentor-turn {
+  font-size: max(4.5vh, min(6.5vh, 3vw));
+  line-height: 1.1;
+}
+[data-mentor][data-present] .mentor-last {
+  margin-top: 2vh;
+  font-size: max(4.5vh, min(8vh, 3.6vw));
+  line-height: 1.1;
+}
+[data-mentor][data-present] .mentor-task {
+  margin-top: 2vh;
+  font-size: max(3.6vh, min(4.5vh, 2.2vw));
+  line-height: 1.2;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+}
+[data-mentor][data-present] .mentor-count {
+  margin-top: 2vh;
+  font-size: max(16px, 3vh);
+}
+[data-mentor][data-present] .mentor-moves {
+  margin-top: 2vh;
+  font-size: max(16px, 2.6vh);
+}
+/* Панель «Ещё» и готовые позиции — в верхней половине, над колонкой с ходом: клавиатура панели выезжает снизу. */
+[data-mentor][data-present] [data-mentor-part="sheet"] {
+  grid-area: info;
+  align-self: start;
+  z-index: 10;
+  max-height: 70dvh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  font-size: max(16px, 2.2vh);
+}
+
+/* Проектор 4:3 и 5:4: две колонки — кнопки и ход слева, доска справа (или наоборот). */
+@media (max-aspect-ratio: 3/2) {
+  [data-mentor][data-present] {
+    --board-size: min(calc(100dvh - 6vh), calc(100vw - var(--rail-w) - 6vw - var(--col-gap)));
+    grid-template-columns: var(--rail-w) var(--board-size);
+    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-areas:
+      "info board"
+      "rail board";
+  }
+  [data-mentor][data-present][data-mentor-side="right"] {
+    grid-template-columns: var(--board-size) var(--rail-w);
+    grid-template-areas:
+      "board info"
+      "board rail";
+  }
+  [data-mentor][data-present] [data-mentor-part="info"] {
+    padding-top: 0;
+  }
+  [data-mentor][data-present] [data-mentor-part="rail"] {
+    padding-top: var(--btn-gap);
+  }
+  [data-mentor][data-present] .mentor-turn {
+    font-size: max(20px, 3.2vh);
+  }
+  [data-mentor][data-present] :is(.mentor-last, .mentor-task) {
+    margin-top: 1vh;
+    font-size: max(18px, 2.8vh);
+  }
+  [data-mentor][data-present] .mentor-count {
+    margin-top: 1vh;
+    font-size: max(14px, 2.2vh);
+  }
+  [data-mentor][data-present] [data-mentor-part="sheet"] {
+    grid-area: board;
+  }
+}
+
+/* Экран стоит «портретом» (планшет, повёрнутая панель): ход, доска и кнопки — одной колонкой, листается вниз. */
+@media (max-aspect-ratio: 1/1) {
+  [data-mentor][data-present] {
+    --board-size: min(calc(100vw - 6vw), 62dvh);
+    --rail-w: min(100%, 40rem);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--btn-gap);
+    padding: 2vh 3vw;
+    overflow-x: hidden;
+    overflow-y: auto;
+    touch-action: pan-y;
+  }
+  [data-mentor][data-present] > :not(header) {
+    width: 100%;
+    max-width: 40rem;
+  }
+  [data-mentor][data-present] > .board-frame {
+    width: var(--board-size);
+    max-width: none;
+    order: 2;
+  }
+  [data-mentor][data-present] [data-mentor-part="info"] {
+    order: 1;
+    padding-top: 0;
+  }
+  [data-mentor][data-present] [data-mentor-part="rail"] {
+    order: 3;
+    padding-top: 0;
+  }
+  [data-mentor][data-present] [data-mentor-part="sheet"] {
+    order: 0;
+    max-height: none;
+  }
+  [data-mentor][data-present] .mentor-turn {
+    font-size: max(20px, 3vh);
+  }
+  [data-mentor][data-present] :is(.mentor-last, .mentor-task, .mentor-count) {
+    margin-top: 0.5vh;
+    font-size: max(16px, 2.4vh);
+  }
+}

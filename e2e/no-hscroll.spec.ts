@@ -32,6 +32,7 @@ const PAGES = [
   "/chess/endgames/pieces#eg-philidor-exercise-1",
   "/chess/coordinates",
   "/chess/analysis",
+  "/chess/mentor",
   "/chess/diary",
   "/my-problems",
   "/about",

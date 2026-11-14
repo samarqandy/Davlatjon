@@ -23,6 +23,20 @@ export const BOARD_THEMES: readonly BoardTheme[] = [
 
 export const DEFAULT_BOARD_THEME = BOARD_THEMES[0];
 
+/**
+ * Доска тренера в режиме класса (проектор, интерактивная панель): клетки контрастнее обычного «дерева»
+ * (4,3 : 1 вместо 2,3 : 1) — на засвеченном проекторе обычные клетки сливаются. Ребёнку в «Моей доске»
+ * не предлагается.
+ */
+export const CLASS_BOARD_THEME: BoardTheme = {
+  id: "class",
+  ru: "Для класса",
+  uz: "Sinf uchun",
+  light: "#f7efe2",
+  dark: "#946642",
+  frame: "#3b2a1a",
+};
+
 export function boardThemeOf(id: string | undefined): BoardTheme {
   return BOARD_THEMES.find((t) => t.id === id) ?? DEFAULT_BOARD_THEME;
 }

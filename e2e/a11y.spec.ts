@@ -52,6 +52,7 @@ const PAGES = [
   "/chess/tournaments",
   "/chess/tournaments#new",
   "/chess/glossary",
+  "/chess/mentor",
 ];
 
 async function violations(page: Page, url: string) {
@@ -104,6 +105,7 @@ const SCREENS = [
   "/chess/games",
   "/chess/games/ding-gukesh",
   "/chess/analysis",
+  "/chess/mentor#present",
   "/chess/history",
   "/chess/puzzles#theme-backrank",
   "/parent",
@@ -251,6 +253,8 @@ const TOUCH_PAGES = [
   "/chess/tournaments",
   "/chess/tournaments#new",
   "/chess/glossary",
+  "/chess/mentor",
+  "/chess/mentor#present",
 ];
 
 test("область нажатия на телефоне: кнопки, поля и ссылки-блоки не меньше 44 px", async ({ page, isMobile }) => {
