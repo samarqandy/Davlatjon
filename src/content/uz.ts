@@ -11,6 +11,7 @@ import type { Day, Week } from "./types";
 import { week1Uz } from "./week1/index.uz";
 import { week2Uz } from "./week2/index.uz";
 import { week3Uz } from "./week3/index.uz";
+import { week4Uz } from "./week4/index.uz";
 
 export interface WeekUz {
   title?: string;
@@ -20,7 +21,7 @@ export interface WeekUz {
   days: Record<string, Uz<Day>>;
 }
 
-export const WEEKS_UZ: Record<number, WeekUz> = { 1: week1Uz, 2: week2Uz, 3: week3Uz };
+export const WEEKS_UZ: Record<number, WeekUz> = { 1: week1Uz, 2: week2Uz, 3: week3Uz, 4: week4Uz };
 
 export function localizeDay(day: Day, lang: Lang): Day {
   if (lang === "ru") return day;

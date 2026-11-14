@@ -440,6 +440,8 @@ export function IsoCubesVisual({ heights }: { heights: number[][] }) {
       width={maxX - minX}
       height={maxY - minY}
       viewBox={`${minX} ${minY} ${maxX - minX} ${maxY - minY}`}
+      // Широкая постройка (пирамида 5 × 5) шире карточки на телефоне: уменьшаем рисунок, не обрезая его.
+      className="h-auto max-w-full"
       role="img"
       aria-label={t("Фигура из кубиков", "Kubiklardan yasalgan shakl")}
     >
