@@ -157,7 +157,8 @@ export function readSaved(storage: Pick<Storage, "getItem"> | null): Saved {
 }
 
 /** Все ходы всех досок урока делаются по правилам. */
-const playable = (lesson: MentorLesson) => lesson.boards.every((b) => fensOf(b.start, b.line).length === b.line.length + 1);
+const playable = (lesson: MentorLesson) =>
+  lesson.boards.every((b) => fensOf(b.start, b.line).length === b.line.length + 1);
 
 /**
  * Урок, который открыть: последний открытый, иначе самый свежий, иначе новый «Урок 1». Ходы проигрываются только
