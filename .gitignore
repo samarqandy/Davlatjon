@@ -49,3 +49,6 @@ __pycache__/
 
 # WASM-движки анимации копируются скриптом scripts/copy-anim-wasm.mjs после npm install
 /public/vendor/
+
+# Скачанные исходники для scripts/games (партии Lichess, Википедия) — не храним в репозитории
+/.cache/

@@ -1,0 +1,945 @@
+{
+  "files": {
+    "broadcasts": {
+      "file": "broadcasts.cc-by-sa-4.0.json",
+      "set": "lichess",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "source": "Lichess broadcasts",
+      "sourceUrl": "https://lichess.org/broadcast",
+      "attribution": "Партии из трансляций Lichess (lichess.org/broadcast); трансляции Lichess распространяются по лицензии CC BY-SA 4.0 (database.lichess.org)."
+    },
+    "wikimedia": {
+      "file": "wikimedia.cc-by-sa-4.0.json",
+      "set": "wikimedia",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "source": "Wikipedia, Wikimedia Commons",
+      "sourceUrl": "https://en.wikipedia.org/wiki/List_of_chess_games",
+      "attribution": "Ходы партий — из статей Википедии и страниц Викисклада (авторы — участники Викимедиа; правки указаны у каждой партии). Часть партий — по набору «Famous games and championship classics» проекта Kingfisher (github.com/mardakurt/kingfisher, CC BY-SA 4.0)."
+    },
+    "pd": {
+      "file": "public-domain.json",
+      "set": "pd",
+      "license": "Public domain",
+      "source": "J. R. Capablanca, Chess Fundamentals (1921)",
+      "sourceUrl": "https://www.gutenberg.org/ebooks/33870",
+      "attribution": "Партии из книги Х. Р. Капабланки «Chess Fundamentals» (1921)."
+    }
+  },
+  "broadcasts": [
+    {
+      "id": "A6snaCgb",
+      "kind": "wcc",
+      "event": "FIDE World Championship 2021",
+      "site": "Dubai",
+      "year": 2021
+    },
+    {
+      "id": "lrdHUzyS",
+      "kind": "wcc",
+      "event": "FIDE World Championship 2023",
+      "site": "Astana",
+      "year": 2023
+    },
+    {
+      "id": "n3yHJI5Y",
+      "kind": "wcc",
+      "event": "FIDE World Championship 2024",
+      "site": "Singapore",
+      "year": 2024
+    },
+    {
+      "id": "wEuVhT9c",
+      "kind": "candidates",
+      "event": "FIDE Candidates Tournament 2024",
+      "site": "Toronto",
+      "year": 2024
+    },
+    {
+      "id": "BLA70Vds",
+      "kind": "candidates",
+      "event": "FIDE Candidates Tournament 2026",
+      "site": "Paphos",
+      "year": 2026
+    },
+    {
+      "id": "CBWLKDSY",
+      "kind": "worldcup",
+      "event": "FIDE World Cup 2025",
+      "site": "Goa",
+      "year": 2025,
+      "stage": true
+    },
+    {
+      "id": "C8xGMEpX",
+      "kind": "worldcup",
+      "event": "FIDE World Cup 2025",
+      "site": "Goa",
+      "year": 2025,
+      "stage": true
+    },
+    {
+      "id": "sOK6GBCf",
+      "kind": "worldcup",
+      "event": "FIDE World Cup 2025",
+      "site": "Goa",
+      "year": 2025,
+      "stage": true
+    },
+    {
+      "id": "xLyRWYPA",
+      "kind": "worldcup",
+      "event": "FIDE World Cup 2025",
+      "site": "Goa",
+      "year": 2025,
+      "stage": true
+    },
+    {
+      "id": "zb9ruNEJ",
+      "kind": "worldcup-late",
+      "event": "FIDE World Cup 2025",
+      "site": "Goa",
+      "year": 2025,
+      "stage": true
+    },
+    {
+      "id": "4Zfj97D4",
+      "kind": "worldcup-late",
+      "event": "FIDE World Cup 2025",
+      "site": "Goa",
+      "year": 2025,
+      "stage": true
+    },
+    {
+      "id": "25zoKzpI",
+      "kind": "worldcup-late",
+      "event": "FIDE World Cup 2025",
+      "site": "Goa",
+      "year": 2025,
+      "stage": true
+    },
+    {
+      "id": "DqmmnYSq",
+      "kind": "worldcup-late",
+      "event": "FIDE World Cup 2025",
+      "site": "Goa",
+      "year": 2025,
+      "stage": true
+    },
+    {
+      "id": "41uXOrqR",
+      "kind": "olympiad",
+      "event": "44th Chess Olympiad 2022",
+      "site": "Chennai",
+      "year": 2022
+    },
+    {
+      "id": "boYEDCA3",
+      "kind": "olympiad",
+      "event": "44th Chess Olympiad 2022",
+      "site": "Chennai",
+      "year": 2022
+    },
+    {
+      "id": "wYigbpXq",
+      "kind": "olympiad",
+      "event": "45th Chess Olympiad 2024",
+      "site": "Budapest",
+      "year": 2024
+    },
+    {
+      "id": "M5YHvpOX",
+      "kind": "olympiad",
+      "event": "45th Chess Olympiad 2024",
+      "site": "Budapest",
+      "year": 2024
+    },
+    {
+      "id": "n1pPI5Q0",
+      "kind": "olympiad",
+      "event": "46th Chess Olympiad 2026",
+      "site": "Samarkand",
+      "year": 2026
+    },
+    {
+      "id": "MSQXIzkK",
+      "kind": "olympiad",
+      "event": "46th Chess Olympiad 2026",
+      "site": "Samarkand",
+      "year": 2026
+    },
+    {
+      "id": "vSyxclHS",
+      "kind": "swiss",
+      "event": "FIDE Grand Swiss 2025",
+      "site": "Samarkand",
+      "year": 2025
+    },
+    {
+      "id": "jR0BiOwR",
+      "kind": "elite",
+      "event": "Tata Steel Chess Masters 2025",
+      "site": "Wijk aan Zee",
+      "year": 2025
+    },
+    {
+      "id": "3COxSfdj",
+      "kind": "elite",
+      "event": "Tata Steel Chess Masters 2026",
+      "site": "Wijk aan Zee",
+      "year": 2026
+    },
+    {
+      "id": "qkY2yAcs",
+      "kind": "elite",
+      "event": "Norway Chess 2024",
+      "site": "Stavanger",
+      "year": 2024
+    },
+    {
+      "id": "PcsMbQ9J",
+      "kind": "elite",
+      "event": "Norway Chess 2025",
+      "site": "Stavanger",
+      "year": 2025
+    },
+    {
+      "id": "kDQUxYbE",
+      "kind": "elite",
+      "event": "Norway Chess 2026",
+      "site": "Oslo",
+      "year": 2026
+    },
+    {
+      "id": "YtMYEYu9",
+      "kind": "uzchess",
+      "event": "UzChess Cup Masters 2024",
+      "year": 2024
+    },
+    {
+      "id": "lucIoJ7L",
+      "kind": "uzchess",
+      "event": "UzChess Cup Masters 2025",
+      "year": 2025
+    },
+    {
+      "id": "QMIw7MZw",
+      "kind": "uzchess",
+      "event": "UzChess Cup Masters 2026",
+      "year": 2026
+    },
+    {
+      "id": "abGdZjix",
+      "kind": "rapid",
+      "event": "FIDE World Rapid Championship 2021",
+      "site": "Warsaw",
+      "year": 2021
+    }
+  ],
+  "kingfisher": {
+    "repo": "github.com/mardakurt/kingfisher",
+    "base": "https://raw.githubusercontent.com/mardakurt/kingfisher/master/public/data/annotated/",
+    "files": {
+      "famous-games-and-championship-classics.pgn": "2a0d0569f4d0c4df6f3ebdf120cae34368997bf7aacdd49b7fb17b87390872f6",
+      "capablanca-chess-fundamentals-1921.pgn": "05053d9a5d7b77a315c24f83e8df2486dd06e87524dc50846e92c7cb5d8a83a7"
+    },
+    "titles": {
+      "Evergreen Game": "Evergreen Game",
+      "Immortal Draw": "Immortal Draw",
+      "Immortal Game": "Immortal Game",
+      "Immortal Losing Game": "Immortal Losing Game",
+      "Immortal Zugzwang Game": "Immortal Zugzwang Game",
+      "Kasparov's Immortal": "Kasparov's Immortal",
+      "Opera Game": "Opera Game",
+      "The Game of the Century": "The Game of the Century",
+      "Kasparov versus the World": "Kasparov versus the World"
+    }
+  },
+  "names": {
+    "Deep Blue": "Deep Blue",
+    "The World": "The World",
+    "ChessGenius": "ChessGenius",
+    "Duke Karl / Count Isouard": "Duke Karl / Count Isouard",
+    "Louis Charles Mahe De La Bourdonnais": "La Bourdonnais, Louis-Charles Mahé de",
+    "Lionel Adalbert Bagration Felix Kieseritzky": "Kieseritzky, Lionel",
+    "Bobby Fischer": "Fischer, Robert James",
+    "Robert James Fischer": "Fischer, Robert James",
+    "Jose Raul Capablanca": "Capablanca, Jose Raul",
+    "Ding Liren": "Ding, Liren",
+    "Gukesh D": "Gukesh D",
+    "Capablanca, J. R.": "Capablanca, Jose Raul",
+    "Lasker, E.": "Lasker, Emanuel",
+    "Marshall, F. J.": "Marshall, Frank James",
+    "Rubinstein, A. K.": "Rubinstein, Akiba"
+  },
+  "wiki": [
+    {
+      "title": "FIDE World Chess Championship 2004",
+      "oldid": 1375754712,
+      "event": "FIDE World Chess Championship 2004",
+      "site": "Tripoli",
+      "year": 2004,
+      "games": [
+        {
+          "block": 0,
+          "w": "Adams, Michael",
+          "b": "Kasimdzhanov, Rustam",
+          "rd": "1",
+          "res": "1/2-1/2"
+        },
+        {
+          "block": 1,
+          "w": "Kasimdzhanov, Rustam",
+          "b": "Adams, Michael",
+          "rd": "2",
+          "res": "1-0"
+        },
+        {
+          "block": 2,
+          "w": "Adams, Michael",
+          "b": "Kasimdzhanov, Rustam",
+          "rd": "3",
+          "res": "1-0"
+        },
+        {
+          "block": 3,
+          "w": "Kasimdzhanov, Rustam",
+          "b": "Adams, Michael",
+          "rd": "4",
+          "res": "1-0"
+        },
+        {
+          "block": 4,
+          "w": "Adams, Michael",
+          "b": "Kasimdzhanov, Rustam",
+          "rd": "5",
+          "res": "1-0"
+        },
+        {
+          "block": 5,
+          "w": "Kasimdzhanov, Rustam",
+          "b": "Adams, Michael",
+          "rd": "6",
+          "res": "1/2-1/2"
+        },
+        {
+          "block": 6,
+          "w": "Adams, Michael",
+          "b": "Kasimdzhanov, Rustam",
+          "rd": "7",
+          "res": "0-1",
+          "tc": "r"
+        },
+        {
+          "block": 7,
+          "w": "Kasimdzhanov, Rustam",
+          "b": "Adams, Michael",
+          "rd": "8",
+          "res": "1/2-1/2",
+          "tc": "r"
+        }
+      ]
+    },
+    {
+      "title": "World Chess Championship 1985",
+      "oldid": 1375752212,
+      "event": "World Chess Championship 1985",
+      "site": "Moscow",
+      "year": 1985,
+      "games": [
+        {
+          "section": "Game 16",
+          "w": "Karpov, Anatoly",
+          "b": "Kasparov, Garry",
+          "rd": "16",
+          "res": "0-1"
+        }
+      ]
+    },
+    {
+      "title": "World Chess Championship 1986",
+      "oldid": 1375751950,
+      "event": "World Chess Championship 1986",
+      "site": "London / Leningrad",
+      "year": 1986,
+      "games": [
+        {
+          "block": 0,
+          "w": "Karpov, Anatoly",
+          "b": "Kasparov, Garry",
+          "rd": "1",
+          "res": "1/2-1/2"
+        },
+        {
+          "block": 1,
+          "w": "Kasparov, Garry",
+          "b": "Karpov, Anatoly",
+          "rd": "2",
+          "res": "1/2-1/2"
+        },
+        {
+          "block": 2,
+          "w": "Karpov, Anatoly",
+          "b": "Kasparov, Garry",
+          "rd": "3",
+          "res": "1/2-1/2"
+        },
+        {
+          "block": 3,
+          "w": "Kasparov, Garry",
+          "b": "Karpov, Anatoly",
+          "rd": "4",
+          "res": "1-0"
+        },
+        {
+          "block": 4,
+          "w": "Karpov, Anatoly",
+          "b": "Kasparov, Garry",
+          "rd": "5",
+          "res": "1-0"
+        },
+        {
+          "block": 5,
+          "w": "Kasparov, Garry",
+          "b": "Karpov, Anatoly",
+          "rd": "6",
+          "res": "1/2-1/2"
+        },
+        {
+          "block": 6,
+          "w": "Karpov, Anatoly",
+          "b": "Kasparov, Garry",
+          "rd": "7",
+          "res": "1/2-1/2"
+        },
+        {
+          "block": 7,
+          "w": "Kasparov, Garry",
+          "b": "Karpov, Anatoly",
+          "rd": "8",
+          "res": "1-0"
+        },
+        {
+          "block": 8,
+          "w": "Karpov, Anatoly",
+          "b": "Kasparov, Garry",
+          "rd": "9",
+          "res": "1/2-1/2"
+        },
+        {
+          "block": 9,
+          "w": "Kasparov, Garry",
+          "b": "Karpov, Anatoly",
+          "rd": "10",
+          "res": "1/2-1/2"
+        },
+        {
+          "block": 10,
+          "w": "Karpov, Anatoly",
+          "b": "Kasparov, Garry",
+          "rd": "11",
+          "res": "1/2-1/2"
+        },
+        {
+          "block": 11,
+          "w": "Kasparov, Garry",
+          "b": "Karpov, Anatoly",
+          "rd": "12",
+          "res": "1/2-1/2"
+        },
+        {
+          "block": 12,
+          "w": "Karpov, Anatoly",
+          "b": "Kasparov, Garry",
+          "rd": "13",
+          "res": "1/2-1/2"
+        },
+        {
+          "block": 13,
+          "w": "Kasparov, Garry",
+          "b": "Karpov, Anatoly",
+          "rd": "14",
+          "res": "1-0"
+        },
+        {
+          "block": 14,
+          "w": "Karpov, Anatoly",
+          "b": "Kasparov, Garry",
+          "rd": "15",
+          "res": "1/2-1/2"
+        },
+        {
+          "block": 15,
+          "w": "Kasparov, Garry",
+          "b": "Karpov, Anatoly",
+          "rd": "16",
+          "res": "1-0"
+        },
+        {
+          "block": 16,
+          "w": "Karpov, Anatoly",
+          "b": "Kasparov, Garry",
+          "rd": "17",
+          "res": "1-0"
+        },
+        {
+          "block": 17,
+          "w": "Kasparov, Garry",
+          "b": "Karpov, Anatoly",
+          "rd": "18",
+          "res": "0-1"
+        },
+        {
+          "block": 18,
+          "w": "Karpov, Anatoly",
+          "b": "Kasparov, Garry",
+          "rd": "19",
+          "res": "1-0"
+        },
+        {
+          "block": 19,
+          "w": "Kasparov, Garry",
+          "b": "Karpov, Anatoly",
+          "rd": "20",
+          "res": "1/2-1/2"
+        },
+        {
+          "block": 20,
+          "w": "Karpov, Anatoly",
+          "b": "Kasparov, Garry",
+          "rd": "21",
+          "res": "1/2-1/2"
+        },
+        {
+          "block": 21,
+          "w": "Kasparov, Garry",
+          "b": "Karpov, Anatoly",
+          "rd": "22",
+          "res": "1-0"
+        },
+        {
+          "block": 22,
+          "w": "Karpov, Anatoly",
+          "b": "Kasparov, Garry",
+          "rd": "23",
+          "res": "1/2-1/2"
+        },
+        {
+          "block": 23,
+          "w": "Kasparov, Garry",
+          "b": "Karpov, Anatoly",
+          "rd": "24",
+          "res": "1/2-1/2"
+        }
+      ]
+    },
+    {
+      "title": "World Chess Championship 2013",
+      "oldid": 1376804174,
+      "event": "World Chess Championship 2013",
+      "site": "Chennai",
+      "year": 2013,
+      "games": [
+        {
+          "block": 0,
+          "w": "Carlsen, Magnus",
+          "b": "Anand, Viswanathan",
+          "rd": "1",
+          "res": "1/2-1/2"
+        },
+        {
+          "block": 1,
+          "w": "Anand, Viswanathan",
+          "b": "Carlsen, Magnus",
+          "rd": "2",
+          "res": "1/2-1/2"
+        },
+        {
+          "block": 2,
+          "w": "Carlsen, Magnus",
+          "b": "Anand, Viswanathan",
+          "rd": "3",
+          "res": "1/2-1/2"
+        },
+        {
+          "block": 3,
+          "w": "Anand, Viswanathan",
+          "b": "Carlsen, Magnus",
+          "rd": "4",
+          "res": "1/2-1/2"
+        },
+        {
+          "block": 4,
+          "w": "Carlsen, Magnus",
+          "b": "Anand, Viswanathan",
+          "rd": "5",
+          "res": "1-0"
+        },
+        {
+          "block": 5,
+          "w": "Anand, Viswanathan",
+          "b": "Carlsen, Magnus",
+          "rd": "6",
+          "res": "0-1"
+        },
+        {
+          "block": 6,
+          "w": "Anand, Viswanathan",
+          "b": "Carlsen, Magnus",
+          "rd": "7",
+          "res": "1/2-1/2"
+        },
+        {
+          "block": 7,
+          "w": "Carlsen, Magnus",
+          "b": "Anand, Viswanathan",
+          "rd": "8",
+          "res": "1/2-1/2"
+        },
+        {
+          "block": 8,
+          "w": "Anand, Viswanathan",
+          "b": "Carlsen, Magnus",
+          "rd": "9",
+          "res": "0-1"
+        },
+        {
+          "block": 9,
+          "w": "Carlsen, Magnus",
+          "b": "Anand, Viswanathan",
+          "rd": "10",
+          "res": "1/2-1/2"
+        }
+      ]
+    },
+    {
+      "title": "World Chess Championship 2016",
+      "oldid": 1377798885,
+      "event": "World Chess Championship 2016",
+      "site": "New York",
+      "year": 2016,
+      "games": [
+        {
+          "block": 0,
+          "w": "Carlsen, Magnus",
+          "b": "Karjakin, Sergey",
+          "rd": "1",
+          "res": "1/2-1/2"
+        },
+        {
+          "block": 1,
+          "w": "Karjakin, Sergey",
+          "b": "Carlsen, Magnus",
+          "rd": "2",
+          "res": "1/2-1/2"
+        },
+        {
+          "block": 2,
+          "w": "Carlsen, Magnus",
+          "b": "Karjakin, Sergey",
+          "rd": "3",
+          "res": "1/2-1/2"
+        },
+        {
+          "block": 3,
+          "w": "Karjakin, Sergey",
+          "b": "Carlsen, Magnus",
+          "rd": "4",
+          "res": "1/2-1/2"
+        },
+        {
+          "block": 4,
+          "w": "Carlsen, Magnus",
+          "b": "Karjakin, Sergey",
+          "rd": "5",
+          "res": "1/2-1/2"
+        },
+        {
+          "block": 5,
+          "w": "Karjakin, Sergey",
+          "b": "Carlsen, Magnus",
+          "rd": "6",
+          "res": "1/2-1/2"
+        },
+        {
+          "block": 6,
+          "w": "Karjakin, Sergey",
+          "b": "Carlsen, Magnus",
+          "rd": "7",
+          "res": "1/2-1/2"
+        },
+        {
+          "block": 7,
+          "w": "Carlsen, Magnus",
+          "b": "Karjakin, Sergey",
+          "rd": "8",
+          "res": "0-1"
+        },
+        {
+          "block": 8,
+          "w": "Karjakin, Sergey",
+          "b": "Carlsen, Magnus",
+          "rd": "9",
+          "res": "1/2-1/2"
+        },
+        {
+          "block": 9,
+          "w": "Carlsen, Magnus",
+          "b": "Karjakin, Sergey",
+          "rd": "10",
+          "res": "1-0"
+        },
+        {
+          "block": 10,
+          "w": "Karjakin, Sergey",
+          "b": "Carlsen, Magnus",
+          "rd": "11",
+          "res": "1/2-1/2"
+        },
+        {
+          "block": 11,
+          "w": "Carlsen, Magnus",
+          "b": "Karjakin, Sergey",
+          "rd": "12",
+          "res": "1/2-1/2"
+        },
+        {
+          "block": 12,
+          "w": "Karjakin, Sergey",
+          "b": "Carlsen, Magnus",
+          "rd": "13",
+          "res": "1/2-1/2",
+          "tc": "r"
+        },
+        {
+          "block": 13,
+          "w": "Carlsen, Magnus",
+          "b": "Karjakin, Sergey",
+          "rd": "14",
+          "res": "1/2-1/2",
+          "tc": "r"
+        },
+        {
+          "block": 14,
+          "w": "Karjakin, Sergey",
+          "b": "Carlsen, Magnus",
+          "rd": "15",
+          "res": "0-1",
+          "tc": "r"
+        },
+        {
+          "block": 15,
+          "w": "Carlsen, Magnus",
+          "b": "Karjakin, Sergey",
+          "rd": "16",
+          "res": "1-0",
+          "tc": "r"
+        }
+      ]
+    },
+    {
+      "title": "World Chess Championship 2014",
+      "oldid": 1377112266,
+      "event": "World Chess Championship 2014",
+      "site": "Sochi",
+      "year": 2014,
+      "games": [
+        {
+          "block": 0,
+          "w": "Anand, Viswanathan",
+          "b": "Carlsen, Magnus",
+          "rd": "1",
+          "res": "1/2-1/2"
+        },
+        {
+          "block": 1,
+          "w": "Carlsen, Magnus",
+          "b": "Anand, Viswanathan",
+          "rd": "2",
+          "res": "1-0"
+        },
+        {
+          "block": 2,
+          "w": "Anand, Viswanathan",
+          "b": "Carlsen, Magnus",
+          "rd": "3",
+          "res": "1-0"
+        },
+        {
+          "block": 3,
+          "w": "Carlsen, Magnus",
+          "b": "Anand, Viswanathan",
+          "rd": "4",
+          "res": "1/2-1/2"
+        },
+        {
+          "block": 4,
+          "w": "Anand, Viswanathan",
+          "b": "Carlsen, Magnus",
+          "rd": "5",
+          "res": "1/2-1/2"
+        },
+        {
+          "block": 5,
+          "w": "Carlsen, Magnus",
+          "b": "Anand, Viswanathan",
+          "rd": "6",
+          "res": "1-0"
+        },
+        {
+          "block": 6,
+          "w": "Carlsen, Magnus",
+          "b": "Anand, Viswanathan",
+          "rd": "7",
+          "res": "1/2-1/2"
+        },
+        {
+          "block": 7,
+          "w": "Anand, Viswanathan",
+          "b": "Carlsen, Magnus",
+          "rd": "8",
+          "res": "1/2-1/2"
+        },
+        {
+          "block": 8,
+          "w": "Carlsen, Magnus",
+          "b": "Anand, Viswanathan",
+          "rd": "9",
+          "res": "1/2-1/2"
+        },
+        {
+          "block": 9,
+          "w": "Anand, Viswanathan",
+          "b": "Carlsen, Magnus",
+          "rd": "10",
+          "res": "1/2-1/2"
+        },
+        {
+          "block": 10,
+          "w": "Carlsen, Magnus",
+          "b": "Anand, Viswanathan",
+          "rd": "11",
+          "res": "1-0"
+        }
+      ]
+    },
+    {
+      "title": "World Chess Championship 2018",
+      "oldid": 1379339785,
+      "event": "World Chess Championship 2018",
+      "site": "London",
+      "year": 2018,
+      "games": [
+        {
+          "block": 0,
+          "w": "Caruana, Fabiano",
+          "b": "Carlsen, Magnus",
+          "rd": "1",
+          "res": "1/2-1/2"
+        },
+        {
+          "block": 1,
+          "w": "Carlsen, Magnus",
+          "b": "Caruana, Fabiano",
+          "rd": "2",
+          "res": "1/2-1/2"
+        },
+        {
+          "block": 2,
+          "w": "Caruana, Fabiano",
+          "b": "Carlsen, Magnus",
+          "rd": "3",
+          "res": "1/2-1/2"
+        },
+        {
+          "block": 3,
+          "w": "Carlsen, Magnus",
+          "b": "Caruana, Fabiano",
+          "rd": "4",
+          "res": "1/2-1/2"
+        },
+        {
+          "block": 4,
+          "w": "Caruana, Fabiano",
+          "b": "Carlsen, Magnus",
+          "rd": "5",
+          "res": "1/2-1/2"
+        },
+        {
+          "block": 5,
+          "w": "Carlsen, Magnus",
+          "b": "Caruana, Fabiano",
+          "rd": "6",
+          "res": "1/2-1/2"
+        },
+        {
+          "block": 6,
+          "w": "Carlsen, Magnus",
+          "b": "Caruana, Fabiano",
+          "rd": "7",
+          "res": "1/2-1/2"
+        },
+        {
+          "block": 7,
+          "w": "Caruana, Fabiano",
+          "b": "Carlsen, Magnus",
+          "rd": "8",
+          "res": "1/2-1/2"
+        },
+        {
+          "block": 8,
+          "w": "Carlsen, Magnus",
+          "b": "Caruana, Fabiano",
+          "rd": "9",
+          "res": "1/2-1/2"
+        },
+        {
+          "block": 9,
+          "w": "Caruana, Fabiano",
+          "b": "Carlsen, Magnus",
+          "rd": "10",
+          "res": "1/2-1/2"
+        },
+        {
+          "block": 10,
+          "w": "Carlsen, Magnus",
+          "b": "Caruana, Fabiano",
+          "rd": "11",
+          "res": "1/2-1/2"
+        },
+        {
+          "block": 11,
+          "w": "Caruana, Fabiano",
+          "b": "Carlsen, Magnus",
+          "rd": "12",
+          "res": "1/2-1/2"
+        },
+        {
+          "block": 12,
+          "w": "Carlsen, Magnus",
+          "b": "Caruana, Fabiano",
+          "rd": "13",
+          "res": "1-0",
+          "tc": "r"
+        },
+        {
+          "block": 13,
+          "w": "Caruana, Fabiano",
+          "b": "Carlsen, Magnus",
+          "rd": "14",
+          "res": "0-1",
+          "tc": "r"
+        },
+        {
+          "block": 14,
+          "w": "Carlsen, Magnus",
+          "b": "Caruana, Fabiano",
+          "rd": "15",
+          "res": "1-0",
+          "tc": "r"
+        }
+      ]
+    }
+  ]
+}

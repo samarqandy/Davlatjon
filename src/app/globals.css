@@ -1198,6 +1198,12 @@ html:has([data-mentor][data-present]) {
   touch-action: pan-y;
   font-size: max(16px, 2.2vh);
 }
+/* База партий — на месте доски и во всю её высоту: список длинный, а доска, пока выбирают партию, не нужна. */
+[data-mentor][data-present] [data-mentor-part="sheet"][data-mentor-sheet="games"] {
+  grid-area: board;
+  align-self: stretch;
+  max-height: none;
+}
 
 /*
  * Две колонки — кнопки и ход с одной стороны, доска с другой — на проекторе 4:3 и 5:4 и на невысоком экране.

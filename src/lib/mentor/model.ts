@@ -361,6 +361,8 @@ export type Action =
   | { t: "setLessonTitle"; text: string }
   | { t: "addBoard" }
   | { t: "dupBoard" }
+  /** Партия из библиотеки — новой доской после текущей (или вместо нетронутой), с начала партии. */
+  | { t: "addGame"; start: string; line: string[]; task: string; orientation?: "white" | "black" }
   | { t: "deleteBoard" }
   | { t: "undo" }
   | { t: "redo" }
@@ -617,6 +619,27 @@ export function apply(h: History, a: Action): Result {
         ply: a.t === "dupBoard" ? d.ply : 0,
         trial: null,
       });
+    }
+    case "addGame": {
+      // Нетронутая доска (начальная позиция, ни ходов, ни пометок, ни задания) уступает место партии — иначе
+      // первая партия урока открылась бы второй доской после пустой.
+      const blank = !d.trial && !b.line.length && !b.task && b.start === START_FEN && !Object.keys(b.shapes).length;
+      if ((!blank && d.lesson.boards.length >= LIMITS.boards) || !isFenShape(a.start)) {
+        return { history: h, refused: true };
+      }
+      const start = normalizeFen(a.start);
+      const line = a.line.slice(0, LIMITS.plies).filter(isUci);
+      const created: MentorBoard = {
+        ...newBoard(start, a.orientation ?? "white"),
+        task: a.task.slice(0, LIMITS.task),
+        // Ходы, которые нельзя сделать, в урок не попадают (иначе урок не прочтётся из хранилища).
+        line: line.slice(0, fensOf(start, line).length - 1),
+      };
+      const boards = d.lesson.boards.slice();
+      if (d.trial) boards[d.board] = { ...b, line: d.trial.line, shapes: d.trial.shapes };
+      if (blank) boards[d.board] = created;
+      else boards.splice(d.board + 1, 0, created);
+      return edit(h, { lesson: { ...d.lesson, boards }, board: blank ? d.board : d.board + 1, ply: 0, trial: null });
     }
     case "deleteBoard": {
       if (d.lesson.boards.length <= 1) {

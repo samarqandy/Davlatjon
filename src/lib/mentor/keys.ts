@@ -45,6 +45,8 @@ export interface KeyContext {
   pending: boolean;
   curtain: boolean;
   sheetOpen: boolean;
+  /** Открыта панель, закрывающая доску (база партий в режиме класса): работает только Escape. */
+  sheetModal?: boolean;
 }
 
 export function mentorKey(e: KeyInput, ctx: KeyContext): KeyAction | null {
@@ -58,6 +60,7 @@ export function mentorKey(e: KeyInput, ctx: KeyContext): KeyAction | null {
     if (ctx.sheetOpen) return "closeSheet";
     return null;
   }
+  if (ctx.sheetModal) return null;
   if (e.target === "text") return null;
   if (mod && !e.altKey) {
     if (e.code === "KeyZ") return e.shiftKey ? "redo" : "undo";

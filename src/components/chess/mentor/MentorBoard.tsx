@@ -10,6 +10,7 @@ import {
   Eraser,
   EyeOff,
   LayoutGrid,
+  Library,
   LogOut,
   Maximize,
   Move,
@@ -18,10 +19,12 @@ import {
   Redo2,
   Undo2,
 } from "lucide-react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { Button, cn, Icon } from "@/components/ui";
 import { CLASS_BOARD_THEME } from "@/lib/boardLook";
+import { gameTask, type LoadedGame } from "@/lib/games/library";
 import { checkedKing, isPromotionMove, legalTargets, pieceAt, withTurn } from "@/lib/chess";
 import { useSan, useT } from "@/lib/i18n";
 import { keyTargetOf, mentorKey, type KeyAction } from "@/lib/mentor/keys";
@@ -60,6 +63,12 @@ import { usePromotion } from "../useMoveInput";
 import { MentorDeck, MentorMoves, MentorSettings, PRESETS } from "./MentorPanels";
 import { MentorOverlay } from "./MentorOverlay";
 import { ColorGlyph, MentorButton, MentorRow, SignGlyph } from "./MentorTools";
+
+// База партий грузится, только когда её открыли: и код списка, и сами партии.
+const MentorGames = dynamic(() => import("./MentorGames").then((m) => m.MentorGames), {
+  ssr: false,
+  loading: () => null,
+});
 
 /** Урок до загрузки из хранилища (и на сервере): одна доска с начальной позицией. */
 const INITIAL: MentorLesson = {
@@ -116,7 +125,13 @@ const PIECE_NAMES: Record<string, [ru: string, uz: string]> = {
 };
 
 type Tool = "arrow" | SignKind;
-type Sheet = null | "more" | "presets";
+type Sheet = null | "more" | "presets" | "games";
+
+const SHEET_OPENER: Record<Exclude<Sheet, null>, string> = {
+  more: "[data-mentor-more]",
+  presets: "[data-mentor-presets-button]",
+  games: "[data-mentor-games-button]",
+};
 
 /**
  * Доска тренера: показать классу позицию и ход мысли. Три режима — ходить, рисовать (стрелки, кружки, знаки),
@@ -259,7 +274,7 @@ export function MentorBoard() {
   const sheetOpener = useRef<string | null>(null);
   const toggleSheet = (which: Exclude<Sheet, null>) => {
     if (sheet === which) return closeSheet();
-    sheetOpener.current = which === "more" ? "[data-mentor-more]" : "[data-mentor-presets-button]";
+    sheetOpener.current = SHEET_OPENER[which];
     setSheet(which);
     // В режиме класса панель — диалог рядом с доской: фокус переходит в неё (иначе до неё — вся колонка кнопок).
     if (present) requestAnimationFrame(() => sheetRef.current?.focus());
@@ -333,6 +348,8 @@ export function MentorBoard() {
         pending: !!pending,
         curtain,
         sheetOpen: !!sheet,
+        // База партий в режиме класса закрывает доску: пульт и стрелки не листают доску, которой не видно.
+        sheetModal: present && sheet === "games",
       },
     );
     if (!k) return;
@@ -679,6 +696,30 @@ export function MentorBoard() {
     />
   );
 
+  const gamesBtn = (
+    <MentorButton
+      icon={Library}
+      label={t("Партии", "Partiyalar")}
+      name={t("Партии: база партий", "Partiyalar: partiyalar bazasi")}
+      pressed={sheet === "games"}
+      aria-expanded={sheet === "games"}
+      data-mentor-games-button
+      onClick={() => toggleSheet("games")}
+    />
+  );
+
+  /** Партия из базы — на доску урока с начала; дальше тренер листает ходы «Дальше». */
+  const openGame = (g: LoadedGame): boolean => {
+    pick(null);
+    setPendingAt(null);
+    const ok = run({ t: "addGame", start: g.fen ?? START_FEN, line: g.m.split(" "), task: gameTask(g, t) });
+    if (!ok) return false;
+    if (mode !== "move") setPref({ mode: "move" });
+    sheetOpener.current = "[data-mentor-next]";
+    closeSheet();
+    return true;
+  };
+
   const loadPreset = (id: string) => {
     const p = PRESETS.find((x) => x.id === id);
     if (!p) return;
@@ -696,6 +737,7 @@ export function MentorBoard() {
           {flip}
           {navFirst}
           {navLast}
+          {gamesBtn}
           {trialBtn}
         </div>
       ) : null
@@ -1052,6 +1094,14 @@ export function MentorBoard() {
             </p>
           )}
           {sheet === "presets" && <div className="rounded-3xl bg-surface p-4 shadow-card">{presetsList}</div>}
+          <MentorRow present={false} label={t("Партии", "Partiyalar")}>
+            {gamesBtn}
+          </MentorRow>
+          {sheet === "games" && (
+            <div className="rounded-3xl bg-surface p-4 shadow-card" data-mentor-games-card>
+              <MentorGames present={false} onOpen={openGame} onClose={closeSheet} />
+            </div>
+          )}
           <MentorRow present={false} label={t("Просмотр ходов", "Yurishlarni koʻrish")}>
             {navFirst}
             {navPrev}
@@ -1114,14 +1164,22 @@ export function MentorBoard() {
           aria-label={
             sheet === "presets"
               ? t("Готовые позиции", "Tayyor pozitsiyalar")
-              : t("Настройки показа", "Koʻrsatish sozlamalari")
+              : sheet === "games"
+                ? t("База партий", "Partiyalar bazasi")
+                : t("Настройки показа", "Koʻrsatish sozlamalari")
           }
           tabIndex={-1}
           data-mentor-part="sheet"
           className="mentor-sheet rounded-3xl bg-surface p-4 shadow-lift outline-none"
           data-mentor-sheet={sheet}
         >
-          {sheet === "presets" ? presetsList : settings}
+          {sheet === "presets" ? (
+            presetsList
+          ) : sheet === "games" ? (
+            <MentorGames present onOpen={openGame} onClose={closeSheet} />
+          ) : (
+            settings
+          )}
         </div>
       )}
     </section>
