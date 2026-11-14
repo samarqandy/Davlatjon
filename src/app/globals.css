@@ -1198,11 +1198,55 @@ html:has([data-mentor][data-present]) {
   touch-action: pan-y;
   font-size: max(16px, 2.2vh);
 }
-/* База партий — на месте доски и во всю её высоту: список длинный, а доска, пока выбирают партию, не нужна. */
+/*
+ * База партий — во весь экран: доска, пока выбирают партию, не нужна. Слева поиск и фильтры, справа список;
+ * листаются по отдельности, поиск всегда наверху (клавиатура панели выезжает снизу).
+ */
 [data-mentor][data-present] [data-mentor-part="sheet"][data-mentor-sheet="games"] {
-  grid-area: board;
+  grid-column: 1 / -1;
+  grid-row: 1 / -1;
   align-self: stretch;
   max-height: none;
+  overflow: hidden;
+  padding: max(16px, 2.4vh) max(16px, 2vw);
+}
+[data-mentor][data-present] .mentor-games {
+  height: 100%;
+  display: grid;
+  grid-template-columns: minmax(16rem, 2fr) minmax(0, 3fr);
+  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-areas:
+    "head head"
+    "controls results";
+  gap: max(10px, 1.6vh) max(16px, 2vw);
+}
+[data-mentor][data-present] .mentor-games-head {
+  grid-area: head;
+}
+[data-mentor][data-present] :is(.mentor-games-controls, .mentor-games-results) {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+}
+[data-mentor][data-present] .mentor-games-controls {
+  grid-area: controls;
+}
+[data-mentor][data-present] .mentor-games-results {
+  grid-area: results;
+}
+/* Экран-«портрет» (повёрнутая панель): одна колонка, листается весь список. */
+@media (max-aspect-ratio: 1/1) {
+  [data-mentor][data-present] [data-mentor-part="sheet"][data-mentor-sheet="games"] {
+    overflow-y: auto;
+  }
+  [data-mentor][data-present] .mentor-games {
+    height: auto;
+    display: flex;
+    flex-direction: column;
+  }
+  [data-mentor][data-present] :is(.mentor-games-controls, .mentor-games-results) {
+    overflow: visible;
+  }
 }
 
 /*

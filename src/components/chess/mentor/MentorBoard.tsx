@@ -1094,9 +1094,15 @@ export function MentorBoard() {
             </p>
           )}
           {sheet === "presets" && <div className="rounded-3xl bg-surface p-4 shadow-card">{presetsList}</div>}
-          <MentorRow present={false} label={t("Партии", "Partiyalar")}>
-            {gamesBtn}
-          </MentorRow>
+          <Button
+            variant="soft"
+            className="w-full"
+            aria-expanded={sheet === "games"}
+            data-mentor-games-button
+            onClick={() => toggleSheet("games")}
+          >
+            <Icon icon={Library} /> {t("Партии мастеров: открыть из базы", "Ustalar partiyalari: bazadan ochish")}
+          </Button>
           {sheet === "games" && (
             <div className="rounded-3xl bg-surface p-4 shadow-card" data-mentor-games-card>
               <MentorGames present={false} onOpen={openGame} onClose={closeSheet} />

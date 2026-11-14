@@ -232,24 +232,32 @@ export function fensOf(start: string, line: readonly string[]): PlyInfo[] {
   const hit = fensCache.get(key);
   if (hit) return hit;
   const out: PlyInfo[] = [startInfo(start)];
-  let fen = start;
   const kings = hasBothKings(start);
-  for (const uci of line) {
-    let m: ReturnType<typeof playUci> = null;
+  // Одна доска chess.js на всю линию: партия из базы — это и 250 полуходов, а разбирать FEN заново на каждом
+  // ходу впятеро дольше (на панели класса партия открывалась бы с заметной задержкой). Ход тот же, что у playUci:
+  // буква превращения обязательна, без неё («e7e8») ход не принимается.
+  let chess: Chess | null = null;
+  try {
+    chess = loadPosition(start);
+  } catch {
+    chess = null;
+  }
+  for (const uci of chess ? line : []) {
+    let m;
     try {
-      m = playUci(fen, uci);
+      m = chess!.move({ from: uci.slice(0, 2), to: uci.slice(2, 4), promotion: uci[4] ?? "q" });
     } catch {
-      m = null;
+      break;
     }
-    if (!m || m.uci !== uci) break;
-    fen = m.fen;
+    const played = `${m.from}${m.to}${m.promotion ?? ""}`;
+    if (played !== uci) break;
     out.push({
-      fen,
+      fen: chess!.fen(),
       san: m.san,
-      uci: m.uci,
-      check: m.check,
-      mate: kings && m.mate,
-      stalemate: kings && m.stalemate,
+      uci: played,
+      check: chess!.inCheck(),
+      mate: kings && chess!.isCheckmate(),
+      stalemate: kings && chess!.isStalemate(),
     });
   }
   if (fensCache.size > 200) fensCache.clear();

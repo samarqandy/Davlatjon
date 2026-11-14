@@ -164,11 +164,13 @@ const CYR: Record<string, string> = {
 
 /** Для поиска: строчные буквы, кириллица — латиницей, без апострофов и знаков. «Синдаров» → «sindarov». */
 export function searchKey(text: string): string {
+  // Сначала кириллица (иначе разложение NFKD превратит «й» в «и», а «ё» в «е»), потом убираем ударения латиницы.
   return text
     .toLowerCase()
-    .normalize("NFKD")
-    .replace(/[̀-ͯ]/g, "")
+    .normalize("NFC")
     .replace(/[а-яёўқғҳ]/g, (ch) => CYR[ch] ?? ch)
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
     .replace(/[ʻʼ'’`]/g, "")
     .replace(/[^a-z0-9]+/g, " ")
     .trim();
@@ -337,11 +339,14 @@ export function roundText(g: LibGame, t: (ru: string, uz: string) => string): st
 /** Турнир и год одной строкой: год не повторяем, если он уже есть в названии турнира. */
 export const eventText = (g: LibGame) => (/\b\d{4}\b/.test(g.ev) ? g.ev : `${g.ev}, ${g.y}`);
 
-/** Задание на доске урока: кто с кем, где и когда (до 140 знаков, как у задания). */
+/**
+ * Задание на доске урока: кто с кем, где и когда (до 140 знаков, как у задания). Результата нет: класс видит
+ * задание с первого хода, а чем кончится партия, ученики узнают по ходу разбора.
+ */
 export function gameTask(g: LoadedGame, t: (ru: string, uz: string) => string): string {
   const title = g.t ? (TITLES[g.t] ? t(TITLES[g.t].ru, TITLES[g.t].uz) : g.t) : null;
   const round = roundText(g, t);
-  const parts = [title, `${g.w} – ${g.b}`, eventText(g), round, resultText(g.res)].filter(Boolean);
+  const parts = [title, `${g.w} – ${g.b}`, eventText(g), round].filter(Boolean);
   return parts.join(" · ").slice(0, 140);
 }
 

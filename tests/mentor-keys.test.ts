@@ -142,3 +142,20 @@ describe("Escape, пробел и Enter", () => {
     }
   });
 });
+
+describe("база партий в режиме класса закрывает доску", () => {
+  it("пульт, стрелки, шторка и «отменить» не трогают доску, которой не видно; Escape закрывает базу", () => {
+    const modal = { present: true, sheetOpen: true, sheetModal: true };
+    const codes = ["PageDown", "PageUp", "ArrowRight", "ArrowLeft", "Home", "End", "Period", "KeyB", "KeyF", "F5"];
+    for (const target of TARGETS) {
+      for (const code of codes) expect(press(code, { target }, modal)).toBeNull();
+      expect(press("KeyZ", { target, ctrlKey: true }, modal)).toBeNull();
+      expect(press("Escape", { target }, modal)).toBe("closeSheet");
+    }
+  });
+
+  it("без базы партий всё как раньше", () => {
+    expect(press("PageDown", {}, { present: true, sheetOpen: true })).toBe("next");
+    expect(press("PageDown", {}, { present: true, sheetOpen: true, sheetModal: false })).toBe("next");
+  });
+});
