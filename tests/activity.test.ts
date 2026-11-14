@@ -102,3 +102,14 @@ describe("активность в сохранении и слиянии", () =>
     expect(sameProgress(a, b)).toBe(false);
   });
 });
+
+describe("какие страницы считаются временем ребёнка", () => {
+  it("доска тренера (урок в классе на общей панели) — не время ребёнка; анализ — время ребёнка", async () => {
+    const { isChildPath } = await import("@/components/progress/ActivityTracker");
+    expect(isChildPath("/chess/mentor")).toBe(false);
+    expect(isChildPath("/uz/chess/mentor")).toBe(false);
+    expect(isChildPath("/chess/analysis")).toBe(true);
+    expect(isChildPath("/chess/mentorship")).toBe(true);
+    expect(isChildPath("/parent")).toBe(false);
+  });
+});

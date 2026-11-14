@@ -325,6 +325,16 @@ export function ChessSchool({ counts, summary }: { counts: ChessSchoolCounts; su
       stat: t("Для учителя и родителей", "Oʻqituvchi va ota-onalar uchun"),
     },
     {
+      href: "/chess/mentor",
+      emoji: "🎓",
+      title: t("Доска тренера", "Murabbiy taxtasi"),
+      text: t(
+        "Покажите позицию классу на большом экране: стрелки и знаки пальцем, расстановка за секунды, урок из нескольких досок.",
+        "Pozitsiyani sinfga katta ekranda koʻrsating: barmoq bilan strelka va belgilar, bir zumda joylash, bir nechta taxtadan iborat dars.",
+      ),
+      stat: t("Для учителя", "Oʻqituvchi uchun"),
+    },
+    {
       href: "/chess/collection",
       emoji: "🃏",
       title: t("Коллекция героев", "Qahramonlar kolleksiyasi"),

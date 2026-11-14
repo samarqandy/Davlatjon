@@ -40,6 +40,7 @@ const TITLE_UZ: Record<string, string> = {
   Эндшпиль: "Endshpil",
   "Эндшпиль: ладья, ферзь и слон": "Endshpil: rux, farzin va fil",
   "Доска анализа": "Tahlil taxtasi",
+  "Доска тренера": "Murabbiy taxtasi",
   Тренажёры: "Trenajyorlar",
 };
 

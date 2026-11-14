@@ -8,6 +8,7 @@ import {
   useState,
   type CSSProperties,
   type KeyboardEvent as ReactKeyboardEvent,
+  type ReactNode,
 } from "react";
 import { Chessboard, type PieceRenderObject, type PositionDataType } from "react-chessboard";
 import { cn } from "@/components/ui";
@@ -22,7 +23,7 @@ import {
   type BoardKey,
   type Snapshot,
 } from "@/lib/board";
-import { boardThemeOf } from "@/lib/boardLook";
+import { boardThemeOf, type BoardTheme } from "@/lib/boardLook";
 import { useLang, useT } from "@/lib/i18n";
 import { playSfx, sfxUnlock } from "@/lib/sfx";
 import { useStore } from "@/lib/store";
@@ -140,6 +141,12 @@ export function ChessBoard({
   rejectFeedback = true,
   promotion = null,
   showTurn = true,
+  animationMs = 180,
+  theme: themeOverride,
+  markStyles,
+  overlay,
+  fingerDrag = false,
+  onDropOff,
   className,
 }: {
   id: string;
@@ -171,6 +178,18 @@ export function ChessBoard({
   frame?: "wood" | "print";
   /** Квадратик в углу рамки: □ — ходят белые, ■ — чёрные (как в шахматных книгах). Только для FEN 8 × 8. */
   showTurn?: boolean;
+  /** Сколько длится ход фигуры, мс (на большом экране — дольше: фигура проходит до метра). */
+  animationMs?: number;
+  /** Цвета доски вместо выбранных на устройстве (доска тренера в режиме класса). */
+  theme?: BoardTheme;
+  /** Свой вид отметок клеток (контрастнее на большом экране). */
+  markStyles?: Partial<Record<SquareMark, CSSProperties>>;
+  /** Слой поверх клеток (стрелки и знаки доски тренера): лежит над фигурами, под окошком превращения. */
+  overlay?: ReactNode;
+  /** Фигура в руке — как под пальцем, даже если ведут пером или мышью (интерактивная панель). */
+  fingerDrag?: boolean;
+  /** Фигуру унесли за доску и отпустили там. */
+  onDropOff?: (from: string) => void;
   className?: string;
 }) {
   const t = useT();
@@ -191,6 +210,13 @@ export function ChessBoard({
   const tapSquare = (square: string) => {
     if (onSquare?.(square) === false) reject(square);
   };
+  // Обработчики перетаскивания библиотека запоминает (handleDragStart — до смены расстановки,
+  // handleDragEnd — до начала перетаскивания). Через ссылку они всегда вызывают свежие onSquare и onDrop:
+  // иначе перетаскивание после правки без смены позиции (режим, выбранная фигура набора) работало бы по-старому.
+  const latest = useRef({ tapSquare, onDrop, onDropOff, reject });
+  useEffect(() => {
+    latest.current = { tapSquare, onDrop, onDropOff, reject };
+  });
 
   // Клавиатура: рамка-курсор ходит стрелками, Enter или пробел — «нажать» на клетку. Так же, как пальцем:
   // у досок с onSquare — их собственная логика выбора, у досок только с перетаскиванием — «откуда», затем «куда».
@@ -206,7 +232,7 @@ export function ChessBoard({
 
   // Звук хода: сравниваем новую расстановку с прошлой.
   const themeId = useStore((s) => s.settings.boardTheme);
-  const theme = boardThemeOf(themeId);
+  const theme = themeOverride ?? boardThemeOf(themeId);
   // Набор фигур — тоже настройка устройства; на печати фигуры всегда классические (чёрно-белые диаграммы).
   const pieceSetId = useStore((s) => s.settings.pieceSet);
   const pieces = piecesOf(frame === "print" ? undefined : pieceSetId);
@@ -259,8 +285,8 @@ export function ChessBoard({
   }, [onBoard, lang]);
 
   const squareStyles: Record<string, CSSProperties> = {};
-  for (const [sq, m] of Object.entries(marks)) if (m) squareStyles[sq] = MARK_STYLE[m];
-  if (keyFrom) squareStyles[keyFrom] = { ...squareStyles[keyFrom], ...MARK_STYLE.selected };
+  for (const [sq, m] of Object.entries(marks)) if (m) squareStyles[sq] = markStyles?.[m] ?? MARK_STYLE[m];
+  if (keyFrom) squareStyles[keyFrom] = { ...squareStyles[keyFrom], ...(markStyles?.selected ?? MARK_STYLE.selected) };
   if (rejected) squareStyles[rejected.square] = { ...squareStyles[rejected.square], ...REJECTED_STYLE };
   if (keyboard && cursor) {
     const under = squareStyles[cursor]?.boxShadow;
@@ -360,7 +386,7 @@ export function ChessBoard({
         sfxUnlock();
         pointerAt.current = Date.now();
         setKeyboard(false);
-        setFinger(e.pointerType === "touch");
+        setFinger(fingerDrag || e.pointerType === "touch");
       }}
       onKeyDown={interactive ? onKeyDown : undefined}
       onFocus={(e) => {
@@ -434,7 +460,7 @@ export function ChessBoard({
               arrows: promotion
                 ? []
                 : arrows.map((a) => ({ startSquare: a.from, endSquare: a.to, color: a.color ?? "#16a34a" })),
-              animationDurationInMs: 180,
+              animationDurationInMs: animationMs,
               // Родитель выключил анимации или система просит меньше движения — фигура встаёт сразу.
               showAnimations: motion,
               showNotation: false,
@@ -454,20 +480,26 @@ export function ChessBoard({
                   }
                 : undefined,
               // Взял фигуру — она выбрана, видны клетки, куда можно пойти.
-              onPieceDrag: onSquare ? ({ square }) => void (square && tapSquare(square)) : undefined,
+              onPieceDrag: onSquare ? ({ square }) => void (square && latest.current.tapSquare(square)) : undefined,
               onPieceDrop: ({ sourceSquare, targetSquare }) => {
-                if (!targetSquare) return false;
+                const now = latest.current;
+                if (!targetSquare) {
+                  now.onDropOff?.(sourceSquare);
+                  return false;
+                }
                 if (targetSquare === sourceSquare) {
                   dragEnd.current = { square: sourceSquare, at: Date.now() };
                   return false;
                 }
                 dragEnd.current = null;
-                const ok = onDrop ? onDrop(sourceSquare, targetSquare) : false;
-                if (!ok && onDrop) reject(targetSquare);
+                const ok = now.onDrop ? now.onDrop(sourceSquare, targetSquare) : false;
+                if (!ok && now.onDrop) now.reject(targetSquare);
                 return ok;
               },
             }}
           />
+          {/* Слой рисунков — после доски библиотеки (поверх фигур), до окошка превращения (оно поверх слоя). */}
+          {overlay && <div className="pointer-events-none absolute inset-0 z-10">{overlay}</div>}
           {promotion && (
             <PromotionPicker request={promotion} cols={cols} rows={rows} orientation={orientation} pieces={pieces} />
           )}

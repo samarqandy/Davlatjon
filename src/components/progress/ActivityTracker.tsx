@@ -12,7 +12,8 @@ const FLUSH_MS = 30_000;
 const EVENTS = ["pointerdown", "keydown", "touchstart", "wheel", "scroll"] as const;
 
 /** Страницы взрослых и печать — не время ребёнка. */
-export const isChildPath = (path: string) => !path.startsWith("/parent") && !/\/print\/?$/.test(path);
+export const isChildPath = (path: string) =>
+  !path.startsWith("/parent") && !/\/print\/?$/.test(path) && !/^(\/uz)?\/chess\/mentor(\/|$)/.test(path);
 
 /**
  * Считает активное время ребёнка: вкладка видна и недавно что-то нажимали. Раз в полминуты и при
