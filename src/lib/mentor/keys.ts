@@ -45,12 +45,16 @@ export interface KeyContext {
   pending: boolean;
   curtain: boolean;
   sheetOpen: boolean;
+  /** Открыта панель, закрывающая доску (база партий в режиме класса): работает только Escape. */
+  sheetModal?: boolean;
 }
 
 export function mentorKey(e: KeyInput, ctx: KeyContext): KeyAction | null {
   const mod = !!(e.ctrlKey || e.metaKey);
   if (e.code === "Space" || e.code === "Enter" || e.code === "NumpadEnter") return null;
   if (e.code === "Escape") {
+    // База партий закрывает всё остальное: Escape сначала закрывает её (шторка под ней остаётся на месте).
+    if (ctx.sheetModal) return "closeSheet";
     // Окошко превращения пешки закрывается своей клавишей Escape.
     if (ctx.promotionOpen) return null;
     if (ctx.pending) return "cancelPending";
@@ -58,6 +62,7 @@ export function mentorKey(e: KeyInput, ctx: KeyContext): KeyAction | null {
     if (ctx.sheetOpen) return "closeSheet";
     return null;
   }
+  if (ctx.sheetModal) return null;
   if (e.target === "text") return null;
   if (mod && !e.altKey) {
     if (e.code === "KeyZ") return e.shiftKey ? "redo" : "undo";

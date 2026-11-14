@@ -804,6 +804,80 @@ describe("доски урока", () => {
   });
 });
 
+describe("партия из базы (addGame)", () => {
+  const GAME = { t: "addGame", start: START_FEN, line: LINE, task: "Морфи – герцог, Париж, 1858" } as const;
+
+  it("нетронутая доска уступает место партии: доска одна, с начала партии; «Отменить» возвращает пустую", () => {
+    const h0 = fresh();
+    const h = go(h0, { t: "goto", ply: 0 }, GAME);
+    expect(h.doc.lesson.boards).toHaveLength(1);
+    expect(h.doc.board).toBe(0);
+    expect(h.doc.ply).toBe(0);
+    expect(board(h)).toMatchObject({ start: START_FEN, line: LINE, task: GAME.task, orientation: "white" });
+    expect(board(h).id).not.toBe(board(h0).id);
+    const back = go(h, { t: "undo" });
+    expect(back.doc.lesson.boards).toEqual(h0.doc.lesson.boards);
+  });
+
+  it("доска с ходами, заданием или пометками остаётся: партия — новой доской сразу за ней", () => {
+    for (const h0 of [
+      withLine(),
+      go(fresh(), { t: "setTask", text: "Найди мат" }),
+      go(fresh(), { t: "ring", sq: "e4", c: "G" }),
+      fresh(EMPTY_FEN),
+      lessonOf({ line: ["d2d4"] }, { line: ["c2c4"] }),
+    ]) {
+      const h = go(h0, GAME);
+      expect(h.doc.lesson.boards).toHaveLength(h0.doc.lesson.boards.length + 1);
+      expect(h.doc.board).toBe(1);
+      expect(h.doc.lesson.boards[0]).toEqual(h0.doc.lesson.boards[0]);
+      expect(board(h).line).toEqual(LINE);
+    }
+  });
+
+  it("из пробного варианта: у прежней доски остаётся партия, а партия из базы открывается рядом", () => {
+    const h0 = go(withLine(["d2d4", "d7d5", "c2c4"]), { t: "goto", ply: 2 }, { t: "play", uci: "g1f3" });
+    expect(h0.doc.trial).not.toBeNull();
+    const h = go(h0, GAME);
+    expect(h.doc.lesson.boards[0].line).toEqual(["d2d4", "d7d5", "c2c4"]);
+    expect(h.doc.trial).toBeNull();
+    expect(board(h).line).toEqual(LINE);
+  });
+
+  it("ходы после первого невозможного не берутся; задание обрезается до 140 знаков; сторона доски — как просили", () => {
+    const h = go(withLine(), {
+      t: "addGame",
+      start: START_FEN,
+      line: ["e2e4", "e7e5", "e1e3", "g1f3", "xx", "b8c6"],
+      task: "т".repeat(300),
+      orientation: "black",
+    });
+    expect(board(h).line).toEqual(["e2e4", "e7e5"]);
+    expect(board(h).task).toHaveLength(LIMITS.task);
+    expect(board(h).orientation).toBe("black");
+  });
+
+  it("испорченное начало отвергается; при 40 досках новая партия не открывается, а нетронутая доска — заменяется", () => {
+    expect(apply(fresh(), { ...GAME, start: "8/8/8 w - - 0 1" }).refused).toBe(true);
+    let h = withLine();
+    for (let i = 1; i < LIMITS.boards; i++) h = go(h, { t: "dupBoard" });
+    const r = apply(h, GAME);
+    expect(r.refused).toBe(true);
+    expect(r.history).toBe(h);
+    const blank = go(h, { t: "deleteBoard" }, { t: "addBoard" }, { t: "setPosition", fen: START_FEN });
+    expect(blank.doc.lesson.boards).toHaveLength(LIMITS.boards);
+    const replaced = go(blank, GAME);
+    expect(replaced.doc.lesson.boards).toHaveLength(LIMITS.boards);
+    expect(board(replaced).line).toEqual(LINE);
+  });
+
+  it("урок с партией из базы читается из хранилища как был", () => {
+    const h = go(withLine(), GAME);
+    const lesson = persistable(h.doc);
+    expect(parseLesson(JSON.parse(JSON.stringify(lesson)))).toEqual(lesson);
+  });
+});
+
 // ─── FEN и PGN ──────────────────────────────────────────────────────────────
 
 describe("разбор FEN и PGN", () => {
@@ -968,6 +1042,84 @@ describe("разбор FEN и PGN", () => {
     expect(playUci(START_FEN, "e2e5")).toBeNull();
     expect(playUci("8/4P3/8/8/8/8/8/k6K w - - 0 1", "e7e8")?.uci).toBe("e7e8q");
   });
+
+  /** Как fensOf считал раньше: каждый ход — с разбора FEN заново (playUci). Новый счёт обязан совпадать. */
+  function stepByStep(start: string, line: readonly string[]) {
+    const out = [fensOf(start, [])[0]];
+    let at = start;
+    const kings = (at.split(" ")[0].match(/[kK]/g) ?? []).length === 2;
+    for (const uci of line) {
+      let m: ReturnType<typeof playUci> = null;
+      try {
+        m = playUci(at, uci);
+      } catch {
+        m = null;
+      }
+      if (!m || m.uci !== uci) break;
+      at = m.fen;
+      out.push({
+        fen: at,
+        san: m.san,
+        uci: m.uci,
+        check: m.check,
+        mate: kings && m.mate,
+        stalemate: kings && m.stalemate,
+      });
+    }
+    return out;
+  }
+
+  it("после взятия короля (позиция из расстановки) ходы считаются как раньше", () => {
+    // Чёрный король под ударом ладьи, ладья защищена слоном: белые берут короля, чёрные ходят пешкой.
+    const start = "4k3/8/8/7B/8/p7/4R3/6K1 w - - 0 1";
+    for (const line of [
+      ["e2e8", "a3a2"],
+      ["e2e8", "a3a2", "e8a8"],
+      ["h5e8", "a3a2", "e2e7", "a2a1q"],
+    ]) {
+      expect(fensOf(start, line)).toEqual(stepByStep(start, line));
+      expect(fensOf(start, line)).toHaveLength(line.length + 1);
+    }
+    // Урок с такой доской сохраняется и читается обратно.
+    const h = go(lessonOf({ start }), { t: "play", uci: "e2e8" }, { t: "play", uci: "a3a2" });
+    expect(board(h).line).toEqual(["e2e8", "a3a2"]);
+    expect(h.doc.ply).toBe(2);
+    expect(parseLesson(JSON.parse(JSON.stringify(persistable(h.doc))))).not.toBeNull();
+  });
+
+  it("одна доска на всю линию даёт то же, что разбор позиции на каждом ходу: случайные партии, порча, превращения", () => {
+    let s = 7;
+    const rand = () => (s = (s * 1664525 + 1013904223) >>> 0) / 2 ** 32;
+    const starts = [
+      START_FEN,
+      PAWNS_ONLY,
+      QUEEN_VS_PAWNS,
+      "8/4P3/8/8/8/8/8/k6K w - - 0 1",
+      "4k3/P6P/8/8/8/8/p6p/4K3 w - - 0 1",
+      // Короля можно взять: случайные линии иногда так и делают.
+      "4k3/8/8/7B/8/p7/4R3/6K1 w - - 0 1",
+      "r3k3/8/8/8/8/8/8/R3K2R b - - 0 1",
+    ];
+    for (let n = 0; n < 28; n++) {
+      const start = starts[n % starts.length];
+      const line: string[] = [];
+      const c = new Chess(start, { skipValidation: true });
+      for (let i = 0; i < 90; i++) {
+        const moves = c.moves({ verbose: true });
+        if (!moves.length) break;
+        const m = moves[Math.floor(rand() * moves.length)];
+        c.move(m);
+        line.push(`${m.from}${m.to}${m.promotion ?? ""}`);
+      }
+      // Порча: ход без буквы превращения, чужой ход, мусор — линия обрывается там же, где и раньше.
+      const spoiled = line.slice();
+      const at = Math.floor(rand() * (spoiled.length + 1));
+      spoiled.splice(at, 0, ["e2e4", "a1a8", "zz", "e7e8", spoiled[at - 1] ?? "h2h4"][n % 5]);
+      for (const l of [line, spoiled, line.map((u) => u.slice(0, 4))]) {
+        expect(fensOf(start, l)).toEqual(stepByStep(start, l));
+      }
+    }
+  }, 60_000);
 });
 
 // ─── Свойства: случайные правки ─────────────────────────────────────────────
