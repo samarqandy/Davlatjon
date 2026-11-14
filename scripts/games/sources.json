@@ -948,7 +948,7 @@
   },
   "openings": {
     "repo": "github.com/lichess-org/chess-openings (CC0)",
-    "base": "https://raw.githubusercontent.com/lichess-org/chess-openings/master/",
+    "base": "https://raw.githubusercontent.com/lichess-org/chess-openings/3ba6b20d31b2e6125cb0e6a2e792f400717d9d39/",
     "files": {
       "a.tsv": "3282e4c9155289a29224f9a85fba0decb46efa35c2fa5e39662d2ac48fb0f793",
       "b.tsv": "2744a3890879bd9dce79093147fe5b6c3a9d9d42a3388af698e67b6829be1c48",

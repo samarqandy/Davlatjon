@@ -21,7 +21,7 @@ import {
 import { useSan, useT } from "@/lib/i18n";
 import { plural } from "@/lib/plural";
 import { setHash, useHash } from "@/lib/useHash";
-import { GamesBrowser, useLibrary } from "./GamesBrowser";
+import { GamesBrowser, useLibrary, type LibraryState } from "./GamesBrowser";
 
 const START = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
@@ -41,19 +41,43 @@ function positions(g: LoadedGame): { fen: string; from: string; to: string; san:
  * Википедия и Викисклад, книга Капабланки), тот же поиск — и просмотр партии ход за ходом. Экран партии — по
  * адресу «#id партии»: им можно поделиться, а «Назад» браузера возвращает к списку на то же место.
  */
+/**
+ * Партия из адреса «#id». Испорченная ссылка («#50%») не роняет страницу, а якорь, который называет элемент
+ * страницы (ссылка «Перейти к содержанию» → «#main»), — не партия: тогда виден список.
+ */
+function gameIdOf(hash: string): string {
+  if (hash.length < 2) return "";
+  let id = hash.slice(1);
+  try {
+    id = decodeURIComponent(id);
+  } catch {
+    // Оставляем как есть: такой партии не найдётся, и экран так и скажет.
+  }
+  return typeof document !== "undefined" && document.getElementById(id) ? "" : id;
+}
+
 export function GameBase() {
   const t = useT();
-  const hash = useHash();
-  const id = hash.length > 1 ? decodeURIComponent(hash.slice(1)) : "";
+  const id = gameIdOf(useHash());
+  // Одна загрузка на страницу: «Ещё раз» на экране партии чинит и список, а открытие партии не грузит базу заново.
+  const library = useLibrary();
   // Где стоял список и какую партию открыли: по возвращении — туда же, фокус на ту же строку.
   const back = useRef<{ y: number; id: string } | null>(null);
+  const shown = useRef("");
 
   useEffect(() => {
-    if (id || !back.current) return;
-    const { y, id: was } = back.current;
+    const was = shown.current;
+    shown.current = id;
+    if (id || !was) return;
+    const from = back.current;
     back.current = null;
-    window.scrollTo({ top: y, behavior: "instant" });
-    document.querySelector<HTMLElement>(`[data-games-item="${CSS.escape(was)}"]`)?.focus({ preventScroll: true });
+    if (from) {
+      window.scrollTo({ top: from.y, behavior: "instant" });
+      const row = document.querySelector<HTMLElement>(`[data-games-item="${CSS.escape(from.id)}"]`);
+      if (row) return row.focus({ preventScroll: true });
+    }
+    // Вошли по ссылке (или строки уже нет) — фокус на заголовок списка, а не в никуда.
+    document.getElementById("games-base-title")?.focus({ preventScroll: true });
   }, [id]);
 
   return (
@@ -63,6 +87,7 @@ export function GameBase() {
         <GamesBrowser
           audience="child"
           page
+          library={library}
           titleId="games-base-title"
           hrefOf={(g) => `#${g.id}`}
           onPick={(g) => {
@@ -78,7 +103,7 @@ export function GameBase() {
                 <p className="text-sm font-extrabold tracking-wide text-brand uppercase">
                   {t("Шахматная школа", "Shaxmat maktabi")}
                 </p>
-                <h1 id="games-base-title" className="text-3xl font-black">
+                <h1 id="games-base-title" tabIndex={-1} className="text-3xl font-black">
                   {t("База партий мастеров", "Ustalar partiyalari bazasi")}
                 </h1>
                 <p className="mt-1 max-w-2xl text-muted">
@@ -95,6 +120,7 @@ export function GameBase() {
       {id && (
         <GameScreen
           id={id}
+          library={library}
           onBack={() => {
             // Пришли из списка — шаг назад по истории (список вернётся на то же место); вошли по ссылке — к списку.
             if (back.current) window.history.back();
@@ -106,9 +132,16 @@ export function GameBase() {
   );
 }
 
-function GameScreen({ id, onBack }: { id: string; onBack: () => void }) {
+function GameScreen({
+  id,
+  library: { lib, failed, busy, retry },
+  onBack,
+}: {
+  id: string;
+  library: LibraryState;
+  onBack: () => void;
+}) {
   const t = useT();
-  const { lib, failed, busy, retry } = useLibrary();
   const game = lib?.games.find((g) => g.id === id);
   const backButton = (
     <Button variant="ghost" size="sm" className="-ml-2 justify-self-start" onClick={onBack} data-games-back>
@@ -119,15 +152,24 @@ function GameScreen({ id, onBack }: { id: string; onBack: () => void }) {
   if (game)
     return <GameView key={game.id} game={game} file={lib!.files.find((f) => f.set === game.set)} back={backButton} />;
 
+  // Партии нет на экране — заголовок экрана говорит, что с ней: грузится, не загрузилась или такой нет.
+  const state = !lib && !failed ? "loading" : failed || (lib && lib.missing.length > 0) ? "failed" : "missing";
   return (
     <div className="space-y-4">
       {backButton}
-      {!lib && !failed && (
-        <p className="font-bold text-muted" role="status">
-          {t("Загружаем партию…", "Partiya yuklanmoqda…")}
-        </p>
-      )}
-      {(failed || (lib && lib.missing.length > 0)) && (
+      <h1
+        className="text-2xl font-black"
+        aria-live="polite"
+        data-games-loading={state === "loading" || undefined}
+        data-games-not-found={state === "missing" || undefined}
+      >
+        {state === "loading"
+          ? t("Загружаем партию…", "Partiya yuklanmoqda…")
+          : state === "failed"
+            ? t("Партия не загрузилась", "Partiya yuklanmadi")
+            : t("Такой партии в базе нет", "Bazada bunday partiya yoʻq")}
+      </h1>
+      {state === "failed" && (
         <div role="alert" className="space-y-2 rounded-2xl bg-warning-soft p-3 font-bold text-warning-ink">
           <p>
             {t(
@@ -140,9 +182,12 @@ function GameScreen({ id, onBack }: { id: string; onBack: () => void }) {
           </Button>
         </div>
       )}
-      {lib && !lib.missing.length && (
-        <p className="text-lg font-bold" role="alert" data-games-not-found>
-          {t("Такой партии в базе нет.", "Bazada bunday partiya yoʻq.")}
+      {state === "missing" && (
+        <p className="text-lg text-muted">
+          {t(
+            "Ссылка, похоже, неточная. Найди партию в списке.",
+            "Havola notoʻgʻri boʻlsa kerak. Partiyani roʻyxatdan top.",
+          )}
         </p>
       )}
     </div>
@@ -167,8 +212,8 @@ function GameView({ game: g, file, back }: { game: LoadedGame; file?: LibFileMet
 
   useEffect(() => {
     if (!isPlaying) return;
-    // На начале эндшпиля — пауза подольше: под доской появляется подпись.
-    const timer = setTimeout(() => setPly((p) => p + 1), ply + 1 === g.en ? 2600 : 1300);
+    // На начале эндшпиля — пауза подольше: подпись под доской успевают прочитать.
+    const timer = setTimeout(() => setPly((p) => p + 1), ply === g.en ? 2600 : 1300);
     return () => clearTimeout(timer);
   }, [isPlaying, ply, g.en]);
 
@@ -333,12 +378,12 @@ function GameView({ game: g, file, back }: { game: LoadedGame; file?: LibFileMet
         <ol
           ref={movesRef}
           aria-labelledby="game-base-moves"
-          className="relative grid max-h-[22rem] grid-cols-[auto_1fr_1fr] gap-x-2 gap-y-0.5 overflow-y-auto text-[0.95rem]"
+          className="relative grid max-h-[24rem] grid-cols-[auto_1fr_1fr] gap-x-2 gap-y-0.5 overflow-y-auto text-[0.95rem]"
         >
           {startBlack && (
             <li className="contents">
-              <span className="text-muted">{line[0].fen.split(" ")[5]}.</span>
-              <span>…</span>
+              <span className="self-center text-muted">{line[0].fen.split(" ")[5]}.</span>
+              <span className="self-center">…</span>
               <MoveButton p={1} ply={ply} go={go} text={san(line[1].san)} />
             </li>
           )}
@@ -346,7 +391,7 @@ function GameView({ game: g, file, back }: { game: LoadedGame; file?: LibFileMet
             const first = 2 * i + 1 + (startBlack ? 1 : 0);
             return (
               <li key={first} className="contents">
-                <span className="text-muted">{line[first - 1].fen.split(" ")[5]}.</span>
+                <span className="self-center text-muted">{line[first - 1].fen.split(" ")[5]}.</span>
                 {[first, first + 1].map((p) =>
                   p <= total ? (
                     <MoveButton key={p} p={p} ply={ply} go={go} text={san(line[p].san)} endgame={p === g.en} />
@@ -409,7 +454,8 @@ function MoveButton({
       onClick={() => go(p)}
       aria-current={p === ply ? "true" : undefined}
       className={cn(
-        "rounded-md px-1.5 py-0.5 text-left font-bold hover:bg-brand-soft",
+        // Не ниже 44 px: по ходу в списке попадают пальцем.
+        "flex min-h-11 items-center rounded-lg px-1.5 text-left font-bold hover:bg-brand-soft",
         p === ply && "bg-brand text-white hover:bg-brand",
         endgame && p !== ply && "text-brand-dark underline decoration-dotted",
       )}

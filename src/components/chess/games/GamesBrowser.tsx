@@ -28,8 +28,11 @@ import { plural } from "@/lib/plural";
 /** Сколько строк списка показывать сразу и сколько добавлять по «Показать ещё». */
 const PAGE = 40;
 
-/** Последний запрос — до перезагрузки страницы: партии открывают одну за другой из одной выборки. */
-let lastQuery: GameQuery = EMPTY_QUERY;
+/**
+ * Последний запрос каждого экрана (по id заголовка) — до перезагрузки страницы: партии открывают одну за другой
+ * из одной выборки. У доски тренера и у страницы учеников запросы свои: поиск тренера не переходит к детям.
+ */
+const lastQuery: Record<string, GameQuery> = {};
 
 const SECTIONS: Section[] = ["all", "uz", "championship", "famous", "classic", "modern", "endgame", "short"];
 
@@ -49,13 +52,21 @@ const SOURCE_TEXT: Record<string, [ru: string, uz: string]> = {
   ],
 };
 
-/** Загрузить базу партий (один раз за страницу); при сбое — «Ещё раз». */
-export function useLibrary() {
+export interface LibraryState {
+  lib: Library | null;
+  failed: boolean;
+  busy: boolean;
+  retry: () => void;
+}
+
+/** Загрузить базу партий (один раз за страницу); при сбое — «Ещё раз». enabled = false — не грузить (база уже есть). */
+export function useLibrary(enabled = true): LibraryState {
   const [lib, setLib] = useState<Library | null>(null);
   const [failed, setFailed] = useState(false);
-  const [busy, setBusy] = useState(true);
+  const [busy, setBusy] = useState(enabled);
   const [attempt, setAttempt] = useState(0);
   useEffect(() => {
+    if (!enabled) return;
     let alive = true;
     loadLibrary().then(
       (loaded) => {
@@ -73,7 +84,7 @@ export function useLibrary() {
     return () => {
       alive = false;
     };
-  }, [attempt]);
+  }, [attempt, enabled]);
   const retry = () => {
     if (busy) return;
     setBusy(true);
@@ -95,6 +106,7 @@ export function GamesBrowser({
   audience,
   panel = false,
   page = false,
+  library,
   head,
   titleId,
   hrefOf,
@@ -105,6 +117,8 @@ export function GamesBrowser({
   panel?: boolean;
   /** Страница сайта: на широком окне поиск и фильтры — колонкой слева (закреплены), список — справа; head — на обе колонки (lg:col-span-2). */
   page?: boolean;
+  /** База, которую уже грузит страница (у страницы учеников она общая с экраном партии). */
+  library?: LibraryState;
   head?: ReactNode;
   /** id заголовка, по которому подписан список. */
   titleId: string;
@@ -116,8 +130,9 @@ export function GamesBrowser({
   // Учителю — на «вы», ребёнку — на «ты».
   const tv = (teacherRu: string, childRu: string, teacherUz: string, childUz: string) =>
     audience === "teacher" ? t(teacherRu, teacherUz) : t(childRu, childUz);
-  const { lib, failed, busy, retry } = useLibrary();
-  const [query, setQueryState] = useState<GameQuery>(lastQuery);
+  const own = useLibrary(!library);
+  const { lib, failed, busy, retry } = library ?? own;
+  const [query, setQueryState] = useState<GameQuery>(lastQuery[titleId] ?? EMPTY_QUERY);
   const [shown, setShown] = useState(PAGE);
   const [refused, setRefused] = useState(false);
   // Раскрыт ли блок фильтров — решает человек: блок не захлопывается, когда фильтр вернули к «любой».
@@ -135,7 +150,7 @@ export function GamesBrowser({
 
   const setQuery = (patch: Partial<GameQuery>) => {
     const next = { ...query, ...patch };
-    lastQuery = next;
+    lastQuery[titleId] = next;
     setQueryState(next);
     setShown(PAGE);
     setRefused(false);
@@ -187,6 +202,14 @@ export function GamesBrowser({
     </Button>
   );
 
+  // Кнопки игроков, разделов и дебютов на странице учеников: на телефоне — по одному ряду с прокруткой вбок
+  // (как темы «Знаменитых партий»), иначе три блока кнопок уводят первые партии со второго экрана.
+  const chips = cn(
+    "flex flex-wrap gap-2",
+    page && "max-sm:-mx-4 max-sm:flex-nowrap max-sm:overflow-x-auto max-sm:px-4 max-sm:pb-1",
+  );
+  const chip = page ? "shrink-0 whitespace-nowrap" : undefined;
+
   const rowClass =
     "flex min-h-14 w-full flex-col items-start gap-0.5 rounded-2xl bg-paper px-3 py-2 text-left ring-1 ring-line hover:bg-brand-soft/60 focus-visible:outline-3 focus-visible:outline-brand";
 
@@ -232,16 +255,13 @@ export function GamesBrowser({
           />
         </label>
 
-        <div
-          role="group"
-          aria-label={t("Быстрый выбор игрока", "Oʻyinchini tez tanlash")}
-          className="flex flex-wrap gap-2"
-        >
+        <div role="group" aria-label={t("Быстрый выбор игрока", "Oʻyinchini tez tanlash")} className={chips}>
           {PLAYER_CHIPS.map((c) => (
             <Button
               key={c.q}
               size="sm"
               variant={activeChip === c ? "soft" : "secondary"}
+              className={chip}
               aria-pressed={activeChip === c}
               data-games-player={c.q}
               onClick={() => setQuery({ text: activeChip === c ? "" : c.q })}
@@ -251,12 +271,13 @@ export function GamesBrowser({
           ))}
         </div>
 
-        <div role="group" aria-label={t("Раздел", "Boʻlim")} className="flex flex-wrap gap-2">
+        <div role="group" aria-label={t("Раздел", "Boʻlim")} className={chips}>
           {SECTIONS.map((s) => (
             <Button
               key={s}
               size="sm"
               variant={query.section === s ? "soft" : "secondary"}
+              className={chip}
               aria-pressed={query.section === s}
               data-games-section={s}
               onClick={() => setQuery({ section: s })}
@@ -267,12 +288,13 @@ export function GamesBrowser({
           ))}
         </div>
 
-        <div role="group" aria-label={t("Дебют", "Debyut")} className="flex flex-wrap gap-2">
+        <div role="group" aria-label={t("Дебют", "Debyut")} className={chips}>
           {OPENING_GROUPS.map((g) => (
             <Button
               key={g.key}
               size="sm"
               variant={query.op === g.key ? "soft" : "secondary"}
+              className={chip}
               aria-pressed={query.op === g.key}
               data-games-opening-group={g.key}
               onClick={() => setQuery({ op: query.op === g.key ? "any" : g.key })}

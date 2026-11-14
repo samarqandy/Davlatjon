@@ -153,6 +153,26 @@ describe("файлы базы партий", () => {
     }
   });
 
+  it("дебют — по позиции, а не по порядку ходов: партия, пришедшая в ферзевый гамбит через 1.d4 Nf6 2.Nf3, — ферзевый гамбит", () => {
+    const games = FILES.flatMap(({ file }) => prepare(file));
+    const byId = (id: string) => games.find((g) => g.id === id)!;
+    // Каруана — Карлсен, ЧМ-2018, партии 2 и 7: 1.d4 Nf6 2.Nf3 d5 3.c4 e6 4.Nc3 Be7 5.Bf4 — атака Гарвица (D37).
+    for (const id of ["wp-1379339785-1", "wp-1379339785-6"])
+      expect([byId(id).op, byId(id).eco], id).toEqual(["Queen's Gambit Declined", "D37"]);
+    // 1.c4 e6 2.Nc3 d5 3.d4 Nf6 4.cxd5 exd5 5.Bg5 — разменный вариант ферзевого гамбита (D35), а не английское начало.
+    expect([byId("lb-4nFtKUUk").op, byId("lb-4nFtKUUk").eco]).toEqual(["Queen's Gambit Declined", "D35"]);
+    // Ларсен — Глигорич, 1956: 1.Nf3 c5 2.e4 d6 3.d4 — сицилианская защита, вариант Найдорфа (B92).
+    expect([byId("kf-larsen-v-gligoric-1956").op, byId("kf-larsen-v-gligoric-1956").eco]).toEqual([
+      "Sicilian Defense",
+      "B92",
+    ]);
+    // Каруана — Карлсен, ЧМ-2018, партия 1: Россолимо (B31) — тот же порядок ходов, что и в списке.
+    expect(byId("wp-1379339785-0").eco).toBe("B31");
+    const qg = filterGames(games, { ...EMPTY_QUERY, op: "g:qg" }).map((g) => g.id);
+    expect(qg).toContain("wp-1379339785-1");
+    expect(qg).toContain("lb-4nFtKUUk");
+  });
+
   it("начало эндшпиля: первый полуход, после которого у каждой стороны фигур не больше чем на 8 пешек, и дальше ещё ≥ 8 полуходов", () => {
     const VALUE: Record<string, number> = { n: 3, b: 3, r: 5, q: 9 };
     const endgame = (chess: Chess) => {

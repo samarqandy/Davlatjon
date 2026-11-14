@@ -110,11 +110,23 @@ test("прямая ссылка на партию: «К эндшпилю», по
   await expect(page).toHaveURL(/\/chess\/analysis#fen=/);
   await expect(page.locator("[data-board]").first()).toBeVisible();
 
-  // Вошли по ссылке — «Назад» в партии ведёт к списку базы, а не со страницы.
+  // Вошли по ссылке — «Назад» в партии ведёт к списку базы, а не со страницы; фокус — на заголовок списка.
   await page.goto(`/chess/games/base#${WCC}`);
   await page.locator("[data-games-back]").click();
   await expect(items(page).first()).toBeVisible({ timeout: 15_000 });
   await expect(page).toHaveURL(/\/chess\/games\/base#?$/);
+  await expect(page.locator("#games-base-title")).toBeFocused();
+});
+
+test("якорь страницы — не партия: «Перейти к содержанию» оставляет список; испорченная ссылка не роняет страницу", async ({
+  page,
+}) => {
+  await prepare(page);
+  await page.goto("/chess/games/base#main");
+  await expect(items(page).first()).toBeVisible({ timeout: 15_000 });
+  await expect(game(page)).toHaveCount(0);
+  await page.goto("/chess/games/base#50%");
+  await expect(page.locator("[data-games-not-found]")).toBeVisible({ timeout: 15_000 });
 });
 
 test("PGN: игроки, турнир, ECO, источник и лицензия; ходы до конца партии", async ({ page }) => {
@@ -140,8 +152,10 @@ test("нет такой партии — понятная надпись и пу
   await prepare(page);
   await page.goto("/chess/games/base#no-such-game");
   await expect(page.locator("[data-games-not-found]")).toBeVisible({ timeout: 15_000 });
+  expect(await axe(page, "main")).toEqual([]);
   await page.locator("[data-games-back]").click();
   await expect(items(page).first()).toBeVisible();
+  await expect(page.locator("#games-base-title")).toBeFocused();
 });
 
 test("разделы для учеников: знаменитые, эндшпиль, короткие победы, кнопка дебюта", async ({ page }) => {
@@ -150,9 +164,13 @@ test("разделы для учеников: знаменитые, эндшпи
   await expect(items(page).first()).toBeVisible({ timeout: 15_000 });
   const all = await count(page);
   for (const section of ["famous", "endgame", "short"]) {
-    await page.locator(`[data-games-section="${section}"]`).click();
-    await expect.poll(() => count(page)).toBeLessThan(all);
-    expect(await count(page)).toBeGreaterThan(20);
+    const button = page.locator(`[data-games-section="${section}"]`);
+    // Число на кнопке раздела — сколько партий в нём; список догоняет его (useDeferredValue), ждём совпадения.
+    const expected = Number((await button.innerText()).match(/\d+/)![0]);
+    expect(expected).toBeGreaterThan(20);
+    expect(expected).toBeLessThan(all);
+    await button.click();
+    await expect.poll(() => count(page)).toBe(expected);
   }
   await page.locator('[data-games-section="all"]').click();
   await page.locator('[data-games-opening-group="g:qg"]').click();
@@ -173,6 +191,19 @@ test("oʻzbek tilida: roʻyxat va partiya ekranida rus harflari yoʻq", async ({
   await expect(game(page)).toBeVisible();
   await page.locator("[data-games-endgame], [data-games-pgn]").first().waitFor();
   expect(await cyr()).toEqual([]);
+});
+
+test("телефон: кнопки — рядами с прокруткой вбок, первая партия списка видна без долгой прокрутки", async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== "phone", "только телефон");
+  await prepare(page);
+  await page.goto("/chess/games/base");
+  await expect(items(page).first()).toBeVisible({ timeout: 15_000 });
+  const vh = page.viewportSize()!.height;
+  const first = (await items(page).first().boundingBox())!;
+  expect(first.y).toBeLessThan(vh * 1.2);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 });
 
 test("телефон: доска партии и панель ходов на первом экране, подписи кнопок не обрезаны", async ({ page }, info) => {
