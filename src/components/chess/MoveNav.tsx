@@ -76,7 +76,17 @@ export function MoveNav({
       />
       {children}
       <BarInfo label={t(`Ход ${ply} из ${total}`, `${total} tadan ${ply}-yurish`)}>
-        {ply} / {total}
+        {/* Длинная партия (от 100 полуходов): счётчик в две строки, иначе «52 / 146» обрезает подписи кнопок. */}
+        {total >= 100 ? (
+          <>
+            <span className="block text-center">{ply}</span>
+            <span className="block text-center">/ {total}</span>
+          </>
+        ) : (
+          <>
+            {ply} / {total}
+          </>
+        )}
       </BarInfo>
     </BoardBar>
   );

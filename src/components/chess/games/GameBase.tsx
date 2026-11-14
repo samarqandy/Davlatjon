@@ -299,7 +299,18 @@ function GameView({ game: g, file, back }: { game: LoadedGame; file?: LibFileMet
       </div>
       <div className="flex flex-wrap gap-2">
         {g.en !== undefined && (
-          <Button size="sm" variant="secondary" onClick={() => go(g.en!)} data-games-endgame>
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() => {
+              go(g.en!);
+              // На телефоне кнопка — под доской: позиция эндшпиля должна оказаться на экране, а не над ним.
+              const board = document.querySelector(`[data-board="base-${CSS.escape(g.id)}"]`);
+              const r = board?.getBoundingClientRect();
+              if (board && r && (r.top < 0 || r.bottom > window.innerHeight)) board.scrollIntoView({ block: "center" });
+            }}
+            data-games-endgame
+          >
             <Icon icon={Flag} /> {t("К эндшпилю", "Endshpilga oʻtish")}
           </Button>
         )}

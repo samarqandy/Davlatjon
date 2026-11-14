@@ -104,6 +104,8 @@ const SCREENS = [
   "/chess/games/opera",
   "/chess/games",
   "/chess/games/ding-gukesh",
+  "/chess/games/base",
+  "/chess/games/base#wp-1379339785-0",
   "/chess/analysis",
   "/chess/mentor#present",
   "/chess/history",
