@@ -156,7 +156,7 @@ describe("файлы базы партий", () => {
   it("дебют — по позиции, а не по порядку ходов: партия, пришедшая в ферзевый гамбит через 1.d4 Nf6 2.Nf3, — ферзевый гамбит", () => {
     const games = FILES.flatMap(({ file }) => prepare(file));
     const byId = (id: string) => games.find((g) => g.id === id)!;
-    // Каруана — Карлсен, ЧМ-2018, партии 2 и 7: 1.d4 Nf6 2.Nf3 d5 3.c4 e6 4.Nc3 Be7 5.Bf4 — атака Гарвица (D37).
+    // Карлсен — Каруана, ЧМ-2018, партии 2 и 7: 1.d4 Nf6 2.Nf3 d5 3.c4 e6 4.Nc3 Be7 5.Bf4 — атака Гарвица (D37).
     for (const id of ["wp-1379339785-1", "wp-1379339785-6"])
       expect([byId(id).op, byId(id).eco], id).toEqual(["Queen's Gambit Declined", "D37"]);
     // 1.c4 e6 2.Nc3 d5 3.d4 Nf6 4.cxd5 exd5 5.Bg5 — разменный вариант ферзевого гамбита (D35), а не английское начало.
