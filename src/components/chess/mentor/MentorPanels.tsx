@@ -229,12 +229,12 @@ function Choice<V extends string>({
 }) {
   return (
     <div role="group" aria-label={label} className="flex flex-wrap items-center gap-2">
-      <span className="text-sm font-bold">{label}:</span>
+      <span className="w-full text-sm font-bold">{label}:</span>
       {options.map(([v, text]) => (
         <Button
           key={v}
           size="sm"
-          variant={value === v ? "soft" : "ghost"}
+          variant={value === v ? "soft" : "secondary"}
           aria-pressed={value === v}
           onClick={() => onChange(v)}
         >
@@ -373,6 +373,11 @@ export function MentorSettings({
                     "Экран может погаснуть — проверьте настройки панели.",
                     "Ekran oʻchishi mumkin — panel sozlamalarini tekshiring.",
                   )}
+          </p>
+          {/* Размер экрана, как его видит браузер: по этой строке подстраивают раскладку под конкретную панель. */}
+          <p className="text-sm text-muted tabular-nums" data-mentor-diag>
+            {t("Экран для браузера", "Brauzer uchun ekran")}: {window.innerWidth}×{window.innerHeight} ·{" "}
+            {t("плотность", "zichlik")} {Math.round(window.devicePixelRatio * 100) / 100}
           </p>
           {onExit && (
             <Button size="sm" variant="secondary" onClick={onExit}>

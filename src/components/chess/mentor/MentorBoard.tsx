@@ -687,31 +687,24 @@ export function MentorBoard() {
     closeSheet();
   };
 
+  // В режиме класса кнопки режима — сетка в колонке: по три в ряд, а если колонка широкая (панель с плотным
+  // экраном, где колонка стоит над доской сбоку), — по четыре, пять или шесть (globals.css, .mentor-grid-*).
   const paletteRows =
     mode === "move" ? (
       P ? (
-        <MentorRow present label={t("Партия", "Partiya")}>
+        <div role="group" aria-label={t("Партия", "Partiya")} className="mentor-grid mentor-grid-4">
           {flip}
           {navFirst}
           {navLast}
           {trialBtn}
-        </MentorRow>
+        </div>
       ) : null
     ) : mode === "draw" ? (
       P ? (
-        // Колонка по три кнопки в ряд: цвета и знаки идут подряд, поэтому группа одна — «Рисование».
-        <div role="group" aria-label={t("Рисование", "Chizish")} className="mentor-group">
-          <MentorRow present bare>
-            {colorButtons.slice(0, 3)}
-          </MentorRow>
-          <MentorRow present bare>
-            {colorButtons[3]}
-            {signButtons.slice(0, 2)}
-          </MentorRow>
-          <MentorRow present bare>
-            {signButtons[2]}
-            {clearBtn}
-          </MentorRow>
+        <div role="group" aria-label={t("Рисование", "Chizish")} className="mentor-grid mentor-grid-4">
+          {colorButtons}
+          {signButtons}
+          {clearBtn}
         </div>
       ) : (
         <>
@@ -726,23 +719,18 @@ export function MentorBoard() {
       )
     ) : P ? (
       <>
-        <div role="group" aria-label={t("Фигуры", "Donalar")} className="mentor-group">
-          {[0, 3, 6, 9].map((i) => (
-            <MentorRow key={i} present bare>
-              {pieceButtons.slice(i, i + 3)}
-            </MentorRow>
-          ))}
+        <div role="group" aria-label={t("Белые фигуры", "Oq donalar")} className="mentor-grid mentor-grid-6">
+          {pieceButtons.slice(0, 6)}
         </div>
-        <div role="group" aria-label={t("Расстановка", "Joylash")} className="mentor-group">
-          <MentorRow present bare>
-            {eraseBtn}
-            {turnBtn}
-            {emptyBtn}
-          </MentorRow>
-          <MentorRow present bare>
-            {presetsBtn}
-            {flip}
-          </MentorRow>
+        <div role="group" aria-label={t("Чёрные фигуры", "Qora donalar")} className="mentor-grid mentor-grid-6">
+          {pieceButtons.slice(6)}
+        </div>
+        <div role="group" aria-label={t("Расстановка", "Joylash")} className="mentor-grid mentor-grid-5">
+          {eraseBtn}
+          {turnBtn}
+          {emptyBtn}
+          {presetsBtn}
+          {flip}
         </div>
       </>
     ) : (
