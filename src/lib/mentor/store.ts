@@ -69,7 +69,7 @@ function parseShapes(raw: unknown): Shapes | null {
   return { arrows, rings, signs };
 }
 
-function parseBoard(raw: unknown, ids: Set<string>): MentorBoard | null {
+function parseBoard(raw: unknown, ids: Set<string>, replay: boolean): MentorBoard | null {
   if (!isObject(raw)) return null;
   const id = text(raw.id, 40);
   if (!id || ids.has(id) || !isFenShape(raw.start)) return null;
@@ -77,7 +77,7 @@ function parseBoard(raw: unknown, ids: Set<string>): MentorBoard | null {
   if (!Array.isArray(raw.line) || raw.line.length > LIMITS.plies || !raw.line.every(isUci)) return null;
   const line = raw.line as string[];
   // Каждый ход должен делаться по правилам — иначе урок испорчен.
-  if (fensOf(start, line).length !== line.length + 1) return null;
+  if (replay && fensOf(start, line).length !== line.length + 1) return null;
   const shapes: Record<string, Shapes> = {};
   if (raw.shapes !== undefined) {
     if (!isObject(raw.shapes)) return null;
@@ -103,14 +103,18 @@ function parseBoard(raw: unknown, ids: Set<string>): MentorBoard | null {
 /**
  * Урок из произвольных данных (хранилище, позже — файл). Лишние поля отбрасываются, строки обрезаются;
  * если хоть одна доска испорчена, урок не принимается целиком — молча «чинить» чужие данные нельзя.
+ *
+ * replay: false — только проверка записи, без проигрывания ходов. Так читается список уроков в хранилище:
+ * урок с партиями из базы — это тысячи полуходов, и проигрывать все уроки на каждое сохранение и при открытии
+ * страницы — секунды на панели класса. Ходы проигрываются у того урока, который открывают (openLesson).
  */
-export function parseLesson(raw: unknown): MentorLesson | null {
+export function parseLesson(raw: unknown, { replay = true }: { replay?: boolean } = {}): MentorLesson | null {
   if (!isObject(raw) || raw.version !== 1) return null;
   if (!Array.isArray(raw.boards) || raw.boards.length < 1 || raw.boards.length > LIMITS.boards) return null;
   const ids = new Set<string>();
   const boards: MentorBoard[] = [];
   for (const b of raw.boards) {
-    const board = parseBoard(b, ids);
+    const board = parseBoard(b, ids, replay);
     if (!board) return null;
     boards.push(board);
   }
@@ -134,7 +138,7 @@ export function readSaved(storage: Pick<Storage, "getItem"> | null): Saved {
     if (!isObject(raw) || raw.version !== 1 || !Array.isArray(raw.lessons)) return { lessons: [] };
     const seen = new Set<string>();
     const lessons = raw.lessons
-      .map(parseLesson)
+      .map((l) => parseLesson(l, { replay: false }))
       .filter((l): l is MentorLesson => !!l && !seen.has(l.id) && !!seen.add(l.id))
       .sort((a, b) => b.updatedAt - a.updatedAt)
       .slice(0, MAX_LESSONS);
@@ -152,10 +156,17 @@ export function readSaved(storage: Pick<Storage, "getItem"> | null): Saved {
   }
 }
 
-/** Урок, который открыть: последний открытый, иначе самый свежий, иначе новый «Урок 1». */
+/** Все ходы всех досок урока делаются по правилам. */
+const playable = (lesson: MentorLesson) => lesson.boards.every((b) => fensOf(b.start, b.line).length === b.line.length + 1);
+
+/**
+ * Урок, который открыть: последний открытый, иначе самый свежий, иначе новый «Урок 1». Ходы проигрываются только
+ * здесь и только у выбранного урока; урок с ходом не по правилам не открывается — берётся следующий.
+ */
 export function openLesson(saved: Saved, defaultTitle: string): { lesson: MentorLesson; board: number } {
+  const current = saved.lessons.find((l) => l.id === saved.current?.lessonId);
   const lesson =
-    saved.lessons.find((l) => l.id === saved.current?.lessonId) ?? saved.lessons[0] ?? newLesson(defaultTitle);
+    [current, ...saved.lessons].find((l): l is MentorLesson => !!l && playable(l)) ?? newLesson(defaultTitle);
   const board = saved.current?.lessonId === lesson.id ? Math.min(saved.current.board, lesson.boards.length - 1) : 0;
   return { lesson, board };
 }

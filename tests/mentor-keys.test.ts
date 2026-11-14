@@ -154,6 +154,12 @@ describe("база партий в режиме класса закрывает 
     }
   });
 
+  it("Escape закрывает базу раньше шторки, превращения и начатой стрелки под ней", () => {
+    for (const over of [{ curtain: true }, { promotionOpen: true }, { pending: true }]) {
+      expect(press("Escape", {}, { present: true, sheetOpen: true, sheetModal: true, ...over })).toBe("closeSheet");
+    }
+  });
+
   it("без базы партий всё как раньше", () => {
     expect(press("PageDown", {}, { present: true, sheetOpen: true })).toBe("next");
     expect(press("PageDown", {}, { present: true, sheetOpen: true, sheetModal: false })).toBe("next");

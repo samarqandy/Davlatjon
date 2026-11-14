@@ -1323,11 +1323,17 @@ html:has([data-mentor][data-present]) {
     display: flex;
     flex-direction: column;
     align-items: center;
+    /* Колонка выше экрана (база партий, длинный набор кнопок) — начинается сверху, а не уходит за верхний край. */
+    justify-content: safe center;
     gap: var(--btn-gap);
     padding: 2vh 3vw;
     overflow-x: hidden;
     overflow-y: auto;
     touch-action: pan-y;
+  }
+  /* Открыта база партий: под ней ничего не нужно (и недоступно) — не показываем. */
+  [data-mentor][data-present]:has(> [data-mentor-sheet="games"]) > :not([data-mentor-sheet="games"], header) {
+    display: none;
   }
   [data-mentor][data-present] > :not(header) {
     flex-shrink: 0;

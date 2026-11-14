@@ -273,6 +273,36 @@ describe("чтение и открытие", () => {
     expect(saved.current).toEqual({ lessonId: "c", board: 1 });
   });
 
+  it("список читается без проигрывания ходов; урок с ходом не по правилам не открывается — берётся следующий", () => {
+    const bad = rawLesson({ id: "bad", updatedAt: 50, boards: [rawBoard({ line: ["e2e5"], shapes: {} })] });
+    const s = stored({
+      version: 1,
+      lessons: [bad, rawLesson({ id: "ok", updatedAt: 10 })],
+      current: { lessonId: "bad", board: 0 },
+    });
+    const saved = readSaved(s);
+    expect(saved.lessons.map((l) => l.id)).toEqual(["bad", "ok"]);
+    expect(openLesson(saved, "x").lesson.id).toBe("ok");
+    expect(openLesson({ lessons: [saved.lessons[0]] }, "Урок 1").lesson.title).toBe("Урок 1");
+  });
+
+  it("сохранение не проигрывает партии других уроков: 12 уроков по 40 длинных партий — быстро", () => {
+    const line = Array.from({ length: 50 }, () => ["g1f3", "g8f6", "f3g1", "f6g8"]).flat();
+    const lessons = Array.from({ length: 12 }, (_, i) =>
+      rawLesson({
+        id: `l${i}`,
+        updatedAt: i,
+        boards: Array.from({ length: 40 }, (_, j) => rawBoard({ id: `b${j}`, line, shapes: {} })),
+      }),
+    );
+    const s = stored({ version: 1, lessons });
+    const t = performance.now();
+    expect(writeLesson(s, lessonAt("new", 1000), 0)).toBe("ok");
+    expect(readSaved(s).lessons).toHaveLength(13);
+    // Проиграть 96 000 полуходов — секунды; проверка одной записи — миллисекунды.
+    expect(performance.now() - t).toBeLessThan(1500);
+  });
+
   it("открытый урок помнится, только если он есть; доска не меньше 0", () => {
     const base = { version: 1, lessons: [rawLesson({ id: "a" })] };
     expect(readSaved(stored({ ...base, current: { lessonId: "zz", board: 0 } })).current).toBeUndefined();

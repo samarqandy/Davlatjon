@@ -21,7 +21,14 @@ import {
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type ComponentProps,
+  type CSSProperties,
+  type KeyboardEvent as ReactKeyboardEvent,
+} from "react";
 import { Button, cn, Icon } from "@/components/ui";
 import { CLASS_BOARD_THEME } from "@/lib/boardLook";
 import { gameTask, type LoadedGame } from "@/lib/games/library";
@@ -64,11 +71,47 @@ import { MentorDeck, MentorMoves, MentorSettings, PRESETS } from "./MentorPanels
 import { MentorOverlay } from "./MentorOverlay";
 import { ColorGlyph, MentorButton, MentorRow, SignGlyph } from "./MentorTools";
 
+type GamesProps = ComponentProps<typeof import("./MentorGames").MentorGames>;
+
+/**
+ * Код базы партий не загрузился (нет сети, а базу на этой панели ещё не открывали; или сайт обновился, пока
+ * страница была открыта). Доска и урок остаются на месте; урок сохранён — страницу можно обновить.
+ */
+function GamesUnavailable({ onClose }: GamesProps) {
+  const t = useT();
+  return (
+    <div
+      role="alert"
+      className="space-y-2 rounded-2xl bg-warning-soft p-3 font-bold text-warning-ink"
+      data-mentor-games-chunk-error
+    >
+      <p>
+        {t(
+          "Не удалось открыть базу партий — нет связи с сайтом. Урок сохранён: обновите страницу, когда интернет появится.",
+          "Partiyalar bazasini ochib boʻlmadi — sayt bilan aloqa yoʻq. Dars saqlangan: internet paydo boʻlgach, sahifani yangilang.",
+        )}
+      </p>
+      <div className="flex flex-wrap gap-2">
+        <Button size="sm" variant="secondary" onClick={() => window.location.reload()}>
+          {t("Обновить страницу", "Sahifani yangilash")}
+        </Button>
+        <Button size="sm" variant="ghost" onClick={onClose}>
+          {t("Закрыть", "Yopish")}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 // База партий грузится, только когда её открыли: и код списка, и сами партии.
-const MentorGames = dynamic(() => import("./MentorGames").then((m) => m.MentorGames), {
-  ssr: false,
-  loading: () => null,
-});
+const MentorGames = dynamic<GamesProps>(
+  () =>
+    import("./MentorGames").then(
+      (m) => m.MentorGames,
+      () => GamesUnavailable,
+    ),
+  { ssr: false, loading: () => null },
+);
 
 /** Урок до загрузки из хранилища (и на сервере): одна доска с начальной позицией. */
 const INITIAL: MentorLesson = {
@@ -283,6 +326,40 @@ export function MentorBoard() {
     setSheet(null);
     if (sheetOpener.current) focusLater(sheetOpener.current);
   };
+
+  // Tab по кругу внутри базы партий: за её краем — только спрятанные под ней кнопки и шапка сайта.
+  const trapTab = (e: ReactKeyboardEvent<HTMLDivElement>) => {
+    if (e.key !== "Tab") return;
+    const all = [
+      ...e.currentTarget.querySelectorAll<HTMLElement>(
+        "button:not([disabled]), input, select, summary, a[href], [tabindex]:not([tabindex='-1'])",
+      ),
+    ].filter((el) => el.offsetParent !== null);
+    if (!all.length) return;
+    const first = all[0];
+    const last = all[all.length - 1];
+    const at = document.activeElement;
+    if (e.shiftKey && (at === first || at === e.currentTarget)) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && at === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  };
+
+  // База партий в режиме класса — во весь экран: всё, что под ней, недоступно ни касанию, ни клавише Tab,
+  // ни экранному диктору, пока она открыта.
+  const modal = present && sheet === "games";
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!modal || !root) return;
+    const behind = [...root.children].filter((el) => el !== sheetRef.current);
+    for (const el of behind) el.setAttribute("inert", "");
+    return () => {
+      for (const el of behind) el.removeAttribute("inert");
+    };
+  }, [modal]);
 
   const enterPresent = () => {
     fs.enter();
@@ -715,8 +792,18 @@ export function MentorBoard() {
     const ok = run({ t: "addGame", start: g.fen ?? START_FEN, line: g.m.split(" "), task: gameTask(g, t) });
     if (!ok) return false;
     if (mode !== "move") setPref({ mode: "move" });
-    sheetOpener.current = "[data-mentor-next]";
-    closeSheet();
+    sheetOpener.current = null;
+    setSheet(null);
+    // Фокус — на «Дальше»: партию листают пультом. На телефоне доска к этому времени выше экрана — показываем её.
+    requestAnimationFrame(() => {
+      const root = rootRef.current;
+      const frame = root?.querySelector<HTMLElement>(".board-frame");
+      const r = frame?.getBoundingClientRect();
+      if (!present && frame && r && (r.top < 64 || r.bottom > window.innerHeight)) {
+        frame.scrollIntoView({ block: "center" });
+      }
+      root?.querySelector<HTMLElement>("[data-mentor-next]")?.focus({ preventScroll: true });
+    });
     return true;
   };
 
@@ -1167,6 +1254,7 @@ export function MentorBoard() {
         <div
           ref={sheetRef}
           role="dialog"
+          aria-modal={modal || undefined}
           aria-label={
             sheet === "presets"
               ? t("Готовые позиции", "Tayyor pozitsiyalar")
@@ -1178,6 +1266,7 @@ export function MentorBoard() {
           data-mentor-part="sheet"
           className="mentor-sheet rounded-3xl bg-surface p-4 shadow-lift outline-none"
           data-mentor-sheet={sheet}
+          onKeyDown={modal ? trapTab : undefined}
         >
           {sheet === "presets" ? (
             presetsList

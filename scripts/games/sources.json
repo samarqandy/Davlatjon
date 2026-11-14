@@ -941,5 +941,9 @@
         }
       ]
     }
-  ]
+  ],
+  "events": {
+    "London m4 ;HCL 18": "London, 4th match",
+    "12th olm final A": "12th Chess Olympiad, Final A"
+  }
 }

@@ -6,7 +6,7 @@
 время на часах, комментарии и пометки источников удалены; добавлено семейство дебюта по открытому списку
 дебютов Lichess (CC0). Наши подписи, разделы и заметки в эти файлы не входят.
 
-## broadcasts.cc-by-sa-4.0.json — 778 партий
+## broadcasts.cc-by-sa-4.0.json — 759 партий
 
 Партии из трансляций Lichess (lichess.org/broadcast); трансляции Lichess распространяются по лицензии CC BY-SA 4.0 (database.lichess.org).
 Лицензия: [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). Источник: https://lichess.org/broadcast

@@ -1,7 +1,7 @@
 "use client";
 
 import { RotateCw, Search, SlidersHorizontal, X } from "lucide-react";
-import { useDeferredValue, useEffect, useMemo, useState } from "react";
+import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { Button, cn, Icon } from "@/components/ui";
 import { OPENING_NAMES } from "@/content/chess/openingNames";
 import {
@@ -17,7 +17,7 @@ import {
   roundText,
   searchKey,
   type GameQuery,
-  type LibFileMeta,
+  type Library,
   type LoadedGame,
   type Section,
 } from "@/lib/games/library";
@@ -30,8 +30,6 @@ const PAGE = 40;
 /** Последний запрос — до перезагрузки страницы: тренер открывает партии одну за другой из одной выборки. */
 let lastQuery: GameQuery = EMPTY_QUERY;
 
-type Library = { games: LoadedGame[]; files: LibFileMeta[] };
-
 const SECTIONS: Section[] = ["all", "uz", "championship", "classic", "modern"];
 
 /** Откуда набор — на языке страницы (в файле набора та же подпись по-русски). */
@@ -41,8 +39,8 @@ const SOURCE_TEXT: Record<string, [ru: string, uz: string]> = {
     "Partiyalar Lichess translyatsiyalaridan (lichess.org/broadcast), litsenziya",
   ],
   wikimedia: [
-    "Ходы партий — из статей Википедии и страниц Викисклада (авторы — участники Викимедиа; у каждой партии указана правка), часть — по набору проекта Kingfisher, лицензия",
-    "Partiyalar yurishlari — Vikipediya maqolalari va Vikiombor sahifalaridan (mualliflar — Vikimedia ishtirokchilari; har bir partiyada tahrir koʻrsatilgan), bir qismi — Kingfisher loyihasi toʻplamidan, litsenziya",
+    "Ходы партий — из статей Википедии и страниц Викисклада (авторы — участники Викимедиа), часть — по набору проекта Kingfisher, лицензия",
+    "Partiyalar yurishlari — Vikipediya maqolalari va Vikiombor sahifalaridan (mualliflar — Vikimedia ishtirokchilari), bir qismi — Kingfisher loyihasi toʻplamidan, litsenziya",
   ],
   pd: [
     "Партии из книги Х. Р. Капабланки «Chess Fundamentals» (1921) —",
@@ -72,17 +70,45 @@ export function MentorGames({
   const [query, setQueryState] = useState<GameQuery>(lastQuery);
   const [shown, setShown] = useState(PAGE);
   const [full, setFull] = useState(false);
+  const [busy, setBusy] = useState(true);
+  // Раскрыт ли блок фильтров — решает тренер: блок не захлопывается, когда фильтр вернули к «любой».
+  const [filtersOpen, setFiltersOpen] = useState(
+    !!(query.from || query.to || query.result !== "any" || query.tc !== "any" || query.op !== "any"),
+  );
+  const resultsRef = useRef<HTMLDivElement>(null);
+  const fullRef = useRef<HTMLParagraphElement>(null);
+  const filtersRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     let alive = true;
     loadLibrary().then(
-      (loaded) => alive && setLib(loaded),
-      () => alive && setFailed(true),
+      (loaded) => {
+        if (!alive) return;
+        setLib(loaded);
+        setFailed(false);
+        setBusy(false);
+      },
+      () => {
+        if (!alive) return;
+        setFailed(true);
+        setBusy(false);
+      },
     );
     return () => {
       alive = false;
     };
   }, [attempt]);
+
+  // «В уроке уже 40 досок» — туда, где его видно: тренер мог нажать на партию внизу длинного списка.
+  useEffect(() => {
+    if (full) fullRef.current?.scrollIntoView({ block: "center" });
+  }, [full]);
+
+  const retry = () => {
+    if (busy) return;
+    setBusy(true);
+    setAttempt((n) => n + 1);
+  };
 
   const setQuery = (patch: Partial<GameQuery>) => {
     const next = { ...query, ...patch };
@@ -90,6 +116,8 @@ export function MentorGames({
     setQueryState(next);
     setShown(PAGE);
     setFull(false);
+    // Новая выборка — с начала списка (в режиме класса список листается отдельно от поиска).
+    if (resultsRef.current) resultsRef.current.scrollTop = 0;
   };
 
   // Печатают — список догоняет без задержки ввода.
@@ -152,6 +180,13 @@ export function MentorGames({
             onChange={(e) => setQuery({ text: e.target.value })}
             placeholder={t("Фамилия, турнир или год", "Familiya, turnir yoki yil")}
             enterKeyHint="search"
+            onKeyDown={(e) => {
+              // «Найти» на экранной клавиатуре панели: список уже отфильтрован — убираем клавиатуру.
+              if (e.key === "Enter") {
+                e.preventDefault();
+                e.currentTarget.blur();
+              }
+            }}
             autoComplete="off"
             spellCheck={false}
             className="min-h-12 w-full rounded-xl border-2 border-line bg-surface py-2 pr-3 pl-10 font-bold"
@@ -196,10 +231,11 @@ export function MentorGames({
 
         <details
           className="rounded-2xl border-2 border-line p-2"
-          open={filtersOn || undefined}
+          open={filtersOpen}
+          onToggle={(e) => setFiltersOpen(e.currentTarget.open)}
           data-mentor-games-filters
         >
-          <summary className="flex min-h-11 cursor-pointer items-center gap-2 px-1 font-extrabold">
+          <summary ref={filtersRef} className="flex min-h-11 cursor-pointer items-center gap-2 px-1 font-extrabold">
             <Icon icon={SlidersHorizontal} /> {t("Фильтры", "Filtrlar")}
             {filtersOn && <span className="text-sm text-brand">{t("включены", "yoqilgan")}</span>}
           </summary>
@@ -283,7 +319,11 @@ export function MentorGames({
                 variant="ghost"
                 className="col-span-2 justify-self-start"
                 data-mentor-games-reset
-                onClick={() => setQuery({ from: 0, to: 0, result: "any", tc: "any", op: "any" })}
+                onClick={() => {
+                  setQuery({ from: 0, to: 0, result: "any", tc: "any", op: "any" });
+                  // Кнопка исчезнет — фокус на заголовок блока, а не в никуда.
+                  filtersRef.current?.focus();
+                }}
               >
                 {t("Сбросить фильтры", "Filtrlarni tozalash")}
               </Button>
@@ -304,11 +344,18 @@ export function MentorGames({
                       {f.license}
                     </a>
                   ) : (
-                    <span className="font-bold">{t("Общественное достояние", "Jamoat mulki")}</span>
+                    <span className="font-bold">{t("общественное достояние", "jamoat mulki")}</span>
                   )}
                   .{" "}
                   <a href={f.sourceUrl} target="_blank" rel="noreferrer" className="font-bold text-brand underline">
                     {t("Источник", "Manba")}
+                  </a>
+                  {" · "}
+                  <a href={f.url} target="_blank" rel="noreferrer" className="font-bold text-brand underline">
+                    {t(
+                      "файл с партиями (у каждой — ссылка на источник)",
+                      "partiyalar fayli (har biriga manba havolasi)",
+                    )}
                   </a>
                 </li>
               ))}
@@ -316,14 +363,22 @@ export function MentorGames({
                 {t(
                   "Ходы проверены и переписаны, оценки компьютера, время и комментарии убраны. Подписи и разделы — наши.",
                   "Yurishlar tekshirilib, qayta yozilgan; kompyuter baholari, vaqt va izohlar olib tashlangan. Yozuvlar va boʻlimlar — bizniki.",
-                )}
+                )}{" "}
+                <a
+                  href="/data/games/ATTRIBUTION.md"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-bold text-brand underline"
+                >
+                  {t("Подробнее", "Batafsil")}
+                </a>
               </li>
             </ul>
           </details>
         )}
       </div>
 
-      <div className="mentor-games-results flex min-h-0 flex-col gap-3">
+      <div ref={resultsRef} className="mentor-games-results flex min-h-0 flex-col gap-3">
         {!lib && !failed && (
           <p className="font-bold text-muted" role="status" data-mentor-games-loading>
             {t("Загружаем партии…", "Partiyalar yuklanmoqda…")}
@@ -337,15 +392,21 @@ export function MentorGames({
                 "Partiyalarni yuklab boʻlmadi. Internetni tekshirib, qayta urinib koʻring.",
               )}
             </p>
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => {
-                setFailed(false);
-                setAttempt((n) => n + 1);
-              }}
-            >
-              <Icon icon={RotateCw} /> {t("Ещё раз", "Qayta urinish")}
+            <Button size="sm" variant="secondary" aria-disabled={busy} onClick={retry} data-mentor-games-retry>
+              <Icon icon={RotateCw} /> {busy ? t("Загружаем…", "Yuklanmoqda…") : t("Ещё раз", "Qayta urinish")}
+            </Button>
+          </div>
+        )}
+        {lib && lib.missing.length > 0 && (
+          <div role="alert" className="space-y-2 rounded-2xl bg-warning-soft p-3 text-sm font-bold text-warning-ink">
+            <p>
+              {t(
+                "Загрузились не все партии — часть списка пока не видна. Проверьте интернет.",
+                "Hamma partiyalar yuklanmadi — roʻyxatning bir qismi hozircha koʻrinmaydi. Internetni tekshiring.",
+              )}
+            </p>
+            <Button size="sm" variant="secondary" aria-disabled={busy} onClick={retry} data-mentor-games-retry>
+              <Icon icon={RotateCw} /> {busy ? t("Загружаем…", "Yuklanmoqda…") : t("Ещё раз", "Qayta urinish")}
             </Button>
           </div>
         )}
@@ -363,7 +424,11 @@ export function MentorGames({
               )}
             </p>
             {full && (
-              <p role="alert" className="rounded-2xl bg-warning-soft p-3 text-sm font-bold text-warning-ink">
+              <p
+                ref={fullRef}
+                role="alert"
+                className="rounded-2xl bg-warning-soft p-3 text-sm font-bold text-warning-ink"
+              >
                 {t(
                   "В уроке уже 40 досок — удалите лишнюю доску, чтобы открыть партию.",
                   "Darsda 40 ta taxta bor — partiyani ochish uchun ortiqcha taxtani oʻchiring.",

@@ -181,15 +181,26 @@ function makeNames(allGames) {
     canonById.set(id, best);
     for (const name of counts.keys()) canonByLoose.set(looseKey(name), best);
   }
-  return (raw, fideId) => {
+  // Игроки без номера FIDE: написание с запятой («Dreev, Aleksey») важнее написания без неё («Dreev Aleksey»).
+  for (const { tags } of allGames) {
+    for (const side of ["White", "Black"]) {
+      const name = cleanName(tags[side]);
+      if (name.includes(",") && !canonByLoose.has(looseKey(name))) canonByLoose.set(looseKey(name), name);
+    }
+  }
+  /**
+   * kind: "broadcast" — имя из трансляции, там порядок «Фамилия Имя» («Smirnov Anton» → «Smirnov, Anton»);
+   * "book" — из статьи или книги, там «Имя Фамилия» («Anatoly Karpov» → «Karpov, Anatoly»).
+   */
+  return (raw, fideId, kind = "book") => {
     if (fideId && canonById.has(fideId)) return canonById.get(fideId);
     const name = cleanName(raw);
     if (SOURCES.names[name]) return SOURCES.names[name];
     const known = canonByLoose.get(looseKey(name));
     if (known) return known;
     if (name.includes(",") || !name.includes(" ")) return name;
-    // «Anatoly Karpov» → «Karpov, Anatoly», как в трансляциях FIDE.
     const words = name.split(" ");
+    if (kind === "broadcast") return words.length === 2 ? `${words[0]}, ${words[1]}` : name;
     return `${words.at(-1)}, ${words.slice(0, -1).join(" ")}`;
   };
 }
@@ -250,8 +261,28 @@ const dupKey = (g) => [surnameKey(g.w), surnameKey(g.b), g.y, g.res, g.m.split("
 
 const FOCUS = (name) => isUzbek(name) || /^Carlsen\b/.test(name);
 
-/** Контроль времени. null — партия не берётся (армагеддон, «внезапная смерть», неизвестный тай-брейк). */
-function timeControl(tags, slug, kind) {
+/** Первые показания часов белых и чёрных в секундах (из [%clk h:mm:ss]), если они есть. */
+function firstClocks(movetext) {
+  return [...movetext.matchAll(/\[%clk (\d+):(\d\d):(\d\d)\]/g)]
+    .slice(0, 2)
+    .map((m) => +m[1] * 3600 + +m[2] * 60 + +m[3]);
+}
+
+/**
+ * Контроль времени. null — партия не берётся (армагеддон, «внезапная смерть», неизвестный тай-брейк).
+ * Если по туру выходит классика, а часы с первых ходов показывают меньше часа, — это не классика: у армагеддона
+ * у белых и чёрных разное время (Norway Chess 2024 выкладывал армагеддоны в том же туре, что и классику).
+ */
+function timeControl(tags, slug, kind, movetext = "") {
+  const tc = timeControlOf(tags, slug, kind);
+  if (tc !== "c") return tc;
+  const clocks = firstClocks(movetext);
+  if (clocks.length < 2 || Math.max(...clocks) >= 3600) return tc;
+  if (Math.abs(clocks[0] - clocks[1]) > 60) return null;
+  return Math.max(...clocks) <= 600 ? "b" : "r";
+}
+
+function timeControlOf(tags, slug, kind) {
   if (/armageddon|sudden-death/.test(slug)) return null;
   if (/blitz/.test(slug)) return "b";
   if (/rapid/.test(slug) || kind === "rapid") return "r";
@@ -302,19 +333,20 @@ function buildBroadcasts(nameOf, report) {
       if (!res) continue;
       const url = tags.GameURL ?? "";
       const slug = /broadcast\/[^/]+\/([^/]+)\//.exec(tags.BroadcastURL ?? url)?.[1] ?? "";
-      const tc = timeControl(tags, slug, tour.kind);
+      const tc = timeControl(tags, slug, tour.kind, movetext);
       if (!tc) continue;
       const stage = tour.stage ? (tags.BroadcastName ?? "").split("|").at(-1).trim() : "";
       const g = {
         id: `lb-${url.split("/").at(-1)}`,
-        w: nameOf(tags.White, tags.WhiteFideId),
-        b: nameOf(tags.Black, tags.BlackFideId),
+        w: nameOf(tags.White, tags.WhiteFideId, "broadcast"),
+        b: nameOf(tags.Black, tags.BlackFideId, "broadcast"),
         we: elo(tags.WhiteElo),
         be: elo(tags.BlackElo),
         ev: stage ? `${tour.event} · ${stage}` : tour.event,
         si: tour.site,
+        // Число месяца не берём: в трансляциях это часто дата заведения тура, а не партии (у Tata Steel 2026 все
+        // 13 туров — 15 и 17 января, у финала Кубка мира 2025 — дата раньше полуфинала). Год надёжен.
         y: yearOf(tags.UTCDate, tags.Date) ?? tour.year,
-        d: fullDate(tags.UTCDate),
         rd: roundLabel(slug),
         res,
         tc,
@@ -505,7 +537,8 @@ function buildFamous(nameOf, report) {
         .replace(/^-|-$/g, "")}`,
       w: nameOf(tags.White),
       b: nameOf(tags.Black),
-      ev: tags.OriginalEvent ?? tags.Event,
+      // Пометки базы-источника в названии турнира («London m4 ;HCL 18») — убираем или заменяем понятным названием.
+      ev: SOURCES.events[tags.OriginalEvent ?? tags.Event] ?? (tags.OriginalEvent ?? tags.Event).replace(/\s*;.*$/, ""),
       si: tags.Site && tags.Site !== "?" ? tags.Site : undefined,
       y: yearOf(tags.Date),
       d: fullDate(tags.Date),

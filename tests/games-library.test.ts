@@ -142,6 +142,7 @@ describe("поиск", () => {
     expect(ids({ text: "Qosimjonov" })).toEqual(["kasim"]);
     expect(ids({ text: "Касымджанов" })).toEqual(["kasim"]);
     expect(ids({ text: "Непомнящий" })).toEqual(["carlsen"]);
+    expect(ids({ text: "Вэй" })).toEqual(["sindarov"]);
   });
 
   it("слова — в любом порядке; четыре цифры — год партии; турнир и город по-русски", () => {
@@ -231,18 +232,36 @@ describe("загрузка", () => {
       return { ok: !!f, json: async () => f } as Response;
     }) as unknown as typeof fetch;
 
-  it("все наборы — одним списком, новые сверху; сведения о наборах без партий; второй раз — без загрузки", async () => {
+  it("все наборы — одним списком, новые сверху; сведения о наборах без партий, с адресом файла; второй раз — без загрузки", async () => {
     const calls: string[] = [];
+    const wiki: LibFile = { ...FILE, set: "wiki", games: [game({ id: "wp1", y: 1986 })] };
     const other: LibFile = { ...FILE, set: "pd", games: [game({ id: "pd1", y: 1921 })] };
-    const f = fetcher({ [LIBRARY_FILES[0]]: FILE, [LIBRARY_FILES[1]]: null, [LIBRARY_FILES[2]]: other }, calls);
+    const f = fetcher({ [LIBRARY_FILES[0]]: FILE, [LIBRARY_FILES[1]]: wiki, [LIBRARY_FILES[2]]: other }, calls);
     const lib = await loadLibrary(f);
-    expect(lib.games).toHaveLength(FILE.games.length + 1);
+    expect(lib.games).toHaveLength(FILE.games.length + 2);
     expect(lib.games[0].y).toBe(2026);
     expect(lib.games.find((g) => g.id === "pd1")?.set).toBe("pd");
-    expect(lib.files.map((x) => x.set)).toEqual(["test", "pd"]);
+    expect(lib.files.map((x) => [x.set, x.url])).toEqual([
+      ["test", LIBRARY_FILES[0]],
+      ["wiki", LIBRARY_FILES[1]],
+      ["pd", LIBRARY_FILES[2]],
+    ]);
     expect(lib.files[0]).not.toHaveProperty("games");
+    expect(lib.missing).toEqual([]);
     await loadLibrary(f);
     expect(calls).toHaveLength(3);
+  });
+
+  it("не загрузился один набор — остальные видны, пропавший назван, а следующее открытие грузит заново", async () => {
+    const calls: string[] = [];
+    const other: LibFile = { ...FILE, set: "pd", games: [game({ id: "pd1", y: 1921 })] };
+    const partial = await loadLibrary(fetcher({ [LIBRARY_FILES[1]]: null, [LIBRARY_FILES[2]]: other }, calls));
+    expect(partial.games.map((g) => g.id)).toEqual(["pd1"]);
+    expect(partial.missing).toEqual([LIBRARY_FILES[0], LIBRARY_FILES[1]]);
+    const all = { [LIBRARY_FILES[0]]: FILE, [LIBRARY_FILES[1]]: FILE, [LIBRARY_FILES[2]]: other };
+    const again = await loadLibrary(fetcher(all, calls));
+    expect(again.missing).toEqual([]);
+    expect(calls).toHaveLength(6);
   });
 
   it("ни один набор не загрузился — ошибка, и следующая попытка грузит заново", async () => {

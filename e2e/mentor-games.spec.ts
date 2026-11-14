@@ -137,6 +137,31 @@ test.describe("без сети", () => {
     await alert.getByRole("button").click();
     await expect(items(page).first()).toBeVisible({ timeout: 15_000 });
   });
+
+  test("не загрузился один набор: остальные партии видны, предупреждение и «Ещё раз» догружают", async ({ page }) => {
+    await prepare(page);
+    await page.route("**/data/games/broadcasts*.json", (route) => route.abort());
+    await open(page);
+    await openGames(page);
+    const partial = await count(page);
+    expect(partial).toBeLessThan(300);
+    const alert = panel(page).getByRole("alert");
+    await expect(alert).toBeVisible();
+    await page.unroute("**/data/games/broadcasts*.json");
+    await alert.getByRole("button").click();
+    await expect.poll(() => count(page)).toBeGreaterThan(800);
+    await expect(panel(page).getByRole("alert")).toHaveCount(0);
+  });
+
+  test("не загрузился код базы: доска и урок на месте, понятное сообщение", async ({ page }) => {
+    await prepare(page);
+    await open(page);
+    await page.route("**/_next/static/chunks/**", (route) => route.abort());
+    await page.locator("[data-mentor-games-button]").click();
+    await expect(page.locator("[data-mentor-games-chunk-error]")).toBeVisible();
+    await expect(root(page)).toHaveAttribute("data-mentor-ready", "");
+    await expect(page.locator('[data-board="mentor"]')).toBeVisible();
+  });
 });
 
 test.describe("режим класса", () => {
@@ -184,4 +209,49 @@ test.describe("режим класса", () => {
       await expect(root(page)).toHaveAttribute("data-mentor-ply", "2");
     });
   }
+
+  test("база закрывает доску целиком: Tab не уходит под неё, Escape закрывает её раньше шторки", async ({ page }) => {
+    await page.setViewportSize({ width: 960, height: 540 });
+    await prepare(page);
+    await open(page, "/chess/mentor#present");
+    await page.keyboard.press("Period");
+    await expect(root(page)).toHaveAttribute("data-mentor-curtain", "");
+    await openGames(page);
+    const sheet = page.locator('[data-mentor-part="sheet"][data-mentor-sheet="games"]');
+    await expect(sheet).toHaveAttribute("aria-modal", "true");
+    for (let i = 0; i < 6; i++) {
+      await page.keyboard.press("Shift+Tab");
+      expect(await sheet.evaluate((el) => el.contains(document.activeElement))).toBe(true);
+    }
+    await page.keyboard.press("Escape");
+    await expect(sheet).toHaveCount(0);
+    await expect(root(page)).toHaveAttribute("data-mentor-curtain", "");
+  });
+
+  test("портрет (телефон, повёрнутая панель): верх базы — поиск и «Закрыть» — на экране", async ({ page }) => {
+    await page.setViewportSize({ width: 412, height: 915 });
+    await prepare(page);
+    await open(page, "/chess/mentor#present");
+    await openGames(page);
+    for (const loc of [page.locator("[data-mentor-games-search]"), page.locator("[data-mentor-games-close]")]) {
+      const b = (await loc.boundingBox())!;
+      expect(b.y).toBeGreaterThanOrEqual(0);
+      expect(b.y + b.height).toBeLessThanOrEqual(915);
+    }
+    await page.locator("[data-mentor-games-close]").click();
+    await expect(panel(page)).toHaveCount(0);
+  });
+});
+
+test("телефон: после выбора партии доска на экране", async ({ page }, info) => {
+  test.skip(info.project.name !== "phone", "только телефон");
+  await prepare(page);
+  await open(page);
+  await openGames(page);
+  await items(page).nth(3).click();
+  await expect(panel(page)).toHaveCount(0);
+  const b = (await page.locator('[data-board="mentor"]').boundingBox())!;
+  const vh = page.viewportSize()!.height;
+  expect(b.y).toBeGreaterThanOrEqual(0);
+  expect(b.y + b.height).toBeLessThanOrEqual(vh);
 });

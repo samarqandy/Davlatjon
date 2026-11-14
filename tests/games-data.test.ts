@@ -93,6 +93,35 @@ describe("файлы базы партий", () => {
     }
   });
 
+  it("армагеддонов нет: две классические партии одних игроков в одном туре турнира не бывают", () => {
+    const seen = new Map<string, string>();
+    for (const g of ALL.filter((x) => x.tc === "c" && x.rd)) {
+      const key = [g.w, g.b, g.ev, g.rd].join("|");
+      expect(seen.get(key), `${g.id} и ${seen.get(key)}`).toBeUndefined();
+      seen.set(key, g.id);
+    }
+  });
+
+  it("имена в одном порядке «Фамилия, Имя»: один игрок не записан и так, и наоборот", () => {
+    const names = new Set(ALL.flatMap((g) => [g.w, g.b]));
+    for (const n of names) {
+      const [a, b] = n.split(", ");
+      if (b) expect(names.has(`${b}, ${a}`), n).toBe(false);
+    }
+    // Игроки без номера FIDE в трансляциях записаны «Фамилия Имя» — порядок не переворачивается.
+    expect(names.has("Smirnov, Anton")).toBe(true);
+    expect(names.has("Anton, Smirnov")).toBe(false);
+  });
+
+  it("дата партии — только из источников, где она точно дата партии (не из трансляций)", () => {
+    const broadcasts = FILES.find((f) => f.file.set === "lichess")!.file.games;
+    expect(broadcasts.filter((g) => g.d)).toEqual([]);
+  });
+
+  it("в названиях турниров нет служебных пометок базы-источника", () => {
+    for (const g of ALL) expect(g.ev, g.id).not.toMatch(/;|\bolm\b/);
+  });
+
   it("дебют — семейство из нашего списка названий (RU и UZ)", () => {
     for (const g of ALL) if (g.op) expect(OPENING_NAMES[g.op], `${g.id}: ${g.op}`).toBeTruthy();
     expect(ALL.filter((g) => g.op).length / ALL.length).toBeGreaterThan(0.9);

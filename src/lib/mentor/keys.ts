@@ -53,6 +53,8 @@ export function mentorKey(e: KeyInput, ctx: KeyContext): KeyAction | null {
   const mod = !!(e.ctrlKey || e.metaKey);
   if (e.code === "Space" || e.code === "Enter" || e.code === "NumpadEnter") return null;
   if (e.code === "Escape") {
+    // База партий закрывает всё остальное: Escape сначала закрывает её (шторка под ней остаётся на месте).
+    if (ctx.sheetModal) return "closeSheet";
     // Окошко превращения пешки закрывается своей клавишей Escape.
     if (ctx.promotionOpen) return null;
     if (ctx.pending) return "cancelPending";

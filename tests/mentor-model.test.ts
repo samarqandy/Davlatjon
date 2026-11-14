@@ -1069,6 +1069,24 @@ describe("разбор FEN и PGN", () => {
     return out;
   }
 
+  it("после взятия короля (позиция из расстановки) ходы считаются как раньше", () => {
+    // Чёрный король под ударом ладьи, ладья защищена слоном: белые берут короля, чёрные ходят пешкой.
+    const start = "4k3/8/8/7B/8/p7/4R3/6K1 w - - 0 1";
+    for (const line of [
+      ["e2e8", "a3a2"],
+      ["e2e8", "a3a2", "e8a8"],
+      ["h5e8", "a3a2", "e2e7", "a2a1q"],
+    ]) {
+      expect(fensOf(start, line)).toEqual(stepByStep(start, line));
+      expect(fensOf(start, line)).toHaveLength(line.length + 1);
+    }
+    // Урок с такой доской сохраняется и читается обратно.
+    const h = go(lessonOf({ start }), { t: "play", uci: "e2e8" }, { t: "play", uci: "a3a2" });
+    expect(board(h).line).toEqual(["e2e8", "a3a2"]);
+    expect(h.doc.ply).toBe(2);
+    expect(parseLesson(JSON.parse(JSON.stringify(persistable(h.doc))))).not.toBeNull();
+  });
+
   it("одна доска на всю линию даёт то же, что разбор позиции на каждом ходу: случайные партии, порча, превращения", () => {
     let s = 7;
     const rand = () => (s = (s * 1664525 + 1013904223) >>> 0) / 2 ** 32;
@@ -1078,8 +1096,11 @@ describe("разбор FEN и PGN", () => {
       QUEEN_VS_PAWNS,
       "8/4P3/8/8/8/8/8/k6K w - - 0 1",
       "4k3/P6P/8/8/8/8/p6p/4K3 w - - 0 1",
+      // Короля можно взять: случайные линии иногда так и делают.
+      "4k3/8/8/7B/8/p7/4R3/6K1 w - - 0 1",
+      "r3k3/8/8/8/8/8/8/R3K2R b - - 0 1",
     ];
-    for (let n = 0; n < 20; n++) {
+    for (let n = 0; n < 28; n++) {
       const start = starts[n % starts.length];
       const line: string[] = [];
       const c = new Chess(start, { skipValidation: true });

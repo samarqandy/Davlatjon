@@ -230,7 +230,12 @@ const fensCache = new Map<string, PlyInfo[]>();
 export function fensOf(start: string, line: readonly string[]): PlyInfo[] {
   const key = `${start}|${line.join(" ")}`;
   const hit = fensCache.get(key);
-  if (hit) return hit;
+  if (hit) {
+    // Недавно нужные линии — в конец очереди: из кэша уходит самая давняя, а не все сразу.
+    fensCache.delete(key);
+    fensCache.set(key, hit);
+    return hit;
+  }
   const out: PlyInfo[] = [startInfo(start)];
   const kings = hasBothKings(start);
   // Одна доска chess.js на всю линию: партия из базы — это и 250 полуходов, а разбирать FEN заново на каждом
@@ -259,8 +264,11 @@ export function fensOf(start: string, line: readonly string[]): PlyInfo[] {
       mate: kings && chess!.isCheckmate(),
       stalemate: kings && chess!.isStalemate(),
     });
+    // Взяли короля (позиция из расстановки бывает и такой): chess.js не забывает его клетку и дальше считает
+    // ходы под «шахом» несуществующему королю. Как и прежний счёт с разбором FEN на каждом ходу — начинаем заново.
+    if (m.captured === "k") chess = loadPosition(chess!.fen());
   }
-  if (fensCache.size > 200) fensCache.clear();
+  if (fensCache.size >= 200) fensCache.delete(fensCache.keys().next().value!);
   fensCache.set(key, out);
   return out;
 }

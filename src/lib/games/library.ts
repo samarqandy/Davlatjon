@@ -49,7 +49,10 @@ export interface LibFile {
   games: LibGame[];
 }
 
-export type LibFileMeta = Omit<LibFile, "games">;
+export type LibFileMeta = Omit<LibFile, "games"> & {
+  /** Адрес файла набора: в нём у каждой партии — ссылка на источник (трансляцию, правку статьи, книгу). */
+  url: string;
+};
 
 export const LIBRARY_FILES = [
   "/data/games/broadcasts.cc-by-sa-4.0.json",
@@ -113,7 +116,7 @@ const ALIASES: Record<string, string[]> = {
   Praggnanandhaa: ["Прагнанандха", "Pragg"],
   Firouzja: ["Фирузджа"],
   Caruana: ["Каруана"],
-  "Wei Yi": ["Вэй И"],
+  "Wei, Yi": ["Вэй И"],
   Gukesh: ["Гукеш"],
   Botvinnik: ["Ботвинник"],
   Rubinstein: ["Рубинштейн"],
@@ -278,9 +281,19 @@ export function sortGames(games: LoadedGame[]): LoadedGame[] {
   return games.sort((a, b) => b.y - a.y || (b.d ?? "").localeCompare(a.d ?? "") || a.ev.localeCompare(b.ev));
 }
 
-let loading: Promise<{ games: LoadedGame[]; files: LibFileMeta[] }> | null = null;
+export interface Library {
+  games: LoadedGame[];
+  files: LibFileMeta[];
+  /** Наборы (адреса файлов), которые не загрузились: показываем «Не все партии загрузились» и «Ещё раз». */
+  missing: string[];
+}
 
-/** Загрузить все наборы (один раз за страницу). Набор, который не загрузился, пропускается. */
+let loading: Promise<Library> | null = null;
+
+/**
+ * Загрузить все наборы (один раз за страницу). Набор, который не загрузился, пропускается, а следующее открытие
+ * базы попробует снова — сеть в школе бывает с перебоями.
+ */
 export function loadLibrary(fetcher: typeof fetch = fetch) {
   loading ??= Promise.all(
     LIBRARY_FILES.map((url) =>
@@ -289,14 +302,16 @@ export function loadLibrary(fetcher: typeof fetch = fetch) {
         .catch(() => null),
     ),
   ).then((files) => {
-    const ok = files.filter((f): f is LibFile => !!f && Array.isArray(f.games));
-    if (!ok.length) {
-      loading = null;
-      throw new Error("library unavailable");
-    }
+    const loaded = files.flatMap((f, i) => (f && Array.isArray(f.games) ? [{ f, url: LIBRARY_FILES[i] }] : []));
+    const ok = loaded.map((x) => x.f);
+    const missing = LIBRARY_FILES.filter((url) => !loaded.some((x) => x.url === url));
+    if (missing.length) loading = null;
+    if (!ok.length) throw new Error("library unavailable");
     return {
+      missing,
       games: sortGames(ok.flatMap(prepare)),
-      files: ok.map((f) => ({
+      files: loaded.map(({ f, url }) => ({
+        url,
         set: f.set,
         license: f.license,
         licenseUrl: f.licenseUrl,
