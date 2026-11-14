@@ -76,6 +76,12 @@ async function fetchAll() {
     console.log("kingfisher", name);
     download(SOURCES.kingfisher.base + name, file);
   }
+  for (const [name, digest] of Object.entries(SOURCES.openings.files)) {
+    const file = path.join(CACHE, "openings", name);
+    if (fs.existsSync(file) && sha256(fs.readFileSync(file)) === digest) continue;
+    console.log("openings", name);
+    download(SOURCES.openings.base + name, file);
+  }
   for (const article of SOURCES.wiki) {
     const file = path.join(CACHE, "wiki", `${article.oldid}.wiki`);
     if (fs.existsSync(file)) continue;
@@ -122,11 +128,22 @@ function sanTokens(movetext) {
   return out;
 }
 
+/** Сила фигур в пешках — для границы эндшпиля. */
+const VALUE = { n: 3, b: 3, r: 5, q: 9 };
+
+/** Эндшпиль: у каждой стороны фигур (без пешек и короля) не больше чем на ладью с лёгкой фигурой — 8 очков. */
+function isEndgame(chess) {
+  const material = { w: 0, b: 0 };
+  for (const row of chess.board()) for (const p of row) if (p && VALUE[p.type]) material[p.color] += VALUE[p.type];
+  return material.w <= 8 && material.b <= 8;
+}
+
 /** Проиграть ходы. Незаконный ход — ошибка источника: партия не берётся. */
 function replay(sans, fen) {
   const chess = fen ? new Chess(fen) : new Chess();
   const uci = [];
   const san = [];
+  let endgame;
   for (const token of sans) {
     let move;
     try {
@@ -136,8 +153,9 @@ function replay(sans, fen) {
     }
     uci.push(move.from + move.to + (move.promotion ?? ""));
     san.push(move.san);
+    if (endgame === undefined && isEndgame(chess)) endgame = uci.length;
   }
-  return { uci, san, mate: chess.isCheckmate() };
+  return { uci, san, mate: chess.isCheckmate(), endgame };
 }
 
 /* ───────────────────────── имена ───────────────────────── */
@@ -207,6 +225,41 @@ function makeNames(allGames) {
 
 /* ───────────────────────── общее ───────────────────────── */
 
+/**
+ * Код ECO — по полному открытому списку дебютов Lichess (lichess-org/chess-openings, CC0): самая длинная строка
+ * списка, с которой совпадают первые ходы партии. Файлы закреплены контрольными суммами (sources.json → openings).
+ */
+const ECO_LINES = (() => {
+  const lines = new Map();
+  for (const [name, digest] of Object.entries(SOURCES.openings.files)) {
+    const file = path.join(CACHE, "openings", name);
+    if (!fs.existsSync(file)) continue;
+    const text = fs.readFileSync(file, "utf8");
+    if (sha256(text) !== digest) throw new Error(`${name}: контрольная сумма не совпала — список дебютов изменился`);
+    for (const row of text.split("\n").slice(1)) {
+      const [eco, , pgn] = row.split("\t");
+      if (!eco || !pgn) continue;
+      lines.set(
+        sanTokens(pgn)
+          .map((t) => t.replace(/[+#]/g, ""))
+          .join(" "),
+        eco,
+      );
+    }
+  }
+  return lines;
+})();
+const ECO_LONGEST = Math.max(0, ...[...ECO_LINES.keys()].map((k) => k.split(" ").length));
+
+function ecoOf(sans) {
+  const moves = sans.slice(0, ECO_LONGEST).map((s) => s.replace(/[+#]/g, ""));
+  for (let k = moves.length; k > 0; k--) {
+    const eco = ECO_LINES.get(moves.slice(0, k).join(" "));
+    if (eco) return eco;
+  }
+  return undefined;
+}
+
 const book = makeOpeningBook(
   JSON.parse(fs.readFileSync(path.join(ROOT, "src/content/chess/opening-book.json"), "utf8")),
   OPENING_NAMES,
@@ -238,6 +291,8 @@ function entry(g) {
     "fen",
     "m",
     "op",
+    "eco",
+    "en",
     "src",
   ]) {
     if (g[key] !== undefined && g[key] !== "") out[key] = g[key];
@@ -250,7 +305,17 @@ function finish(game, sans) {
   if (played.error) return { error: played.error };
   if (played.uci.length < 10) return { error: "меньше десяти полуходов" };
   const opening = game.fen ? null : book.find(played.san);
-  return { ...game, m: played.uci.join(" "), op: opening?.family, plies: played.uci.length, mate: played.mate };
+  // Эндшпиль, в котором ещё есть что показать (хотя бы 8 полуходов), — с этого полухода кнопка «К эндшпилю».
+  const en = played.endgame !== undefined && played.uci.length - played.endgame >= 8 ? played.endgame : undefined;
+  return {
+    ...game,
+    m: played.uci.join(" "),
+    op: opening?.family,
+    eco: game.fen ? undefined : ecoOf(played.san),
+    en,
+    plies: played.uci.length,
+    mate: played.mate,
+  };
 }
 
 const surnameKey = (name) => name.split(/[,\s]/)[0].toLowerCase();
@@ -615,8 +680,9 @@ function attribution(counts) {
 Файлы в этой папке собирает \`scripts/games/build-games.mjs\` (список источников — \`scripts/games/sources.json\`).
 Из источников взяты только сведения о партиях: игроки, рейтинги, турнир, город, дата, тур, результат и ходы.
 Изменения: ходы проверены и переписаны в запись UCI; имена игроков приведены к одному написанию; оценки движка,
-время на часах, комментарии и пометки источников удалены; добавлено семейство дебюта по открытому списку
-дебютов Lichess (CC0). Наши подписи, разделы и заметки в эти файлы не входят.
+время на часах, комментарии и пометки источников удалены; добавлены посчитанные программой семейство дебюта и код
+ECO (по открытому списку дебютов Lichess, CC0) и полуход, с которого партия перешла в эндшпиль. Наши подписи,
+разделы и заметки в эти файлы не входят.
 
 ## ${files.broadcasts.file} — ${counts.broadcasts} партий
 

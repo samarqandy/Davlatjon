@@ -25,10 +25,9 @@ async function prepare(page: Page, lang: "ru" | "uz" = "ru") {
 }
 
 const root = (page: Page) => page.locator("[data-mentor]");
-const panel = (page: Page) => page.locator("[data-mentor-games]");
-const items = (page: Page) => page.locator("[data-mentor-games-item]");
-const count = async (page: Page) =>
-  Number(await page.getAttribute("[data-mentor-games-count]", "data-mentor-games-count"));
+const panel = (page: Page) => page.locator("[data-games]");
+const items = (page: Page) => page.locator("[data-games-item]");
+const count = async (page: Page) => Number(await page.getAttribute("[data-games-count]", "data-games-count"));
 
 async function open(page: Page, url = "/chess/mentor") {
   await page.goto(url);
@@ -42,7 +41,7 @@ async function openGames(page: Page) {
 
 async function axe(page: Page) {
   const result = await new AxeBuilder({ page })
-    .include("[data-mentor-games]")
+    .include("[data-games]")
     .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "best-practice"])
     .analyze();
   return result.violations.map((v) => `${v.impact} ${v.id}: ${v.nodes[0].target.join(" ")}`);
@@ -58,15 +57,15 @@ test("поиск по-русски, кнопка игрока, партия от
   expect(all).toBeGreaterThan(800);
   expect(await axe(page)).toEqual([]);
 
-  await page.locator("[data-mentor-games-search]").fill("Синдаров");
+  await page.locator("[data-games-search]").fill("Синдаров");
   await expect.poll(() => count(page)).toBeLessThan(all);
   const sindarov = await count(page);
   expect(sindarov).toBeGreaterThan(50);
   for (const text of await items(page).allTextContents()) expect(text).toContain("Sindarov");
 
-  await page.locator('[data-mentor-games-player="Carlsen"]').click();
-  await expect(page.locator('[data-mentor-games-player="Carlsen"]')).toHaveAttribute("aria-pressed", "true");
-  await expect(page.locator("[data-mentor-games-search]")).toHaveValue("Carlsen");
+  await page.locator('[data-games-player="Carlsen"]').click();
+  await expect(page.locator('[data-games-player="Carlsen"]')).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator("[data-games-search]")).toHaveValue("Carlsen");
   await expect.poll(() => count(page)).not.toBe(sindarov);
   await items(page).first().click();
 
@@ -82,7 +81,7 @@ test("поиск по-русски, кнопка игрока, партия от
 
   // Запрос помнится; вторая партия — новой доской после первой.
   await openGames(page);
-  await expect(page.locator("[data-mentor-games-search]")).toHaveValue("Carlsen");
+  await expect(page.locator("[data-games-search]")).toHaveValue("Carlsen");
   await items(page).nth(1).click();
   await expect(root(page)).toHaveAttribute("data-mentor-boards", "2");
   await expect(root(page)).toHaveAttribute("data-mentor-board", "1");
@@ -92,21 +91,21 @@ test("разделы и фильтры: Узбекистан, классика �
   await prepare(page);
   await open(page);
   await openGames(page);
-  await page.locator('[data-mentor-games-section="uz"]').click();
-  await expect(page.locator('[data-mentor-games-section="uz"]')).toHaveAttribute("aria-pressed", "true");
+  await page.locator('[data-games-section="uz"]').click();
+  await expect(page.locator('[data-games-section="uz"]')).toHaveAttribute("aria-pressed", "true");
   await expect.poll(() => count(page)).toBeGreaterThan(300);
 
-  await page.locator('[data-mentor-games-section="all"]').click();
-  await page.locator("[data-mentor-games-filters] summary").click();
-  await page.locator("[data-mentor-games-from]").fill("1850");
-  await page.locator("[data-mentor-games-to]").fill("1860");
+  await page.locator('[data-games-section="all"]').click();
+  await page.locator("[data-games-filters] summary").click();
+  await page.locator("[data-games-from]").fill("1850");
+  await page.locator("[data-games-to]").fill("1860");
   await expect.poll(() => count(page)).toBeGreaterThan(2);
   await expect.poll(() => count(page)).toBeLessThan(20);
   for (const text of await items(page).allTextContents()) expect(text).toMatch(/185\d/);
 
-  await page.locator("[data-mentor-games-result]").selectOption("1-0");
+  await page.locator("[data-games-result]").selectOption("1-0");
   for (const text of await items(page).allTextContents()) expect(text).toContain("1–0");
-  await page.locator("[data-mentor-games-reset]").click();
+  await page.locator("[data-games-reset]").click();
   await expect.poll(() => count(page)).toBeGreaterThan(800);
 });
 
@@ -114,10 +113,10 @@ test("oʻzbek tilida: qidiruv «Qosimjonov», panelda rus harflari yoʻq", async
   await prepare(page, "uz");
   await open(page, "/uz/chess/mentor");
   await openGames(page);
-  await page.locator("[data-mentor-games-search]").fill("Qosimjonov");
+  await page.locator("[data-games-search]").fill("Qosimjonov");
   await expect.poll(() => count(page)).toBeGreaterThan(5);
   for (const text of await items(page).allTextContents()) expect(text).toContain("Kasimdzhanov");
-  await page.locator("[data-mentor-games-sources] summary").click();
+  await page.locator("[data-games-sources] summary").click();
   const text = await panel(page).innerText();
   expect(text.match(/[А-Яа-яЁё]/g) ?? []).toEqual([]);
 });
@@ -184,7 +183,7 @@ test.describe("режим класса", () => {
       expect(box.x + box.width).toBeLessThanOrEqual(w + 1);
       expect(box.y + box.height).toBeLessThanOrEqual(h + 1);
       // Поиск и первая партия — на первом экране.
-      for (const loc of [page.locator("[data-mentor-games-search]"), items(page).first()]) {
+      for (const loc of [page.locator("[data-games-search]"), items(page).first()]) {
         const b = (await loc.boundingBox())!;
         expect(b.y + b.height).toBeLessThanOrEqual(h);
       }
@@ -233,12 +232,12 @@ test.describe("режим класса", () => {
     await prepare(page);
     await open(page, "/chess/mentor#present");
     await openGames(page);
-    for (const loc of [page.locator("[data-mentor-games-search]"), page.locator("[data-mentor-games-close]")]) {
+    for (const loc of [page.locator("[data-games-search]"), page.locator("[data-games-close]")]) {
       const b = (await loc.boundingBox())!;
       expect(b.y).toBeGreaterThanOrEqual(0);
       expect(b.y + b.height).toBeLessThanOrEqual(915);
     }
-    await page.locator("[data-mentor-games-close]").click();
+    await page.locator("[data-games-close]").click();
     await expect(panel(page)).toHaveCount(0);
   });
 });

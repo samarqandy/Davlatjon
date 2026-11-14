@@ -1,11 +1,11 @@
 "use client";
 
-import { Pause, Play } from "lucide-react";
+import { Library, Pause, Play } from "lucide-react";
 import { Chess } from "chess.js";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { RichText } from "@/components/RichText";
-import { Button, cn } from "@/components/ui";
+import { Button, cn, Icon } from "@/components/ui";
 import { chessImagesIn } from "@/content/chess/imageLookup";
 import { GAME_TAGS, type FamousGame, type GameTag } from "@/content/chess/games";
 import type { ChessImage } from "@/content/chess/images";
@@ -94,6 +94,24 @@ export function FamousGamesList() {
           )}
         </p>
       </header>
+      <Link
+        href="/chess/games/base"
+        className="flex items-center gap-4 rounded-3xl border-2 border-brand/30 bg-brand-soft/50 p-4 transition hover:-translate-y-0.5"
+        data-games-base-link
+      >
+        <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-surface text-2xl text-brand">
+          <Icon icon={Library} />
+        </span>
+        <span className="min-w-0">
+          <span className="block text-lg font-black">{t("База партий мастеров", "Ustalar partiyalari bazasi")}</span>
+          <span className="block text-sm font-bold text-muted">
+            {t(
+              "Сотни партий: Синдаров, Абдусатторов, Карлсен, Каспаров, Фишер. Поиск по фамилии, турниру и году.",
+              "Yuzlab partiyalar: Sindarov, Abdusattorov, Karlsen, Kasparov, Fisher. Familiya, turnir va yil boʻyicha qidiruv.",
+            )}
+          </span>
+        </span>
+      </Link>
       <div className="space-y-2">
         <div
           className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:px-0"
