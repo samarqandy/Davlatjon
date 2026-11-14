@@ -259,10 +259,7 @@ export function HomeDashboard({ weeks: both, chess }: { weeks: Both<WeekSummary[
           <div>
             <p className="font-extrabold">{t("Дальше — новые недели", "Keyin — yangi haftalar")}</p>
             <p className="text-sm text-muted">
-              {t(
-                "Логика, геометрия, комбинаторика и алгоритмы — шаг за шагом.",
-                "Mantiq, geometriya, kombinatorika va algoritmlar — qadamma-qadam.",
-              )}
+              {t("Комбинаторика и алгоритмы — шаг за шагом.", "Kombinatorika va algoritmlar — qadamma-qadam.")}
             </p>
           </div>
         </div>
