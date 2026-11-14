@@ -301,23 +301,29 @@ test.describe("режим класса", () => {
         };
       });
       const rail = document.querySelector<HTMLElement>('[data-mentor-part="rail"]')!;
+      const palette = document.querySelector<HTMLElement>(".mentor-palette");
       return {
         w: frame.width,
         h: frame.height,
         bottom: frame.bottom,
         turnFont: parseFloat(getComputedStyle(turn).fontSize),
         railOverflow: rail.scrollHeight - rail.clientHeight,
+        paletteOverflow: palette ? palette.scrollHeight - palette.clientHeight : 0,
         ctrls,
       };
     });
   }
 
+  // 960×540 — так видит экран браузер интерактивной панели 65″ (плотность 2), проверенной владельцем 14.11.2026;
+  // 1280×720 — панели и проекторы с плотностью 1,5.
   for (const [w, h, min] of [
     [1920, 1080, 0.88],
     [3840, 2160, 0.88],
     [1366, 768, 0.85],
     [1280, 800, 0.85],
     [1024, 768, 0.85],
+    [1280, 720, 0.9],
+    [960, 540, 0.9],
   ] as const)
     test(`${w}×${h}: доска во всю высоту, кнопки крупные, видны целиком и в зоне досягаемости — во всех режимах`, async ({
       page,
@@ -338,13 +344,16 @@ test.describe("режим класса", () => {
         expect(m.bottom, mode).toBeLessThanOrEqual(h);
         expect(m.h / h, mode).toBeGreaterThanOrEqual(min);
         expect(m.turnFont / h, mode).toBeGreaterThanOrEqual(w / h > 1.5 ? 0.045 : 0.025);
-        // Колонка кнопок помещается без прокрутки.
+        // Колонка кнопок помещается без прокрутки, набор кнопок режима — тоже.
         expect(m.railOverflow, mode).toBeLessThanOrEqual(1);
+        expect(m.paletteOverflow, mode).toBeLessThanOrEqual(1);
         expect(m.ctrls.length, mode).toBeGreaterThan(10);
+        // На невысоком экране (до 760 CSS-пикселей) кнопки от 44 px: у панели с плотностью 2 это около 6,5 см.
+        const minButton = h <= 760 ? 44 : 56;
         for (const c of m.ctrls) {
           const at = `${mode}: ${c.name}`;
-          expect(c.w, at).toBeGreaterThanOrEqual(56);
-          expect(c.h, at).toBeGreaterThanOrEqual(56);
+          expect(c.w, at).toBeGreaterThanOrEqual(minButton);
+          expect(c.h, at).toBeGreaterThanOrEqual(minButton);
           expect(c.top, at).toBeGreaterThanOrEqual(0);
           expect(c.bottom, at).toBeLessThanOrEqual(h);
           expect(c.visible, at).toBe(true);
@@ -357,16 +366,14 @@ test.describe("режим класса", () => {
       }
     });
 
-  test("невысокое окно (ноутбук без полного экрана): «Дальше», «Отменить» и режимы видны, набор фигур листается", async ({
-    page,
-  }) => {
-    await page.setViewportSize({ width: 1366, height: 600 });
+  test("очень невысокое окно: «Дальше», «Отменить» и режимы видны, набор фигур листается", async ({ page }) => {
+    await page.setViewportSize({ width: 800, height: 360 });
     await open(page);
     await page.locator("[data-mentor-present-button]").click();
     await page.locator('[data-mentor-mode-button="setup"]').click();
     const m = await measure(page);
     for (const c of m.ctrls.filter((x) => x.hot)) {
-      expect(c.bottom, c.name).toBeLessThanOrEqual(600);
+      expect(c.bottom, c.name).toBeLessThanOrEqual(360);
       expect(c.visible, c.name).toBe(true);
     }
     expect(Math.abs(m.w - m.h)).toBeLessThan(2);

@@ -1069,6 +1069,7 @@ html:has([data-mentor][data-present]) {
   --g: var(--edge);
 }
 [data-mentor][data-present] [data-mentor-part="rail"] {
+  container: mentor-rail / inline-size;
   grid-area: rail;
   display: flex;
   flex-direction: column;
@@ -1095,10 +1096,22 @@ html:has([data-mentor][data-present]) {
   overscroll-behavior: contain;
   touch-action: pan-y;
 }
-[data-mentor][data-present] .mentor-group {
-  display: flex;
-  flex-direction: column;
+/* Кнопки режима — сеткой: по три в ряд; в широкой колонке — фигуры одного цвета в один ряд и т. д. */
+[data-mentor][data-present] .mentor-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--btn-gap);
+}
+@container mentor-rail (min-width: 21rem) {
+  [data-mentor][data-present] .mentor-grid-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  [data-mentor][data-present] .mentor-grid-5 {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+  [data-mentor][data-present] .mentor-grid-6 {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
 }
 [data-mentor][data-present] .mentor-top {
   margin-bottom: var(--btn-gap);
@@ -1186,15 +1199,22 @@ html:has([data-mentor][data-present]) {
   font-size: max(16px, 2.2vh);
 }
 
-/* Проектор 4:3 и 5:4: две колонки — кнопки и ход слева, доска справа (или наоборот). */
-@media (max-aspect-ratio: 3/2) {
+/*
+ * Две колонки — кнопки и ход с одной стороны, доска с другой — на проекторе 4:3 и 5:4 и на невысоком экране.
+ * Невысокий экран — это и интерактивная панель: проверка на панели 65″ (14.11.2026) показала, что её браузер
+ * видит экран как 960×540 CSS-пикселей (плотность 2). В три колонки доска там занимала лишь 75 % высоты, а набор
+ * фигур не помещался. В две колонки доска — 94 % высоты, колонка кнопок шире (фигуры одного цвета — в один ряд).
+ */
+@media (max-aspect-ratio: 3/2), (max-height: 760px) {
   [data-mentor][data-present] {
-    --board-size: min(calc(100dvh - 6vh), calc(100vw - var(--rail-w) - 6vw - var(--col-gap)));
+    --rail-w: clamp(16rem, calc(100vw - 6vw - var(--col-gap) - (100dvh - 6vh)), 30rem);
+    --board-size: min(calc(100dvh - 6vh), calc(100vw - 6vw - var(--col-gap) - 16rem));
     grid-template-columns: var(--rail-w) var(--board-size);
     grid-template-rows: auto minmax(0, 1fr);
     grid-template-areas:
       "info board"
       "rail board";
+    justify-content: center;
   }
   [data-mentor][data-present][data-mentor-side="right"] {
     grid-template-columns: var(--board-size) var(--rail-w);
@@ -1221,6 +1241,27 @@ html:has([data-mentor][data-present]) {
   }
   [data-mentor][data-present] [data-mentor-part="sheet"] {
     grid-area: board;
+  }
+}
+/*
+ * Невысокий экран: кнопки не меньше 44 CSS-пикселей (на панели 65″ с плотностью 2 это около 6,5 см).
+ * Колонка у широкого невысокого экрана шире, чем у проектора 4:3, — ход пишем крупнее.
+ */
+@media (max-height: 760px) {
+  [data-mentor][data-present] {
+    --btn-h: max(44px, 7vmin);
+    --btn-gap: max(6px, 1vmin);
+  }
+}
+@media (max-height: 760px) and (min-aspect-ratio: 3/2) {
+  [data-mentor][data-present] .mentor-turn {
+    font-size: max(20px, 4.6vh);
+  }
+  [data-mentor][data-present] :is(.mentor-last, .mentor-task) {
+    font-size: max(18px, 3.6vh);
+  }
+  [data-mentor][data-present] .mentor-count {
+    font-size: max(14px, 2.6vh);
   }
 }
 
