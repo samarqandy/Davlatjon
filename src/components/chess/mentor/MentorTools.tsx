@@ -98,19 +98,23 @@ export function SignGlyph({ kind }: { kind: SignKind }) {
 export function MentorRow({
   label,
   present,
+  bare,
   children,
   className,
   ...rest
 }: {
-  label: string;
+  /** Название группы для экранного диктора (у ряда внутри общей группы — не нужно, `bare`). */
+  label?: string;
   present: boolean;
+  /** Только ряд для глаза: смысловая группа — снаружи. */
+  bare?: boolean;
   children: ReactNode;
   className?: string;
 } & Record<`data-${string}`, string | number | undefined>) {
   return (
     <div
-      role="group"
-      aria-label={label}
+      role={bare ? undefined : "group"}
+      aria-label={bare ? undefined : label}
       className={cn(
         present
           ? "mentor-row"

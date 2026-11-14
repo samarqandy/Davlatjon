@@ -160,9 +160,19 @@ export function MentorBoard() {
   const mode = prefs.mode;
   const promo = usePromotion(fen);
 
+  // Действие всегда применяется к последней истории (а не к той, что была при отрисовке): обработчик,
+  // запомненный раньше (выбор фигуры превращения, перетаскивание), не откатит правки, сделанные после него.
+  const histRef = useRef(hist);
+  const commit = (next: History) => {
+    histRef.current = next;
+    setHist(next);
+  };
   const run = (a: Action): boolean => {
-    const r = apply(hist, a);
-    if (r.history !== hist) setHist(r.history);
+    // Любая другая правка закрывает окошко превращения: выбор в нём относился к прежнему состоянию.
+    if (a.t !== "play") promo.request?.onCancel();
+    const cur = histRef.current;
+    const r = apply(cur, a);
+    if (r.history !== cur) commit(r.history);
     return !r.rejected && !r.refused;
   };
 
@@ -173,37 +183,63 @@ export function MentorBoard() {
   };
 
   // Урок и настройки — из хранилища браузера, один раз после оживления страницы.
+  const loaded = useRef<{ lesson: MentorLesson; board: number } | null>(null);
   useEffect(() => {
     const storage = browserStorage();
     const { lesson, board: at } = openLesson(readSaved(storage), t("Урок 1", "1-dars"));
+    loaded.current = { lesson, board: at };
     /* eslint-disable react-hooks/set-state-in-effect -- данные браузера читаются только после оживления */
-    setHist(startHistory(lesson, at));
+    commit(startHistory(lesson, at));
     setPrefs(readPrefs(storage));
     setReady(true);
     /* eslint-enable react-hooks/set-state-in-effect */
     // eslint-disable-next-line react-hooks/exhaustive-deps -- только при первом показе
   }, []);
 
-  // Сохраняем через 400 мс после последней правки; при уходе со страницы — сразу.
+  // Сохраняем через 400 мс после последней правки; если раньше уходят со страницы (закрыли вкладку, перешли
+  // по ссылке) — сразу. Только то, что изменилось: открытая, но нетронутая вкладка не перепишет урок,
+  // изменённый в другой вкладке.
   const lessonToSave = ready ? doc.lesson : null;
   const trialToSave = doc.trial;
   const boardToSave = doc.board;
+  const pendingSave = useRef<(() => void) | null>(null);
   useEffect(() => {
     if (!lessonToSave) return;
+    const first = loaded.current;
+    if (first && first.lesson === lessonToSave && first.board === boardToSave && !trialToSave) return;
+    loaded.current = null;
+    let pending = true;
     const save = () => {
-      const lesson = { ...persistable({ ...doc, lesson: lessonToSave }), updatedAt: Date.now() };
+      if (!pending) return;
+      pending = false;
+      pendingSave.current = null;
+      const lesson = {
+        ...persistable({ lesson: lessonToSave, board: boardToSave, ply: 0, trial: trialToSave }),
+        updatedAt: Date.now(),
+      };
       setSaveState(writeLesson(browserStorage(), lesson, boardToSave));
     };
+    pendingSave.current = save;
     const id = setTimeout(save, 400);
     window.addEventListener("pagehide", save);
     return () => {
       clearTimeout(id);
       window.removeEventListener("pagehide", save);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- сохраняем урок, а не каждый шаг по ходам
   }, [lessonToSave, trialToSave, boardToSave]);
+  // Ушли со страницы внутри сайта раньше, чем сработало сохранение, — сохраняем сейчас.
+  useEffect(() => () => pendingSave.current?.(), []);
 
-  // Вышли из режима класса (кнопкой «Назад» браузера или пульта) — выходим и из полного экрана.
+  // Вышли из режима класса любым путём (кнопка «Выход», «Назад» браузера или пульта) — шторка и панель «Ещё»
+  // закрываются, полный экран снимается.
+  const [wasPresent, setWasPresent] = useState(present);
+  if (wasPresent !== present) {
+    setWasPresent(present);
+    if (!present) {
+      setCurtain(false);
+      setSheet(null);
+    }
+  }
   const { exit: fsExit } = fs;
   useEffect(() => {
     if (present) return;
@@ -211,15 +247,37 @@ export function MentorBoard() {
     fsExit();
   }, [present, fsExit]);
 
+  // Фокус не должен теряться, когда кнопка, на которой он стоял, исчезает (вход в режим класса и выход из него,
+  // закрытие панели «Ещё»): переводим его на кнопку, которая теперь на том же месте по смыслу.
+  const focusLater = (selector: string) =>
+    requestAnimationFrame(() => {
+      const active = document.activeElement;
+      if (active && active !== document.body && rootRef.current?.contains(active)) return;
+      rootRef.current?.querySelector<HTMLElement>(selector)?.focus();
+    });
+  const sheetRef = useRef<HTMLDivElement>(null);
+  const sheetOpener = useRef<string | null>(null);
+  const toggleSheet = (which: Exclude<Sheet, null>) => {
+    if (sheet === which) return closeSheet();
+    sheetOpener.current = which === "more" ? "[data-mentor-more]" : "[data-mentor-presets-button]";
+    setSheet(which);
+    // В режиме класса панель — диалог рядом с доской: фокус переходит в неё (иначе до неё — вся колонка кнопок).
+    if (present) requestAnimationFrame(() => sheetRef.current?.focus());
+  };
+  const closeSheet = () => {
+    setSheet(null);
+    if (sheetOpener.current) focusLater(sheetOpener.current);
+  };
+
   const enterPresent = () => {
     fs.enter();
     setSheet(null);
     setHash("#present", { keepScroll: true });
     pushed.current = true;
+    focusLater("[data-mentor-exit]");
   };
   const exitPresent = () => {
-    setSheet(null);
-    setCurtain(false);
+    focusLater("[data-mentor-present-button]");
     fs.exit();
     if (pushed.current) {
       pushed.current = false;
@@ -254,7 +312,7 @@ export function MentorBoard() {
         setCurtain(false);
         return;
       case "closeSheet":
-        setSheet(null);
+        closeSheet();
         return;
     }
   };
@@ -298,13 +356,17 @@ export function MentorBoard() {
   const pick = (sq: string | null) => setPicked(sq ? { sq, key: posKey } : null);
 
   const tryMove = (from: string, to: string, promotion?: PromotionPiece): boolean => {
+    pick(null);
     if (!promotion && isPromotionMove(fen, from, to)) {
-      promo.ask(to, turn, (piece) => void tryMove(from, to, piece));
+      promo.ask(to, turn, (piece) => void latestTryMove.current(from, to, piece));
       return true;
     }
-    pick(null);
     return run({ t: "play", uci: `${from}${to}${promotion ?? ""}` });
   };
+  const latestTryMove = useRef(tryMove);
+  useEffect(() => {
+    latestTryMove.current = tryMove;
+  });
 
   // В самом начале (ходов ещё нет) первым может пойти любой цвет: тренер начинает показ с той стороны, с какой нужно.
   const canSwitchSide = ply === 0 && board.line.length === 0;
@@ -344,9 +406,11 @@ export function MentorBoard() {
     if (pieceAt(fen, sq)) pick(sq);
   };
 
-  const onSquare = mode === "move" ? tapMove : mode === "draw" ? tapDraw : tapSetup;
-  const onDrop =
-    mode === "move"
+  // Под шторкой доска ничего не делает: ни нажатием, ни клавиатурой.
+  const onSquare = curtain ? () => undefined : mode === "move" ? tapMove : mode === "draw" ? tapDraw : tapSetup;
+  const onDrop = curtain
+    ? undefined
+    : mode === "move"
       ? (from: string, to: string) => tryMove(from, to)
       : mode === "setup"
         ? (from: string, to: string) => {
@@ -601,7 +665,7 @@ export function MentorBoard() {
       pressed={sheet === "presets"}
       aria-expanded={sheet === "presets"}
       data-mentor-presets-button
-      onClick={() => setSheet(sheet === "presets" ? null : "presets")}
+      onClick={() => toggleSheet("presets")}
     />
   );
   const trialBtn = doc.trial && (
@@ -620,7 +684,7 @@ export function MentorBoard() {
     if (!p) return;
     pick(null);
     run({ t: "setPosition", fen: p.fen, task: p.task ? t(p.task[0], p.task[1]) : undefined });
-    setSheet(null);
+    closeSheet();
   };
 
   const paletteRows =
@@ -635,19 +699,20 @@ export function MentorBoard() {
       ) : null
     ) : mode === "draw" ? (
       P ? (
-        <>
-          <MentorRow present label={t("Цвет стрелки", "Strelka rangi")}>
+        // Колонка по три кнопки в ряд: цвета и знаки идут подряд, поэтому группа одна — «Рисование».
+        <div role="group" aria-label={t("Рисование", "Chizish")} className="mentor-group">
+          <MentorRow present bare>
             {colorButtons.slice(0, 3)}
           </MentorRow>
-          <MentorRow present label={t("Знаки", "Belgilar")}>
+          <MentorRow present bare>
             {colorButtons[3]}
             {signButtons.slice(0, 2)}
           </MentorRow>
-          <MentorRow present label={t("Знаки", "Belgilar")}>
+          <MentorRow present bare>
             {signButtons[2]}
             {clearBtn}
           </MentorRow>
-        </>
+        </div>
       ) : (
         <>
           <MentorRow present={false} label={t("Цвет стрелки", "Strelka rangi")}>
@@ -661,20 +726,24 @@ export function MentorBoard() {
       )
     ) : P ? (
       <>
-        {[0, 3, 6, 9].map((i) => (
-          <MentorRow key={i} present label={t("Фигуры", "Donalar")}>
-            {pieceButtons.slice(i, i + 3)}
+        <div role="group" aria-label={t("Фигуры", "Donalar")} className="mentor-group">
+          {[0, 3, 6, 9].map((i) => (
+            <MentorRow key={i} present bare>
+              {pieceButtons.slice(i, i + 3)}
+            </MentorRow>
+          ))}
+        </div>
+        <div role="group" aria-label={t("Расстановка", "Joylash")} className="mentor-group">
+          <MentorRow present bare>
+            {eraseBtn}
+            {turnBtn}
+            {emptyBtn}
           </MentorRow>
-        ))}
-        <MentorRow present label={t("Расстановка", "Joylash")}>
-          {eraseBtn}
-          {turnBtn}
-          {emptyBtn}
-        </MentorRow>
-        <MentorRow present label={t("Расстановка", "Joylash")}>
-          {presetsBtn}
-          {flip}
-        </MentorRow>
+          <MentorRow present bare>
+            {presetsBtn}
+            {flip}
+          </MentorRow>
+        </div>
       </>
     ) : (
       <>
@@ -716,8 +785,8 @@ export function MentorBoard() {
                 "Kataklarni bosing — dona qoʻyiladi. Yana bosilsa — olinadi.",
               )
           : t(
-              "Выберите фигуру внизу или переставьте фигуру на доске: нажмите на неё, потом на клетку.",
-              "Pastdan dona tanlang yoki taxtadagi donani surib qoʻying: avval donani, keyin katakni bosing.",
+              "Выберите фигуру в наборе или переставьте фигуру на доске: нажмите на неё, потом на клетку.",
+              "Toʻplamdan dona tanlang yoki taxtadagi donani surib qoʻying: avval donani, keyin katakni bosing.",
             )
         : null;
 
@@ -765,11 +834,18 @@ export function MentorBoard() {
                 {lastMove}
               </p>
             )}
-            {board.task && (
-              <p className="mentor-task font-bold" data-mentor-task>
-                {board.task}
-              </p>
-            )}
+          </>
+        )}
+      </div>
+      {/* Задание — вне «живой» области: пока тренер его печатает, диктор не повторяет его на каждую букву. */}
+      {(!P || mode !== "setup") && board.task && (
+        <p className="mentor-task font-bold" data-mentor-task>
+          {board.task}
+        </p>
+      )}
+      <div aria-live="polite">
+        {(!P || mode !== "setup") && (
+          <>
             <p className="mentor-count font-bold text-muted tabular-nums">
               {doc.lesson.boards.length > 1 && (
                 <span className="mr-3">
@@ -783,13 +859,13 @@ export function MentorBoard() {
             </p>
           </>
         )}
+        <p className="sr-only">
+          {t(
+            `Стрелок: ${nArrows}, кружков: ${nRings}, знаков: ${nSigns}`,
+            `Strelkalar: ${nArrows}, doiralar: ${nRings}, belgilar: ${nSigns}`,
+          )}
+        </p>
       </div>
-      <p className="sr-only">
-        {t(
-          `Стрелок: ${nArrows}, кружков: ${nRings}, знаков: ${nSigns}`,
-          `Strelkalar: ${nArrows}, doiralar: ${nRings}, belgilar: ${nSigns}`,
-        )}
-      </p>
       {doc.trial && !P && (
         <div className="mt-2 flex flex-wrap items-center gap-2 rounded-2xl bg-sun-soft p-2" data-mentor-trial-bar>
           <span className="px-1 text-sm font-bold">{t("Пробный вариант", "Sinov varianti")}</span>
@@ -805,7 +881,20 @@ export function MentorBoard() {
     </div>
   );
 
+  // Касание двумя пальцами или ладонью — не ход и не нажатие. Палец, коснувшийся вторым, и всё, что он делает
+  // (движение, отпускание), до доски не доходят: иначе ладонь во время перетаскивания роняла фигуру.
+  // Слушаем окно в фазе перехвата — раньше, чем библиотека перетаскивания (она слушает документ).
   const multi = useRef(false);
+  useEffect(() => {
+    const guard = (e: PointerEvent) => {
+      if (e.pointerType !== "mouse" && !e.isPrimary) e.stopImmediatePropagation();
+    };
+    const types = ["pointerdown", "pointermove", "pointerup", "pointercancel"] as const;
+    for (const type of types) window.addEventListener(type, guard, { capture: true });
+    return () => {
+      for (const type of types) window.removeEventListener(type, guard, { capture: true });
+    };
+  }, []);
 
   return (
     <section
@@ -829,10 +918,19 @@ export function MentorBoard() {
       data-mentor-low={P && prefs.low ? "" : undefined}
       aria-labelledby="mentor-title"
       className={P ? "light-island" : "board-stage board-wide board-top space-y-5"}
-      onContextMenu={P ? (e) => e.preventDefault() : undefined}
+      onContextMenu={
+        P
+          ? (e) => {
+              // В поле ввода меню нужно: на панели без клавиатуры через него вставляют текст.
+              if (!(e.target as HTMLElement).closest("input, textarea, select, [contenteditable='true']"))
+                e.preventDefault();
+            }
+          : undefined
+      }
       // Панель класса: касание двумя пальцами или ладонью — не ход и не нажатие.
       onTouchStartCapture={(e) => {
-        if (e.touches.length > 1) multi.current = true;
+        // Новое касание одним пальцем — новый жест; второй палец делает жест «многопальцевым» до конца.
+        multi.current = e.touches.length > 1;
       }}
       onTouchEndCapture={(e) => {
         if (!multi.current) return;
@@ -840,8 +938,8 @@ export function MentorBoard() {
         e.stopPropagation();
         if (e.touches.length === 0) multi.current = false;
       }}
-      onPointerDownCapture={(e) => {
-        if (!e.isPrimary && e.pointerType !== "mouse") e.stopPropagation();
+      onTouchCancelCapture={(e) => {
+        if (e.touches.length === 0) multi.current = false;
       }}
     >
       {!P && (
@@ -934,11 +1032,12 @@ export function MentorBoard() {
               pressed={sheet === "more"}
               aria-expanded={sheet === "more"}
               data-mentor-more
-              onClick={() => setSheet(sheet === "more" ? null : "more")}
+              onClick={() => toggleSheet("more")}
             />
           </MentorRow>
           <div className="mentor-stack">
-            {paletteRows}
+            {/* На невысоком экране набор кнопок режима листается, а режимы, правка и «Дальше» всегда на виду. */}
+            {paletteRows && <div className="mentor-palette">{paletteRows}</div>}
             <MentorRow present label={t("Режим доски", "Taxta rejimi")}>
               {modeButtons}
             </MentorRow>
@@ -1022,8 +1121,16 @@ export function MentorBoard() {
 
       {P && sheet && (
         <div
+          ref={sheetRef}
+          role="dialog"
+          aria-label={
+            sheet === "presets"
+              ? t("Готовые позиции", "Tayyor pozitsiyalar")
+              : t("Настройки показа", "Koʻrsatish sozlamalari")
+          }
+          tabIndex={-1}
           data-mentor-part="sheet"
-          className="mentor-sheet rounded-3xl bg-surface p-4 shadow-lift"
+          className="mentor-sheet rounded-3xl bg-surface p-4 shadow-lift outline-none"
           data-mentor-sheet={sheet}
         >
           {sheet === "presets" ? presetsList : settings}

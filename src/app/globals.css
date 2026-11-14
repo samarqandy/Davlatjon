@@ -1042,6 +1042,8 @@ html:has([data-mentor][data-present]) {
   position: absolute;
 }
 [data-mentor][data-present] > .board-frame {
+  /* Слои доски (стрелки, окошко превращения) — внутри доски: панель «Ещё» над доской их перекрывает. */
+  isolation: isolate;
   grid-area: board;
   width: var(--board-size);
   align-self: center;
@@ -1072,13 +1074,31 @@ html:has([data-mentor][data-present]) {
   flex-direction: column;
   gap: var(--btn-gap);
   min-height: 0;
+  overflow: hidden;
   padding-top: 5vh;
 }
 [data-mentor][data-present] .mentor-stack {
   display: flex;
   flex-direction: column;
   gap: var(--btn-gap);
+  min-height: 0;
   margin-top: auto;
+}
+/* Кнопки режима (фигуры, цвета): на невысоком экране листаются сами, нижние ряды остаются на месте. */
+[data-mentor][data-present] .mentor-palette {
+  display: flex;
+  flex: 0 1 auto;
+  flex-direction: column;
+  gap: var(--btn-gap);
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+}
+[data-mentor][data-present] .mentor-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--btn-gap);
 }
 [data-mentor][data-present] .mentor-top {
   margin-bottom: var(--btn-gap);
@@ -1144,15 +1164,21 @@ html:has([data-mentor][data-present]) {
   margin-top: 2vh;
   font-size: max(16px, 3vh);
 }
-[data-mentor][data-present] .mentor-moves {
+[data-mentor][data-present] .mentor-moves-wrap {
   margin-top: 2vh;
+  max-height: 40dvh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+}
+[data-mentor][data-present] .mentor-moves {
   font-size: max(16px, 2.6vh);
 }
 /* Панель «Ещё» и готовые позиции — в верхней половине, над колонкой с ходом: клавиатура панели выезжает снизу. */
 [data-mentor][data-present] [data-mentor-part="sheet"] {
   grid-area: info;
   align-self: start;
-  z-index: 10;
+  z-index: 20;
   max-height: 70dvh;
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -1213,12 +1239,16 @@ html:has([data-mentor][data-present]) {
     touch-action: pan-y;
   }
   [data-mentor][data-present] > :not(header) {
+    flex-shrink: 0;
     width: 100%;
     max-width: 40rem;
   }
-  [data-mentor][data-present] > .board-frame {
+  [data-mentor][data-present] > .board-frame,
+  [data-mentor][data-present][data-mentor-low] > .board-frame {
+    --board-size: min(calc(100vw - 6vw), 62dvh);
     width: var(--board-size);
     max-width: none;
+    align-self: center;
     order: 2;
   }
   [data-mentor][data-present] [data-mentor-part="info"] {

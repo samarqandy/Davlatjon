@@ -210,6 +210,13 @@ export function ChessBoard({
   const tapSquare = (square: string) => {
     if (onSquare?.(square) === false) reject(square);
   };
+  // Обработчики перетаскивания библиотека запоминает (handleDragStart — до смены расстановки,
+  // handleDragEnd — до начала перетаскивания). Через ссылку они всегда вызывают свежие onSquare и onDrop:
+  // иначе перетаскивание после правки без смены позиции (режим, выбранная фигура набора) работало бы по-старому.
+  const latest = useRef({ tapSquare, onDrop, onDropOff, reject });
+  useEffect(() => {
+    latest.current = { tapSquare, onDrop, onDropOff, reject };
+  });
 
   // Клавиатура: рамка-курсор ходит стрелками, Enter или пробел — «нажать» на клетку. Так же, как пальцем:
   // у досок с onSquare — их собственная логика выбора, у досок только с перетаскиванием — «откуда», затем «куда».
@@ -473,10 +480,11 @@ export function ChessBoard({
                   }
                 : undefined,
               // Взял фигуру — она выбрана, видны клетки, куда можно пойти.
-              onPieceDrag: onSquare ? ({ square }) => void (square && tapSquare(square)) : undefined,
+              onPieceDrag: onSquare ? ({ square }) => void (square && latest.current.tapSquare(square)) : undefined,
               onPieceDrop: ({ sourceSquare, targetSquare }) => {
+                const now = latest.current;
                 if (!targetSquare) {
-                  onDropOff?.(sourceSquare);
+                  now.onDropOff?.(sourceSquare);
                   return false;
                 }
                 if (targetSquare === sourceSquare) {
@@ -484,13 +492,14 @@ export function ChessBoard({
                   return false;
                 }
                 dragEnd.current = null;
-                const ok = onDrop ? onDrop(sourceSquare, targetSquare) : false;
-                if (!ok && onDrop) reject(targetSquare);
+                const ok = now.onDrop ? now.onDrop(sourceSquare, targetSquare) : false;
+                if (!ok && now.onDrop) now.reject(targetSquare);
                 return ok;
               },
             }}
           />
-          {overlay && <div className="pointer-events-none absolute inset-0 z-20">{overlay}</div>}
+          {/* Слой рисунков — после доски библиотеки (поверх фигур), до окошка превращения (оно поверх слоя). */}
+          {overlay && <div className="pointer-events-none absolute inset-0 z-10">{overlay}</div>}
           {promotion && (
             <PromotionPicker request={promotion} cols={cols} rows={rows} orientation={orientation} pieces={pieces} />
           )}
@@ -549,8 +558,7 @@ function PromotionPicker({
     n: t("Конь", "Ot"),
   };
   return (
-    // Над слоем стрелок и знаков (z-20): выбор фигуры не должен прятаться под ними.
-    <div className="absolute inset-0 z-30" data-promotion={request.square}>
+    <div className="absolute inset-0 z-10" data-promotion={request.square}>
       <button
         type="button"
         aria-label={t("Отменить превращение", "Aylanishni bekor qilish")}

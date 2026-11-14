@@ -157,6 +157,8 @@ export function MentorOverlay({
           type="button"
           data-mentor-curtain-layer
           onClick={onCloseCurtain}
+          // Enter и пробел нажимают саму шторку, а не уходят к доске под ней.
+          onKeyDown={(e) => e.stopPropagation()}
           className="mentor-fade pointer-events-auto absolute inset-0 flex flex-col items-center justify-center gap-[3%] bg-[#1d2140] px-[6%] text-center text-white"
         >
           <EyeOff aria-hidden className="h-[14%] w-[14%]" strokeWidth={2.25} />

@@ -193,6 +193,60 @@ test("урок из нескольких досок сохраняется в б
   await expect(root(page)).toHaveAttribute("data-mentor-board", "1");
 });
 
+test("правка без смены позиции, потом перетаскивание: задание, очередь хода и фигура на месте", async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(isMobile, "перетаскивание мышью");
+  await open(page);
+  await page.locator("[data-mentor-task-input]").fill("Расставьте фигуры");
+  await page.locator('[data-mentor-mode-button="setup"]').click();
+  const drag = async (from: string, to: string) => {
+    const a = (await sq(page, from).boundingBox())!;
+    const b = (await sq(page, to).boundingBox())!;
+    await page.mouse.move(a.x + a.width / 2, a.y + a.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2, { steps: 10 });
+    await page.mouse.up();
+  };
+  await drag("b8", "c6");
+  await expect(root(page)).toHaveAttribute(
+    "data-mentor-fen",
+    "r1bqkbnr/pppppppp/2n5/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+  );
+  await expect(page.locator("[data-mentor-task-input]")).toHaveValue("Расставьте фигуры");
+  // Выбрать фигуру в наборе и снять выбор (позиция не меняется) — перетаскивание всё равно просто переносит фигуру.
+  await page.locator('[data-mentor-palette-piece="wQ"]').click();
+  await page.locator('[data-mentor-palette-piece="wQ"]').click();
+  await drag("e1", "e3");
+  await expect(root(page)).toHaveAttribute(
+    "data-mentor-fen",
+    /^r1bqkbnr\/pppppppp\/2n5\/8\/8\/4K3\/PPPPPPPP\/RNBQ1BNR w /,
+  );
+  await expect(page.locator("[data-mentor-task-input]")).toHaveValue("Расставьте фигуры");
+});
+
+test("окошко превращения пешки: правка задания его закрывает и не теряется; выбор ферзя — ход", async ({
+  page,
+  isMobile,
+}) => {
+  await open(page);
+  await page.locator("details[data-mentor-settings] summary").click();
+  await page.locator("[data-mentor-paste]").fill("4k3/P7/8/8/8/8/8/4K3 w - - 0 1");
+  await press(page.locator("[data-mentor-paste-apply]"), isMobile);
+  await expect(root(page)).toHaveAttribute("data-mentor-fen", "4k3/P7/8/8/8/8/8/4K3 w - - 0 1");
+  await press(sq(page, "a7"), isMobile);
+  await press(sq(page, "a8"), isMobile);
+  await expect(page.locator("[data-promotion]")).toBeVisible();
+  await page.locator("[data-mentor-task-input]").fill("Превращение");
+  await expect(page.locator("[data-promotion]")).toHaveCount(0);
+  await press(sq(page, "a7"), isMobile);
+  await press(sq(page, "a8"), isMobile);
+  await press(page.locator('[data-promotion] [data-piece="q"]'), isMobile);
+  await expect(root(page)).toHaveAttribute("data-mentor-fen", /^Q3k3\/8/);
+  await expect(page.locator("[data-mentor-task-input]")).toHaveValue("Превращение");
+});
+
 test("доска тренера есть в списке разделов шахматной школы", async ({ page }) => {
   await page.goto("/chess");
   const more = page.locator("details").filter({ has: page.locator('a[href="/chess/mentor"]') });
@@ -224,6 +278,40 @@ test("oʻzbek tili: sahifada rus harflari yoʻq", async ({ page }) => {
 test.describe("режим класса", () => {
   test.skip(({ isMobile }) => isMobile, "размеры панели проверяем в настольном браузере");
 
+  /** Замер режима класса: доска, крупные кнопки, каждая видна целиком и не закрыта ничем. */
+  async function measure(page: Page) {
+    return page.evaluate(() => {
+      const frame = document.querySelector('[data-board="mentor"]')!.getBoundingClientRect();
+      const turn = document.querySelector(".mentor-turn")!;
+      const ctrls = [...document.querySelectorAll<HTMLElement>("[data-mentor-control]")].map((b) => {
+        const r = b.getBoundingClientRect();
+        const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+        return {
+          name: (b.getAttribute("aria-label") || b.innerText).trim(),
+          w: r.width,
+          h: r.height,
+          top: r.top,
+          bottom: r.bottom,
+          cy: (r.top + r.height / 2) / innerHeight,
+          left: r.left / innerWidth,
+          right: (innerWidth - r.right) / innerWidth,
+          hot: b.dataset.mentorControl === "hot",
+          // Кнопка видна, если в её середине — она сама (а не соседний слой и не обрезка колонки).
+          visible: !!hit && b.contains(hit),
+        };
+      });
+      const rail = document.querySelector<HTMLElement>('[data-mentor-part="rail"]')!;
+      return {
+        w: frame.width,
+        h: frame.height,
+        bottom: frame.bottom,
+        turnFont: parseFloat(getComputedStyle(turn).fontSize),
+        railOverflow: rail.scrollHeight - rail.clientHeight,
+        ctrls,
+      };
+    });
+  }
+
   for (const [w, h, min] of [
     [1920, 1080, 0.88],
     [3840, 2160, 0.88],
@@ -231,7 +319,7 @@ test.describe("режим класса", () => {
     [1280, 800, 0.85],
     [1024, 768, 0.85],
   ] as const)
-    test(`${w}×${h}: доска во всю высоту, кнопки крупные и в зоне досягаемости, страница не листается`, async ({
+    test(`${w}×${h}: доска во всю высоту, кнопки крупные, видны целиком и в зоне досягаемости — во всех режимах`, async ({
       page,
     }) => {
       await page.setViewportSize({ width: w, height: h });
@@ -241,44 +329,102 @@ test.describe("режим класса", () => {
       await expect(page).toHaveURL(/#present$/);
       await expect(page.locator("[data-site-header]")).toBeHidden();
       await expect(page.locator("[data-site-footer]")).toBeHidden();
-      const m = await page.evaluate(() => {
-        const frame = document.querySelector('[data-board="mentor"]')!.getBoundingClientRect();
-        const turn = document.querySelector(".mentor-turn")!;
-        const ctrls = [...document.querySelectorAll<HTMLElement>("[data-mentor-control]")].map((b) => {
-          const r = b.getBoundingClientRect();
-          return {
-            name: (b.getAttribute("aria-label") || b.innerText).trim(),
-            w: r.width,
-            h: r.height,
-            cy: (r.top + r.height / 2) / innerHeight,
-            left: r.left / innerWidth,
-            right: (innerWidth - r.right) / innerWidth,
-            hot: b.dataset.mentorControl === "hot",
-          };
-        });
-        return {
-          side: Math.min(frame.width, frame.height),
-          scroll: document.scrollingElement!.scrollHeight,
-          hscroll: document.scrollingElement!.scrollWidth,
-          turnFont: parseFloat(getComputedStyle(turn).fontSize),
-          ctrls,
-        };
-      });
-      expect(m.scroll).toBeLessThanOrEqual(h);
-      expect(m.hscroll).toBeLessThanOrEqual(w);
-      expect(m.side / h).toBeGreaterThanOrEqual(min);
-      expect(m.turnFont / h).toBeGreaterThanOrEqual(w / h > 1.5 ? 0.045 : 0.025);
-      expect(m.ctrls.length).toBeGreaterThan(10);
-      for (const c of m.ctrls) {
-        expect(c.w, c.name).toBeGreaterThanOrEqual(56);
-        expect(c.h, c.name).toBeGreaterThanOrEqual(56);
-        expect(c.cy, c.name).toBeGreaterThanOrEqual(0.1);
-        expect(c.cy, c.name).toBeLessThanOrEqual(0.95);
-        expect(c.left, c.name).toBeGreaterThanOrEqual(0.029);
-        expect(c.right, c.name).toBeGreaterThanOrEqual(0.029);
-        if (c.hot) expect(c.cy, c.name).toBeGreaterThanOrEqual(0.4);
+      for (const mode of ["move", "draw", "setup"] as const) {
+        await page.locator(`[data-mentor-mode-button="${mode}"]`).click();
+        await expect(root(page)).toHaveAttribute("data-mentor-mode", mode);
+        const m = await measure(page);
+        // Доска квадратная (не обрезана) и помещается в окно.
+        expect(Math.abs(m.w - m.h), mode).toBeLessThan(2);
+        expect(m.bottom, mode).toBeLessThanOrEqual(h);
+        expect(m.h / h, mode).toBeGreaterThanOrEqual(min);
+        expect(m.turnFont / h, mode).toBeGreaterThanOrEqual(w / h > 1.5 ? 0.045 : 0.025);
+        // Колонка кнопок помещается без прокрутки.
+        expect(m.railOverflow, mode).toBeLessThanOrEqual(1);
+        expect(m.ctrls.length, mode).toBeGreaterThan(10);
+        for (const c of m.ctrls) {
+          const at = `${mode}: ${c.name}`;
+          expect(c.w, at).toBeGreaterThanOrEqual(56);
+          expect(c.h, at).toBeGreaterThanOrEqual(56);
+          expect(c.top, at).toBeGreaterThanOrEqual(0);
+          expect(c.bottom, at).toBeLessThanOrEqual(h);
+          expect(c.visible, at).toBe(true);
+          expect(c.cy, at).toBeGreaterThanOrEqual(0.1);
+          expect(c.cy, at).toBeLessThanOrEqual(0.95);
+          expect(c.left, at).toBeGreaterThanOrEqual(0.029);
+          expect(c.right, at).toBeGreaterThanOrEqual(0.029);
+          if (c.hot) expect(c.cy, at).toBeGreaterThanOrEqual(0.4);
+        }
       }
     });
+
+  test("невысокое окно (ноутбук без полного экрана): «Дальше», «Отменить» и режимы видны, набор фигур листается", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1366, height: 600 });
+    await open(page);
+    await page.locator("[data-mentor-present-button]").click();
+    await page.locator('[data-mentor-mode-button="setup"]').click();
+    const m = await measure(page);
+    for (const c of m.ctrls.filter((x) => x.hot)) {
+      expect(c.bottom, c.name).toBeLessThanOrEqual(600);
+      expect(c.visible, c.name).toBe(true);
+    }
+    expect(Math.abs(m.w - m.h)).toBeLessThan(2);
+    // Фигуры набора, которых не видно, достаются прокруткой набора.
+    const pawn = page.locator('[data-mentor-palette-piece="bP"]');
+    await pawn.scrollIntoViewIfNeeded();
+    await pawn.click();
+    await expect(pawn).toHaveAttribute("aria-pressed", "true");
+  });
+
+  test("портрет (панель повёрнута): доска квадратная и целиком, страница листается вниз", async ({ page }) => {
+    await page.setViewportSize({ width: 1080, height: 1920 });
+    await open(page, "#present");
+    await expect(root(page)).toHaveAttribute("data-present", "");
+    const m = await measure(page);
+    expect(Math.abs(m.w - m.h)).toBeLessThan(2);
+    expect(m.w).toBeGreaterThan(1000);
+    // Доска пониже в портрете не уезжает вбок.
+    await page.evaluate(() => {
+      const raw = localStorage.getItem("davlatjon-lab:mentor-ui:v1");
+      localStorage.setItem("davlatjon-lab:mentor-ui:v1", JSON.stringify({ ...JSON.parse(raw ?? "{}"), low: true }));
+    });
+    await page.reload();
+    await expect(root(page)).toHaveAttribute("data-mentor-low", "");
+    const box = (await page.locator('[data-board="mentor"]').boundingBox())!;
+    expect(Math.abs(box.x + box.width / 2 - 540)).toBeLessThan(4);
+  });
+
+  test("проектор 4:3: панель «Ещё» над доской не закрыта стрелками", async ({ page }) => {
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await open(page, "#present");
+    await page.locator('[data-mentor-mode-button="draw"]').click();
+    for (const [a, b] of [
+      ["a8", "h1"],
+      ["h8", "a1"],
+      ["d8", "d1"],
+    ]) {
+      await sq(page, a).click();
+      await sq(page, b).click();
+    }
+    await expect(root(page)).toHaveAttribute("data-mentor-arrows", "3");
+    await page.locator("[data-mentor-more]").click();
+    const sheet = page.locator('[data-mentor-part="sheet"]');
+    await expect(sheet).toBeVisible();
+    await expect(sheet).toBeFocused();
+    const covered = await sheet.evaluate((el) => {
+      const r = el.getBoundingClientRect();
+      const pts = [0.2, 0.5, 0.8].flatMap((fx) =>
+        [0.2, 0.5, 0.8].map((fy) => [r.left + r.width * fx, r.top + r.height * fy]),
+      );
+      return pts.filter(([x, y]) => !el.contains(document.elementFromPoint(x, y))).length;
+    });
+    expect(covered).toBe(0);
+    // Escape закрывает панель, фокус возвращается на «Ещё».
+    await page.keyboard.press("Escape");
+    await expect(sheet).toHaveCount(0);
+    await expect(page.locator("[data-mentor-more]")).toBeFocused();
+  });
 
   test("полный экран и «экран не гаснет» — по нажатию; «Назад» браузера выходит из режима класса", async ({ page }) => {
     await page.addInitScript(() => {
@@ -350,6 +496,33 @@ test.describe("режим класса", () => {
       }),
     );
     expect(prevented).toEqual([true, true, true]);
+  });
+
+  test("шторка: Enter на шторке открывает доску, «Назад» браузера снимает шторку вместе с режимом класса", async ({
+    page,
+  }) => {
+    await open(page);
+    await page.locator("[data-mentor-present-button]").click();
+    await page.keyboard.press("Period");
+    const layer = page.locator("[data-mentor-curtain-layer]");
+    await layer.focus();
+    await page.keyboard.press("Enter");
+    await expect(root(page)).not.toHaveAttribute("data-mentor-curtain", /.*/);
+    await expect(root(page)).toHaveAttribute("data-mentor-ply", "0");
+    await page.keyboard.press("Period");
+    await expect(root(page)).toHaveAttribute("data-mentor-curtain", "");
+    await page.goBack();
+    await expect(root(page)).not.toHaveAttribute("data-present", /.*/);
+    await expect(root(page)).not.toHaveAttribute("data-mentor-curtain", /.*/);
+  });
+
+  test("в поле вставки меню по долгому нажатию работает (вставить текст без клавиатуры)", async ({ page }) => {
+    await open(page, "#present");
+    await page.locator("[data-mentor-more]").click();
+    const prevented = await page
+      .locator("[data-mentor-paste]")
+      .evaluate((el) => !el.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true })));
+    expect(prevented).toBe(false);
   });
 
   test("на других страницах подвал на месте", async ({ page }) => {

@@ -1,7 +1,7 @@
 "use client";
 
 import { ClipboardPaste, Copy, LogOut, Plus, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button, cn, Icon } from "@/components/ui";
 import { useSan, useT } from "@/lib/i18n";
 import {
@@ -62,6 +62,18 @@ export function MentorMoves({
 }) {
   const t = useT();
   const san = useSan();
+  // В режиме класса запись ходов — в своём окошке с прокруткой: текущий ход всегда виден в нём
+  // (листаем само окошко, а не страницу).
+  const box = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = box.current;
+    const cur = el?.querySelector<HTMLElement>("[aria-current=step]");
+    if (!compact || !el || !cur) return;
+    const top = cur.offsetTop - el.offsetTop;
+    if (top < el.scrollTop) el.scrollTop = top;
+    else if (top + cur.offsetHeight > el.scrollTop + el.clientHeight)
+      el.scrollTop = top + cur.offsetHeight - el.clientHeight;
+  }, [ply, compact]);
   if (fens.length <= 1) {
     if (compact) return null;
     return (
@@ -73,7 +85,11 @@ export function MentorMoves({
     );
   }
   return (
-    <div className={cn(!compact && "rounded-3xl bg-surface p-4 shadow-card")} data-mentor-moves>
+    <div
+      ref={box}
+      className={cn(compact ? "mentor-moves-wrap" : "rounded-3xl bg-surface p-4 shadow-card")}
+      data-mentor-moves
+    >
       {!compact && <p className="mb-2 text-sm font-extrabold text-muted">{t("Ходы", "Yurishlar")}</p>}
       <ol className={cn("flex flex-wrap gap-1", compact ? "mentor-moves" : "text-sm")}>
         {fens.slice(1).map((p, i) => {
