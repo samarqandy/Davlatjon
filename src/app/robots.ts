@@ -12,7 +12,7 @@ export default function robots(): MetadataRoute.Robots {
           "/privacy",
           // файлы подтверждения прав на сайт в Google Search Console и Яндекс Вебмастере
           "/google44d44289cf711a55.html",
-          "/yandex_e697aae8480c2a59.html",
+          "/yandex_1acd9f855dbf75bc.html",
         ],
         disallow: "/",
       },
