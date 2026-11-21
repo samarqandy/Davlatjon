@@ -1,7 +1,7 @@
 "use client";
 
-import { Check, ChevronLeft, ChevronRight, Play, RotateCcw, X } from "lucide-react";
-import { useMemo, useState } from "react";
+import { Check, CheckCheck, ChevronLeft, ChevronRight, Play, RotateCcw, X } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { Button, cn, Icon, ProgressBar } from "@/components/ui";
 import { PUZZLE_PART } from "@/content/chess/parts/puzzles";
 import type { PuzzleTheme } from "@/content/chess/puzzles";
@@ -16,6 +16,7 @@ import {
   setHashOf,
   setOrder,
   setStatus,
+  stepWith,
   type SetCounts,
   type SetStatus,
 } from "@/lib/puzzleSets";
@@ -50,7 +51,7 @@ function useStatusText() {
   const t = useT();
   return (s: SetStatus) =>
     s === "clean"
-      ? t("решена с первой попытки", "birinchi urinishda yechilgan")
+      ? t("решена без ошибок", "xatosiz yechilgan")
       : s === "solved"
         ? t("решена с ошибкой или подсказкой", "xato yoki maslahat bilan yechilgan")
         : s === "open"
@@ -67,7 +68,8 @@ const TONE: Record<SetStatus, string> = {
 
 function StatusMark({ status, className }: { status: SetStatus; className?: string }) {
   if (status === "new") return null;
-  const Glyph = status === "open" ? X : Check;
+  // Не только цвет: «без ошибок» — двойная галочка, «с ошибкой» — одна, «не решена» — крестик.
+  const Glyph = status === "open" ? X : status === "clean" ? CheckCheck : Check;
   return <Glyph className={cn("h-3.5 w-3.5", className)} strokeWidth={3} aria-hidden />;
 }
 
@@ -75,7 +77,7 @@ function StatusMark({ status, className }: { status: SetStatus; className?: stri
 function CountsLine({ c, className }: { c: SetCounts; className?: string }) {
   const t = useT();
   const items: { status: SetStatus; n: number; label: string }[] = [
-    { status: "clean", n: c.clean, label: t("с первой попытки", "birinchi urinishda") },
+    { status: "clean", n: c.clean, label: t("без ошибок", "xatosiz") },
     { status: "solved", n: c.solved, label: t("с ошибкой", "xato bilan") },
     { status: "open", n: c.open, label: t("не решены", "yechilmagan") },
     { status: "new", n: c.fresh, label: t("осталось", "qoldi") },
@@ -131,7 +133,8 @@ export function SetsIndex() {
       <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3">
         {themes.map((theme) => {
           const c = themeCounts(hydrated ? progress : {}, theme.id);
-          const done = c.clean + c.solved;
+          // Старые ключи после пересборки банка могли остаться в прогрессе — больше, чем задач, не показываем.
+          const done = Math.min(c.clean + c.solved, c.total);
           return (
             <li key={theme.id} className="min-w-0">
               <button
@@ -219,6 +222,15 @@ export function SetGrid({ theme }: { theme: PuzzleTheme }) {
       </div>
     );
 
+  if (!keys.length)
+    return (
+      <div className="space-y-4">
+        {back}
+        {title}
+        <LoadError onRetry={() => location.reload()} />
+      </div>
+    );
+
   const c = setCounts(keys, progress);
   // Продолжить — с первой ещё не открытой задачи; все открывались — с первой нерешённой.
   const fresh = nextWith(keys, progress, ["new"]);
@@ -284,7 +296,12 @@ export function SetGrid({ theme }: { theme: PuzzleTheme }) {
                 onClick={() => choose(k)}
               >
                 {p.from + 1}–{p.to}
-                {solved === p.to - p.from && <Icon icon={Check} />}
+                {solved === p.to - p.from && (
+                  <>
+                    <Icon icon={Check} />
+                    <span className="sr-only">{t(", все решены", ", hammasi yechilgan")}</span>
+                  </>
+                )}
               </Button>
             );
           })}
@@ -343,6 +360,13 @@ export function SetPuzzle({ theme, index, fix }: { theme: PuzzleTheme; index: nu
   const total = order.length;
   const gridHash = setHashOf(theme);
   const back = { hash: gridHash, label: t("К номерам темы", "Mavzu raqamlariga") };
+  // Стрелки: по порядку — соседний номер; в режиме «нерешённые» — соседняя нерешённая (без круга).
+  const prev = fix ? stepWith(keys, progress, ["open"], index, -1) : index - 1;
+  const after = fix ? stepWith(keys, progress, ["open"], index, 1) : index + 1 < total ? index + 1 : -1;
+  // Глава сетки — та, где задача, которую открыли последней: «Продолжить» и сетка не разойдутся.
+  useEffect(() => {
+    lastChapter.set(theme, chapterOf(index));
+  }, [theme, index]);
 
   const arrow = "grid h-11 w-11 shrink-0 place-items-center rounded-xl hover:bg-black/5 disabled:opacity-40";
   const top = (
@@ -354,9 +378,9 @@ export function SetPuzzle({ theme, index, fix }: { theme: PuzzleTheme; index: nu
             <button
               type="button"
               className={arrow}
-              disabled={index === 0}
+              disabled={prev < 0}
               aria-label={t("Предыдущая задача", "Oldingi masala")}
-              onClick={() => setHash(setHashOf(theme, index - 1, fix))}
+              onClick={() => setHash(setHashOf(theme, prev, fix))}
               data-set-prev
             >
               <ChevronLeft className="h-6 w-6" strokeWidth={2.5} aria-hidden />
@@ -364,9 +388,9 @@ export function SetPuzzle({ theme, index, fix }: { theme: PuzzleTheme; index: nu
             <button
               type="button"
               className={cn(arrow, "-mr-2")}
-              disabled={index >= total - 1}
+              disabled={after < 0}
               aria-label={t("Следующая задача", "Keyingi masala")}
-              onClick={() => setHash(setHashOf(theme, index + 1, fix))}
+              onClick={() => setHash(setHashOf(theme, after, fix))}
               data-set-next
             >
               <ChevronRight className="h-6 w-6" strokeWidth={2.5} aria-hidden />
@@ -410,8 +434,9 @@ export function SetPuzzle({ theme, index, fix }: { theme: PuzzleTheme; index: nu
       </div>
     );
 
-  const status = setStatus(progress[puzzle.key]);
   const c = setCounts(keys, progress);
+  const openNext = nextWith(keys, progress, ["open"], index);
+  const moreOpen = openNext >= 0 && openNext !== index;
   // «Дальше»: по порядку — следующий номер; в режиме «нерешённые» — следующая нерешённая (после решения этой).
   const go = () => {
     if (!fix) {
@@ -422,10 +447,14 @@ export function SetPuzzle({ theme, index, fix }: { theme: PuzzleTheme; index: nu
     setHash(next >= 0 && next !== index ? setHashOf(theme, next, true) : gridHash);
   };
   const nextLabel = fix
-    ? t("Следующая нерешённая →", "Keyingi yechilmagan →")
+    ? moreOpen
+      ? t("Следующая нерешённая →", "Keyingi yechilmagan →")
+      : t("Все нерешённые решены! К номерам →", "Barcha yechilmaganlar yechildi! Raqamlarga →")
     : index + 1 < total
       ? t(`Задача № ${index + 2} →`, `${index + 2}-masala →`)
-      : t("Тема пройдена! К номерам →", "Mavzu tugadi! Raqamlarga →");
+      : nextWith(keys, progress, ["new", "open"]) < 0
+        ? t("Тема пройдена! К номерам →", "Mavzu tugadi! Raqamlarga →")
+        : t("К номерам темы →", "Mavzu raqamlariga →");
 
   return (
     <div className="board-stage board-wide board-top space-y-2 sm:space-y-4" data-set-puzzle={index + 1}>
@@ -438,30 +467,21 @@ export function SetPuzzle({ theme, index, fix }: { theme: PuzzleTheme; index: nu
           </p>
         )}
         <CountsLine c={c} />
-        {status !== "new" && (
-          <p className="text-sm font-bold text-muted" data-set-before={status}>
-            {status === "open"
-              ? t("Эту задачу раньше не решили — попробуй снова.", "Bu masala avval yechilmagan — yana urinib koʻr.")
-              : t(
-                  "Эта задача уже решена — можно решить ещё раз.",
-                  "Bu masala yechilgan — yana bir bor yechsa boʻladi.",
-                )}
-          </p>
-        )}
+        <BeforeNote key={puzzle.key} puzzleKey={puzzle.key} />
         <div className="flex gap-2">
           <Button
             variant="secondary"
             size="sm"
-            disabled={index === 0}
-            onClick={() => setHash(setHashOf(theme, index - 1, fix))}
+            disabled={prev < 0}
+            onClick={() => setHash(setHashOf(theme, prev, fix))}
           >
             <Icon icon={ChevronLeft} /> {t("Предыдущая", "Oldingi")}
           </Button>
           <Button
             variant="secondary"
             size="sm"
-            disabled={index >= total - 1}
-            onClick={() => setHash(setHashOf(theme, index + 1, fix))}
+            disabled={after < 0}
+            onClick={() => setHash(setHashOf(theme, after, fix))}
           >
             {t("Следующая", "Keyingi")} <Icon icon={ChevronRight} />
           </Button>
@@ -469,5 +489,19 @@ export function SetPuzzle({ theme, index, fix }: { theme: PuzzleTheme; index: nu
       </div>
       <PuzzlePlayer key={puzzle.key} puzzle={puzzle} themed next={{ label: nextLabel, onClick: go }} />
     </div>
+  );
+}
+
+/** Было ли что-то с задачей до этого захода: берём один раз при открытии — ошибка в этой попытке надпись не меняет. */
+function BeforeNote({ puzzleKey }: { puzzleKey: string }) {
+  const t = useT();
+  const [status] = useState(() => setStatus(getState().chessPuzzles[puzzleKey]));
+  if (status === "new") return null;
+  return (
+    <p className="text-sm font-bold text-muted" data-set-before={status}>
+      {status === "open"
+        ? t("Эту задачу раньше не решили — попробуй снова.", "Bu masala avval yechilmagan — yana urinib koʻr.")
+        : t("Эта задача уже решена — можно решить ещё раз.", "Bu masala yechilgan — yana bir bor yechsa boʻladi.")}
+    </p>
   );
 }

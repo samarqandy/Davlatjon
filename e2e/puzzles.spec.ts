@@ -231,7 +231,7 @@ test("сборник задач: номера по трудности, сост�
   await expect(page).toHaveURL(/#fix-fork-2$/);
   await expect(shownBoard(page)).toHaveAttribute("data-board", `puzzle-${order[1][0]}`);
   await solveShown(page);
-  await page.getByRole("button", { name: "Следующая нерешённая →" }).click();
+  await page.getByRole("button", { name: "Все нерешённые решены! К номерам →" }).click();
   await expect(page).toHaveURL(/#set-fork$/);
   await expect(page.locator('[data-set-number="2"]')).toHaveAttribute("data-set-status", "solved");
   await expect(page.locator("[data-set-fix]")).toHaveCount(0);

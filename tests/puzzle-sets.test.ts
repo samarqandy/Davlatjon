@@ -16,6 +16,7 @@ import {
   setHashOf,
   setOrder,
   setStatus,
+  stepWith,
 } from "@/lib/puzzleSets";
 import type { PuzzleTheme } from "@/content/chess/puzzles";
 import type { ChessPuzzleProgress } from "@/lib/state";
@@ -66,6 +67,13 @@ describe("состояние номера и счёт", () => {
     expect(nextWith(keys, progress, ["open"], 2)).toBe(2);
     expect(nextWith(keys, { ...progress, c: { misses: 1, solvedAt: 2 } }, ["open"], 2)).toBe(-1);
     expect(nextWith([], progress, ["new"])).toBe(-1);
+  });
+
+  it("шаг в одну сторону — без круга", () => {
+    expect(stepWith(keys, progress, ["new"], 3, 1)).toBe(4);
+    expect(stepWith(keys, progress, ["new"], 4, 1)).toBe(-1);
+    expect(stepWith(keys, progress, ["open"], 4, -1)).toBe(2);
+    expect(stepWith(keys, progress, ["open"], 2, -1)).toBe(-1);
   });
 });
 

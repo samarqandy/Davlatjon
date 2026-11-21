@@ -13,8 +13,9 @@ export const SET_CHAPTER = 50;
 
 /**
  * Состояние номера:
- * new — ещё не открывали; clean — решена с первой попытки; solved — решена, но с ошибкой или подсказкой;
- * open — была ошибка или показано решение, а сама задача ещё не решена.
+ * new — ещё не открывали; clean — решена, и ни в одной попытке не было ошибки или подсказки; solved — решена,
+ * но ошибки или подсказки были (счёт ошибок общий для всех попыток во всех режимах); open — была ошибка или
+ * показано решение, а сама задача ещё не решена.
  */
 export type SetStatus = "new" | "clean" | "solved" | "open";
 
@@ -62,6 +63,19 @@ export function nextWith(
     const i = (((after + step) % n) + n) % n;
     if (wanted.includes(setStatus(progress[keys[i]]))) return i;
   }
+  return -1;
+}
+
+/** Ближайший номер в одну сторону от `from` (без круга) с одним из состояний; нет — -1. */
+export function stepWith(
+  keys: readonly string[],
+  progress: Readonly<Record<string, ChessPuzzleProgress>>,
+  wanted: readonly SetStatus[],
+  from: number,
+  dir: 1 | -1,
+): number {
+  for (let i = from + dir; i >= 0 && i < keys.length; i += dir)
+    if (wanted.includes(setStatus(progress[keys[i]]))) return i;
   return -1;
 }
 
