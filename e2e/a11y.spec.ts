@@ -107,6 +107,7 @@ const SCREENS = [
   "/chess/games/base",
   "/chess/games/base#wp-1379339785-0",
   "/chess/games/base#no-such-game",
+  "/chess/games/base#lv1-0001",
   "/chess/analysis",
   "/chess/mentor#present",
   "/chess/history",
