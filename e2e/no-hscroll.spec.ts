@@ -52,7 +52,14 @@ const PAGES = [
 ];
 
 /** Адреса, которых нет в общем списке: курс по ступеням, центр задач в режиме решения, экран игры, «Успехи». */
-const MORE = ["/chess/course", "/chess/course-5", "/chess/puzzles#practice", "/chess/play", "/achievements"];
+const MORE = [
+  "/chess/course",
+  "/chess/course-5",
+  "/chess/puzzles#practice",
+  "/chess/puzzles#set-fork",
+  "/chess/play",
+  "/achievements",
+];
 
 /** Какие страницы шире экрана и на сколько пикселей. */
 async function tooWide(page: Page, urls: string[]): Promise<string[]> {

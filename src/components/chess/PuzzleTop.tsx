@@ -16,18 +16,28 @@ import { setHash } from "@/lib/useHash";
  *
  * Широкий экран: ссылка «← Все задачи» и под ней заголовок — как раньше, в правой колонке у доски.
  */
-export function PuzzleTop({ children, end }: { children?: ReactNode; end?: ReactNode }) {
+export function PuzzleTop({
+  children,
+  end,
+  back,
+}: {
+  children?: ReactNode;
+  end?: ReactNode;
+  /** Куда ведёт «закрыть»: по умолчанию — ко всем задачам. */
+  back?: { hash: string; label: string };
+}) {
   const t = useT();
+  const label = back?.label ?? t("Все задачи", "Barcha masalalar");
   return (
     <div data-focus-screen data-puzzle-top className="flex items-center gap-1 lg:flex-col lg:items-stretch lg:gap-4">
       <button
         type="button"
-        onClick={() => setHash("#all")}
-        aria-label={t("Все задачи", "Barcha masalalar")}
+        onClick={() => setHash(back?.hash ?? "#all")}
+        aria-label={label}
         className="grid h-11 w-11 shrink-0 place-items-center rounded-xl hover:bg-black/5 max-lg:-ml-2 lg:flex lg:h-auto lg:min-h-11 lg:w-auto lg:items-center lg:self-start lg:rounded-none lg:text-sm lg:font-extrabold lg:text-brand lg:hover:bg-transparent lg:hover:underline"
       >
         <X className="h-6 w-6 lg:hidden" strokeWidth={2.5} aria-hidden />
-        <span className="max-lg:hidden">← {t("Все задачи", "Barcha masalalar")}</span>
+        <span className="max-lg:hidden">← {label}</span>
       </button>
       <div className="min-w-0 flex-1">{children}</div>
       {end}
