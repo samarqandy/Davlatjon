@@ -257,6 +257,15 @@ test.describe("партии по уровням (GAMES-3)", () => {
     const ply = Number(await game(page).getAttribute("data-games-ply"));
     expect(ply).toBeGreaterThan(0);
     await expect(page.locator("[data-games-mistake-move]")).toHaveAttribute("aria-current", "true");
+    // «Найти лучший ход» — позиция перед ошибкой, а не после неё.
+    const before = decodeURIComponent(
+      (await page.locator("[data-games-before-mistake]").getAttribute("href"))!.split("#fen=")[1],
+    );
+    const after = decodeURIComponent(
+      (await page.locator("[data-games-analysis]").getAttribute("href"))!.split("#fen=")[1],
+    );
+    expect(before).not.toBe(after);
+    expect(before.split(" ")[1]).not.toBe(after.split(" ")[1]);
     expect(await axe(page, "[data-games-game]")).toEqual([]);
 
     const [download] = await Promise.all([page.waitForEvent("download"), page.locator("[data-games-pgn]").click()]);
@@ -271,11 +280,21 @@ test.describe("партии по уровням (GAMES-3)", () => {
     await expect(page.locator('[data-level-toggle="mistake"]')).toHaveAttribute("aria-pressed", "true");
   });
 
-  test("прямая ссылка на партию уровня открывает её; у ничьих нет решающей ошибки", async ({ page }) => {
+  test("прямая ссылка на партию уровня открывает её, «Назад» — к этому уровню; у ничьих нет решающей ошибки", async ({
+    page,
+  }) => {
     await prepare(page);
     await page.goto("/chess/games/base#lv3-0001");
     await expect(game(page)).toBeVisible({ timeout: 15_000 });
     await expect(game(page)).toContainText("Сильные игроки");
+    await page.locator("[data-games-back]").click();
+    await expect(page.locator('[data-games-source-tab="3"]')).toHaveAttribute("aria-pressed", "true");
+    await expect(items(page).first()).toBeVisible({ timeout: 15_000 });
+    // Переключение списка с клавиатуры: фокус остаётся на нажатой кнопке.
+    await page.locator('[data-games-source-tab="1"]').focus();
+    await page.keyboard.press("Enter");
+    await expect(page.locator('[data-games-source-tab="1"]')).toBeFocused();
+    await expect(page.locator('[data-games-source-tab="1"]')).toHaveAttribute("aria-pressed", "true");
     await page.goto("/chess/games/base");
     await page.locator('[data-games-source-tab="2"]').click();
     await page.locator('[data-level-result="1/2-1/2"]').click();

@@ -11,7 +11,9 @@
  * 200, не меньше 20 ходов. Уровни: 1 — 1000–1399, 2 — 1400–1799, 3 — 1800–2199 (рейтинг Lichess).
  *
  * Детская безопасность: ники игроков, ссылка на партию, турнир, дата и время не переносятся — по ним можно найти
- * аккаунт. Рейтинг округляется до 50, от даты остаются год и месяц. У партии свой id (номер в выборке).
+ * аккаунт. Рейтинг округляется вниз до 50, от даты остаются год и месяц. У партии свой id (номер в выборке).
+ * Сами ходы — публичные данные: решительный человек найдёт исходную партию по ходам, поэтому мы не обещаем, что её
+ * нельзя найти, а только не даём ссылок и ников.
  *
  * Берутся только партии, разобранные движком Lichess (у части партий в базе есть оценки). Из оценок переносится только одно: полуход «решающей ошибки» — ход
  * проигравшей стороны, после которого её шансы упали сильнее всего (не меньше чем на 30 процентных пунктов, по
@@ -117,7 +119,12 @@ function decisiveMistake(evals, plies, res) {
   let prev = 20; // начальная позиция: около +0.2
   for (let i = 0; i < plies; i++) {
     const cur = evals[i];
-    if (cur === undefined) return undefined;
+    // У матующего последнего хода в базе Lichess оценки нет: это ход победителя, он не может быть ошибкой
+    // проигравшего — просто заканчиваем.
+    if (cur === undefined) {
+      if (i === plies - 1) break;
+      return undefined;
+    }
     const moverWhite = i % 2 === 0;
     if (moverWhite === loserIsWhite) {
       const before = loserIsWhite ? winPct(prev) : 100 - winPct(prev);
@@ -132,7 +139,8 @@ function decisiveMistake(evals, plies, res) {
   return best;
 }
 
-const round50 = (r) => Math.round(r / 50) * 50;
+/** Вниз до 50: 1375 → 1350, а не 1400 — округлённый рейтинг не вылезает за коридор уровня («1000–1400»). */
+const round50 = (r) => Math.floor(r / 50) * 50;
 
 function build() {
   if (!fs.existsSync(PART)) throw new Error("нет начала файла базы — сначала --fetch");
@@ -240,7 +248,7 @@ function build() {
       licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/",
       source: "Lichess open database",
       sourceUrl: "https://database.lichess.org/",
-      attribution: `Партии из открытой базы Lichess (database.lichess.org, ${CFG.month}), лицензия CC0. Ники, ссылки, турниры и точные даты убраны, рейтинги округлены до 50.`,
+      attribution: `Партии из открытой базы Lichess (database.lichess.org, ${CFG.month}), лицензия CC0. Ники, ссылки, турниры и точные даты убраны, рейтинги округлены вниз до 50.`,
       count: games.length,
     };
     const body = games

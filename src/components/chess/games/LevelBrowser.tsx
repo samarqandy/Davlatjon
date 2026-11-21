@@ -32,7 +32,7 @@ export function sideName(g: LoadedGame, side: "w" | "b", t: (ru: string, uz: str
 }
 
 /** Загрузить файл уровня (level = null — ничего не грузить): то же состояние, что у базы мастеров. */
-export function useLevelLibrary(level: Level | null): LibraryState {
+export function useLevelLibrary(level: Level | null): LibraryState & { clearFailed: () => void } {
   const [state, setState] = useState<{ level: Level | null; lib: LibraryState["lib"]; failed: boolean }>({
     level: null,
     lib: null,
@@ -60,6 +60,8 @@ export function useLevelLibrary(level: Level | null): LibraryState {
       setState((s) => ({ ...s, failed: false }));
       setAttempt((n) => n + 1);
     },
+    // Уровень снова открыли после сбоя: старое «не загрузилось» не показываем, пока идёт новая загрузка.
+    clearFailed: () => setState((s) => (s.failed ? { level: null, lib: null, failed: false } : s)),
   };
 }
 

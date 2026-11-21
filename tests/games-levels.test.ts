@@ -52,10 +52,11 @@ describe("файлы уровней", () => {
   it("рейтинги — в коридоре уровня (с учётом округления до 50), разница не больше 200", () => {
     for (const { file } of FILES) {
       for (const g of file.games) {
+        // Округление вниз: подпись «(1350)» не попадает в соседний уровень.
         for (const r of [g.we!, g.be!]) {
           expect(r % 50, g.id).toBe(0);
           expect(r, g.id).toBeGreaterThanOrEqual(file.ratingFrom);
-          expect(r, g.id).toBeLessThanOrEqual(file.ratingTo + 1);
+          expect(r, g.id).toBeLessThan(file.ratingTo + 1);
         }
         expect(Math.abs(g.we! - g.be!), g.id).toBeLessThanOrEqual(250);
       }
@@ -92,7 +93,10 @@ describe("файлы уровней", () => {
         expect(g.x % 2 === 1 ? "0-1" : "1-0", g.id).toBe(g.res);
       }
     }
-    expect(marked).toBeGreaterThan(600);
+    expect(marked).toBeGreaterThan(1500);
+    // У последнего (матующего) хода в базе нет оценки — партии с матом тоже получают решающую ошибку.
+    const mates = FILES.flatMap(({ file }) => file.games.filter((g) => g.mt));
+    expect(mates.filter((g) => g.x !== undefined).length / mates.length).toBeGreaterThan(0.5);
   });
 
   it("дебют и код ECO — из нашего списка названий", () => {

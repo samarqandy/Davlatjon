@@ -66,15 +66,24 @@ export function GameBase() {
   const t = useT();
   const id = gameIdOf(useHash());
   const [source, setSourceState] = useState<Source>(memory.get("source") ?? "masters");
-  const setSource = (s: Source) => {
-    memory.set("source", s);
-    setSourceState(s);
-  };
   // Одна загрузка на страницу: «Ещё раз» на экране партии чинит и список, а открытие партии не грузит базу заново.
   const library = useLibrary();
   // Партии уровня: открытый уровень списка или уровень партии из адреса («#lv2-0017»).
   const gameLevel = id ? levelOf(id) : null;
   const levelLibrary = useLevelLibrary(gameLevel ?? (source === "masters" ? null : source));
+  // Кнопка выбора списка пересоздаётся вместе со списком: после переключения фокус возвращается на неё.
+  const tabFocus = useRef(false);
+  const setSource = (s: Source, focusTab = false) => {
+    memory.set("source", s);
+    if (s !== "masters") levelLibrary.clearFailed();
+    tabFocus.current = focusTab;
+    setSourceState(s);
+  };
+  useEffect(() => {
+    if (!tabFocus.current) return;
+    tabFocus.current = false;
+    document.querySelector<HTMLElement>(`[data-games-source-tab="${source}"]`)?.focus({ preventScroll: true });
+  }, [source]);
   // Где стоял список и какую партию открыли: по возвращении — туда же, фокус на ту же строку.
   const back = useRef<{ y: number; id: string } | null>(null);
   const shown = useRef("");
@@ -136,7 +145,7 @@ export function GameBase() {
             aria-pressed={source === x.key}
             className="shrink-0 whitespace-nowrap"
             data-games-source-tab={x.key}
-            onClick={() => setSource(x.key)}
+            onClick={() => setSource(x.key, true)}
           >
             {x.label}
           </Button>
@@ -177,7 +186,11 @@ export function GameBase() {
           onBack={() => {
             // Пришли из списка — шаг назад по истории (список вернётся на то же место); вошли по ссылке — к списку.
             if (back.current) window.history.back();
-            else setHash("#");
+            else {
+              // Вошли по ссылке на партию уровня — возвращаемся к списку этого уровня, а не к мастерам.
+              if (gameLevel) setSource(gameLevel);
+              setHash("#");
+            }
           }}
         />
       )}
@@ -312,25 +325,29 @@ function GameView({ game: g, file, back }: { game: LoadedGame; file?: LibFileMet
         : t("ничья", "durang");
   // Решающая ошибка (партии по уровням): ход проигравшей стороны, после которого её шансы упали сильнее всего.
   const loser = g.res === "1-0" ? t("чёрных", "qoralar") : t("белых", "oqlar");
+  const atMistake = g.x !== undefined && ply === g.x;
+  const mistakeNote = t(
+    `Решающая ошибка: после этого хода шансы ${loser} сильно упали. Как надо было сыграть? Вернись на ход назад и поищи сам — или открой позицию перед ошибкой на доске анализа.`,
+    `Hal qiluvchi xato: shu yurishdan keyin ${loser}ning imkoniyati keskin tushib ketdi. Qanday oʻynash kerak edi? Bir yurish orqaga qayt va oʻzing izla — yoki xatodan oldingi pozitsiyani tahlil taxtasida och.`,
+  );
   const note =
-    g.x !== undefined && ply === g.x
-      ? t(
-          `Решающая ошибка: после этого хода шансы ${loser} сильно упали. Как надо было сыграть? Вернись на ход назад и поищи — или открой эту позицию на доске анализа.`,
-          `Hal qiluvchi xato: shu yurishdan keyin ${loser}ning imkoniyati keskin tushib ketdi. Qanday oʻynash kerak edi? Bir yurish orqaga qayt va izla — yoki pozitsiyani tahlil taxtasida och.`,
-        )
-      : ply === total
-        ? t(`Партия окончена: ${resultText(g.res)}, ${winner}.`, `Partiya tugadi: ${resultText(g.res)}, ${winner}.`)
-        : ply === g.en
-          ? t(
-              "Здесь начинается эндшпиль: фигур на доске осталось мало.",
-              "Shu yerdan endshpil boshlanadi: taxtada donalar kam qoldi.",
-            )
-          : ply === 0
+    atMistake && ply === total
+      ? `${mistakeNote} ${t(`Партия окончена: ${resultText(g.res)}, ${winner}.`, `Partiya tugadi: ${resultText(g.res)}, ${winner}.`)}`
+      : atMistake
+        ? mistakeNote
+        : ply === total
+          ? t(`Партия окончена: ${resultText(g.res)}, ${winner}.`, `Partiya tugadi: ${resultText(g.res)}, ${winner}.`)
+          : ply === g.en
             ? t(
-                "Нажимай «Дальше» или «Смотреть» — ходы партии пойдут по очереди.",
-                "«Oldinga» yoki «Koʻrish» tugmasini bos — partiya yurishlari birin-ketin koʻrsatiladi.",
+                "Здесь начинается эндшпиль: фигур на доске осталось мало.",
+                "Shu yerdan endshpil boshlanadi: taxtada donalar kam qoldi.",
               )
-            : null;
+            : ply === 0
+              ? t(
+                  "Нажимай «Дальше» или «Смотреть» — ходы партии пойдут по очереди.",
+                  "«Oldinga» yoki «Koʻrish» tugmasini bos — partiya yurishlari birin-ketin koʻrsatiladi.",
+                )
+              : null;
 
   const downloadPgn = () => {
     const url = URL.createObjectURL(new Blob([libraryPgn(g, file)], { type: "application/x-chess-pgn" }));
@@ -443,6 +460,16 @@ function GameView({ game: g, file, back }: { game: LoadedGame; file?: LibFileMet
           >
             <Icon icon={TriangleAlert} /> {t("К решающей ошибке", "Hal qiluvchi xatoga")}
           </Button>
+        )}
+        {atMistake && (
+          <ButtonLink
+            size="sm"
+            variant="primary"
+            href={`/chess/analysis#fen=${encodeURIComponent(line[ply - 1].fen)}`}
+            data-games-before-mistake
+          >
+            <Icon icon={Microscope} /> {t("Найти лучший ход", "Yaxshiroq yurishni top")}
+          </ButtonLink>
         )}
         <ButtonLink
           size="sm"
