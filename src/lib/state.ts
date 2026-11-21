@@ -131,8 +131,8 @@ export const GOAL_DAYS_DEFAULT = 5;
 export interface ChessGameRecord {
   id: string;
   at: number;
-  /** robot — с роботом, two — вдвоём, pawns — пешечный бой, endgame — тренировка мата. */
-  mode: "robot" | "two" | "pawns" | "endgame";
+  /** robot — с роботом, two — вдвоём, pawns — пешечный бой, endgame — тренировка мата, mini — мини-игра без королей. */
+  mode: "robot" | "two" | "pawns" | "endgame" | "mini";
   /** Уровень робота (1–5) или название тренировки. */
   level?: number;
   variant?: string;

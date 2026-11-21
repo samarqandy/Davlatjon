@@ -22,7 +22,7 @@ import { checkedKing } from "@/lib/chess";
 import { isStandardStart, useOpening } from "@/lib/openingBook";
 import { robotLevels } from "@/lib/engine/search";
 import { tFor, useChildName, useLang, useSan, useT, type Lang, type T } from "@/lib/i18n";
-import { ODDS_PIECES, CLOCKS, clockLabel, oddsPieceLabel } from "@/lib/play";
+import { MINI_GAMES, ODDS_PIECES, CLOCKS, clockLabel, miniText, oddsPieceLabel } from "@/lib/play";
 import { gamePgn } from "@/lib/pgn";
 import { pluralize } from "@/lib/plural";
 import { saveChessAnalysis, useHydrated, useStore, type ChessGameRecord } from "@/lib/store";
@@ -41,6 +41,10 @@ export function gameTitle(g: ChessGameRecord, lang: Lang = "ru"): string {
     return t(`Робот «${name}»`, `Robot «${name}»`);
   }
   if (g.mode === "pawns") return t("Пешечный бой", "Piyodalar jangi");
+  if (g.mode === "mini") {
+    const mini = MINI_GAMES.find((m) => m.id === g.variant);
+    return mini ? miniText(mini, lang).name : t("Мини-игра", "Mini-oʻyin");
+  }
   return t("Тренировка мата", "Mot qilish mashqi");
 }
 

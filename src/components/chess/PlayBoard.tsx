@@ -16,6 +16,7 @@ import {
   type Color,
   type PieceType,
 } from "@/lib/chess";
+import { miniBest } from "@/lib/engine/mini";
 import { pawnBattleBest, robotLevels, robotMove, searchBest } from "@/lib/engine/search";
 import { useLang, useSan, useT } from "@/lib/i18n";
 import {
@@ -23,6 +24,8 @@ import {
   clockLabel,
   endgameText,
   formatClock,
+  miniPlayed,
+  miniText,
   kingOf,
   oddsLabel,
   playStatus,
@@ -30,6 +33,7 @@ import {
   withOdds,
   type ClockSetting,
   type EndgameVariant,
+  type MiniGame,
   type Odds,
   type PlayMode,
   type PlayStatus,
@@ -53,6 +57,8 @@ export interface PlayConfig {
   /** За кого играет ребёнок. */
   color: Color;
   variant?: EndgameVariant;
+  /** Мини-игра без королей (режим mini). */
+  mini?: MiniGame;
   /** Шахматные часы (только вдвоём). */
   clock?: ClockSetting;
   /** Фора: одна сторона играет без фигуры. */
@@ -80,7 +86,7 @@ const entryChip = (on: boolean) =>
 const newGameId = () => `g${Math.floor(random() * 36 ** 8).toString(36)}`;
 
 function initialFen(config: PlayConfig): string {
-  const fen = startFen(config.mode, config.variant);
+  const fen = startFen(config.mode, config.variant, config.mini);
   return config.odds ? withOdds(fen, config.odds) : fen;
 }
 
@@ -96,6 +102,8 @@ const movesWord = (n: number) => pluralize(n, "ход", "хода", "ходов"
 function computerMove(config: PlayConfig, fen: string): string | null {
   if (config.mode === "pawns") return pawnBattleBest(fen, Math.min(2 + config.level, 6));
   if (config.mode === "endgame") return searchBest(fen, { depth: 3, timeMs: 700 }).uci;
+  // Мини-игры: «лёгкий» робот видит на ход вперёд, «хитрый» — на два.
+  if (config.mode === "mini") return miniBest(fen, config.level === 2 ? 2 : 1);
   return robotMove(fen, config.level);
 }
 
@@ -191,7 +199,8 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
       const uci = computerMove(config, fen);
       setThinking(false);
       if (!uci) return;
-      const played = playMove(fen, uci.slice(0, 2), uci.slice(2, 4), (uci[4] as PieceType | undefined) ?? "q");
+      const raw = playMove(fen, uci.slice(0, 2), uci.slice(2, 4), (uci[4] as PieceType | undefined) ?? "q");
+      const played = raw && config.mode === "mini" ? miniPlayed(raw) : raw;
       if (played) setPlies((p) => [...p, { san: played.san, uci: played.uci, fen: played.fen }]);
     }, 500);
     return () => {
@@ -210,8 +219,8 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
     recordChessGame({
       id: gameId,
       mode: config.mode,
-      level: config.mode === "robot" || config.mode === "pawns" ? config.level : undefined,
-      variant: config.variant?.id,
+      level: config.mode === "robot" || config.mode === "pawns" || config.mode === "mini" ? config.level : undefined,
+      variant: config.variant?.id ?? config.mini?.id,
       color: config.color,
       result: status.winner === "draw" ? "draw" : status.winner === config.color ? "win" : "loss",
       winner: status.winner,
@@ -227,11 +236,13 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
 
   const tryMove = (from: string, to: string, promotion?: PromotionPiece): boolean => {
     if (!myTurn || status.over || thinking) return false;
-    if (!promotion && isPromotionMove(fen, from, to)) {
+    // В мини-игре пешка на краю приносит победу — выбирать фигуру не нужно.
+    if (!promotion && config.mode !== "mini" && isPromotionMove(fen, from, to)) {
       promo.ask(to, turn, (piece) => tryMove(from, to, piece));
       return true;
     }
-    const played = playMove(fen, from, to, promotion ?? "q");
+    const raw = playMove(fen, from, to, promotion ?? "q");
+    const played = raw && config.mode === "mini" ? miniPlayed(raw) : raw;
     if (!played) {
       const reason = illegalReason(fen, from, to);
       setIllegal(reason ? illegalText(reason, t) : null);
@@ -310,7 +321,12 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
 
   const showHint = () => {
     if (!myTurn || status.over) return;
-    const uci = config.mode === "pawns" ? pawnBattleBest(fen, 4) : searchBest(fen, { depth: 3, timeMs: 800 }).uci;
+    const uci =
+      config.mode === "pawns"
+        ? pawnBattleBest(fen, 4)
+        : config.mode === "mini"
+          ? miniBest(fen, 3)
+          : searchBest(fen, { depth: 3, timeMs: 800 }).uci;
     setHint(uci);
     setHints((h) => h + 1);
   };
@@ -402,7 +418,11 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
     config.mode === "robot" && status.over && status.winner === config.color
       ? crownsForWin(!!config.solo, !!config.odds)
       : 0;
-  const variant = config.variant ? endgameText(config.variant, lang) : undefined;
+  const variant = config.variant
+    ? endgameText(config.variant, lang)
+    : config.mini
+      ? miniText(config.mini, lang)
+      : undefined;
   const title =
     config.mode === "robot"
       ? config.blind
@@ -785,6 +805,15 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
             {t(
               "Если получится пат — партия закончится вничью, и её придётся начать заново.",
               "Agar pat boʻlib qolsa — partiya durang bilan tugaydi va uni qaytadan boshlashga toʻgʻri keladi.",
+            )}
+          </p>
+        )}
+        {config.mode === "mini" && (
+          <p className="text-sm font-bold text-muted" data-mini-about>
+            {variant?.about}{" "}
+            {t(
+              "Королей нет, поэтому нет и шаха. Нет ходов — поражение.",
+              "Shohlar yoʻq, demak, shoh berib boʻlmaydi. Yurishga imkoni qolmagan tomon yutqazadi.",
             )}
           </p>
         )}

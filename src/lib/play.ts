@@ -1,11 +1,94 @@
-/** Режимы игры на доске: с роботом, вдвоём, пешечный бой, тренировка мата. */
+/** Режимы игры на доске: с роботом, вдвоём, пешечный бой, тренировка мата, мини-игры без королей. */
 import { Chess } from "chess.js";
 import { legalMoves, parseFen, sqName, WHITE } from "./engine/board";
+import { miniResult } from "./engine/mini";
 import { PAWN_BATTLE_FEN, gameResult, insufficientMaterial, pawnBattleResult } from "./engine/search";
 import { tFor, type Lang } from "./lang";
 import { random } from "./random";
 
-export type PlayMode = "robot" | "two" | "pawns" | "endgame";
+export type PlayMode = "robot" | "two" | "pawns" | "endgame" | "mini";
+
+/**
+ * Мини-игра без королей: фигуры белых (их ведёт ребёнок) против пешек или «отряда» робота.
+ * Победа — забрать все фигуры соперника или провести пешку до последней горизонтали; нет ходов — поражение.
+ */
+export interface MiniGame {
+  id: string;
+  fen: string;
+  name: string;
+  nameUz: string;
+  about: string;
+  aboutUz: string;
+}
+
+/** Порядок — как в книге: ладья и слон, потом конь, ферзь и «отряд против отряда». */
+export const MINI_GAMES: MiniGame[] = [
+  {
+    id: "rook",
+    fen: "8/pppp4/8/8/8/8/8/7R w - - 0 1",
+    name: "Ладья против пешек",
+    nameUz: "Rux piyodalarga qarshi",
+    about: "Ладья ходит по прямым. Забери все четыре пешки, пока ни одна не дошла до первой горизонтали.",
+    aboutUz:
+      "Rux toʻgʻri chiziqlar boʻylab yuradi. Toʻrtala piyodani ol — birortasi ham birinchi gorizontalga yetib bormasin.",
+  },
+  {
+    id: "bishop",
+    fen: "8/1p1p4/8/8/8/8/8/2B5 w - - 0 1",
+    name: "Слон против пешек",
+    nameUz: "Fil piyodalarga qarshi",
+    about: "Слон ходит по диагоналям и всегда остаётся на клетках одного цвета. Забери обе пешки.",
+    aboutUz: "Fil diagonallar boʻylab yuradi va doim bir xil rangdagi kataklarda qoladi. Ikkala piyodani ol.",
+  },
+  {
+    id: "knight",
+    fen: "8/2pp4/8/8/8/8/8/1N6 w - - 0 1",
+    name: "Конь против пешек",
+    nameUz: "Ot piyodalarga qarshi",
+    about:
+      "Конь прыгает буквой «Г» и перескакивает через фигуры. Когда одна пешка шагнёт вперёд, соседняя её защищает — подумай, куда прыгнуть!",
+    aboutUz:
+      "Ot «G» harfi shaklida sakraydi va donalar ustidan oshib oʻtadi. Bir piyoda oldinga yursa, yonidagisi uni himoya qiladi — qayerga sakrashni oʻylab koʻr!",
+  },
+  {
+    id: "queen",
+    fen: "8/pppppppp/8/8/8/8/8/3Q4 w - - 0 1",
+    name: "Ферзь против восьми пешек",
+    nameUz: "Farzin sakkiz piyodaga qarshi",
+    about: "Ферзь ходит и как ладья, и как слон. Восемь пешек идут вперёд — останови их все.",
+    aboutUz: "Farzin ham rux, ham fil kabi yuradi. Sakkizta piyoda oldinga intiladi — hammasini toʻxtat.",
+  },
+  {
+    id: "squad",
+    fen: "2bnr3/3ppp2/8/8/8/8/3PPP2/2BNR3 w - - 0 1",
+    name: "Отряд против отряда",
+    nameUz: "Qoʻshin qoʻshinga qarshi",
+    about:
+      "Ладья, слон, конь и три пешки с каждой стороны. Забери все фигуры соперника или первым проведи пешку до края.",
+    aboutUz:
+      "Har tomonda rux, fil, ot va uchta piyoda. Raqibning barcha donalarini ol yoki birinchi boʻlib piyodangni chetgacha olib bor.",
+  },
+];
+
+/**
+ * Ход в мини-игре на доске интерфейса: chess.js превращает пешку на краю в ферзя, а в мини-игре превращения нет —
+ * возвращаем на клетку пешку (по ней видна победа) и убираем «=Ф» из записи хода.
+ */
+export function miniPlayed<T extends { fen: string; san: string; uci: string }>(played: T): T {
+  if (played.uci.length < 5) return played;
+  const [board, ...rest] = played.fen.split(" ");
+  const rows = board.split("/").map((row) => row.replace(/\d/g, (d) => ".".repeat(Number(d))).split(""));
+  const file = played.uci.charCodeAt(2) - 97;
+  const row = 8 - Number(played.uci[3]);
+  rows[row][file] = rows[row][file] === rows[row][file].toUpperCase() ? "P" : "p";
+  const packed = rows.map((r) => r.join("").replace(/\.+/g, (dots) => String(dots.length))).join("/");
+  return { ...played, fen: [packed, ...rest].join(" "), san: played.san.replace(/=[QRBNФЛСК]/, "") };
+}
+
+/** Название и описание мини-игры на нужном языке. */
+export function miniText(g: MiniGame, lang: Lang = "ru"): { name: string; about: string } {
+  return lang === "uz" ? { name: g.nameUz, about: g.aboutUz } : { name: g.name, about: g.about };
+}
 
 export interface EndgameVariant {
   id: string;
@@ -123,6 +206,45 @@ export function playStatus(mode: PlayMode, fen: string, positions: readonly stri
         }
       : { over: false };
   }
+  const key = fen.split(" ").slice(0, 4).join(" ");
+  const repeated = positions.filter((p) => p.split(" ").slice(0, 4).join(" ") === key).length >= 3;
+  if (mode === "mini") {
+    const r = miniResult(pos);
+    if (r) {
+      const edge = /P/.test(fen.split(" ")[0].split("/")[0]) || /p/.test(fen.split(" ")[0].split("/")[7]);
+      const loser = r === "w" ? "b" : "w";
+      const gone = !pos.board.some((p) => (loser === "w" ? p > 0 : p < 0));
+      // Причина — с названием цвета: проиграть может и ребёнок, и тогда «соперник» читался бы наоборот.
+      const reason = edge
+        ? r === "w"
+          ? t("Пешка белых дошла до края!", "Oqlarning piyodasi chetga yetib bordi!")
+          : t("Пешка чёрных дошла до края!", "Qoralarning piyodasi chetga yetib bordi!")
+        : gone
+          ? loser === "w"
+            ? t("Все фигуры белых взяты!", "Oqlarning barcha donalari olindi!")
+            : t("Все фигуры чёрных взяты!", "Qoralarning barcha donalari olindi!")
+          : loser === "w"
+            ? t("Белым нечем ходить.", "Oqlarning yurishga imkoni qolmadi.")
+            : t("Чёрным нечем ходить.", "Qoralarning yurishga imkoni qolmadi.");
+      return { over: true, winner: r, reason };
+    }
+    if (repeated)
+      return {
+        over: true,
+        winner: "draw",
+        reason: t("Ничья: позиция повторилась три раза.", "Durang: pozitsiya uch marta takrorlandi."),
+      };
+    if (pos.halfmove >= 100)
+      return {
+        over: true,
+        winner: "draw",
+        reason: t(
+          "Ничья: 50 ходов без взятий и ходов пешками.",
+          "Durang: 50 yurish davomida hech narsa urilmadi va piyodalar yurmadi.",
+        ),
+      };
+    return { over: false };
+  }
   const result = gameResult(pos);
   if (result === "w" || result === "b") return { over: true, winner: result, reason: t("Мат!", "Mot!"), mate: true };
   if (result === "draw") {
@@ -142,8 +264,7 @@ export function playStatus(mode: PlayMode, fen: string, positions: readonly stri
       ),
     };
   }
-  const key = fen.split(" ").slice(0, 4).join(" ");
-  if (positions.filter((p) => p.split(" ").slice(0, 4).join(" ") === key).length >= 3)
+  if (repeated)
     return {
       over: true,
       winner: "draw",
@@ -152,8 +273,9 @@ export function playStatus(mode: PlayMode, fen: string, positions: readonly stri
   return { over: false };
 }
 
-export function startFen(mode: PlayMode, variant?: EndgameVariant): string {
+export function startFen(mode: PlayMode, variant?: EndgameVariant, mini?: MiniGame): string {
   if (mode === "pawns") return PAWN_BATTLE_FEN;
+  if (mode === "mini" && mini) return mini.fen;
   if (mode === "endgame" && variant) return endgameStart(variant);
   return new Chess().fen();
 }

@@ -9,7 +9,16 @@ import { robotLevels } from "@/lib/engine/search";
 import { loginAvailable, useAccount } from "@/lib/account";
 import { profileText, useAgeProfile } from "@/lib/age";
 import { useLang, useT } from "@/lib/i18n";
-import { CLOCKS, ENDGAMES, ODDS_PIECES, clockLabel, endgameText, oddsPieceLabel } from "@/lib/play";
+import {
+  CLOCKS,
+  ENDGAMES,
+  MINI_GAMES,
+  ODDS_PIECES,
+  clockLabel,
+  endgameText,
+  miniText,
+  oddsPieceLabel,
+} from "@/lib/play";
 import { useHydrated, useStore } from "@/lib/store";
 import { setHash, useHash } from "@/lib/useHash";
 import { BoardLookPicker } from "./BoardLookPicker";
@@ -17,7 +26,7 @@ import { PieceIcon } from "./ChessBoard";
 import { PlayBoard, type PlayConfig } from "./PlayBoard";
 
 /**
- * Адрес вида #robot-3-w, #two, #pawns-2-b, #endgame-kq; после «?» — часы, фора, режим «Сам» и игра вслепую:
+ * Адрес вида #robot-3-w, #two, #pawns-2-b, #endgame-kq, #mini-rook-1; после «?» — часы, фора, режим «Сам» и игра вслепую:
  * #two?c=5_3&o=bq, #robot-2-w?s=1, #robot-1-w?b=1.
  */
 export function parseConfig(hash: string): PlayConfig | null {
@@ -48,6 +57,10 @@ export function parseConfig(hash: string): PlayConfig | null {
       odds: oddsPiece && (o[0] === "w" || o[0] === "b") ? { side: o[0], piece: oddsPiece } : undefined,
     };
   if (mode === "pawns") return { mode, level: Math.min(3, Math.max(1, Number(a) || 1)), color: b === "b" ? "b" : "w" };
+  if (mode === "mini") {
+    const mini = MINI_GAMES.find((g) => g.id === a);
+    return mini ? { mode, level: b === "2" ? 2 : 1, color: "w", mini } : null;
+  }
   if (mode === "endgame") {
     const variant = ENDGAMES.find((v) => v.id === a);
     return variant ? { mode, level: 4, color: "w", variant } : null;
@@ -405,6 +418,44 @@ function ModeChooser() {
               </Button>
             ))}
           </div>
+        </section>
+
+        <section className="rounded-3xl bg-surface p-5 shadow-card" aria-labelledby="minis" data-mini-games>
+          <h2 id="minis" className="text-xl font-black">
+            <span className="deco" aria-hidden>
+              ♜{" "}
+            </span>
+            {t("Мини-игры без королей", "Shohsiz mini-oʻyinlar")}
+          </h2>
+          <p className="mt-1 hidden text-sm text-muted sm:block">
+            {t(
+              "Одна фигура против пешек — так быстрее всего привыкнуть к её ходу, а в конце — отряд против отряда. Побеждает тот, кто заберёт все фигуры соперника или первым проведёт пешку до края.",
+              "Bitta dona piyodalarga qarshi — uning yurishiga tez oʻrganishning eng yaxshi yoʻli, oxirida esa qoʻshin qoʻshinga qarshi. Raqibning barcha donalarini olgan yoki piyodasini birinchi boʻlib chetga olib borgan tomon yutadi.",
+            )}
+          </p>
+          <ul className="mt-3 flex flex-col gap-1.5">
+            {MINI_GAMES.map((g) => (
+              <li
+                key={g.id}
+                className="flex flex-wrap items-center justify-between gap-2 rounded-xl border-2 border-line px-3 py-2"
+              >
+                <span className="font-extrabold">{miniText(g, lang).name}</span>
+                <span className="flex gap-1.5">
+                  <Button size="sm" onClick={() => setHash(`#mini-${g.id}-1`)} data-mini-start={`${g.id}-1`}>
+                    {t("Лёгкий робот", "Oson robot")}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => setHash(`#mini-${g.id}-2`)}
+                    data-mini-start={`${g.id}-2`}
+                  >
+                    {t("Хитрый робот", "Ayyor robot")}
+                  </Button>
+                </span>
+              </li>
+            ))}
+          </ul>
         </section>
 
         <section className="rounded-3xl bg-surface p-5 shadow-card" aria-labelledby="endgames">

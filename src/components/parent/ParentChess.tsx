@@ -216,6 +216,8 @@ function ActivitySummary() {
       best: Math.min(...list.filter((g) => g.result === "win").map((g) => g.moves)),
     };
   }).filter((x) => x.games > 0);
+  const minis = games.filter((g) => g.mode === "mini");
+  const miniWins = minis.filter((g) => g.result === "win").length;
   const pawns = games.filter((g) => g.mode === "pawns");
   const pawnWins = pawns.filter((g) => g.result === "win").length;
   // Задачи школы и задачи из базы Lichess — вместе, по темам; только темы, которые уже пробовали.
@@ -267,6 +269,14 @@ function ActivitySummary() {
                 {t(
                   `Пешечный бой: сыграно ${pawns.length}, побед ${pawnWins}`,
                   `Piyodalar jangi: ${pawns.length} ta partiya, ${pawnWins} ta gʻalaba`,
+                )}
+              </li>
+            )}
+            {minis.length > 0 && (
+              <li>
+                {t(
+                  `Мини-игры без королей: сыграно ${minis.length}, побед ${miniWins}`,
+                  `Shohsiz mini-oʻyinlar: ${minis.length} ta oʻyin, ${miniWins} ta gʻalaba`,
                 )}
               </li>
             )}
