@@ -103,11 +103,11 @@ export function FamousGamesList() {
           <Icon icon={Library} />
         </span>
         <span className="min-w-0">
-          <span className="block text-lg font-black">{t("База партий мастеров", "Ustalar partiyalari bazasi")}</span>
+          <span className="block text-lg font-black">{t("База партий", "Partiyalar bazasi")}</span>
           <span className="block text-sm font-bold text-muted">
             {t(
-              "Сотни партий: Синдаров, Абдусатторов, Карлсен, Каспаров, Фишер. Поиск по фамилии, турниру и году.",
-              "Yuzlab partiyalar: Sindarov, Abdusattorov, Karlsen, Kasparov, Fisher. Familiya, turnir va yil boʻyicha qidiruv.",
+              "Мастера — Синдаров, Абдусатторов, Карлсен, Каспаров, Фишер — и партии игроков твоего уровня. Поиск по фамилии, турниру, году и дебюту.",
+              "Ustalar — Sindarov, Abdusattorov, Karlsen, Kasparov, Fisher — va oʻz darajangdagi oʻyinchilar partiyalari. Familiya, turnir, yil va debyut boʻyicha qidiruv.",
             )}
           </span>
         </span>

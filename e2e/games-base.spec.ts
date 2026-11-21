@@ -183,7 +183,7 @@ test("oʻzbek tilida: roʻyxat va partiya ekranida rus harflari yoʻq", async ({
   await prepare(page, "uz");
   await page.goto("/uz/chess/games/base");
   await expect(items(page).first()).toBeVisible({ timeout: 15_000 });
-  await expect(page.locator("h1")).toHaveText("Ustalar partiyalari bazasi");
+  await expect(page.locator("h1")).toHaveText("Partiyalar bazasi");
   await page.locator("[data-games-sources] summary").click();
   const cyr = async () => (await page.locator("main").innerText()).match(/[А-Яа-яЁё]/g) ?? [];
   expect(await cyr()).toEqual([]);
@@ -222,4 +222,97 @@ test("телефон: доска партии и панель ходов на п
     .locator("[data-move-nav] button span")
     .evaluateAll((els) => els.filter((e) => e.scrollWidth > e.clientWidth).map((e) => e.textContent));
   expect(cut).toEqual([]);
+});
+
+test.describe("партии по уровням (GAMES-3)", () => {
+  test("уровень «начинающие»: 1000 партий без имён; отбор «мат»; решающая ошибка; PGN без ников, CC0", async ({
+    page,
+  }) => {
+    await prepare(page);
+    await page.goto("/chess/games/base");
+    await page.locator('[data-games-source-tab="1"]').click();
+    await expect(page.locator('[data-games-source-tab="1"]')).toHaveAttribute("aria-pressed", "true");
+    await expect(items(page).first()).toBeVisible({ timeout: 15_000 });
+    expect(await count(page)).toBe(1000);
+    expect(await axe(page, "main")).toEqual([]);
+    for (const text of (await items(page).allTextContents()).slice(0, 10))
+      expect(text).toMatch(/^Белые \(\d+\) – Чёрные \(\d+\)/);
+
+    await page.locator('[data-level-toggle="mate"]').click();
+    await expect.poll(() => count(page)).toBeLessThan(1000);
+    for (const text of (await items(page).allTextContents()).slice(0, 10)) expect(text).toContain("мат");
+    await page.locator('[data-level-toggle="mate"]').click();
+
+    await page.locator('[data-level-toggle="mistake"]').click();
+    await expect.poll(() => count(page)).toBeLessThan(1000);
+    const row = items(page).first();
+    const id = (await row.getAttribute("data-games-item"))!;
+    expect(id).toMatch(/^lv1-\d{4}$/);
+    await row.click();
+    await expect(game(page)).toHaveAttribute("data-games-game", id);
+    await expect(page.locator("#game-base-title")).toHaveText(/^Белые \(\d+\) – Чёрные \(\d+\)$/);
+    await expect(game(page)).toContainText("Начинающие");
+    await page.locator("[data-games-mistake]").click();
+    await expect(page.locator("[data-games-note]")).toContainText("Решающая ошибка");
+    const ply = Number(await game(page).getAttribute("data-games-ply"));
+    expect(ply).toBeGreaterThan(0);
+    await expect(page.locator("[data-games-mistake-move]")).toHaveAttribute("aria-current", "true");
+    // «Найти лучший ход» — позиция перед ошибкой, а не после неё.
+    const before = decodeURIComponent(
+      (await page.locator("[data-games-before-mistake]").getAttribute("href"))!.split("#fen=")[1],
+    );
+    const after = decodeURIComponent(
+      (await page.locator("[data-games-analysis]").getAttribute("href"))!.split("#fen=")[1],
+    );
+    expect(before).not.toBe(after);
+    expect(before.split(" ")[1]).not.toBe(after.split(" ")[1]);
+    expect(await axe(page, "[data-games-game]")).toEqual([]);
+
+    const [download] = await Promise.all([page.waitForEvent("download"), page.locator("[data-games-pgn]").click()]);
+    const pgn = fs.readFileSync((await download.path())!, "utf8");
+    expect(pgn).toContain('[White "?"]');
+    expect(pgn).toContain('[License "CC0 https://creativecommons.org/publicdomain/zero/1.0/"]');
+    expect(pgn).not.toMatch(/lichess\.org\/[A-Za-z0-9]{8}/);
+
+    // «Назад» — к тому же уровню и отбору.
+    await page.locator("[data-games-back]").click();
+    await expect(page.locator(`[data-games-item="${id}"]`)).toBeFocused();
+    await expect(page.locator('[data-level-toggle="mistake"]')).toHaveAttribute("aria-pressed", "true");
+  });
+
+  test("прямая ссылка на партию уровня открывает её, «Назад» — к этому уровню; у ничьих нет решающей ошибки", async ({
+    page,
+  }) => {
+    await prepare(page);
+    await page.goto("/chess/games/base#lv3-0001");
+    await expect(game(page)).toBeVisible({ timeout: 15_000 });
+    await expect(game(page)).toContainText("Сильные игроки");
+    await page.locator("[data-games-back]").click();
+    await expect(page.locator('[data-games-source-tab="3"]')).toHaveAttribute("aria-pressed", "true");
+    await expect(items(page).first()).toBeVisible({ timeout: 15_000 });
+    // Переключение списка с клавиатуры: фокус остаётся на нажатой кнопке.
+    await page.locator('[data-games-source-tab="1"]').focus();
+    await page.keyboard.press("Enter");
+    await expect(page.locator('[data-games-source-tab="1"]')).toBeFocused();
+    await expect(page.locator('[data-games-source-tab="1"]')).toHaveAttribute("aria-pressed", "true");
+    await page.goto("/chess/games/base");
+    await page.locator('[data-games-source-tab="2"]').click();
+    await page.locator('[data-level-result="1/2-1/2"]').click();
+    await expect(items(page).first()).toBeVisible({ timeout: 15_000 });
+    await items(page).first().click();
+    await expect(game(page)).toBeVisible();
+    await expect(page.locator("[data-games-mistake]")).toHaveCount(0);
+  });
+
+  test("oʻzbek tilida: daraja roʻyxatida va partiyada rus harflari yoʻq", async ({ page }) => {
+    await prepare(page, "uz");
+    await page.goto("/uz/chess/games/base");
+    await page.locator('[data-games-source-tab="2"]').click();
+    await expect(items(page).first()).toBeVisible({ timeout: 15_000 });
+    const cyr = async () => (await page.locator("main").innerText()).match(/[А-Яа-яЁё]/g) ?? [];
+    expect(await cyr()).toEqual([]);
+    await items(page).first().click();
+    await expect(game(page)).toBeVisible();
+    expect(await cyr()).toEqual([]);
+  });
 });

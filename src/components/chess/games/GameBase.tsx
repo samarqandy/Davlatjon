@@ -1,7 +1,7 @@
 "use client";
 
 import { Chess } from "chess.js";
-import { ArrowLeft, Download, Flag, Microscope, Pause, Play, RotateCw } from "lucide-react";
+import { ArrowLeft, Download, Flag, Microscope, Pause, Play, RotateCw, TriangleAlert } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { BarButton } from "@/components/chess/BoardBar";
 import { ChessBoard, type SquareMark } from "@/components/chess/ChessBoard";
@@ -21,7 +21,9 @@ import {
 import { useSan, useT } from "@/lib/i18n";
 import { plural } from "@/lib/plural";
 import { setHash, useHash } from "@/lib/useHash";
+import { levelOf, LEVELS, type Level } from "@/lib/games/levels";
 import { GamesBrowser, useLibrary, type LibraryState } from "./GamesBrowser";
+import { LevelBrowser, levelName, sideName, useLevelLibrary } from "./LevelBrowser";
 
 const START = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
@@ -56,11 +58,32 @@ function gameIdOf(hash: string): string {
   return typeof document !== "undefined" && document.getElementById(id) ? "" : id;
 }
 
+type Source = "masters" | Level;
+/** Какой список был открыт — до перезагрузки страницы. */
+const memory = new Map<"source", Source>();
+
 export function GameBase() {
   const t = useT();
   const id = gameIdOf(useHash());
+  const [source, setSourceState] = useState<Source>(memory.get("source") ?? "masters");
   // Одна загрузка на страницу: «Ещё раз» на экране партии чинит и список, а открытие партии не грузит базу заново.
   const library = useLibrary();
+  // Партии уровня: открытый уровень списка или уровень партии из адреса («#lv2-0017»).
+  const gameLevel = id ? levelOf(id) : null;
+  const levelLibrary = useLevelLibrary(gameLevel ?? (source === "masters" ? null : source));
+  // Кнопка выбора списка пересоздаётся вместе со списком: после переключения фокус возвращается на неё.
+  const tabFocus = useRef(false);
+  const setSource = (s: Source, focusTab = false) => {
+    memory.set("source", s);
+    if (s !== "masters") levelLibrary.clearFailed();
+    tabFocus.current = focusTab;
+    setSourceState(s);
+  };
+  useEffect(() => {
+    if (!tabFocus.current) return;
+    tabFocus.current = false;
+    document.querySelector<HTMLElement>(`[data-games-source-tab="${source}"]`)?.focus({ preventScroll: true });
+  }, [source]);
   // Где стоял список и какую партию открыли: по возвращении — туда же, фокус на ту же строку.
   const back = useRef<{ y: number; id: string } | null>(null);
   const shown = useRef("");
@@ -80,51 +103,94 @@ export function GameBase() {
     document.getElementById("games-base-title")?.focus({ preventScroll: true });
   }, [id]);
 
+  const pick = (g: LoadedGame) => {
+    back.current = { y: window.scrollY, id: g.id };
+    setHash(`#${g.id}`);
+  };
+  const sources: { key: Source; label: string }[] = [
+    { key: "masters", label: t("Мастера", "Ustalar") },
+    ...LEVELS.map((l) => ({ key: l as Source, label: levelName(l, t) })),
+  ];
+
+  const head = (
+    <div className="space-y-3 lg:col-span-2">
+      <ButtonLink href="/chess/games" variant="ghost" size="sm" className="-ml-2">
+        <Icon icon={ArrowLeft} /> {t("Знаменитые партии", "Mashhur partiyalar")}
+      </ButtonLink>
+      <header>
+        <p className="text-sm font-extrabold tracking-wide text-brand uppercase">
+          {t("Шахматная школа", "Shaxmat maktabi")}
+        </p>
+        <h1 id="games-base-title" tabIndex={-1} className="text-3xl font-black">
+          {t("База партий", "Partiyalar bazasi")}
+        </h1>
+        <p className="mt-1 max-w-2xl text-muted">
+          {t(
+            "Партии чемпионов мира, узбекских гроссмейстеров и мастеров прошлого — и партии обычных игроков твоего уровня. Выбери партию и посмотри её ход за ходом.",
+            "Jahon chempionlari, oʻzbek grossmeysterlari va oʻtmish ustalarining partiyalari — hamda oʻz darajangdagi oddiy oʻyinchilar partiyalari. Partiyani tanla va uni yurishma-yurish koʻr.",
+          )}
+        </p>
+      </header>
+      {/* Чьи партии: мастера или игроки одного уровня. */}
+      <div
+        role="group"
+        aria-label={t("Чьи партии", "Kimning partiyalari")}
+        className="flex flex-wrap gap-2 max-sm:-mx-4 max-sm:flex-nowrap max-sm:overflow-x-auto max-sm:px-4 max-sm:pb-1"
+      >
+        {sources.map((x) => (
+          <Button
+            key={x.key}
+            size="sm"
+            variant={source === x.key ? "primary" : "secondary"}
+            aria-pressed={source === x.key}
+            className="shrink-0 whitespace-nowrap"
+            data-games-source-tab={x.key}
+            onClick={() => setSource(x.key, true)}
+          >
+            {x.label}
+          </Button>
+        ))}
+      </div>
+    </div>
+  );
+
   return (
     <>
       {/* Список остаётся на странице, пока открыта партия: запрос, «Показать ещё» и раскрытые фильтры не теряются. */}
       <div hidden={!!id}>
-        <GamesBrowser
-          audience="child"
-          page
-          library={library}
-          titleId="games-base-title"
-          hrefOf={(g) => `#${g.id}`}
-          onPick={(g) => {
-            back.current = { y: window.scrollY, id: g.id };
-            setHash(`#${g.id}`);
-          }}
-          head={
-            <div className="space-y-3 lg:col-span-2">
-              <ButtonLink href="/chess/games" variant="ghost" size="sm" className="-ml-2">
-                <Icon icon={ArrowLeft} /> {t("Знаменитые партии", "Mashhur partiyalar")}
-              </ButtonLink>
-              <header>
-                <p className="text-sm font-extrabold tracking-wide text-brand uppercase">
-                  {t("Шахматная школа", "Shaxmat maktabi")}
-                </p>
-                <h1 id="games-base-title" tabIndex={-1} className="text-3xl font-black">
-                  {t("База партий мастеров", "Ustalar partiyalari bazasi")}
-                </h1>
-                <p className="mt-1 max-w-2xl text-muted">
-                  {t(
-                    "Партии чемпионов мира, узбекских гроссмейстеров и знаменитых мастеров прошлого. Найди партию по фамилии, турниру или году и посмотри её ход за ходом.",
-                    "Jahon chempionlari, oʻzbek grossmeysterlari va oʻtmishning mashhur ustalari partiyalari. Partiyani familiya, turnir yoki yil boʻyicha top va uni yurishma-yurish koʻr.",
-                  )}
-                </p>
-              </header>
-            </div>
-          }
-        />
+        {source === "masters" ? (
+          <GamesBrowser
+            audience="child"
+            page
+            library={library}
+            titleId="games-base-title"
+            hrefOf={(g) => `#${g.id}`}
+            onPick={pick}
+            head={head}
+          />
+        ) : (
+          <LevelBrowser
+            key={source}
+            level={source}
+            library={levelLibrary}
+            titleId="games-base-title"
+            onPick={pick}
+            head={head}
+          />
+        )}
       </div>
       {id && (
         <GameScreen
           id={id}
-          library={library}
+          library={gameLevel ? levelLibrary : library}
           onBack={() => {
             // Пришли из списка — шаг назад по истории (список вернётся на то же место); вошли по ссылке — к списку.
             if (back.current) window.history.back();
-            else setHash("#");
+            else {
+              // Вошли по ссылке на партию уровня — возвращаемся к списку этого уровня, а не к мастерам.
+              if (gameLevel) setSource(gameLevel);
+              setHash("#");
+            }
           }}
         />
       )}
@@ -213,9 +279,9 @@ function GameView({ game: g, file, back }: { game: LoadedGame; file?: LibFileMet
   useEffect(() => {
     if (!isPlaying) return;
     // На начале эндшпиля — пауза подольше: подпись под доской успевают прочитать.
-    const timer = setTimeout(() => setPly((p) => p + 1), ply === g.en ? 2600 : 1300);
+    const timer = setTimeout(() => setPly((p) => p + 1), ply === g.en || ply === g.x ? 2600 : 1300);
     return () => clearTimeout(timer);
-  }, [isPlaying, ply, g.en]);
+  }, [isPlaying, ply, g.en, g.x]);
 
   // Текущий ход — в видимой части списка ходов (листается только сам список, не страница).
   useEffect(() => {
@@ -257,20 +323,31 @@ function GameView({ game: g, file, back }: { game: LoadedGame; file?: LibFileMet
       : g.res === "0-1"
         ? t("победили чёрные", "qoralar yutdi")
         : t("ничья", "durang");
+  // Решающая ошибка (партии по уровням): ход проигравшей стороны, после которого её шансы упали сильнее всего.
+  const loser = g.res === "1-0" ? t("чёрных", "qoralar") : t("белых", "oqlar");
+  const atMistake = g.x !== undefined && ply === g.x;
+  const mistakeNote = t(
+    `Решающая ошибка: после этого хода шансы ${loser} сильно упали. Как надо было сыграть? Вернись на ход назад и поищи сам — или открой позицию перед ошибкой на доске анализа.`,
+    `Hal qiluvchi xato: shu yurishdan keyin ${loser}ning imkoniyati keskin tushib ketdi. Qanday oʻynash kerak edi? Bir yurish orqaga qayt va oʻzing izla — yoki xatodan oldingi pozitsiyani tahlil taxtasida och.`,
+  );
   const note =
-    ply === total
-      ? t(`Партия окончена: ${resultText(g.res)}, ${winner}.`, `Partiya tugadi: ${resultText(g.res)}, ${winner}.`)
-      : ply === g.en
-        ? t(
-            "Здесь начинается эндшпиль: фигур на доске осталось мало.",
-            "Shu yerdan endshpil boshlanadi: taxtada donalar kam qoldi.",
-          )
-        : ply === 0
-          ? t(
-              "Нажимай «Дальше» или «Смотреть» — ходы партии пойдут по очереди.",
-              "«Oldinga» yoki «Koʻrish» tugmasini bos — partiya yurishlari birin-ketin koʻrsatiladi.",
-            )
-          : null;
+    atMistake && ply === total
+      ? `${mistakeNote} ${t(`Партия окончена: ${resultText(g.res)}, ${winner}.`, `Partiya tugadi: ${resultText(g.res)}, ${winner}.`)}`
+      : atMistake
+        ? mistakeNote
+        : ply === total
+          ? t(`Партия окончена: ${resultText(g.res)}, ${winner}.`, `Partiya tugadi: ${resultText(g.res)}, ${winner}.`)
+          : ply === g.en
+            ? t(
+                "Здесь начинается эндшпиль: фигур на доске осталось мало.",
+                "Shu yerdan endshpil boshlanadi: taxtada donalar kam qoldi.",
+              )
+            : ply === 0
+              ? t(
+                  "Нажимай «Дальше» или «Смотреть» — ходы партии пойдут по очереди.",
+                  "«Oldinga» yoki «Koʻrish» tugmasini bos — partiya yurishlari birin-ketin koʻrsatiladi.",
+                )
+              : null;
 
   const downloadPgn = () => {
     const url = URL.createObjectURL(new Blob([libraryPgn(g, file)], { type: "application/x-chess-pgn" }));
@@ -293,10 +370,20 @@ function GameView({ game: g, file, back }: { game: LoadedGame; file?: LibFileMet
       {back}
       <header>
         <p className="text-sm font-extrabold tracking-wide text-brand uppercase">
-          {[title, eventText(g), roundText(g, t), g.si].filter(Boolean).join(" · ")}
+          {(g.lv
+            ? [
+                levelName(g.lv, t),
+                "Lichess",
+                g.mo ? `${String(g.mo).padStart(2, "0")}.${g.y}` : String(g.y),
+                g.tc === "c" ? t("классика", "klassik") : t("рапид", "tezkor"),
+              ]
+            : [title, eventText(g), roundText(g, t), g.si]
+          )
+            .filter(Boolean)
+            .join(" · ")}
         </p>
         <h1 id="game-base-title" ref={titleRef} tabIndex={-1} className="text-2xl font-black sm:text-3xl">
-          {g.w} – {g.b}
+          {sideName(g, "w", t)} – {sideName(g, "b", t)}
         </h1>
         <p className="font-bold text-muted">
           {[
@@ -359,6 +446,31 @@ function GameView({ game: g, file, back }: { game: LoadedGame; file?: LibFileMet
             <Icon icon={Flag} /> {t("К эндшпилю", "Endshpilga oʻtish")}
           </Button>
         )}
+        {g.x !== undefined && (
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() => {
+              go(g.x!);
+              const board = document.querySelector(`[data-board="base-${CSS.escape(g.id)}"]`);
+              const r = board?.getBoundingClientRect();
+              if (board && r && (r.top < 0 || r.bottom > window.innerHeight)) board.scrollIntoView({ block: "center" });
+            }}
+            data-games-mistake
+          >
+            <Icon icon={TriangleAlert} /> {t("К решающей ошибке", "Hal qiluvchi xatoga")}
+          </Button>
+        )}
+        {atMistake && (
+          <ButtonLink
+            size="sm"
+            variant="primary"
+            href={`/chess/analysis#fen=${encodeURIComponent(line[ply - 1].fen)}`}
+            data-games-before-mistake
+          >
+            <Icon icon={Microscope} /> {t("Найти лучший ход", "Yaxshiroq yurishni top")}
+          </ButtonLink>
+        )}
         <ButtonLink
           size="sm"
           variant="secondary"
@@ -394,7 +506,15 @@ function GameView({ game: g, file, back }: { game: LoadedGame; file?: LibFileMet
                 <span className="self-center text-muted">{line[first - 1].fen.split(" ")[5]}.</span>
                 {[first, first + 1].map((p) =>
                   p <= total ? (
-                    <MoveButton key={p} p={p} ply={ply} go={go} text={san(line[p].san)} endgame={p === g.en} />
+                    <MoveButton
+                      key={p}
+                      p={p}
+                      ply={ply}
+                      go={go}
+                      text={san(line[p].san)}
+                      endgame={p === g.en}
+                      mistake={p === g.x}
+                    />
                   ) : (
                     <span key={p} />
                   ),
@@ -441,13 +561,16 @@ function MoveButton({
   go,
   text,
   endgame,
+  mistake,
 }: {
   p: number;
   ply: number;
   go: (p: number) => void;
   text: string;
   endgame?: boolean;
+  mistake?: boolean;
 }) {
+  const t = useT();
   return (
     <button
       type="button"
@@ -458,9 +581,12 @@ function MoveButton({
         "flex min-h-11 items-center rounded-lg px-1.5 text-left font-bold hover:bg-brand-soft",
         p === ply && "bg-brand text-white hover:bg-brand",
         endgame && p !== ply && "text-brand-dark underline decoration-dotted",
+        mistake && p !== ply && "text-warning-ink underline decoration-wavy",
       )}
+      data-games-mistake-move={mistake || undefined}
     >
       {text}
+      {mistake && <span className="sr-only"> — {t("решающая ошибка", "hal qiluvchi xato")}</span>}
     </button>
   );
 }

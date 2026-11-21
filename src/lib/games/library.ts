@@ -38,6 +38,14 @@ export interface LibGame {
   op?: string;
   /** Код ECO по тому же списку. */
   eco?: string;
+  /** Партия по уровням (GAMES-3): номер уровня 1–3 — у таких партий нет имён, турнира и точной даты. */
+  lv?: 1 | 2 | 3;
+  /** Месяц партии (1–12) — у партий по уровням вместо даты. */
+  mo?: number;
+  /** 1 — партия закончилась матом. */
+  mt?: 1;
+  /** Полуход решающей ошибки проигравшей стороны (по оценкам движка Lichess). */
+  x?: number;
   /** Полуход, после которого на доске эндшпиль (у каждой стороны фигур не больше чем на ладью и лёгкую). */
   en?: number;
   /** Где партия взята (страница партии, правка статьи). */
@@ -421,12 +429,13 @@ export function libraryPgn(g: LibGame, file?: Pick<LibFileMeta, "license" | "lic
   const chess = g.fen ? new Chess(g.fen) : new Chess();
   for (const u of g.m.split(" ")) chess.move({ from: u.slice(0, 2), to: u.slice(2, 4), promotion: u[4] ?? "q" });
   const tags: [string, string | number | undefined][] = [
-    ["Event", g.ev],
-    ["Site", g.si ?? "?"],
-    ["Date", g.d ?? `${g.y}.??.??`],
+    ["Event", g.ev || (g.lv ? `Lichess rated ${g.tc === "c" ? "classical" : "rapid"} game` : "?")],
+    ["Site", g.si ?? (g.lv ? "lichess.org" : "?")],
+    ["Date", g.d ?? `${g.y}.${g.mo ? String(g.mo).padStart(2, "0") : "??"}.??`],
     ["Round", g.rd ?? "?"],
-    ["White", g.w],
-    ["Black", g.b],
+    // У партий по уровням имён нет (ники убраны) — по стандарту PGN неизвестное имя пишется «?».
+    ["White", g.w || "?"],
+    ["Black", g.b || "?"],
     ["Result", g.res],
     ["WhiteElo", g.we],
     ["BlackElo", g.be],

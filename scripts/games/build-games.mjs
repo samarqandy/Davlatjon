@@ -24,7 +24,7 @@ import path from "node:path";
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { Chess } from "chess.js";
-import { OPENING_NAMES } from "../../src/content/chess/openingNames.ts";
+import { openingOf } from "./openings.mjs";
 import { isUzbek } from "../../src/lib/games/library.ts";
 
 const ROOT = path.resolve(import.meta.dirname, "../..");
@@ -227,55 +227,6 @@ function makeNames(allGames) {
 }
 
 /* ───────────────────────── общее ───────────────────────── */
-
-/**
- * Дебют партии — по позиции, как его определяет сам Lichess (README списка: «play moves backwards until a named
- * position is found»). Открытый список дебютов Lichess (lichess-org/chess-openings, CC0) проигрывается один раз,
- * и каждой его позиции (расстановка, очередь хода, рокировки, взятие на проходе) сопоставляются код ECO и семейство.
- * В партии берётся последняя позиция из списка, у семейства которой есть наше название по-русски и по-узбекски:
- * партия, пришедшая в ферзевый гамбит другим порядком ходов, — ферзевый гамбит, а не «Индийская защита».
- * Код ECO и семейство — от одной и той же позиции, чтобы подпись «Название (код)» не спорила сама с собой.
- * Таблица строится только при сборке: `--fetch` должен уметь заменить испорченный файл, а не падать на нём.
- * Файлы закреплены коммитом и контрольными суммами (sources.json → openings).
- */
-let openingPositions = null;
-const epd = (chess) => chess.fen().split(" ").slice(0, 4).join(" ");
-
-function openingTable() {
-  if (openingPositions) return openingPositions;
-  openingPositions = new Map();
-  for (const [name, digest] of Object.entries(SOURCES.openings.files)) {
-    const file = path.join(CACHE, "openings", name);
-    if (!fs.existsSync(file)) throw new Error(`${name}: нет файла списка дебютов — сначала --fetch`);
-    const text = fs.readFileSync(file, "utf8");
-    if (sha256(text) !== digest) throw new Error(`${name}: контрольная сумма не совпала — запустите --fetch`);
-    for (const row of text.split("\n").slice(1)) {
-      const [eco, title, pgn] = row.split("\t");
-      if (!eco || !title || !pgn) continue;
-      const chess = new Chess();
-      for (const token of sanTokens(pgn)) chess.move(token);
-      openingPositions.set(epd(chess), { eco, family: title.split(":")[0].trim() });
-    }
-  }
-  return openingPositions;
-}
-
-/** Код ECO и семейство дебюта партии с обычной расстановки (ходы — в UCI). */
-function openingOf(uci) {
-  const table = openingTable();
-  const chess = new Chess();
-  let named;
-  let any;
-  for (const u of uci) {
-    chess.move({ from: u.slice(0, 2), to: u.slice(2, 4), promotion: u[4] });
-    const hit = table.get(epd(chess));
-    if (!hit) continue;
-    any = hit;
-    if (OPENING_NAMES[hit.family]) named = hit;
-  }
-  const pick = named ?? any;
-  return { eco: pick?.eco, op: named?.family };
-}
 
 const elo = (v) => (/^\d{3,4}$/.test(v ?? "") && +v > 0 ? +v : undefined);
 const fullDate = (v) => (/^\d{4}\.\d{2}\.\d{2}$/.test(v ?? "") ? v : undefined);
