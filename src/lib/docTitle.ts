@@ -26,7 +26,7 @@ const TITLE_UZ: Record<string, string> = {
   "Словарь шахматиста": "Shaxmatchi lugʻati",
   "Задачи для печати": "Chop etish uchun masalalar",
   "Знаменитые партии": "Mashhur partiyalar",
-  "База партий мастеров": "Ustalar partiyalari bazasi",
+  "База партий": "Partiyalar bazasi",
   "Мои задачи": "Mening masalalarim",
   "Недельный обзор": "Haftalik sharh",
   Настройки: "Sozlamalar",

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { GameBase } from "@/components/chess/games/GameBase";
 import { SiteFooter, SiteHeader } from "@/components/SiteHeader";
 
-export const metadata: Metadata = { title: "Шахматы · База партий мастеров" };
+export const metadata: Metadata = { title: "Шахматы · База партий" };
 
 export default function ChessGameBasePage() {
   return (
