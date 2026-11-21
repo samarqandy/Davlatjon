@@ -2,6 +2,7 @@
 
 import {
   Bird,
+  BookOpen,
   CalendarDays,
   ChevronRight,
   Flame,
@@ -49,6 +50,8 @@ import {
   useThemeName,
 } from "./PuzzleBankViews";
 import { RepeatView, StormView } from "./PuzzleModes";
+import { SetGrid, SetPuzzle, SetsIndex, setsSolved } from "./PuzzleSetViews";
+import { parseSetHash } from "@/lib/puzzleSets";
 import { PuzzleTop, TopMenu } from "./PuzzleTop";
 import { PuzzlePlayer, puzzleKey, type AnyPuzzle } from "./PuzzleTrainer";
 
@@ -87,6 +90,10 @@ export function PuzzleHub() {
   if (hash === "#repeat") return <RepeatView />;
   if (hash === "#practice") return <PracticeView />;
   if (hash === "#woodpecker") return <WoodpeckerView />;
+  const set = parseSetHash(hash, Object.keys(BANK.themes));
+  if (set?.kind === "index") return <SetsIndex />;
+  if (set?.kind === "grid") return <SetGrid key={set.theme} theme={set.theme} />;
+  if (set?.kind === "puzzle") return <SetPuzzle theme={set.theme} index={set.index} fix={set.fix} />;
   const themeMatch = hash.match(/^#theme-([a-z0-9]+)(?:-(\d+|bank))?$/);
   if (themeMatch) {
     const theme = PUZZLE_THEMES.find((x) => x.id === themeMatch[1]);
@@ -215,6 +222,19 @@ export function PuzzleHub() {
                   "\u00a0"
             }
             about={t("Одна новая задача каждый день.", "Har kuni bitta yangi masala.")}
+          />
+          <Mode
+            id="sets"
+            Icon={BookOpen}
+            title={t("Сборник задач", "Masalalar toʻplami")}
+            status={t(
+              `Решено ${hydrated ? setsSolved(progress) : 0} из ${thousands(BANK.total)}`,
+              `${thousands(BANK.total)} tadan ${hydrated ? setsSolved(progress) : 0} tasi yechildi`,
+            )}
+            about={t(
+              "Задачи каждой темы по номерам — от лёгких к трудным, как в задачнике.",
+              "Har mavzu masalalari raqamlar boʻyicha — masalalar kitobidagidek osondan qiyinga.",
+            )}
           />
           <Mode
             id="streak"

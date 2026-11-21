@@ -173,7 +173,7 @@ test("центр задач: главная кнопка и короткий с�
   await page.goto("/chess/puzzles");
   await expect(page.getByRole("button", { name: /Решать задачи по силам/ })).toBeVisible();
   const modes = page.locator("[data-puzzle-modes] [data-puzzle-mode]");
-  await expect(modes).toHaveCount(6);
+  await expect(modes).toHaveCount(7);
   await expect(page.locator('[data-puzzle-mode="repeat"]')).toContainText("На сегодня повторять нечего");
   await page.locator('[data-puzzle-mode="storm"]').click();
   await expect(page).toHaveURL(/#storm$/);
@@ -195,6 +195,62 @@ test("«Дятел»: набор из 20 задач, круг идёт по по
   expect(w.ms).toBeGreaterThan(0);
 });
 
+/** Порядок сборника: по рейтингу, при равном — по id (src/lib/puzzleSets.ts). */
+const setOrder = (theme: string) =>
+  [...file(theme)].sort((a, b) => a[3] - b[3] || (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
+
+test("сборник задач: номера по трудности, состояние из прогресса, «нерешённые» и «продолжить»", async ({ page }) => {
+  const order = setOrder("fork");
+  await prepare(page, {
+    chessPuzzles: {
+      [`fork/${order[0][0]}`]: { misses: 0, solvedAt: 1 },
+      [`fork/${order[1][0]}`]: { misses: 1 },
+    },
+  });
+  await page.goto("/chess/puzzles");
+  await expect(page.locator('[data-puzzle-mode="sets"]')).toContainText("Решено 1 из");
+  await page.locator('[data-puzzle-mode="sets"]').click();
+  await expect(page.getByRole("heading", { level: 1, name: "Сборник задач" })).toBeVisible();
+  await expect(page.locator('[data-set-theme="fork"]')).toContainText(`1 / ${order.length}`);
+  await expect(page.locator('[data-set-theme="fork"]')).toContainText("Не решены: 1 задача");
+  await page.locator('[data-set-theme="fork"]').click();
+  await expect(page).toHaveURL(/#set-fork$/);
+  await expect(page.locator('[data-set-number="1"]')).toHaveAttribute("data-set-status", "clean");
+  await expect(page.locator('[data-set-number="2"]')).toHaveAttribute("data-set-status", "open");
+  await expect(page.locator('[data-set-number="2"]')).toHaveAccessibleName("Задача 2: не решена");
+  await expect(page.locator('[data-set-number="3"]')).toHaveAttribute("data-set-status", "new");
+  await expect(page.locator('[data-set-count="new"]')).toContainText(String(order.length - 2));
+  await expect(page.locator("[data-set-resume]")).toHaveText(/Продолжить: № 3/);
+  // Главы по 50 номеров: во второй — номера 51–100.
+  await page.locator('[data-set-chapter="1"]').click();
+  await expect(page.locator("[data-set-number]").first()).toHaveAttribute("data-set-number", "51");
+  await page.locator('[data-set-chapter="0"]').click();
+
+  // «Нерешённые»: задача № 2; решили — нерешённых не осталось, «дальше» ведёт к номерам темы.
+  await page.locator("[data-set-fix]").click();
+  await expect(page).toHaveURL(/#fix-fork-2$/);
+  await expect(shownBoard(page)).toHaveAttribute("data-board", `puzzle-${order[1][0]}`);
+  await solveShown(page);
+  await page.getByRole("button", { name: "Следующая нерешённая →" }).click();
+  await expect(page).toHaveURL(/#set-fork$/);
+  await expect(page.locator('[data-set-number="2"]')).toHaveAttribute("data-set-status", "solved");
+  await expect(page.locator("[data-set-fix]")).toHaveCount(0);
+
+  // По порядку: № 3, потом «Задача № 4 →».
+  await page.locator("[data-set-resume]").click();
+  await expect(page).toHaveURL(/#set-fork-3$/);
+  await expect(shownBoard(page)).toHaveAttribute("data-board", `puzzle-${order[2][0]}`);
+  await solveShown(page);
+  await expect(page.getByText(/С первой попытки!/)).toBeVisible();
+  await page.getByRole("button", { name: "Задача № 4 →" }).click();
+  await expect(page).toHaveURL(/#set-fork-4$/);
+  expect((await saved(page)).chessPuzzles[`fork/${order[2][0]}`]).toMatchObject({ misses: 0 });
+
+  // Номера, которого нет, — понятное сообщение, а не пустой экран.
+  await page.goto(`/chess/puzzles#set-fork-${order.length + 1}`);
+  await expect(page.locator("[data-set-missing]")).toBeVisible();
+});
+
 test("oʻzbekcha: bazadagi masala, mavzu va «Qizilishton» — kirill harfisiz", async ({ page }) => {
   await prepare(page, {}, "uz");
   const cyrillic = async () =>
@@ -207,6 +263,15 @@ test("oʻzbekcha: bazadagi masala, mavzu va «Qizilishton» — kirill harfisiz"
   expect(await cyrillic()).toEqual([]);
   await page.goto("/chess/puzzles#woodpecker");
   await expect(page.getByRole("heading", { name: /Qizilishton/ })).toBeVisible();
+  expect(await cyrillic()).toEqual([]);
+  await page.goto("/chess/puzzles#sets");
+  await expect(page.getByRole("heading", { level: 1, name: "Masalalar toʻplami" })).toBeVisible();
+  expect(await cyrillic()).toEqual([]);
+  await page.goto("/chess/puzzles#set-fork");
+  await expect(page.locator("[data-set-resume]")).toBeVisible();
+  expect(await cyrillic()).toEqual([]);
+  await page.goto("/chess/puzzles#set-fork-1");
+  await expect(shownBoard(page)).toBeVisible();
   expect(await cyrillic()).toEqual([]);
   await page.goto("/chess/puzzles");
   await expect(page.getByRole("heading", { name: /Mening darajam/ })).toBeVisible();
