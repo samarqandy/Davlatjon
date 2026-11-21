@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
 import { findMove, makeMove, parseFen, toFen } from "@/lib/engine/board";
 import { miniBest, miniResult } from "@/lib/engine/mini";
 import { playMove } from "@/lib/chess";
-import { MINI_GAMES, miniText, playStatus, startFen } from "@/lib/play";
+import { MINI_GAMES, miniPlayed, miniText, playStatus, startFen } from "@/lib/play";
 
 const result = (fen: string) => miniResult(parseFen(fen));
 
@@ -54,12 +54,14 @@ describe("правила", () => {
     expect(playStatus("mini", "8/8/8/8/8/8/8/R7 b - - 0 1", [])).toMatchObject({
       over: true,
       winner: "w",
-      reason: "Все фигуры соперника взяты!",
+      reason: "Все фигуры чёрных взяты!",
     });
     expect(playStatus("mini", "8/8/8/8/8/8/8/R2p4 w - - 0 1", [], "uz").reason).toBe(
       "Qoralarning piyodasi chetga yetib bordi!",
     );
-    expect(playStatus("mini", "8/8/8/8/8/p7/R7/8 b - - 0 1", []).reason).toBe("Сопернику нечем ходить.");
+    expect(playStatus("mini", "8/8/8/8/8/p7/R7/8 b - - 0 1", []).reason).toBe("Чёрным нечем ходить.");
+    // Проиграть может и ребёнок: причина называет цвет, а не «соперника».
+    expect(playStatus("mini", "8/p7/8/8/8/8/8/8 w - - 0 1", []).reason).toBe("Все фигуры белых взяты!");
     const fen = "8/p7/8/8/8/8/8/R7 w - - 0 1";
     expect(playStatus("mini", fen, [fen, fen, fen])).toMatchObject({ over: true, winner: "draw" });
     expect(playStatus("mini", "8/p7/8/8/8/8/8/R7 w - - 100 80", [])).toMatchObject({ over: true, winner: "draw" });
@@ -67,7 +69,36 @@ describe("правила", () => {
   });
 });
 
+describe("пешка на краю — в настоящей игре", () => {
+  it("ход пешки на последнюю горизонталь через доску интерфейса кончает игру, пешка остаётся пешкой", () => {
+    // Чёрные: пешка a2 идёт на a1; ладья h1 не успевает.
+    const raw = playMove("8/8/8/8/8/8/p7/7R b - - 0 1", "a2", "a1", "q")!;
+    expect(raw.fen.split(" ")[0]).toBe("8/8/8/8/8/8/8/q6R");
+    const played = miniPlayed(raw);
+    expect(played.fen.split(" ")[0]).toBe("8/8/8/8/8/8/8/p6R");
+    expect(played.san).toBe("a1");
+    expect(playStatus("mini", played.fen, [])).toMatchObject({
+      over: true,
+      winner: "b",
+      reason: "Пешка чёрных дошла до края!",
+    });
+    // Белые в «отряде»: пешка со взятием на последнюю горизонталь.
+    const capture = miniPlayed(playMove("2r5/3P4/8/8/8/8/8/R7 w - - 0 1", "d7", "c8", "q")!);
+    expect(capture.fen.split(" ")[0]).toBe("2P5/8/8/8/8/8/8/R7");
+    expect(playStatus("mini", capture.fen, [], "uz").reason).toBe("Oqlarning piyodasi chetga yetib bordi!");
+  });
+
+  it("ход без превращения не меняется", () => {
+    const raw = playMove(MINI_GAMES[0].fen, "h1", "h7", "q")!;
+    expect(miniPlayed(raw)).toBe(raw);
+  });
+});
+
 describe("робот", () => {
+  it("ладья встаёт перед пешкой, которая шагнёт на край: иначе пешка выигрывает", () => {
+    expect(miniBest("8/8/8/8/8/8/p7/7R w - - 0 1", 2)).toBe("h1a1");
+  });
+
   it("забирает незащищённую фигуру и проводит пешку, когда её не догнать", () => {
     // Ладья под боем пешки — робот за чёрных берёт.
     expect(miniBest("8/8/8/8/8/1p6/R7/8 b - - 0 1", 1)).toBe("b3a2");

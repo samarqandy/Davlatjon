@@ -24,6 +24,7 @@ import {
   clockLabel,
   endgameText,
   formatClock,
+  miniPlayed,
   miniText,
   kingOf,
   oddsLabel,
@@ -198,7 +199,8 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
       const uci = computerMove(config, fen);
       setThinking(false);
       if (!uci) return;
-      const played = playMove(fen, uci.slice(0, 2), uci.slice(2, 4), (uci[4] as PieceType | undefined) ?? "q");
+      const raw = playMove(fen, uci.slice(0, 2), uci.slice(2, 4), (uci[4] as PieceType | undefined) ?? "q");
+      const played = raw && config.mode === "mini" ? miniPlayed(raw) : raw;
       if (played) setPlies((p) => [...p, { san: played.san, uci: played.uci, fen: played.fen }]);
     }, 500);
     return () => {
@@ -239,7 +241,8 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
       promo.ask(to, turn, (piece) => tryMove(from, to, piece));
       return true;
     }
-    const played = playMove(fen, from, to, promotion ?? "q");
+    const raw = playMove(fen, from, to, promotion ?? "q");
+    const played = raw && config.mode === "mini" ? miniPlayed(raw) : raw;
     if (!played) {
       const reason = illegalReason(fen, from, to);
       setIllegal(reason ? illegalText(reason, t) : null);
@@ -809,8 +812,8 @@ export function PlayBoard({ config, onExit }: { config: PlayConfig; onExit: () =
           <p className="text-sm font-bold text-muted" data-mini-about>
             {variant?.about}{" "}
             {t(
-              "Королей нет, поэтому нет и шаха. Кому нечем ходить — проиграл.",
-              "Shohlar yoʻq, shuning uchun kisht ham yoʻq. Yurishga imkoni qolmagan tomon yutqazadi.",
+              "Королей нет, поэтому нет и шаха. Нет ходов — поражение.",
+              "Shohlar yoʻq, demak, shoh berib boʻlmaydi. Yurishga imkoni qolmagan tomon yutqazadi.",
             )}
           </p>
         )}

@@ -429,8 +429,8 @@ function ModeChooser() {
           </h2>
           <p className="mt-1 hidden text-sm text-muted sm:block">
             {t(
-              "Одна фигура против пешек — так быстрее всего привыкнуть к её ходу. Забери все пешки, пока ни одна не дошла до края.",
-              "Bitta dona piyodalarga qarshi — uning yurishiga tez oʻrganishning eng yaxshi yoʻli. Birortasi ham chetga yetmasidan hamma piyodalarni ol.",
+              "Одна фигура против пешек — так быстрее всего привыкнуть к её ходу, а в конце — отряд против отряда. Побеждает тот, кто заберёт все фигуры соперника или первым проведёт пешку до края.",
+              "Bitta dona piyodalarga qarshi — uning yurishiga tez oʻrganishning eng yaxshi yoʻli, oxirida esa qoʻshin qoʻshinga qarshi. Raqibning barcha donalarini olgan yoki piyodasini birinchi boʻlib chetga olib borgan tomon yutadi.",
             )}
           </p>
           <ul className="mt-3 flex flex-col gap-1.5">

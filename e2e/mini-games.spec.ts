@@ -5,7 +5,7 @@ import { expect, test, type Page } from "@playwright/test";
 const board = (page: Page) => page.locator('[data-board="play"]');
 const sq = (page: Page, square: string) => board(page).locator(`[data-square="${square}"]`);
 
-test("«Ладья против пешек»: ребёнок берёт пешку, робот отвечает, ходов короля нет", async ({ page }) => {
+test("«Ладья против пешек»: ребёнок ходит ладьёй, робот отвечает пешкой", async ({ page }) => {
   await page.goto("/chess/play");
   const section = page.locator("[data-mini-games]");
   await expect(section.getByRole("heading", { name: /Мини-игры без королей/ })).toBeVisible();
@@ -14,21 +14,21 @@ test("«Ладья против пешек»: ребёнок берёт пешк
   await expect(page).toHaveURL(/#mini-rook-1$/);
   await expect(page.getByRole("heading", { level: 1, name: /Ладья против пешек/ })).toBeVisible();
   await expect(page.locator("[data-mini-about]")).toContainText("Королей нет");
-  // Ладья a1 забирает пешку a7: её никто не защищает.
-  await sq(page, "a1").click();
-  await sq(page, "a7").click();
-  await expect(sq(page, "a7").locator("[data-piece]")).toHaveAttribute("data-piece", "wR");
-  // Робот ответил: одна из оставшихся пешек b7, c7, d7 сделала ход.
+  // Ладья выходит на седьмую горизонталь и нападает на пешки.
+  await sq(page, "h1").click();
+  await sq(page, "h7").click();
+  await expect(sq(page, "h7").locator("[data-piece]")).toHaveAttribute("data-piece", "wR");
+  // Робот ответил: одна из пешек a7–d7 сделала ход (или ладья забрана — тогда её нет на h7).
   await expect
     .poll(
       async () => {
         let left = 0;
-        for (const s of ["b7", "c7", "d7"]) left += await sq(page, s).locator('[data-piece="bP"]').count();
+        for (const s of ["a7", "b7", "c7", "d7"]) left += await sq(page, s).locator('[data-piece="bP"]').count();
         return left;
       },
       { timeout: 10_000 },
     )
-    .toBe(2);
+    .toBe(3);
   await expect(page.locator("[data-play-status]")).not.toContainText(/Победа|выиграл/);
 });
 

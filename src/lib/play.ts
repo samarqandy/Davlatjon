@@ -10,7 +10,7 @@ export type PlayMode = "robot" | "two" | "pawns" | "endgame" | "mini";
 
 /**
  * Мини-игра без королей: фигуры белых (их ведёт ребёнок) против пешек или «отряда» робота.
- * Победа — забрать все фигуры соперника или провести пешку до последней горизонтали; кому нечем ходить — проиграл.
+ * Победа — забрать все фигуры соперника или провести пешку до последней горизонтали; нет ходов — поражение.
  */
 export interface MiniGame {
   id: string;
@@ -25,7 +25,7 @@ export interface MiniGame {
 export const MINI_GAMES: MiniGame[] = [
   {
     id: "rook",
-    fen: "8/pppp4/8/8/8/8/8/R7 w - - 0 1",
+    fen: "8/pppp4/8/8/8/8/8/7R w - - 0 1",
     name: "Ладья против пешек",
     nameUz: "Rux piyodalarga qarshi",
     about: "Ладья ходит по прямым. Забери все четыре пешки, пока ни одна не дошла до первой горизонтали.",
@@ -45,9 +45,10 @@ export const MINI_GAMES: MiniGame[] = [
     fen: "8/2pp4/8/8/8/8/8/1N6 w - - 0 1",
     name: "Конь против пешек",
     nameUz: "Ot piyodalarga qarshi",
-    about: "Конь прыгает буквой «Г» и перескакивает через фигуры. Две пешки рядом защищают друг друга — подумай!",
+    about:
+      "Конь прыгает буквой «Г» и перескакивает через фигуры. Когда одна пешка шагнёт вперёд, соседняя её защищает — подумай, куда прыгнуть!",
     aboutUz:
-      "Ot «G» harfi shaklida sakraydi va donalar ustidan oshib oʻtadi. Yonma-yon ikki piyoda bir-birini himoya qiladi — oʻylab yur!",
+      "Ot «G» harfi shaklida sakraydi va donalar ustidan oshib oʻtadi. Bir piyoda oldinga yursa, yonidagisi uni himoya qiladi — qayerga sakrashni oʻylab koʻr!",
   },
   {
     id: "queen",
@@ -68,6 +69,21 @@ export const MINI_GAMES: MiniGame[] = [
       "Har tomonda rux, fil, ot va uchta piyoda. Raqibning barcha donalarini ol yoki birinchi boʻlib piyodangni chetgacha olib bor.",
   },
 ];
+
+/**
+ * Ход в мини-игре на доске интерфейса: chess.js превращает пешку на краю в ферзя, а в мини-игре превращения нет —
+ * возвращаем на клетку пешку (по ней видна победа) и убираем «=Ф» из записи хода.
+ */
+export function miniPlayed<T extends { fen: string; san: string; uci: string }>(played: T): T {
+  if (played.uci.length < 5) return played;
+  const [board, ...rest] = played.fen.split(" ");
+  const rows = board.split("/").map((row) => row.replace(/\d/g, (d) => ".".repeat(Number(d))).split(""));
+  const file = played.uci.charCodeAt(2) - 97;
+  const row = 8 - Number(played.uci[3]);
+  rows[row][file] = rows[row][file] === rows[row][file].toUpperCase() ? "P" : "p";
+  const packed = rows.map((r) => r.join("").replace(/\.+/g, (dots) => String(dots.length))).join("/");
+  return { ...played, fen: [packed, ...rest].join(" "), san: played.san.replace(/=[QRBNФЛСК]/, "") };
+}
 
 /** Название и описание мини-игры на нужном языке. */
 export function miniText(g: MiniGame, lang: Lang = "ru"): { name: string; about: string } {
@@ -195,16 +211,21 @@ export function playStatus(mode: PlayMode, fen: string, positions: readonly stri
   if (mode === "mini") {
     const r = miniResult(pos);
     if (r) {
-      const black = pos.board.some((p) => p < 0);
-      const white = pos.board.some((p) => p > 0);
-      const reason =
-        (r === "w" && !black) || (r === "b" && !white)
-          ? t("Все фигуры соперника взяты!", "Raqibning barcha donalari olindi!")
-          : legalMoves(pos).length === 0
-            ? t("Сопернику нечем ходить.", "Raqibning yurishga imkoni qolmadi.")
-            : r === "w"
-              ? t("Пешка белых дошла до края!", "Oqlarning piyodasi chetga yetib bordi!")
-              : t("Пешка чёрных дошла до края!", "Qoralarning piyodasi chetga yetib bordi!");
+      const edge = /P/.test(fen.split(" ")[0].split("/")[0]) || /p/.test(fen.split(" ")[0].split("/")[7]);
+      const loser = r === "w" ? "b" : "w";
+      const gone = !pos.board.some((p) => (loser === "w" ? p > 0 : p < 0));
+      // Причина — с названием цвета: проиграть может и ребёнок, и тогда «соперник» читался бы наоборот.
+      const reason = edge
+        ? r === "w"
+          ? t("Пешка белых дошла до края!", "Oqlarning piyodasi chetga yetib bordi!")
+          : t("Пешка чёрных дошла до края!", "Qoralarning piyodasi chetga yetib bordi!")
+        : gone
+          ? loser === "w"
+            ? t("Все фигуры белых взяты!", "Oqlarning barcha donalari olindi!")
+            : t("Все фигуры чёрных взяты!", "Qoralarning barcha donalari olindi!")
+          : loser === "w"
+            ? t("Белым нечем ходить.", "Oqlarning yurishga imkoni qolmadi.")
+            : t("Чёрным нечем ходить.", "Qoralarning yurishga imkoni qolmadi.");
       return { over: true, winner: r, reason };
     }
     if (repeated)

@@ -3,7 +3,7 @@
  * «отряд против отряда». Правила одни для всех мини-игр:
  * - пешка, дошедшая до последней горизонтали, приносит победу своей стороне (превращения нет — игра кончается);
  * - кто забрал все фигуры соперника — победил;
- * - кому нечем ходить — проиграл (как в «пешечном бою»).
+ * - нет ходов — поражение (как в «пешечном бою»).
  * Королей нет, поэтому нет и шаха: на своём движке такие позиции разбираются честно, а chess.js их не загружает.
  */
 import {
@@ -72,8 +72,18 @@ function order(moves: Move[]): Move[] {
     .map((x) => x.m);
 }
 
-/** Превращение кончает игру победой — достаточно одного варианта хода. */
+/** Пешка на краю кончает игру победой — достаточно одного варианта такого хода. */
 const moves = (pos: Position) => legalMoves(pos).filter((m) => !m.promo || m.promo === QUEEN);
+
+/**
+ * Ход по правилам мини-игры: пешка, дошедшая до края, остаётся пешкой (превращения нет — по ней и видна победа).
+ * unmakeMove возвращает обе клетки сам, отдельно восстанавливать не нужно.
+ */
+function play(pos: Position, m: Move) {
+  const undo = makeMove(pos, m);
+  if (m.promo) pos.board[m.to] = m.piece;
+  return undo;
+}
 
 function search(pos: Position, depth: number, alpha: number, beta: number, ply: number): number {
   const result = miniResult(pos);
@@ -81,7 +91,7 @@ function search(pos: Position, depth: number, alpha: number, beta: number, ply: 
   if (depth === 0) return evaluate(pos);
   let best = -Infinity;
   for (const m of order(moves(pos))) {
-    const undo = makeMove(pos, m);
+    const undo = play(pos, m);
     const score = -search(pos, depth - 1, -beta, -alpha, ply + 1);
     unmakeMove(pos, m, undo);
     if (score > best) best = score;
@@ -99,7 +109,7 @@ export function miniBest(fen: string, depth = 3, random = Math.random): string |
   let best: Move[] = [];
   let bestScore = -Infinity;
   for (const m of list) {
-    const undo = makeMove(pos, m);
+    const undo = play(pos, m);
     const score = -search(pos, depth - 1, -Infinity, -bestScore + 1, 1);
     unmakeMove(pos, m, undo);
     if (score > bestScore) {
